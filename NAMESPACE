@@ -1,0 +1,121 @@
+useDynLib(xps)
+
+import(graphics, methods)
+
+exportClasses(ProjectInfo,
+              TreeSet,
+              SchemeTreeSet,
+              ProcesSet,
+              DataTreeSet,
+              ExprTreeSet,
+              CallTreeSet)
+
+exportMethods("addData",
+              "attachBgrd",
+              "attachInten",
+              "attachMask",
+              "arrayInfo",
+              "arrayInfo<-",
+              "authorInfo",
+              "authorInfo<-",
+              "background",
+              "background<-",
+              "bgtreeNames",
+              "boxplot",
+              "callplot",
+              "chipMask",
+              "chipMask<-",
+              "chipName",
+              "chipType",
+              "chipType<-",
+              "datasetInfo",
+              "datasetInfo<-",
+              "export",
+              "exprs",
+              "exprs<-",
+              "exprType",
+              "exprType<-",
+              "fileDir",
+              "fileDir<-",
+              "getTreeData",
+              "hist",
+              "image",
+              "intensity",
+              "intensity<-",
+              "mboxplot",
+              "mvaplot",
+              "mm",
+              "ncols",
+              "nrows",
+              "normType",
+              "normType<-",
+              "pm",
+              "pmplot",
+              "presCall",
+              "presCall<-",
+              "probeInfo",
+              "projectInfo",
+              "projectInfo<-",
+              "pvalData",
+              "pvalData<-",
+              "removeBgrd",
+              "removeInten",
+              "removeMask",
+              "root.browser",
+              "rootFile",
+              "rootFile<-",
+              "schemeFile",
+              "schemeFile<-",
+              "schemeSet",
+              "schemeSet<-",
+              "se.exprs",
+              "setName",
+              "setName<-",
+              "setType",
+              "setType<-",
+              "show",
+              "sourceInfo",
+              "sourceInfo<-",
+              "treeNames",
+              "validBgrd",
+              "validCall",
+              "validData",
+              "xpsBgCorrect",
+              "xpsDABGCall",
+              "xpsMAS5Call",
+              "xpsMAS5",
+              "xpsMAS4",
+              "xpsNormalize",
+              "xpsSummarize",
+              "xpsRMA")
+
+
+export(xpsOptions, debug.xps)
+export(import.expr.scheme, import.exon.scheme, import.genome.scheme, root.scheme)
+export(import.data, root.data)
+export(export.scheme, export.data, export.expr, export.call, export.root)
+export(rma, mas4, mas5, mas5.call, dabg.call)
+export(bgcorrect, normalize, summarize, express)
+export(bgcorrect.mas4, bgcorrect.mas5, bgcorrect.rma, bgcorrect.gc)
+export(normalize.constant, normalize.quantiles, normalize.lowess, normalize.supsmu)
+export(summarize.mas4, summarize.mas5, summarize.rma)
+export(boxplot.dev, image.dev, mvaplot.dev)
+
+export(root.image)
+export(root.graph1D, root.graph2D, root.mvaplot)
+export(root.hist1D, root.hist2D, root.hist3D)
+export(root.density)
+
+export(getDatatype, validTreetype)
+export(getChipName, getChipType, getNameType, getProbeInfo)
+export(getNumberTrees, getTreeNames)
+export(isROOTFile)
+export(type2Exten)
+
+
+
+
+
+
+
+

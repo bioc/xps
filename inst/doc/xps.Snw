@@ -1,0 +1,542 @@
+%\VignetteIndexEntry{1. XPS Vignette: Overview}
+%\VignetteDepends{xps}
+%\VignetteKeywords{Expression, Affymetrix, Oligonucleotide Arrays}
+%\VignettePackage{xps}
+\documentclass{article}
+
+\usepackage{hyperref}
+\usepackage[authoryear,round]{natbib}
+
+\textwidth=6.2in
+\textheight=8.5in
+%\parskip=.3cm
+\oddsidemargin=.1in
+\evensidemargin=.1in
+\headheight=-.3in
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Rmethod}[1]{{\texttt{#1}}}
+\newcommand{\Rcode}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textsf{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+\newcommand{\xps}{\Rpackage{xps}}
+\newcommand{\ROOT}{\Robject{ROOT}}
+
+\begin{document}
+
+\title{Introduction to the xps Package: Overview}
+\date{October, 2007}
+\author{Christian Stratowa}
+\maketitle
+
+\tableofcontents
+
+\section{Introduction}
+
+Affymetrix GeneChip oligonucleotide arrays use several probes to assay each 
+targeted transcript. Specialized algorithms have been developed to summarize 
+low-level probe set intensities to get one expression measure for each transcript. 
+Some of these  methods, such as MAS 4.0's AvDiff \citep{affy4}, MAS5's signal
+\citep{affy5} or RMA  \citep{iriz:etal:2003}, are implemented in package
+\Rpackage{affy} \citep{gaut:cope:bols:iriz:2003}. 
+
+Advantages in technology allow Affymetrix to supply whole-genome expression arrays 
+such as the new GeneChip Exon array systems (Exon 1.0 ST) and Gene array systems 
+(Gene 1.0 ST). The amount of data created with the new exon arrays poses a great 
+challenge, since R stores all objects in memory. 
+
+Package \xps\ ~- \Rclass{eXpression Profiling System} - is designed to analyze 
+Affymetrix GeneChip expression and exon arrays on computers with limited amounts 
+of memory (1-2 GB RAM). To achieve this goal, \xps\  takes advantage of \ROOT, a 
+framework especially developed to handle and analyse large amounts of data in a 
+memory efficient way.
+ 
+\noindent{\bf Important installation note:}
+Package \xps\ is based on two powerful frameworks, namely \Robject{R} and \ROOT. 
+It is thus absolutely essential to install the \ROOT\ framework before \xps\ can 
+be built and installed. For instructions how to install \ROOT\ see the README file
+provided with package \xps.
+
+
+\section{Why ROOT?}
+
+ROOT (\url{http://root.cern.ch}) is an object-oriented framework that has been 
+developed at CERN for distributed data warehousing and data mining of particle 
+data in the petabyte range. Data are stored as sets of objects in machine-independent 
+files, and specialized storage methods are used to get direct access to separate 
+attributes of selected data objects. For more information see the ROOT User Guide
+(The ROOT \citet{root:2007}).
+
+Taking advantage of these features, package \xps\ stores all data in portable \ROOT\ files. 
+Data describing microarray layout, probe information and metadata for genes are stored 
+as \ROOT\ Trees in \Rclass{scheme} files, accessible from \Robject{R} as \Rclass{scheme} objects. 
+Raw probe intensities, i.e. CEL-files for each project are stored as \ROOT\ Trees in 
+\Rclass{data} files, accessible from \Robject{R} as \Rclass{data} objects. All analysis is done 
+independent of \Robject{R} such avoiding inherent memory limitations. 
+
+
+\section{Getting Started}
+
+First you need to load the \xps\ package.
+\begin{Sinput}
+R> library(xps)
+\end{Sinput}
+<<echo=FALSE>>=
+library(xps)
+@
+
+As an initial step, which needs to be done only once, you must import Affymetrix chip 
+definition files, probe files and annotation files for all arrays that you are using, 
+into \ROOT\ \Rclass{scheme} files. This is described in Appendix A1, here we
+use the \ROOT\ \Rclass{scheme} file supplied with the package.
+
+Throughout this tutorial we will use a set of four {\it CEL} files supplied with the
+package. The necessary \ROOT\ \Rclass{scheme} file \Rclass{SchemeTest3.root} for GeneChip 
+{\it Test3.CDF} is also supplied as well as the \ROOT\ \Rclass{data} file 
+\Rclass{DataTest3\_cel.root}. These files need to be loaded for every new \Robject{R}-session,
+which has not been saved.
+
+\subsection{Reading CEL file information}
+
+All {\it CEL} files need to be moved to a common directory. They will be imported
+into a \ROOT\ \Rclass{data} file as \ROOT\ \Rclass{Trees}. Once the \ROOT\ \Rclass{data} file
+is created, the {\it CEL} files are no longer needed, since subsequent \Robject{R}-sessions
+need only load the \ROOT\ \Rclass{data} file. However, it is possible to load only a
+subset  of {\it CEL} files, and it is also possible to save new {\it CEL} files in the same
+\ROOT\ \Rclass{data} file at a later time. In this demo we will show how to achieve this.
+
+First we load the \xps\ package.
+<<results=hide>>=
+library(xps)
+@
+
+All {\it CEL} files need to be in a common directory, in our case in:
+<<>>=
+celdir <- paste(.path.package("xps"),"raw",sep="/")
+@ 
+
+Since our {\it CEL} files were created for GeneChip {\it Test3.CDF}, we need to load
+the corresponding \ROOT\ \Rclass{scheme} file first:
+<<>>=
+scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+@ 
+
+Now we can import the {\it CEL} files, in our case a subset first:
+<<>>=
+celfiles <- c("TestA1.CEL","TestA2.CEL")
+data.test3 <- import.data(scheme.test3, "tmp_DataTest3", celdir=celdir, celfiles=celfiles, verbose=FALSE)
+@ 
+
+To see, which {\it CEL} files were imported as \ROOT\ \Rclass{Trees}, we can do:
+<<>>=
+unlist(treeNames(data.test3))
+@ 
+
+Now we can import additional {\it CEL} files:
+<<>>=
+celfiles <- c("TestB1.CEL","TestB2.CEL")
+data.test3 <- addData(data.test3, celdir=celdir, celfiles=celfiles, verbose=FALSE)
+@ 
+
+Instead of getting the imported tree names from the created instance \Rclass{data.test3} 
+of S4 class \Rclass{DataTreeSet}, we can also get the tree names directly from the \ROOT\ 
+\Rclass{data} file: 
+<<>>=
+getTreeNames(rootFile(data.test3))
+@ 
+
+Now we have all {\it CEL} files imported as \ROOT\ \Rclass{Trees}. In later \Robject{R}-sessions
+we only need to load the corresponding \ROOT\ \Rclass{data} file using function 
+\Rfunction{root.data}. In this tutorial we will not use the file just created but
+the \ROOT\ \Rclass{data} file \Rclass{DataTest3\_cel.root}.
+
+{\bf Note 1:} Since \ROOT\ \Rclass{data} files contain the raw data, it is proposed
+to create them in a common system directory, which may be accessible to others, too.
+
+{\bf Note 2:} Usually, \ROOT\ \Rclass{data} files are kept permanently. Thus it is not
+possible to accidently overwrite a \ROOT\ \Rclass{data} file with another file of the
+same name; you will get an error message. If you want to create a temporary \ROOT\ 
+\Rclass{data} file, which can be overwritten, the name must start with `tmp\_', as we
+have done in the example above.
+
+{\bf Note 3:} In order to distinguish \ROOT\ \Rclass{data} files containing the raw data 
+from other \ROOT\ files, extension `\_cel' is automatically added to the file name. Thus
+creating a raw data file with name \Rclass{DataTest3} will result in a \ROOT\ file with
+name \Rclass{DataTest3\_cel.root}. Extension `root' is always added to each \ROOT\ file.
+
+{\bf Note 4:} It is highly recommended to keep the default setting \Rcode{verbose=TRUE}, 
+especially when working with expression arrays.
+
+
+\subsection{Accessing raw data}
+
+Currently, the data from the imported {\it CEL} files are saved as \ROOT\ \Rclass{Trees} 
+in the \ROOT\ \Rclass{data} file, however, they are not accessible from  within \Robject{R}.
+The corresponding slot \Rcode{data} of instance \Rclass{data.test3} of S4 class \Rclass{DataTreeSet},
+a data.frame, is empty. This setting allows to import e.g. an (almost) unlimited  number
+of {\it CEL} files from GeneChip Exon arrays on computers with 1GB RAM only.
+
+When we try to access the raw data, we get:
+<<>>=
+tmp <- intensity(data.test3)
+head(tmp)
+@
+
+Thus, we need to attach the raw data first to \Rclass{data.test3}:
+<<results=hide>>=
+data.test3 <- attachInten(data.test3)
+@
+
+Now we get:
+<<>>=
+tmp <- intensity(data.test3)
+head(tmp)
+@
+
+Alternatively, it is also possible to attach only a subset to the current object 
+\Rclass{data.test3}, or to a copy \Rclass{subdata.test3}:
+<<>>=
+subdata.test3 <- attachInten(data.test3, c("TestB1.cel","TestA2"))
+tmp <- intensity(subdata.test3)
+head(tmp)
+@
+
+When we no longer need the raw data, we can remove them from \Rclass{data.test3},
+thus avoiding memory consumption of \Robject{R}:
+<<>>=
+data.test3 <- removeInten(data.test3)
+tmp <- intensity(data.test3)
+head(tmp)
+@
+
+Now we want create some plots with the raw data. For this purpose we need not only
+attach the raw data, as shown above, but also slot \Rcode{mask} of \Rclass{scheme.test3},
+since  slot \Rcode{mask} contains the information which oligos on the array are PM, MM,
+or control oligos, respectivly. See Appendix A1 for an explanation and how  
+to avoid this step.
+<<results=hide>>=
+data.test3 <- attachMask(data.test3)
+data.test3 <- attachInten(data.test3)
+@
+{\bf Note:} We have applied method \Rfunction{attachMask} to \Rclass{data.test3} and not
+to \Rclass{scheme.test3}, since \Rclass{data.test3} contains its  own copy of 
+\Rclass{scheme.test3}.
+
+First, we create a density plot:
+
+\begin{center}
+<<hist, fig=TRUE>>=
+hist(data.test3)
+@
+\end{center}
+
+%\pagebreak
+The corresponding boxplots are:
+
+\begin{center}
+<<boxplot, fig=TRUE>>=
+boxplot(data.test3)
+@
+\end{center}
+
+%\pagebreak
+It is also possible to create an image for e.g. sample TestA1:
+
+\begin{center}
+<<image, fig=TRUE>>=
+image(data.test3, names="TestA1.cel_MEAN")
+@
+\end{center}
+
+%\pagebreak
+Finally we include a PM-MM-plot of the data:
+
+\begin{center}
+<<pmplot, fig=TRUE>>=
+pmplot(data.test3)
+@
+\end{center}
+
+After we are done, we remove the data from \Rclass{data.test3} to free \Robject{R} memory:
+<<>>=
+data.test3 <- removeInten(data.test3)
+data.test3 <- removeMask(data.test3)
+@
+This step is not necessary for small datasets or if the computer has sufficient RAM.
+
+
+\section{Converting raw data to expression measures}
+
+When we start a new \Robject{R}-session, it is necessary to load the \ROOT\ \Rclass{scheme} 
+and \ROOT\ \Rclass{data} files first:
+<<results=hide>>=
+library(xps)
+scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
+@
+This step is not necessary when objects \Rclass{scheme.test3} and \Rclass{data.test3} are 
+already saved in an \Robject{R}-session.
+
+
+Converting raw data to expression measures and computing detection calls is fairly simple.
+It is not necessary to attach any \Rcode{data} or \Rcode{mask} data.frames, since all
+computations are done independently from \Robject{R}.
+
+
+\subsection{Calculating expression levels}
+
+Let us first preprocess the raw data using method `RMA' to compute expression levels, and
+store the results as \ROOT\ \Rclass{Trees} in \ROOT\ file \Rclass{tmp\_Test3RMA.root}:
+<<results=hide>>=
+data.rma <- rma(data.test3, "tmp_Test3RMA", verbose=FALSE)
+@
+{\bf Note:} In this example and the following examples we suppress the usual output.
+
+Then we preprocess the raw data using method `MAS5' to compute expression levels, and
+store the results in \ROOT\ file \Rclass{tmp\_Test3MAS5.root}:
+<<results=hide>>=
+data.mas5 <- mas5(data.test3, "tmp_Test3MAS5", normalize=TRUE, sc=500, update=TRUE, verbose=FALSE)
+@
+
+Now we want to compare the results by plotting the expression levels for the first sample.
+For this purpose we need to extract the expression levels as data.frames first:
+<<>>=
+expr.rma <- validData(data.rma)
+expr.mas5 <- validData(data.mas5)
+@
+Now we can plot the results for the first sample:
+
+\begin{center}
+<<plot, fig=TRUE>>=
+plot(expr.rma[,1],expr.mas5[,1],log="xy",xlim=c(1,20000),ylim=c(1,20000))
+@
+\end{center}
+{\bf Note:} For both methods, `RMA' and `MAS5', true expression levels are extracted,
+which is in contrast to other packages which extract the log2 values for `RMA'.
+
+
+\subsection{Calculating detection calls}
+
+Let us now compute the MAS5 detection calls:
+<<results=hide>>=
+call.mas5 <- mas5.call(data.test3,"tmp_Test3Call", verbose=FALSE)
+@
+
+Alternatively, let us compute the DABG (detection above background) calls:
+<<results=hide>>=
+call.dabg <- dabg.call(data.test3,"tmp_Test3DABG", verbose=FALSE)
+@
+{\bf Note:} YES, in principle it is indeed possible to compute the DABG call not only 
+for exon arrays but for expression arrays, too. However, computation may take a long
+time, e.g. on a computer with 2.3GHz Intel Core 2 Duo processor and 2GB RAM, computing
+DABG calls for HG-U133\_Plus\_2 arrays will take about 45 min/array.
+
+Both, detection call, and detecion p-value can be extracted as data.frame:
+<<>>=
+pres.mas5 <- presCall(call.mas5)
+head(pres.mas5)
+@
+
+<<>>=
+pval.mas5 <- pvalData(call.mas5)
+head(pval.mas5)
+@
+
+
+\subsection{Plotting results}
+
+Now we want to create some plots for the expression levels. In contrast to the raw data 
+we do not need to attach data, since expression levels and detection calls are already 
+stored in the \Robject{R} objects, e.g. in \Rclass{data.rma}, an instance of S4 class
+\Rclass{ExprTreeSet}, or in \Rclass{call.mas5}, an instance of S4 class \Rclass{CallTreeSet}, 
+respectively.
+
+
+%\pagebreak
+First, we create a density plot:
+
+\begin{center}
+<<hist-rma, fig=TRUE>>=
+hist(data.rma)
+@
+\end{center}
+
+\pagebreak
+The corresponding boxplots are:
+
+\begin{center}
+<<boxplot-rma, fig=TRUE>>=
+boxplot(data.rma)
+@
+\end{center}
+
+%\pagebreak
+It is also possible to create M vs A plots for one or more samples:
+
+\begin{center}
+<<mvaplot, fig=TRUE>>=
+mvaplot(data.rma, pch=20, ylim=c(-2,2), names="TestB1.mdp_LEVEL")
+@
+\end{center}
+
+%\pagebreak
+Finally we create present call plots:
+
+\begin{center}
+<<callplot, fig=TRUE>>=
+callplot(call.mas5)
+@
+\end{center}
+
+Since the \ROOT\ expression files contain additional \ROOT\ \Rclass{Trees}, e.g.
+trees containing the computed background intensities, let us create an \Rfunction{image} 
+showing the distribution of the background intensities on an array for MAS5.
+
+First,we need to know the tree names stored in \Rclass{data.mas5}
+<<>>=
+getTreeNames(rootFile(data.mas5))
+@
+We decide to use tree `TestA2.wbg' (extension `wbg' stands for `weighted background', 
+see \Rfunction{?validTreeType}).
+
+In this case we need to export the background intensities directly from \ROOT\ file
+\Rclass{tmp\_Test3MAS5.root}. We can do this in the following way:
+<<results=hide>>=
+bgrd <- export.root(rootFile(data.mas5),schemeFile(data.mas5),"PreprocesSet","TestA2","wbg","fBg","BgrdROOTOut.txt",as.dataframe=TRUE, verbose=FALSE)
+@
+
+Then we need to convert background intensities to an object of type \Robject{matrix}:
+<<>>=
+wbg <- matrix(bgrd[,"BGRD"], ncol=ncols(schemeSet(data.mas5)), nrow=nrows(schemeSet(data.mas5)))
+@
+
+Finally, we can draw the image:
+
+\begin{center}
+<<image-bg, fig=TRUE>>=
+image(log2(wbg))
+@
+\end{center}
+
+
+\subsection{Using Biobase class ExpressionSet}
+
+Some users may prefer to use S4 class \Rclass{ExpressionSet}, defined in the \Rpackage{Biobase} 
+package of Bioconductor, for further analysis of expression measures. 
+
+Package \Rpackage{Biobase} contains a vignette "ExpressionSetIntroduction.pdf", which
+describes how to build an \Rclass{ExpressionSet} from scratch. Here we create a minimal
+\Rclass{ExpressionSet} containing the expression measures determined using RMA:
+
+First, we need to load library \Rpackage{Biobase}, then extract the expression levels
+from instance \Robject{data.rma} of class \Rclass{ExprTreeSet}, convert the data.frame
+to a matrix, and finally create an instance of class \Rclass{ExpressionSet}:
+
+<<eval=FALSE>>=
+library(Biobase)
+expr.rma <- validData(data.rma)
+minimalSet <- new("ExpressionSet", exprs = as.matrix(expr.rma))
+@
+
+As described in vignette "ExpressionSetIntroduction.pdf", we can now access the data 
+elements. For this example we create a new \Rclass{ExpressionSet} consisting of the 5 
+features and the first 3 samples:
+
+<<eval=FALSE>>=
+vv <- minimalSet[1:5,1:3]
+featureNames(vv)
+sampleNames(vv)
+exprs(vv)
+@
+
+This class \Rclass{ExpressionSet} can now be used from within other Bioconductor packages.
+
+
+\pagebreak
+\appendix
+
+\section{Appendices}
+
+\subsection{Importing chip definition and annotation files}
+%\label{appA1}
+
+In contrast to other packages, which rely on the Bioconductor method for creating
+cdf environments, we need to create \ROOT\ \Rclass{scheme} files directly from the
+Affymetrix source files, which need to be downloaded first from the Affymetrix web
+site. However, once created, it is in principle possible to distribute the \ROOT\ 
+\Rclass{scheme} files, too.
+
+Here we will demonstrate, how to create a \ROOT\ \Rclass{scheme} file for Affymetrix
+GeneChip {\it Test3.CDF}. We assume that the following files were downloaded, unzipped, 
+and saved in subdirectories \Rcode{libraryfiles} and \Rcode{Annotation}, respectively:
+
+\begin{itemize}
+\item GeneChip chip definition file: {\it Test3.CDF}
+\item Probe sequence file: {\it Test3\_probe.tab}
+\item Probeset annotation file: {\it Test3.na22.annot.csv}
+\end{itemize}
+
+In a new \Robject{R}-session we load our library and define the directories, where
+the library files and the annotation files are saved, respectively, and the directory,
+where the \ROOT\ \Rclass{scheme} files should be saved:
+
+<<eval=FALSE>>=
+library(xps)
+libdir <- "/path/to/Affy/libraryfiles"
+anndir <- "/path/to/Affy/Annotation"
+scmdir <- "/path/to/CRAN/Workspaces/Schemes"
+@
+
+Now we can create a \ROOT\ \Rclass{scheme} file:
+
+<<eval=FALSE>>=
+scheme.test3 <- import.expr.scheme("Scheme\_Test3\_na22", 
+                       filedir=scmdir,  
+                       paste(libdir,"Test3.CDF",sep="/"), 
+                       paste(libdir,"Test3\_probe.tab",sep="/"), 
+                       paste(anndir,"Test3.na22.annot.csv",sep="/"))
+@
+
+The \Robject{R} object \Rclass{scheme.test3} is not needed lateron, since in every
+new \Robject{R}-session the \ROOT\ \Rclass{scheme} file need to be imported first, using:
+
+<<eval=FALSE>>=
+scmdir <- "/path/to/CRAN/Workspaces/Schemes"
+scheme.test3 <- root.scheme(paste(scmdir,"SchemeTest3.root",sep="/"))
+@
+
+Package \xps\ includes a file {\it script4xps.R} which contains code to import some of the 
+main CDF and annotation files, which can be copied to an \Robject{R}-session, including
+code to create \ROOT\ \Rclass{scheme} files for the currently available Exon arrays.
+
+{\bf Note:} As mentioned earlier, slot \Rcode{mask} of \Rclass{scheme.test3} needs to
+be attached to instances of S4 class \Rclass{DataTreeSet} before accessing raw data,
+since  slot \Rcode{mask} contains the information which oligos on the array are PM, MM,
+or control oligos, respectivly. If you want to avoid this step you can create instances
+of \Rclass{SchemeTreeSet}, which contain this information already, by setting parameter
+\Rcode{add.mask} of function \Rfunction{import.expr.scheme} to \Rcode{add.mask=TRUE}, 
+e.g.:
+<<eval=FALSE>>=
+scheme.test3 <- import.expr.scheme("Scheme\_Test3\_na22",..., add.mask=TRUE)
+@
+
+{\bf Note:} Please note that for the new GeneChip exon array systems and gene array systems
+Affymetrix no longer supports CDF-files, but uses the new CLF-files and PGF-files instead.
+For this reason package \xps\ also uses CLF-, PGF-files to create the root scheme files, and
+does not use the inofficial CDF-files. See the help files \Rfunction{?import.exon.scheme}
+and \Rfunction{?import.genome.scheme} for more information.
+
+
+\subsection{Additional examples}
+%\label{appA2}
+
+Additional examples how to use package \xps\ can be found in file "script4xps.R", located
+in subdirectory examples. This file uses the  Affymetrix Human Tisse Datasets for
+arrays HG-U133\_Plus\_2, HuEx-1\_0-st-v2 and HuGene-1\_0-st-v1.
+
+
+\bibliographystyle{plainnat}
+\bibliography{xps}
+
+\end{document}

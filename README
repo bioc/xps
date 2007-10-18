@@ -1,0 +1,236 @@
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+The package handles the pre-processing and normalization of Affymetrix 
+GeneChip expression arrays, including Exon arrays. It is an R wrapper
+to XPS (eXpression Profiling System), which is based on ROOT, an object-
+oriented framework developed at CERN. Thus, the prior installation of
+ROOT is a prerequisite for the usage of this package. ROOT can be
+downloaded from http://root.cern.ch. 
+
+Copyright (C) 2000-2007 Christian Stratowa, Vienna, Austria
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, a copy of the GNU General Public
+License is available at http://www.gnu.org/copyleft/gpl.html. You
+can also obtain it by writing to the Free Software Foundation, Inc.,
+51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA.
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+Content:
+
+I.   Install ROOT:
+II.  Install package 'xps' from source
+III. Learning how to use package 'xps'
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+I. Install ROOT:
+
+   Installation is explained extensively on the ROOT website, see:
+   http://root.cern.ch/root/Install.html
+
+   1. get the sources of the latest ROOT from:
+      http://root.cern.ch/root/Version517.html
+      (or: http://root.cern.ch/root/Version516.html)
+
+      Note: you can unzip root locally in any directory, resulting in <path>/root
+
+   2. set ROOTSYS to the `root' directory:
+
+            sh family:
+              export ROOTSYS=<path>/root
+            csh family
+              setenv ROOTSYS <path>/root
+
+   3. now type the build commands:
+
+            all shells:
+              ./configure --help      [optional]
+              ./configure [<arch>]    [e.g. <arch>= linux or macosx]
+              make                    [or, make -j2 for dual CPU machines]
+              make cintdlls           [creates the CINT precompiled headers. Do it once only when starting a new version]
+              make map                [this creates the rootmap file and is essential]
+
+   4. add $ROOTSYS/bin to PATH and $ROOTSYS/lib to LD_LIBRARY_PATH:
+
+            sh family: 
+              export ROOTSYS=<path>/root
+              export PATH=$ROOTSYS/bin:$PATH
+              export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
+              export DYLD_LIBRARY_PATH=$ROOTSYS/lib:$DYLD_LIBRARY_PATH (MacOS X only)
+            csh family:
+              setenv ROOTSYS <path>/root
+              setenv PATH ${ROOTSYS}/bin:${PATH}
+              setenv LD_LIBRARY_PATH ${ROOTSYS}/lib:${LD_LIBRARY_PATH}
+              setenv DYLD_LIBRARY_PATH ${ROOTSYS}/lib:${DYLD_LIBRARY_PATH} (MacOS X only)
+              rehash
+
+            Note: it is best to include above lines in e.g. ".bashrc" or ".bash_profile"
+
+   5. try running root:
+
+            all shells:
+              root
+
+   Note 1: ROOT demos
+   Like R, ROOT contains many examples demonstrating the abilities of ROOT.
+   These examples can be run to test if ROOT has been installed correctly.
+   There are two kind of examples, located in subdirectories tutorials and
+   test, respectively:
+
+   1. tutorials:
+   To test root and try some of its tutorials, do:
+      cd root/tutorials
+      root
+      root [0] .x demos.C
+   For other tutorials, see the README file in the tutorials directory.
+
+   2. tests:
+   Examples in the test subdirectory need to be compiled first:
+      cd root/test
+      make
+      root
+      root [0] gSystem.Load("Tetris")
+      root [1] Tetris t
+   For other tests, see the README file in the test directory.
+   
+   Note 2: Source vs binary
+   In principle, it is also possible to download and install binaries
+   for some architectures. However, this is not recommended, since the
+   sources for package 'xps' depend on the ROOT framework, and probably
+   need to be compiled with the same compiler version as ROOT itself.
+
+   Furthermore, daily versions from ROOT can be downloaded via cvs and
+   should work fine with 'xps', however, the current versions 5.17/02 and
+   5.16/00 have been used to test 'xps' for both Linux Fedora Core 4 and
+   MacOS X.
+
+   Note 3: ROOT fails to compile
+   Like R, the ROOT framework can be installed on many architectures, see
+   the list of supported architectures, when running  "./configure --help".
+   However, ROOT may also compile on a number of other architectures. 
+   In case, the current official source files "root_v5.17.02.source.tar.gz"
+   or "root_v5.16.00.source.tar.gz" fail to compile, you can download the 
+   current development version from cvs by simply typing:
+      cd /my root directory/
+      cvs login
+      [Password: cvs]
+      cvs -z3 checkout root
+      cd root
+   You are now ready to build root.
+   If this still fails and you are still interested to compile ROOT, please
+   contact the RootTalk forum at: http://root.cern.ch/phpBB2/
+   This will help the ROOT developers to eliminate potential problems.
+   
+   Note 4: Can I use ROOT for other purposes?
+   ROOT is a powerful professional C++ framework with many classes,see:
+   http://root.cern.ch/root/doc/RootDoc.html
+   http://root.cern.ch/root/Reference.html
+
+   However, even if you never intend to use any of these classes or not
+   even to use C++, but want to develop your own C functions, as many
+   R developers do, ROOT may be of interest to you, since by typing "root"
+   you start a C/C++ interpreter, which allows you to test your functions
+   without the need to compile them first. Simply create a text file, 
+   called a macro, containing your C functions.
+
+   As an example create a text file "helloROOT.C" (the '.C' extension is
+   important), containing the simple function:
+
+         void hello_root()
+         {
+            cout << "Hello R, welcome to ROOT!" << endl;
+         }
+
+   After starting ROOT, type: ('.L' will load your text file)
+
+         root [0] .L helloROOT.C
+         root [1] hello_root()
+         Hello R, welcome to ROOT!
+         root [2] .q
+
+   When your function works, then you can compile it directly within
+   a ROOT session by typing ".L helloROOT.C+". Adding the '+' will
+   automatically start the compiler and create a shared library.
+   However, in this case you need to include the necessary header
+   files first, in this case "#include <iostream>", then start ROOT:
+
+         root [0] .L helloROOT.C+
+         Info in <TUnixSystem::ACLiC>: creating shared library /Volumes/CoreData/CRAN/./helloROOT_C.so
+         root [1] hello_root()   
+         Hello R, welcome to ROOT!
+         root [2] .q
+
+   For more information, please contact the ROOT User Guide:
+   http://root.cern.ch/root/doc/RootDoc.html
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+II. Install package 'xps' from source
+
+   Currently, xps can be downloaded as gezipped source file "xps_0.3.7.tar.gz"
+   for MacOS X (Intel and PPC) and for Linux
+
+   It can be installed with:
+      R CMD INSTALL xps_0.3.7.tar.gz
+   or e.g. on a Mac in the User library:
+      R CMD INSTALL -l ~/Library/R/library xps_0.3.7.tar.gz
+
+   Tested architectues:
+   Currently, package 'xps' has been built (with R CMD INSTALL) and
+   passed R CMD check with no errors and no warnings on the following computers:
+   1. MacBook Pro Core 2 Duo 2GHz with 2 GB RAM running MacOS X 10.4.8
+      R versions tested: R-2.5.0, R-2.6.0 (2007-06-22 r42030)
+   2. PowerBook Titanium G4 550MHz with 1 GB RAM running MacOS X 10.4.9
+      R versions tested: R-2.5.0, R-2.6.0 (2007-06-22 r42030)
+   3. HP Compaq nx6110 Intel Centrino 1.4 GHz with 512 MB RAM with Fedora Core 4
+      R versions tested: R-2.4.1, R-2.6.0 (2007-07-05 r42133)
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+III. Learning how to use package 'xps'
+
+   The best way to learn how to use package 'xps' is to follow the examples
+   in the enclosed vignette "An Introduction to the xps Package".
+
+   As next step it is recommeded to follow the step-by-step examples in the
+   script "script4xps.R", which is available in the "examples" subdirectory of
+   'xps'. Directory xps/raw contains four CEL-files for chip Test3.CDF, which
+   are used in most of the examples. However, real world examples in this script
+   include a subset of the Affymetrix Exon Array Dataset human Tissues for both 
+   HG-U133_Plus_2 and HuEx-1_0-st-v2 arrays, and for HuGene-1_0-st-v1 arrays.
+   The corresponding CEL-files must be downloaded from the Affymetrix web site.
+
+   Comments regarding the tested architectures:
+   1. MacBook Pro Intel Core 2 Duo 2GHz with 2 GB RAM running MacOS X 10.4.8
+      All examples were tested, including the Affymetrix human mixture
+      dataset for HG-U133_Plus_2 AND HuEx-1_0-st-v2.r2
+
+   2. PowerBook Titanium PowerPC G4 550MHz with 1 GB RAM running MacOS X 10.4.9
+      Most examples were tested, including the Affymetrix human mixture
+      dataset for HG-U133_Plus_2 (HuEx-1_0-st-v2.r2 should also run, as
+      I have tested them earlier, but they are very slow on G4 550 MHz)
+
+   3. HP Compaq nx6110 Intel Centrino 1.4 GHz with 512 MB RAM with Fedora Core 4
+      All examples were tested, including the Affymetrix human mixture
+      dataset for HG-U133_Plus_2  but NOT HuEx-1_0-st-v2.r2.
+      512 MB RAM are simply not enough to work with Exon arrays.
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+

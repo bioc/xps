@@ -1,0 +1,30 @@
+Package: xps
+Version: 0.3.7
+Title: Methods for Affymetrix Oligonucleotide Arrays including Exon Arrays
+Author: Christian Stratowa, Vienna, Austria
+Maintainer: Christian Stratowa <cstrato@aon.at>
+Depends: R (>= 2.5.0), methods
+Description: The package handles the pre-processing and normalization 
+      of Affymetrix GeneChip expression arrays, including GeneChip exon
+      array systems (Exon 1.0 ST) and gene array systems (Gene 1.0 ST). 
+      It is an R wrapper to XPS (eXpression Profiling System), which 
+      is based on ROOT, an object-oriented framework developed at CERN. 
+      Thus, the prior installation of ROOT is a prerequisite for the 
+      usage of this package, see the README file. ROOT is licensed 
+      under LGPL and can be downloaded from <http://root.cern.ch>.
+License: GPL version 2 or newer
+Collate: utils.R TreeSetClasses.R 
+         methods.ProjectInfo.R
+         methods.TreeSet.R methods.SchemeTreeSet.R methods.ProcesSet.R
+         methods.DataTreeSet.R methods.ExprTreeSet.R methods.CallTreeSet.R
+         import.expr.scheme.R import.exon.scheme.R import.genome.scheme.R root.scheme.R
+         import.data.R root.data.R
+         export.R
+         rma.R mas4.R mas5.R mas5.call.R dabg.call.R
+         bgcorrect.R normalize.R summarize.R express.R
+         image.dev.R boxplot.dev.R mvaplot.dev.R
+         root.image.R root.density.R root.draw.R root.draw.leaves.R
+         zzz.R
+biocViews: Microarray, OneChannel, Preprocessing
+LazyLoad: yes
+SystemRequirements: ROOT <http://root.cern.ch>
