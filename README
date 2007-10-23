@@ -60,8 +60,6 @@ I. Install ROOT:
               ./configure --help      [optional]
               ./configure [<arch>]    [e.g. <arch>= linux or macosx]
               make                    [or, make -j2 for dual CPU machines]
-              make cintdlls           [creates the CINT precompiled headers. Do it once only when starting a new version]
-              make map                [this creates the rootmap file and is essential]
 
    4. add $ROOTSYS/bin to PATH and $ROOTSYS/lib to LD_LIBRARY_PATH:
 
@@ -84,7 +82,11 @@ I. Install ROOT:
             all shells:
               root
 
-   Note 1: ROOT demos
+   Note 1: Alternative ROOT installation
+   If you want to install ROOT in a fixed location, not depending on ROOTSYS,
+   please see: http://root.cern.ch/root/Install.html
+
+   Note 2: ROOT demos
    Like R, ROOT contains many examples demonstrating the abilities of ROOT.
    These examples can be run to test if ROOT has been installed correctly.
    There are two kind of examples, located in subdirectories tutorials and
@@ -106,38 +108,34 @@ I. Install ROOT:
       root [1] Tetris t
    For other tests, see the README file in the test directory.
    
-   Note 2: Source vs binary
+   Note 3: Source vs binary
    In principle, it is also possible to download and install binaries
    for some architectures. However, this is not recommended, since the
    sources for package 'xps' depend on the ROOT framework, and probably
    need to be compiled with the same compiler version as ROOT itself.
 
-   Furthermore, daily versions from ROOT can be downloaded via cvs and
+   Furthermore, daily versions from ROOT can be downloaded via svn and
    should work fine with 'xps', however, the current versions 5.17/02 and
    5.16/00 have been used to test 'xps' for both Linux Fedora Core 4 and
    MacOS X.
 
-   Note 3: ROOT fails to compile
+   Note 4: ROOT fails to compile
    Like R, the ROOT framework can be installed on many architectures, see
    the list of supported architectures, when running  "./configure --help".
    However, ROOT may also compile on a number of other architectures. 
    In case, the current official source files "root_v5.17.02.source.tar.gz"
    or "root_v5.16.00.source.tar.gz" fail to compile, you can download the 
-   current development version from cvs by simply typing:
-      cd /my root directory/
-      cvs login
-      [Password: cvs]
-      cvs -z3 checkout root
-      cd root
-   You are now ready to build root.
+   current development version from svn, see:
+      http://root.cern.ch/twiki/bin/view/ROOT/SubversionHowto
+
    If this still fails and you are still interested to compile ROOT, please
    contact the RootTalk forum at: http://root.cern.ch/phpBB2/
    This will help the ROOT developers to eliminate potential problems.
    
-   Note 4: Can I use ROOT for other purposes?
+   Note 5: Can I use ROOT for other purposes?
    ROOT is a powerful professional C++ framework with many classes,see:
-   http://root.cern.ch/root/doc/RootDoc.html
-   http://root.cern.ch/root/Reference.html
+      http://root.cern.ch/root/doc/RootDoc.html
+      http://root.cern.ch/root/Reference.html
 
    However, even if you never intend to use any of these classes or not
    even to use C++, but want to develop your own C functions, as many
@@ -174,30 +172,30 @@ I. Install ROOT:
          root [2] .q
 
    For more information, please contact the ROOT User Guide:
-   http://root.cern.ch/root/doc/RootDoc.html
+      http://root.cern.ch/root/doc/RootDoc.html
 
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 II. Install package 'xps' from source
 
-   Currently, xps can be downloaded as gezipped source file "xps_0.3.7.tar.gz"
+   Currently, xps can be downloaded as gezipped source file "xps_0.3.8.tar.gz"
    for MacOS X (Intel and PPC) and for Linux
 
    It can be installed with:
-      R CMD INSTALL xps_0.3.7.tar.gz
+      R CMD INSTALL xps_0.3.8.tar.gz
    or e.g. on a Mac in the User library:
-      R CMD INSTALL -l ~/Library/R/library xps_0.3.7.tar.gz
+      R CMD INSTALL -l ~/Library/R/library xps_0.3.8.tar.gz
 
    Tested architectues:
    Currently, package 'xps' has been built (with R CMD INSTALL) and
    passed R CMD check with no errors and no warnings on the following computers:
    1. MacBook Pro Core 2 Duo 2GHz with 2 GB RAM running MacOS X 10.4.8
-      R versions tested: R-2.5.0, R-2.6.0 (2007-06-22 r42030)
+      R versions tested: R-2.5.0, R-2.6.0
    2. PowerBook Titanium G4 550MHz with 1 GB RAM running MacOS X 10.4.9
-      R versions tested: R-2.5.0, R-2.6.0 (2007-06-22 r42030)
+      R versions tested: R-2.5.0, R-2.6.0
    3. HP Compaq nx6110 Intel Centrino 1.4 GHz with 512 MB RAM with Fedora Core 4
-      R versions tested: R-2.4.1, R-2.6.0 (2007-07-05 r42133)
+      R versions tested: R-2.4.1, R-2.6.0
 
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -211,8 +209,8 @@ III. Learning how to use package 'xps'
    script "script4xps.R", which is available in the "examples" subdirectory of
    'xps'. Directory xps/raw contains four CEL-files for chip Test3.CDF, which
    are used in most of the examples. However, real world examples in this script
-   include a subset of the Affymetrix Exon Array Dataset human Tissues for both 
-   HG-U133_Plus_2 and HuEx-1_0-st-v2 arrays, and for HuGene-1_0-st-v1 arrays.
+   include a subset of the Affymetrix Exon Array Dataset human Tissues for  
+   HG-U133_Plus_2 arrays, HuEx-1_0-st-v2 arrays and HuGene-1_0-st-v1 arrays.
    The corresponding CEL-files must be downloaded from the Affymetrix web site.
 
    Comments regarding the tested architectures:

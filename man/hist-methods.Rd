@@ -25,11 +25,16 @@ hist(x, which = "", size = 0, transfo = log2, ylab = "density", xlab = "log inte
 }
 \details{
  Plots the non-parametric density estimates using values contained in the columns of 
- slot \code{data}.}
-\author{Christian Stratowa}
-\note{
+ slot \code{data}.
+
  For a \code{\link{DataTreeSet}} object, data must first be attached using method 
  \code{\link{attachInten}}.
+}
+\author{Christian Stratowa}
+\note{
+ For exon array raw data only a limited number of samples can be displayed as density plot due to
+ memory limitations. To display all samples it is proposed to use function \code{\link{root.density}}
+ instead.
 }
 \examples{
 ## load existing ROOT scheme file and ROOT data file

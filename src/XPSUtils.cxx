@@ -1,4 +1,4 @@
-// File created: 11/02/2002                          last modified: 10/16/2007
+// File created: 11/02/2002                          last modified: 10/23/2007
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -1704,7 +1704,7 @@ Int_t XPlot::DrawDensity(const char *canvasname, const char *leafname,
    // Draw density histogram of leafname for all trees listed in fTrees. 
    // logbase can be: 0(linear), log(ln), log10, log2
    // kernel: epanechnikov, gaussian, rectangular, triangular, biweight, cosine
-   // opt: need ot include "A"
+   // opt: must not include "A"
    // npts: size npts should be a power of two, preferably 512 or above
    // Note: If canvas is created by NewCanvas(), set canvasname = "".
    if(kCS) cout << "------XPlot::DrawDensity------" << endl;
@@ -1760,6 +1760,12 @@ Int_t XPlot::DrawDensity(const char *canvasname, const char *leafname,
    Int_t   modms = fMarkerStyles.GetSize();
    Int_t   modmc = fMarkerColors.GetSize();
 
+   Double_t minX  =  DBL_MAX;
+   Double_t minY  =  DBL_MAX;
+   Double_t maxX  = -DBL_MAX;
+   Double_t maxY  = -DBL_MAX;
+   Double_t value =  0;
+
    TTree   *tree  = (TTree*)(fTrees->At(0));
    TLeaf   *leaf  = 0;
    TBranch *brch  = 0;
@@ -1769,7 +1775,6 @@ Int_t XPlot::DrawDensity(const char *canvasname, const char *leafname,
    Int_t entries  = (Int_t)(tree->GetEntries());
 
 // Init local arrays
-   Double_t  value = 0;
    Double_t *index = 0;
    Double_t *arr   = 0;
    Double_t *wght  = 0;
@@ -1785,8 +1790,6 @@ Int_t XPlot::DrawDensity(const char *canvasname, const char *leafname,
    for (Int_t i=0; i<npts;    i++) xden[i] = yden[i] = 0;
 
 // Loop over trees and fill graphs
-   fMinX = fMinY = DBL_MAX;
-   fMaxX = fMaxY = -DBL_MAX;
    for (Int_t i=0; i<numtrees; i++) {
       tree = (TTree*)(fTrees->At(i));
       if (!(leaf = tree->FindLeaf(leafname))) {
@@ -1836,13 +1839,13 @@ Int_t XPlot::DrawDensity(const char *canvasname, const char *leafname,
       graph->SetLineColor(fLineColors.At(lc));
 
       value = TMath::MinElement(npts, xden);
-      fMinX = (fMinX > value) ? value : fMinX;
+      minX = (minX > value) ? value : minX;
       value = TMath::MinElement(npts, yden);
-      fMinY = (fMinY > value) ? value : fMinY;
+      minY = (minY > value) ? value : minY;
       value = TMath::MaxElement(npts, xden);
-      fMaxX = (fMaxX < value) ? value : fMaxX;
+      maxX = (maxX < value) ? value : maxX;
       value = TMath::MaxElement(npts, yden);
-      fMaxY = (fMaxY < value) ? value : fMaxY;
+      maxY = (maxY < value) ? value : maxY;
 
 //      mgraph->Add(graph);
       mgraph->Add(graph, opt);
@@ -1857,8 +1860,7 @@ Int_t XPlot::DrawDensity(const char *canvasname, const char *leafname,
    this->SetTitleY("Density", fSetTitleY, bases[0]);
 
 // Draw frame
-   frame = gPad->DrawFrame(fMinX - 0.2*fMinX, fMinY - 0.2*fMinY, fMaxX + 0.2*fMaxX, fMaxY + 0.2*fMaxY);
-//cout << "fMinX= " << fMinX << "   fMinY= " << fMinY << "   fMaxX= " << fMaxX << "   fMaxY= " << fMaxY << endl;
+   frame = gPad->DrawFrame(minX - 0.2*minX, minY - 0.2*minY, maxX + 0.2*maxX, maxY + 0.2*maxY);
 
    frame->SetTitle(fTitle);
    frame->SetXTitle(fTitleX);
@@ -1866,16 +1868,8 @@ Int_t XPlot::DrawDensity(const char *canvasname, const char *leafname,
    frame->GetXaxis()->CenterTitle(kTRUE);
    frame->GetYaxis()->CenterTitle(kTRUE);
 
-//this->ClearPad(fPadNr);
-
-gPad->Clear();
-
 // Draw multigraph
-//   mgraph->Draw(opt); 
-   mgraph->Draw("A"); 
-
-gPad->Update();
-gPad->Modified();
+   mgraph->Draw(opt); 
 
 // Cleanup
 cleanup:

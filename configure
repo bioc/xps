@@ -272,7 +272,7 @@ PACKAGE_STRING=
 PACKAGE_BUGREPORT=
 
 ac_unique_file="src/rwrapper.cxx"
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP rootfound'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -3150,8 +3150,51 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
+# check if ROOT is installed in fixed location:
+if test -z "${ROOTSYS}"; then
+   # Extract the first word of "root-config --prefix", so it can be a program name with args.
+set dummy root-config --prefix; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_rootfound+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$rootfound"; then
+  ac_cv_prog_rootfound="$rootfound" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_rootfound="yes"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
 
-# are the ROOT PATH variables defined?
+  test -z "$ac_cv_prog_rootfound" && ac_cv_prog_rootfound="no"
+fi
+fi
+rootfound=$ac_cv_prog_rootfound
+if test -n "$rootfound"; then
+  echo "$as_me:$LINENO: result: $rootfound" >&5
+echo "${ECHO_T}$rootfound" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+   if test "$rootfound" = "yes"; then
+       echo "found ROOT version `root-config --version` in directory `root-config --prefix`"
+      exit 0
+   fi
+fi
+
+# else check if ROOT PATH variables are defined:
 # check for ROOTSYS:
 if test -z "${ROOTSYS}"; then
    echo ""
@@ -3168,6 +3211,8 @@ if test -z "${ROOTSYS}"; then
    echo "   Please consult the README file for more information"
    echo ""
    exit 1
+else
+   echo "found ROOT version `root-config --version` in directory `root-config --prefix`"
 fi
 
 # check for LD_LIBRARY_PATH:

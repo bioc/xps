@@ -24,8 +24,16 @@ CFLAGS=`"${R_HOME}/bin/R" CMD config CFLAGS`
 AC_PROG_CPP
 AC_PROG_CC
 
+# check if ROOT is installed in fixed location:
+if test -z "${ROOTSYS}"; then
+   AC_CHECK_PROG(rootfound, [root-config --prefix], yes, no)
+   if test "$rootfound" = "yes"; then
+       echo "found ROOT version `root-config --version` in directory `root-config --prefix`"
+      exit 0
+   fi
+fi
 
-# are the ROOT PATH variables defined?
+# else check if ROOT PATH variables are defined:
 # check for ROOTSYS:
 if test -z "${ROOTSYS}"; then
    echo ""
@@ -42,6 +50,8 @@ if test -z "${ROOTSYS}"; then
    echo "   Please consult the README file for more information"
    echo ""
    exit 1
+else
+   echo "found ROOT version `root-config --version` in directory `root-config --prefix`"
 fi
 
 # check for LD_LIBRARY_PATH:
