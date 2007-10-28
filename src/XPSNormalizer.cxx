@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 09/14/2007
+// File created: 08/05/2002                          last modified: 10/26/2007
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -368,7 +368,7 @@ Int_t XMeanNormalizer::DoNormalize(Int_t nin, const Double_t *xin, const Double_
    }//if
 
    if (XManager::fgVerbose) {
-      cout << "Normalization <Mean>: Scaling factor SF is <" << sf << ">" << endl;
+      cout << "      normalization <Mean>: Scaling factor SF is <" << sf << ">" << endl;
    }//if
 
    for (Int_t i=0; i<nout; i++) {
@@ -448,7 +448,7 @@ Int_t XMedianNormalizer::DoNormalize(Int_t nin, const Double_t *xin, const Doubl
    }//if
 
    if (XManager::fgVerbose) {
-      cout << "Normalization <Median>: Scaling factor SF is <" << sf << ">" << endl;
+      cout << "      normalization <Median>: Scaling factor SF is <" << sf << ">" << endl;
    }//if
 
    for (Int_t i=0; i<nout; i++) {

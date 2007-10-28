@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 10/01/2007
+// File created: 08/05/2002                          last modified: 10/28/2007
 
 // Author: Christian Stratowa 06/18/2000
 
@@ -609,9 +609,9 @@ Int_t XNormedSet::ExportTreeXML(const char *exten, Int_t n, TString *names,
 }//ExportTreeXML
 
 //______________________________________________________________________________
-Int_t XNormedSet::FillExprArray(TTree *tree, Int_t n, Double_t *arr)
+Int_t XNormedSet::FillExprArray(TTree *tree, Int_t n, Int_t *idx, Double_t *arr)
 {
-   // Fill array arr with data from expression tree with name
+   // Fill arrays idx and arr with unitID and data from expression tree with name
    if(kCS) cout << "------XNormedSet::FillExprArray------" << endl;
 
    TBranch *brch = tree->FindBranch("ExprBranch");
@@ -621,6 +621,7 @@ Int_t XNormedSet::FillExprArray(TTree *tree, Int_t n, Double_t *arr)
    brch->SetAddress(&expr);
    for (Int_t i=0; i<n; i++) {
       brch->GetEntry(i);
+      idx[i] = expr->GetUnitID();
       arr[i] = expr->GetLevel();
    }//for_i
 
@@ -628,9 +629,9 @@ Int_t XNormedSet::FillExprArray(TTree *tree, Int_t n, Double_t *arr)
 }//FillExprArray
 
 //______________________________________________________________________________
-Int_t XNormedSet::FillExprTree(const char *name, Int_t n, Double_t *arr)
+Int_t XNormedSet::FillExprTree(const char *name, Int_t n, Int_t *idx, Double_t *arr)
 {
-   // Fill expression tree with array arr and write to file
+   // Fill expression tree with arrays idx and arr and write to file
    if(kCS) cout << "------XNormedSet::FillExprTree------" << endl;
 
    Int_t err = errNoErr;
@@ -656,8 +657,7 @@ Int_t XNormedSet::FillExprTree(const char *name, Int_t n, Double_t *arr)
       if (arr[i] < min) min = arr[i];
       if (arr[i] > max) max = arr[i];
 
-//??? is this safe?? unitID = i??
-      expr->SetUnitID(i); //??
+      expr->SetUnitID(idx[i]);
       expr->SetLevel(arr[i]);
       tree->Fill();
    }//for_i
@@ -774,9 +774,9 @@ Int_t XNormedSet::FillMaskArray(const char *name, Int_t n, Int_t *arr)
 }//FillMaskArray
 
 //______________________________________________________________________________
-Int_t XNormedSet::FillMaskTree(const char *name, Int_t n, Int_t *arr)
+Int_t XNormedSet::FillMaskTree(const char *name, Int_t n, Int_t *idx, Int_t *arr)
 {
-   // Fill mask tree with array arr and write to file
+   // Fill mask tree with arrays idx and arr and write to file
    if(kCS) cout << "------XNormedSet::FillMaskTree------" << endl;
 
    Int_t err = errNoErr;
@@ -799,8 +799,7 @@ Int_t XNormedSet::FillMaskTree(const char *name, Int_t n, Int_t *arr)
       // get minimal/maximal expression levels
       if (arr[i] > 0) nflags++;
 
-//??? is this save?? unitID = i??
-      unit->SetUnitID(i);  //??
+      unit->SetUnitID(idx[i]);
       mask->SetFlag((Short_t)arr[i]);
       tree->Fill();
    }//for_i
@@ -828,9 +827,10 @@ Int_t XNormedSet::FillMaskTree(const char *name, Int_t n, Int_t *arr)
 }//FillMaskTree
 
 //______________________________________________________________________________
-Int_t XNormedSet::MeanReference(Int_t numexpr, TTree **exprtree, Int_t n, Double_t *arr)
+Int_t XNormedSet::MeanReference(Int_t numexpr, TTree **exprtree,
+                  Int_t n, Int_t *idx, Double_t *arr)
 {
-   // Fill array with trimmed mean values from numexpr exprtrees
+   // Fill array arr with trimmed mean values from numexpr exprtrees
    if(kCS) cout << "------XNormedSet::MeanReference------" << endl;
 
    TBranch     *brch[numexpr];
@@ -845,23 +845,37 @@ Int_t XNormedSet::MeanReference(Int_t numexpr, TTree **exprtree, Int_t n, Double
    if (!(arrRef = new (nothrow) Double_t[numexpr])) return errInitMemory; 
 
 // Fill reference array
-   for (Int_t i=0; i<n; i++) {
-      for (Int_t k=0; k<numexpr; k++) {
-         brch[k]->GetEntry(i);
-         arrRef[k] = expr[k]->GetLevel();
-      }//for_j
+   if (numexpr > 1) {
+      for (Int_t i=0; i<n; i++) {
+         brch[0]->GetEntry(i);
+         arrRef[0] = expr[0]->GetLevel();
 
-      arr[i] = TStat::Mean(numexpr, arrRef, fRefTrim);
-   }//for_i
+         for (Int_t k=1; k<numexpr; k++) {
+            brch[k]->GetEntry(i);
+            arrRef[k] = expr[k]->GetLevel();
+         }//for_j
+
+         idx[i] = expr[0]->GetUnitID();
+         arr[i] = TStat::Mean(numexpr, arrRef, fRefTrim);
+      }//for_i
+   } else {
+      for (Int_t i=0; i<n; i++) {
+         brch[0]->GetEntry(i);
+
+         idx[i] = expr[0]->GetUnitID();
+         arr[i] = expr[0]->GetLevel();
+      }//for_i
+   }//if
 
    delete [] arrRef;
    return errNoErr;
 }//MeanReference
 
 //______________________________________________________________________________
-Int_t XNormedSet::MedianReference(Int_t numexpr, TTree **exprtree, Int_t n, Double_t *arr)
+Int_t XNormedSet::MedianReference(Int_t numexpr, TTree **exprtree,
+                  Int_t n, Int_t *idx, Double_t *arr)
 {
-   // Fill array with median values from numexpr exprtrees
+   // Fill array arr with median values from numexpr exprtrees
    if(kCS) cout << "------XNormedSet::MedianReference------" << endl;
 
    TBranch     *brch[numexpr];
@@ -876,14 +890,27 @@ Int_t XNormedSet::MedianReference(Int_t numexpr, TTree **exprtree, Int_t n, Doub
    if (!(arrRef = new (nothrow) Double_t[numexpr])) return errInitMemory; 
 
 // Fill reference array
-   for (Int_t i=0; i<n; i++) {
-      for (Int_t k=0; k<numexpr; k++) {
-         brch[k]->GetEntry(i);
-         arrRef[k] = expr[k]->GetLevel();
-      }//for_j
+   if (numexpr > 1) {
+      for (Int_t i=0; i<n; i++) {
+         brch[0]->GetEntry(i);
+         arrRef[0] = expr[0]->GetLevel();
 
-      arr[i] = TStat::Median(numexpr, arrRef);
-   }//for_i
+         for (Int_t k=1; k<numexpr; k++) {
+            brch[k]->GetEntry(i);
+            arrRef[k] = expr[k]->GetLevel();
+         }//for_j
+
+         idx[i] = expr[0]->GetUnitID();
+         arr[i] = TStat::Median(numexpr, arrRef);
+      }//for_i
+   } else {
+      for (Int_t i=0; i<n; i++) {
+         brch[0]->GetEntry(i);
+
+         idx[i] = expr[0]->GetUnitID();
+         arr[i] = expr[0]->GetLevel();
+      }//for_i
+   }//if
 
    delete [] arrRef;
    return errNoErr;
@@ -932,7 +959,7 @@ Int_t XNormedGCSet::Normalize(const char *method)
 
 // Informing user
    if (XManager::fgVerbose) {
-      cout << "   normalizing data..." << endl;
+      cout << "Normalizing expression data..." << endl;
    }//if
 
 // Change directory
@@ -998,21 +1025,24 @@ Int_t XNormedGCSet::Normalize(const char *method)
 // Initialize local arrays
    Double_t *arrX   = 0;  //to store data of reference tree
    Double_t *arrY   = 0;  //to store data of selected tree
+   Int_t    *arrIdx = 0;  //to store unitIDs
    Int_t    *arrMsk = 0;  //mask, set to 1 if unit is selected
    if (!(arrX   = new (nothrow) Double_t[entries])) {err = errInitMemory; goto cleanup;}
    if (!(arrY   = new (nothrow) Double_t[entries])) {err = errInitMemory; goto cleanup;}
+   if (!(arrIdx = new (nothrow) Int_t[entries]))    {err = errInitMemory; goto cleanup;}
    if (!(arrMsk = new (nothrow) Int_t[entries]))    {err = errInitMemory; goto cleanup;}
 
    for (Int_t i=0; i<entries; i++) {
       arrX[i]   = 0;
       arrY[i]   = 0;
+      arrIdx[i] = 0;
       arrMsk[i] = 1;  //?? if selector type = none
    }//for_i
 
 // Compute reference array(s) arrX
    if (strcmp(fNormalizer->GetName(), "quantile") == 0) {
       for (Int_t k=0; k<numsels; k++) {
-         if ((err = FillExprArray(seltree[k], entries, arrX))) goto cleanup;
+         if ((err = FillExprArray(seltree[k], entries, arrIdx, arrX))) goto cleanup;
 
          treename = seltree[k]->GetName();
          if ((err = fNormalizer->AddArray(entries, arrX, arrMsk, treename))) goto cleanup;
@@ -1020,20 +1050,20 @@ Int_t XNormedGCSet::Normalize(const char *method)
    } else if (numrefs == 1) {
       refstr = new TObjString(reftree[0]->GetName());
 
-      if ((err = FillExprArray(reftree[0], entries, arrX))) goto cleanup;
+      if ((err = FillExprArray(reftree[0], entries, arrIdx, arrX))) goto cleanup;
 
       refname  = reftree[0]->GetName();
       treename = refname + "." + fNormalizer->GetTitle();
-      if ((err = FillExprTree(treename, entries, arrX))) goto cleanup;
+      if ((err = FillExprTree(treename, entries, arrIdx, arrX))) goto cleanup;
    } else if (numrefs > 1) {
       if (strcmp(fRefOpt.Data(), "mean") == 0) {
-         if ((err = MeanReference(numrefs, reftree, entries, arrX))) goto cleanup;
+         if ((err = MeanReference(numrefs, reftree, entries, arrIdx, arrX))) goto cleanup;
       } else if (strcmp(fRefOpt.Data(), "median") == 0) {
-         if ((err = MedianReference(numrefs, reftree, entries, arrX))) goto cleanup;
+         if ((err = MedianReference(numrefs, reftree, entries, arrIdx, arrX))) goto cleanup;
       }//if
 
       treename = TString(kReference) + "." + TString(fNormalizer->GetTitle());
-      if ((err = FillExprTree(treename.Data(), entries, arrX))) goto cleanup;
+      if ((err = FillExprTree(treename.Data(), entries, arrIdx, arrX))) goto cleanup;
 
       // add reference tree to selections list
       Select(kReference, 1);
@@ -1067,10 +1097,10 @@ Int_t XNormedGCSet::Normalize(const char *method)
          if (arrY == 0) {err = errAbort; goto cleanup;}
 
          treename = name + "." + fNormalizer->GetTitle();
-         if ((err = FillExprTree(treename.Data(), entries, arrY))) break;
+         if ((err = FillExprTree(treename.Data(), entries, arrIdx, arrY))) break;
 
          treename = name + "." + fSelector->GetTitle();
-         if ((err = FillMaskTree(treename.Data(), entries, arrMsk))) break;
+         if ((err = FillMaskTree(treename.Data(), entries, arrIdx, arrMsk))) break;
       }//for_k
 //////////////////////
 //PROBLEM: default selector option = "all" or "none"
@@ -1103,17 +1133,17 @@ Int_t XNormedGCSet::Normalize(const char *method)
             }//if
          }//if
 
-         if ((err = FillExprArray(seltree[k], entries, arrY))) break;
+         if ((err = FillExprArray(seltree[k], entries, arrIdx, arrY))) break;
 
          // select non-variant units and fill mask tree
          if ((err = fSelector->Calculate(entries, arrX, arrY, arrMsk))) break;
          treename = selname + "." + fSelector->GetTitle();
-         if ((err = FillMaskTree(treename.Data(), entries, arrMsk))) break;
+         if ((err = FillMaskTree(treename.Data(), entries, arrIdx, arrMsk))) break;
 
          // normalize expression levels arrY and fill expression tree
          if ((err = fNormalizer->Calculate(entries, arrX, arrY, arrMsk))) break;
          treename = selname + "." + fNormalizer->GetTitle();
-         if ((err = FillExprTree(treename.Data(), entries, arrY))) break;
+         if ((err = FillExprTree(treename.Data(), entries, arrIdx, arrY))) break;
       }//for_k
    } else if ((strcmp(fSelector->GetName(),   "rank")     == 0) &&
               (strcmp(fSelector->GetOption(), "together") == 0)) {
@@ -1125,13 +1155,13 @@ Int_t XNormedGCSet::Normalize(const char *method)
 
          if (strcmp(selname.Data(),refstr->GetName()) == 0) continue;
 
-         if ((err = FillExprArray(seltree[k], entries, arrY))) break;
+         if ((err = FillExprArray(seltree[k], entries, arrIdx, arrY))) break;
 
          // select non-variant units and fill mask tree
          if ((err = fSelector->Calculate(entries, arrX, arrY, arrMsk))) break;
 
          treename = selname + "." + fSelector->GetTitle();
-         if ((err = FillMaskTree(treename.Data(), entries, arrMsk))) break;
+         if ((err = FillMaskTree(treename.Data(), entries, arrIdx, arrMsk))) break;
       }//for_k
       if (err != errNoErr) goto cleanup;
 
@@ -1162,24 +1192,24 @@ Int_t XNormedGCSet::Normalize(const char *method)
          if (strcmp(selname.Data(),refstr->GetName()) == 0) {
             if (!((strcmp(fNormalizer->GetName(),"mean")   == 0) ||
                   (strcmp(fNormalizer->GetName(),"median") == 0))) {
-               if ((err = FillExprTree(treename.Data(), entries, arrX))) break;
+               if ((err = FillExprTree(treename.Data(), entries, arrIdx, arrX))) break;
                continue;
             }//if
          }//if
 
-         if ((err = FillExprArray(seltree[k], entries, arrY))) break;
+         if ((err = FillExprArray(seltree[k], entries, arrIdx, arrY))) break;
 
          // normalize expression levels arrY and fill expression tree
          if ((err = fNormalizer->Calculate(entries, arrX, arrY, arrMsk))) break;
 
          treename = selname + "." + fNormalizer->GetTitle();
-         if ((err = FillExprTree(treename.Data(), entries, arrY))) break;
+         if ((err = FillExprTree(treename.Data(), entries, arrIdx, arrY))) break;
       }//for_k
    } else if (strcmp(fSelector->GetName(), "user") == 0) {
    // User-defined mask imported for all pairs [arrX,arrY] to be normalized
       if ((err = fSelector->Calculate(entries, 0, 0, arrMsk))) goto cleanup;
       treename = Path2Name(fSelector->GetOption(),"/",".") + "." + fSelector->GetTitle();
-      if ((err = FillMaskTree(treename.Data(), entries, arrMsk))) goto cleanup;
+      if ((err = FillMaskTree(treename.Data(), entries, arrIdx, arrMsk))) goto cleanup;
 
       // normalize data and store as trees
       for (Int_t k=0; k<numsels; k++) {
@@ -1195,18 +1225,18 @@ Int_t XNormedGCSet::Normalize(const char *method)
             if (!((strcmp(fNormalizer->GetName(),"mean")   == 0) ||
                   (strcmp(fNormalizer->GetName(),"median") == 0))) {
 //?? FillExprTree second time->overwrite!! need to delete first entry in fHeaders!!
-               if ((err = FillExprTree(treename.Data(), entries, arrX))) break;
+               if ((err = FillExprTree(treename.Data(), entries, arrIdx, arrX))) break;
                continue;
             }//if
          }//if
 
-         if ((err = FillExprArray(seltree[k], entries, arrY))) break;
+         if ((err = FillExprArray(seltree[k], entries, arrIdx, arrY))) break;
 
          // normalize expression levels arrY and fill expression tree
          if ((err = fNormalizer->Calculate(entries, arrX, arrY, arrMsk))) break;
 
          treename = selname + "." + fNormalizer->GetTitle();
-         if ((err = FillExprTree(treename.Data(), entries, arrY))) break;
+         if ((err = FillExprTree(treename.Data(), entries, arrIdx, arrY))) break;
       }//for_k
 //PROBLEM: masktree title must be fSchemeName!! ev. here;
 //??      if ((err = this->FillMaskTree(treename.Data(), entries, arrMsk))) goto cleanup;
@@ -1221,6 +1251,7 @@ Int_t XNormedGCSet::Normalize(const char *method)
 cleanup:
    SafeDelete(refstr);
    delete [] arrMsk;
+   delete [] arrIdx;
    delete [] arrY;
    delete [] arrX;
 

@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 09/19/2007
+// File created: 08/05/2002                          last modified: 10/27/2007
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -135,12 +135,12 @@ class XNormedSet: public XProcesSet {
       virtual Int_t ExportTreeXML(const char *exten, Int_t n, TString *names,  
                        const char *varlist, ofstream &output, const char *sep);
 
-      Int_t FillExprArray(TTree *tree, Int_t n, Double_t *arr);
-      Int_t FillExprTree(const char *name, Int_t n, Double_t *arr);
+      Int_t FillExprArray(TTree *tree, Int_t n, Int_t *idx, Double_t *arr);
+      Int_t FillExprTree(const char *name, Int_t n, Int_t *idx, Double_t *arr);
       Int_t FillMaskArray(const char *name, Int_t n, Int_t *arr);
-      Int_t FillMaskTree(const char *name, Int_t n, Int_t *arr);
-      Int_t MeanReference(Int_t numexpr, TTree **exprtree, Int_t n, Double_t *arr);
-      Int_t MedianReference(Int_t numexpr, TTree **exprtree, Int_t n, Double_t *arr);
+      Int_t FillMaskTree(const char *name, Int_t n, Int_t *idx, Int_t *arr);
+      Int_t MeanReference(Int_t numexpr, TTree **exprtree, Int_t n, Int_t *idx, Double_t *arr);
+      Int_t MedianReference(Int_t numexpr, TTree **exprtree, Int_t n, Int_t *idx, Double_t *arr);
 
    public:
       XNormedSet();

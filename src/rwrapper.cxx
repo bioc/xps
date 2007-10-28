@@ -976,6 +976,11 @@ void Normalize(char **filename, char **dirname, char **chiptype,
       r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *level);
    }//if
    r += manager->InitAlgorithm("normalizer",type[0],option[0],tmpfile, *npar,p0,p1);
+//NEED TO TEST:
+   if (strcmp(type[0], "lowess") == 0 || strcmp(type[0], "supsmu") == 0) {
+      r += manager->InitAlgorithm("normalizer", "approx", "linear:mean", "", 2, 0.0, 0.0);
+   }//if
+
 
 // open root scheme file
    r += manager->OpenSchemes(schemefile[0]);

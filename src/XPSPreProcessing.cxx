@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 10/12/2007
+// File created: 08/05/2002                          last modified: 10/28/2007
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -1423,6 +1423,11 @@ Int_t XGCProcesSet::Preprocess(const char *method)
       err = errAbort; goto cleanup;
    }//if
 
+// Informing user
+   if (XManager::fgVerbose) {
+      cout << "   preprocessing finished." << endl;
+   }//if
+
 // Cleanup
 cleanup:
    SafeDelete(fSchemes);
@@ -1442,6 +1447,11 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
    // Note: Parameter numbgrd will be set to numbgrd=0 to prevent further use
    //       of externally added bgrdtrees, since datatrees are already corrected!
    if(kCS) cout << "------XGCProcesSet::AdjustBackground------" << endl;
+
+// Informing user
+   if (XManager::fgVerbose) {
+      cout << "   Background correcting raw data..." << endl;
+   }//if
 
    Int_t err   = errNoErr;
    Int_t split = 99;
@@ -1474,7 +1484,7 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
 
    // Informing user
       if (XManager::fgVerbose) {
-         cout << "   Calculating background for <" << datatree[k]->GetName() << ">..."
+         cout << "      calculating background for <" << datatree[k]->GetName() << ">..."
               << endl;
       }//if
 
@@ -1677,6 +1687,11 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
    //       to avoid background subtraction in method Express()
    if(kCS) cout << "------XGCProcesSet::Normalize------" << endl;
 
+// Informing user
+   if (XManager::fgVerbose) {
+      cout << "   Normalizing raw data..." << endl;
+   }//if
+
    Int_t err = errNoErr;
 
    TString treename;
@@ -1805,7 +1820,7 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
 
    // informing user
    if (XManager::fgVerbose) {
-      cout << "   Normalizing data using method <" << fNormalizer->GetName() << ">..." << endl;
+      cout << "      normalizing data using method <" << fNormalizer->GetName() << ">..." << endl;
    }//if
 
 // Compute reference arrays
@@ -1828,7 +1843,7 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
 
          // informing user
          if (XManager::fgVerbose) {
-            cout << "      filling array <" << treename << ">..." << endl;
+            cout << "         filling array <" << treename << ">..." << endl;
          }//if
 
          err = this->FillDataArrays(datatree[k], bgrdtree[k], doBg,
@@ -1845,7 +1860,7 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
 //////////
       // informing user
       if (XManager::fgVerbose) {
-         cout << "      filling array <" << datatree[refid]->GetName() << ">..." << endl;
+         cout << "         filling array <" << datatree[refid]->GetName() << ">..." << endl;
       }//if
 
       err = this->FillDataArrays(datatree[refid], bgrdtree[refid], doBg,
@@ -1859,7 +1874,7 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
    } else if (numrefs > 1) {
       // informing user
       if (XManager::fgVerbose) {
-         cout << "      filling array <" << kReference << ">..." << endl;
+         cout << "         filling array <" << kReference << ">..." << endl;
       }//if
 
       TTree *rbgtree[numrefs];
@@ -1941,7 +1956,7 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
 
          // informing user
          if (XManager::fgVerbose) {
-            cout << "      filling tree <" << (treename + "." + exten) << ">..." << endl;
+            cout << "         filling tree <" << (treename + "." + exten) << ">..." << endl;
          }//if
 
          arrInty = fNormalizer->GetArray(size, arrInty, arrMask, treename);
@@ -2068,6 +2083,11 @@ Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
    //       number of entries (i.e. belong to different chip types)
    if(kCS) cout << "------XGCProcesSet::DetectCall------" << endl;
 
+// Informing user
+   if (XManager::fgVerbose) {
+      cout << "   Calculating detection calls..." << endl;
+   }//if
+
    Int_t err= errNoErr;
 
    fFile->cd();
@@ -2111,7 +2131,7 @@ Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
    // Informing user
       TString name = datatree[k]->GetName();
       if (XManager::fgVerbose) {
-         cout << "   Calculating present call for <" << name << ">..." << endl;
+         cout << "      calculating present call for <" << name << ">..." << endl;
       }//if
 
    // Get tree info for datatree name.exten
@@ -3921,7 +3941,7 @@ Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 
 // Informing user
    if (XManager::fgVerbose) {
-      cout << "      Summarizing with medianpolish..." << endl;
+      cout << "      summarizing with medianpolish..." << endl;
    }//if
 
 //TEST Benchmark
@@ -4272,7 +4292,7 @@ Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 
 // Informing user
    if (XManager::fgVerbose) {
-      cout << "      Summarizing with medianpolish (using temporary file)..." << endl;
+      cout << "      summarizing with medianpolish (using temporary file)..." << endl;
    }//if
 
 //TEST
@@ -4682,6 +4702,11 @@ Int_t XGenomeProcesSet::DetectCall(Int_t numdata, TTree **datatree,
    //       number of entries (i.e. belong to different chip types)
    if(kCS) cout << "------XGenomeProcesSet::DetectCall------" << endl;
 
+// Informing user
+   if (XManager::fgVerbose) {
+      cout << "   Calculating detection calls..." << endl;
+   }//if
+
    Int_t err = errNoErr;
 
    fFile->cd();
@@ -4715,7 +4740,7 @@ Int_t XGenomeProcesSet::DetectCall(Int_t numdata, TTree **datatree,
    // Informing user
       TString name = datatree[k]->GetName();
       if (XManager::fgVerbose) {
-         cout << "   Calculating present call for <" << name << ">..." << endl;
+         cout << "      calculating present call for <" << name << ">..." << endl;
       }//if
 
    // Get tree info for datatree
@@ -5089,7 +5114,7 @@ Int_t XGenomeProcesSet::DoExpress(Int_t numdata, TTree **datatree,
    // Informing user
       TString name = datatree[k]->GetName();
       if (XManager::fgVerbose) {
-         cout << "      Summarizing <" << name << "> using <" << fExpressor->GetName()
+         cout << "      summarizing <" << name << "> using <" << fExpressor->GetName()
               << ">..." << endl;
       }//if
 
@@ -5379,7 +5404,7 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 
 // Informing user
    if (XManager::fgVerbose) {
-      cout << "      Summarizing with medianpolish..." << endl;
+      cout << "      summarizing with medianpolish..." << endl;
    }//if
 
 //TEST Benchmark
@@ -5762,7 +5787,7 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 
 // Informing user
    if (XManager::fgVerbose) {
-      cout << "      Summarizing with medianpolish (using temporary file)..." << endl;
+      cout << "      summarizing with medianpolish (using temporary file)..." << endl;
    }//if
 
 //TEST Benchmark
@@ -6712,6 +6737,11 @@ Int_t XExonProcesSet::DetectCall(Int_t numdata, TTree **datatree,
    //       number of entries (i.e. belong to different chip types)
    if(kCS) cout << "------XExonProcesSet::DetectCall------" << endl;
 
+// Informing user
+   if (XManager::fgVerbose) {
+      cout << "   Calculating detection calls..." << endl;
+   }//if
+
    Int_t err = errNoErr;
 
    fFile->cd();
@@ -6745,7 +6775,7 @@ Int_t XExonProcesSet::DetectCall(Int_t numdata, TTree **datatree,
    // Informing user
       TString name = datatree[k]->GetName();
       if (XManager::fgVerbose) {
-         cout << "   Calculating present call for <" << name << ">..." << endl;
+         cout << "      calculating present call for <" << name << ">..." << endl;
       }//if
 
    // Get tree info for datatree
@@ -7139,7 +7169,7 @@ Int_t XExonProcesSet::DoExpress(Int_t numdata, TTree **datatree,
    // Informing user
       TString name = datatree[k]->GetName();
       if (XManager::fgVerbose) {
-         cout << "      Summarizing <" << name << "> using <" << fExpressor->GetName()
+         cout << "      summarizing <" << name << "> using <" << fExpressor->GetName()
               << ">..." << endl;
       }//if
 
@@ -7446,7 +7476,7 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 
 // Informing user
    if (XManager::fgVerbose) {
-      cout << "      Summarizing with medianpolish..." << endl;
+      cout << "      summarizing with medianpolish..." << endl;
    }//if
 
 //TEST Benchmark
@@ -7841,7 +7871,7 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 
 // Informing user
    if (XManager::fgVerbose) {
-      cout << "      Summarizing with medianpolish (using temporary file)..." << endl;
+      cout << "      summarizing with medianpolish (using temporary file)..." << endl;
    }//if
 
 //TEST Benchmark

@@ -24,11 +24,10 @@ function(x,
    }#if
 
    ## add ROOT directory in rootfile and select leafname
+   treename <- paste(setName(x), treename, sep="/");
    if (is (x, "DataTreeSet")) {
-      treename <- paste("DataSet", treename, sep="/");
       leafname <- "fInten";
    } else if (is (x, "ExprTreeSet")) {
-      treename <- paste("PreprocesSet", treename, sep="/");
       leafname <- "fLevel";
    } else {
       stop(paste(sQuote("x"), "must be  class <DataTreeSet,ExprTreeSet>"));
