@@ -40,7 +40,47 @@ export(object, ...)
   Export data from classes \code{\link{SchemeTreeSet}}, \code{\link{DataTreeSet}},
  \code{\link{ExprTreeSet}}, or \code{\link{CallTreeSet}} to \code{outfile}.
 
-\code{export} is a generic method to export data from \code{\link{ROOT}} trees as text file.
+ Parameter \code{varlist} lists the parameters to export: \cr
+ - parameters are separated by ":", e.g. \code{varlist="fInten:fStdev"}. \cr
+ - for \code{varlist="*"} all valid parameters will be exported.
+
+ For class \code{DataTreeSet} the following \code{varlist} parameters are valid:
+ \tabular{lll}{
+  \tab \code{fInten}:\tab intensities from e.g. tree.cel. \cr
+  \tab \code{fStdev}:\tab standard deviation from e.g. tree.cel. \cr
+  \tab \code{fNPixels}:\tab number of pixels from e.g. tree.cel. \cr
+  \tab \code{fBg}:\tab background values (background trees only).
+ }
+ For classes \code{ExprTreeSet} and \code{CallTreeSet} \code{varlist} can contain annotation
+ parameters and parameters of the resulting data. \cr
+  Following \code{varlist} annotation parameters are valid:
+ \tabular{lll}{
+  \tab \code{fUnitName}:\tab unit name (probeset ID). \cr
+  \tab \code{fTranscriptID}:\tab transcript_id (probeset ID). \cr
+  \tab \code{fName}:\tab gene name. \cr
+  \tab \code{fSymbol}:\tab gene symbol. \cr
+  \tab \code{fAccession}:\tab mRNA accession such as Refseq ID. \cr
+  \tab \code{fEntrezID}:\tab entrez ID. \cr
+  \tab \code{fChromosome}:\tab chromosome. \cr
+  \tab \code{fStart}:\tab start position. \cr
+  \tab \code{fStop}:\tab stop position. \cr
+  \tab \code{fStrand}:\tab strand on chromosome. \cr
+  \tab \code{fCytoBand}:\tab cytoband.
+ }
+  Following \code{varlist} parameters are valid for \code{ExprTreeSet}:
+ \tabular{lll}{
+  \tab \code{fLevel}:\tab expression level. \cr
+  \tab \code{fStdev}:\tab standard deviation. \cr
+  \tab \code{fNPairs}:\tab number of pairs.
+ }
+  Following \code{varlist} parameters are valid for \code{CallTreeSet}:
+ \tabular{lll}{
+  \tab \code{fCall}:\tab detection call. \cr
+  \tab \code{fPValue}:\tab detection p-value.
+ }
+ An example: \code{varlist="fUnitName:fName:fSymbol:fLevel:fStdev:fEntrezID"}
+
+ \code{export} is a generic method to export data from \code{\link{ROOT}} trees as text file.
 }
 \value{
 If \code{as.dataframe} is \code{TRUE}, the data will be imported into the

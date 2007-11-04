@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 10/28/2007
+// File created: 08/05/2002                          last modified: 10/30/2007
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -2643,51 +2643,75 @@ Int_t XGCProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
    if(kCS) cout << "------XGCProcesSet::ExportExprTrees------" << endl;
 
 // Decompose varlist
-   Bool_t hasUnit   = kFALSE;
-   Bool_t hasName   = kFALSE;
-   Bool_t hasSymbol = kFALSE;
-   Bool_t hasCyto   = kFALSE;
-   Bool_t hasAnnot  = kFALSE;
-   Bool_t hasLevel  = kFALSE;
-   Bool_t hasStdev  = kFALSE;
-   Bool_t hasNPairs = kFALSE;
-////////////////
-//TO DO
-//fTranscriptID
-//fAccession
-//fEntrezID
-//fChromosome
-//fStart
-//fStop
-//fStrand
-////////////////
+   Short_t hasUnit   = 0;  //unit name
+   Short_t hasTrans  = 0;  //transcript_id
+   Short_t hasName   = 0;  //gene name
+   Short_t hasSymbol = 0;  //gene symbol
+   Short_t hasAccess = 0;  //mRNA accession
+   Short_t hasEntrez = 0;  //entrez ID
+   Short_t hasChromo = 0;  //chromosome
+   Short_t hasStart  = 0;  //start position
+   Short_t hasStop   = 0;  //stop position
+   Short_t hasStrand = 0;  //strand
+   Short_t hasCyto   = 0;  //cytoband
+   Short_t hasLevel  = 0;  //expression level
+   Short_t hasStdev  = 0;  //standard deviation
+   Short_t hasNPairs = 0;  //number of pairs
 
+   Short_t hasAnnot  = 0;  //annotation
+   Short_t hasData   = 0;  //data
+
+   Short_t idx = 0;
    if (strcmp(varlist,"*")  == 0) {
-      hasUnit   = kTRUE;
-      hasName   = kTRUE;
-      hasSymbol = kTRUE;
-      hasCyto   = kTRUE;
-      hasLevel  = kTRUE;
-      hasStdev  = kTRUE;
-      hasNPairs = kTRUE;
+      hasUnit   = ++idx;
+      hasTrans  = ++idx;
+      hasName   = ++idx;
+      hasSymbol = ++idx;
+      hasAccess = ++idx;
+      hasEntrez = ++idx;
+      hasChromo = ++idx;
+      hasStart  = ++idx;
+      hasStop   = ++idx;
+      hasStrand = ++idx;
+      hasCyto   = ++idx;
+      hasLevel  = ++idx;
+      hasStdev  = ++idx;
+      hasNPairs = ++idx;
    } else {
       char *name  = new char[strlen(varlist) + 1];
       char *dname = name;
       name = strtok(strcpy(name,varlist),":");
       while(name) {
-         if (strcmp(name,"fUnitName") == 0) {hasUnit   = kTRUE;}
-         if (strcmp(name,"fName")     == 0) {hasName   = kTRUE;}
-         if (strcmp(name,"fSymbol")   == 0) {hasSymbol = kTRUE;}
-         if (strcmp(name,"fCytoBand") == 0) {hasCyto   = kTRUE;}
-         if (strcmp(name,"fLevel")    == 0) {hasLevel  = kTRUE;}
-         if (strcmp(name,"fStdev")    == 0) {hasStdev  = kTRUE;}
-         if (strcmp(name,"fNPairs")   == 0) {hasNPairs = kTRUE;}
+         if (strcmp(name,"fUnitName")     == 0) {hasUnit   = ++idx;}
+         if (strcmp(name,"fTranscriptID") == 0) {hasTrans  = ++idx;}
+         if (strcmp(name,"fName")         == 0) {hasName   = ++idx;}
+         if (strcmp(name,"fSymbol")       == 0) {hasSymbol = ++idx;}
+         if (strcmp(name,"fAccession")    == 0) {hasAccess = ++idx;}
+         if (strcmp(name,"fEntrezID")     == 0) {hasEntrez = ++idx;}
+         if (strcmp(name,"fChromosome")   == 0) {hasChromo = ++idx;}
+         if (strcmp(name,"fStart")        == 0) {hasStart  = ++idx;}
+         if (strcmp(name,"fStop")         == 0) {hasStop   = ++idx;}
+         if (strcmp(name,"fStrand")       == 0) {hasStrand = ++idx;}
+         if (strcmp(name,"fCytoBand")     == 0) {hasCyto   = ++idx;}
+         if (strcmp(name,"fLevel")        == 0) {hasLevel  = ++idx;}
+         if (strcmp(name,"fStdev")        == 0) {hasStdev  = ++idx;}
+         if (strcmp(name,"fNPairs")       == 0) {hasNPairs = ++idx;}
          name = strtok(NULL, ":");
          if (name == 0) break;
       }//while
       delete [] dname;
    }//if
-   hasAnnot = (hasName || hasSymbol || hasCyto);
+
+   // check for presence of at least one annotation variable
+   hasAnnot = (hasTrans + hasName  + hasSymbol + hasAccess + hasEntrez
+            + hasChromo + hasStart + hasStop   + hasStrand + hasCyto);
+   // check for presence of at least one of fLevel, fStdev, fNPairs
+   hasData = (hasStdev > 0 
+           ? (hasStdev <= hasNPairs ? hasStdev : (hasNPairs > 0 ? hasNPairs : hasStdev))
+           : hasNPairs);
+   hasData = (hasLevel > 0 
+           ? (hasLevel <= hasData ? hasLevel : (hasData > 0 ? hasData : hasLevel))
+           : hasData);
 
 // Get trees
    TTree       *tree[n];
@@ -2719,8 +2743,8 @@ Int_t XGCProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
    } else if (!fSchemeName.Contains(tree[0]->GetTitle())) {
       cerr << "Error: Scheme <" << fSchemeName << "> is not derived from <"
            << tree[0]->GetTitle() << ">." << endl;
-      hasUnit  = kFALSE;
-      hasAnnot = kFALSE;
+      hasUnit  = 0;
+      hasAnnot = 0;
    }//if
 
 // If scheme file is present get unit tree
@@ -2762,18 +2786,18 @@ Int_t XGCProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
             } else {
                cout << "Warning: Missing annotation, gene info not exported."
                     << endl;
-               hasAnnot = kFALSE;
+               hasAnnot = 0;
             }//if
          }//if
       } else {
          cerr << "Error: Could not find scheme <" << fSchemeName << ">." << endl;
-         hasUnit  = kFALSE;
-         hasAnnot = kFALSE;
+         hasUnit  = 0;
+         hasAnnot = 0;
       }//if
    } else if (hasUnit || hasAnnot) {
       cout << "Warning: Missing scheme file, unit names not exported." << endl;
-      hasUnit  = kFALSE;
-      hasAnnot = kFALSE;
+      hasUnit  = 0;
+      hasAnnot = 0;
    }//if
 
 ////////////
@@ -2787,58 +2811,82 @@ Int_t XGCProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
               << "> is not equal to number of units <" << numgenes << ">." << endl;
 //?         cout << "         Unit data will not be exported." << endl;
       }//if
-//?      hasUnit  = kFALSE;
-//?      hasAnnot = kFALSE;
+//?      hasUnit  = 0;
+//?      hasAnnot = 0;
    }//if
 
 // Output header
    output << "UNIT_ID";
-   if (hasUnit)      output << sep << "UNIT_NAME";
-   if (hasAnnot) {
-      if (hasName)   output << sep << "GENE_NAME";
-      if (hasSymbol) output << sep << "GENE_SYMBOL";
-      if (hasCyto)   output << sep << "CYTOBAND";
-   }//if
-   if (n == 1) {
-      if (hasLevel)  output << sep << "LEVEL";
-      if (hasStdev)  output << sep << "STDEV";
-      if (hasNPairs) output << sep << "NUMBER_PAIRS";
-   } else {
-      for (Int_t k=0; k<n; k++) {
-         if (hasLevel)  output << sep << (names[k] + "_LEVEL");
-         if (hasStdev)  output << sep << (names[k] + "_STDEV");
-         if (hasNPairs) output << sep << (names[k] + "_NUMBER_PAIRS");
-      }//for_k
-   }//if
+   for (Short_t j=1; j<=idx; j++) {
+      if (hasUnit == j) output << sep << "UnitName";
+
+      if (hasAnnot > 0) {
+         if (hasTrans  == j) output << sep << "ProbesetID";
+         if (hasName   == j) output << sep << "GeneName";
+         if (hasSymbol == j) output << sep << "GeneSymbol";
+         if (hasAccess == j) output << sep << "GeneAccession";
+         if (hasEntrez == j) output << sep << "EntrezID";
+         if (hasChromo == j) output << sep << "Chromosome";
+         if (hasStart  == j) output << sep << "Start";
+         if (hasStop   == j) output << sep << "Stop";
+         if (hasStrand == j) output << sep << "Strand";
+         if (hasCyto   == j) output << sep << "Cytoband";
+      }//if
+
+      if (hasData == j) {
+         if (n == 1) {
+            if (hasLevel)  output << sep << "LEVEL";
+            if (hasStdev)  output << sep << "STDEV";
+            if (hasNPairs) output << sep << "NUMBER_PAIRS";
+         } else {
+            for (Int_t k=0; k<n; k++) {
+               if (hasLevel)  output << sep << (names[k] + "_LEVEL");
+               if (hasStdev)  output << sep << (names[k] + "_STDEV");
+               if (hasNPairs) output << sep << (names[k] + "_NUMBER_PAIRS");
+            }//for_k
+         }//if
+      }//if
+   }//for_j
    output << endl;
 
 // Loop over tree entries and trees
    for (Int_t i=0; i<entries; i++) {
-      for (Int_t k=0; k<n; k++) {
-         tree[k]->GetEntry(i);
+      tree[0]->GetEntry(i);
+
+      Int_t unitID = expr[0]->GetUnitID();
+      output << unitID;
+
+      for (Short_t j=1; j<=idx; j++) {
+         // export unitname
+         if (hasUnit == j) {
+            unittree->GetEntry(unitID + numctrls); //unit names for genes only
+            output << sep << unit->GetUnitName();
+         }//if
 
          // export annotation
-         if (k == 0) {
-            Int_t unitID = expr[k]->GetUnitID();
-            output << unitID;
-
-            if (hasUnit) {
-               unittree->GetEntry(unitID + numctrls); //unit names for genes only
-               output << sep << unit->GetUnitName();
-            }//if
-
-            if (hasAnnot) {
-               anntree->GetEntry(unitID + numctrls);
-               if (hasName)   output << sep << annot->GetName();
-               if (hasSymbol) output << sep << annot->GetSymbol();
-               if (hasCyto)   output << sep << annot->GetCytoBand();
-            }//if
+         if (hasAnnot > 0) {
+            anntree->GetEntry(unitID);
+            if (hasTrans  == j) output << sep << annot->GetTranscriptID();
+            if (hasName   == j) output << sep << annot->GetName();
+            if (hasSymbol == j) output << sep << annot->GetSymbol();
+            if (hasAccess == j) output << sep << annot->GetAccession();
+            if (hasEntrez == j) output << sep << annot->GetEntrezID();
+            if (hasChromo == j) output << sep << annot->GetChromosome();
+            if (hasStart  == j) output << sep << annot->GetStart();
+            if (hasStop   == j) output << sep << annot->GetStop();
+            if (hasStrand == j) output << sep << annot->GetStrand();
+            if (hasCyto   == j) output << sep << annot->GetCytoBand();
          }//if
 
          // export data
-         if (hasLevel)  output << sep << expr[k]->GetLevel();
-         if (hasStdev)  output << sep << ((XGCExpression*)expr[k])->GetStdev();
-         if (hasNPairs) output << sep << ((XGCExpression*)expr[k])->GetNumPairs();
+         if (hasData == j) {
+            for (Int_t k=0; k<n; k++) {
+               tree[k]->GetEntry(i);
+               if (hasLevel)  output << sep << expr[k]->GetLevel();
+               if (hasStdev)  output << sep << ((XGCExpression*)expr[k])->GetStdev();
+               if (hasNPairs) output << sep << ((XGCExpression*)expr[k])->GetNumPairs();
+            }//for_k
+         }//if
       }//for_j
       output << endl;
    }//for_i
@@ -2860,48 +2908,69 @@ Int_t XGCProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varlist
    if(kCS) cout << "------XGCProcesSet::ExportCallTrees------" << endl;
 
 // Decompose varlist
-   Bool_t hasUnit   = kFALSE;
-   Bool_t hasName   = kFALSE;
-   Bool_t hasSymbol = kFALSE;
-   Bool_t hasCyto   = kFALSE;
-   Bool_t hasAnnot  = kFALSE;
-   Bool_t hasCall   = kFALSE;
-   Bool_t hasPVal   = kFALSE;
-////////////////
-//TO DO
-//fTranscriptID
-//fAccession
-//fEntrezID
-//fChromosome
-//fStart
-//fStop
-//fStrand
-////////////////
+   Short_t hasUnit   = 0;  //unit name
+   Short_t hasTrans  = 0;  //transcript_id
+   Short_t hasName   = 0;  //gene name
+   Short_t hasSymbol = 0;  //gens symbol
+   Short_t hasAccess = 0;  //mRNA accession
+   Short_t hasEntrez = 0;  //entrez ID
+   Short_t hasChromo = 0;  //chromosome
+   Short_t hasStart  = 0;  //start position
+   Short_t hasStop   = 0;  //stop position
+   Short_t hasStrand = 0;  //strand
+   Short_t hasCyto   = 0;  //cytoband
+   Short_t hasCall   = 0;  //detection call
+   Short_t hasPVal   = 0;  //detection p-value
 
+   Short_t hasAnnot  = 0;  //annotation
+   Short_t hasData   = 0;  //data
+
+   Short_t idx = 0;
    if (strcmp(varlist,"*")  == 0) {
-      hasUnit   = kTRUE;
-      hasName   = kTRUE;
-      hasSymbol = kTRUE;
-      hasCyto   = kTRUE;
-      hasCall   = kTRUE;
-      hasPVal   = kTRUE;
+      hasUnit   = ++idx;
+      hasTrans  = ++idx;
+      hasName   = ++idx;
+      hasSymbol = ++idx;
+      hasAccess = ++idx;
+      hasEntrez = ++idx;
+      hasChromo = ++idx;
+      hasStart  = ++idx;
+      hasStop   = ++idx;
+      hasStrand = ++idx;
+      hasCyto   = ++idx;
+      hasCall   = ++idx;
+      hasPVal   = ++idx;
    } else {
       char *name  = new char[strlen(varlist) + 1];
       char *dname = name;
       name = strtok(strcpy(name,varlist),":");
       while (name) {
-         if (strcmp(name,"fUnitName") == 0) {hasUnit   = kTRUE;}
-         if (strcmp(name,"fName")     == 0) {hasName   = kTRUE;}
-         if (strcmp(name,"fSymbol")   == 0) {hasSymbol = kTRUE;}
-         if (strcmp(name,"fCytoBand") == 0) {hasCyto   = kTRUE;}
-         if (strcmp(name,"fCall")     == 0) {hasCall   = kTRUE;}
-         if (strcmp(name,"fPValue")   == 0) {hasPVal   = kTRUE;}
+         if (strcmp(name,"fUnitName")     == 0) {hasUnit   = ++idx;}
+         if (strcmp(name,"fTranscriptID") == 0) {hasTrans  = ++idx;}
+         if (strcmp(name,"fName")         == 0) {hasName   = ++idx;}
+         if (strcmp(name,"fSymbol")       == 0) {hasSymbol = ++idx;}
+         if (strcmp(name,"fAccession")    == 0) {hasAccess = ++idx;}
+         if (strcmp(name,"fEntrezID")     == 0) {hasEntrez = ++idx;}
+         if (strcmp(name,"fChromosome")   == 0) {hasChromo = ++idx;}
+         if (strcmp(name,"fStart")        == 0) {hasStart  = ++idx;}
+         if (strcmp(name,"fStop")         == 0) {hasStop   = ++idx;}
+         if (strcmp(name,"fStrand")       == 0) {hasStrand = ++idx;}
+         if (strcmp(name,"fCytoBand")     == 0) {hasCyto   = ++idx;}
+         if (strcmp(name,"fCall")         == 0) {hasCall   = ++idx;}
+         if (strcmp(name,"fPValue")       == 0) {hasPVal   = ++idx;}
          name = strtok(NULL, ":");
          if (name == 0) break;
       }//while
       delete [] dname;
    }//if
-   hasAnnot = (hasName || hasSymbol || hasCyto);
+
+   // check for presence of at least one annotation variable
+   hasAnnot = (hasTrans + hasName  + hasSymbol + hasAccess + hasEntrez
+            + hasChromo + hasStart + hasStop   + hasStrand + hasCyto);
+   // check for presence of at least one of fCall, fPValue
+   hasData = (hasCall > 0 
+           ? (hasCall <= hasPVal ? hasCall : (hasPVal > 0 ? hasPVal : hasCall))
+           : hasPVal);
 
 // Get trees
    TTree  *tree[n];
@@ -2932,8 +3001,8 @@ Int_t XGCProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varlist
    } else if (!fSchemeName.Contains(tree[0]->GetTitle())) {
       cerr << "Error: Scheme <" << fSchemeName << "> is not derived from <"
            << tree[0]->GetTitle() << ">." << endl;
-      hasUnit  = kFALSE;
-      hasAnnot = kFALSE;
+      hasUnit  = 0;
+      hasAnnot = 0;
    }//if
 
 // If scheme file is present get unit tree
@@ -2975,18 +3044,18 @@ Int_t XGCProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varlist
             } else {
                cout << "Warning: Missing annotation, gene info not exported."
                     << endl;
-               hasAnnot = kFALSE;
+               hasAnnot = 0;
             }//if
          }//if
       } else {
          cerr << "Error: Could not find scheme <" << fSchemeName << ">." << endl;
-         hasUnit  = kFALSE;
-         hasAnnot = kFALSE;
+         hasUnit  = 0;
+         hasAnnot = 0;
       }//if
    } else if (hasUnit || hasAnnot) {
       cout << "Warning: Missing scheme file, unit names not exported." << endl;
-      hasUnit  = kFALSE;
-      hasAnnot = kFALSE;
+      hasUnit  = 0;
+      hasAnnot = 0;
    }//if
 
 ////////////
@@ -3000,67 +3069,91 @@ Int_t XGCProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varlist
               << "> is not equal to number of units <" << numgenes << ">" << endl;
 //?         cout << "         Unit data will not be exported." << endl;
       }//if
-//?      hasUnit  = kFALSE;
-//?      hasAnnot = kFALSE;
+//?      hasUnit  = 0;
+//?      hasAnnot = 0;
    }//if
 
 // Output header
    output << "UNIT_ID";
-   if (hasUnit)      output << sep << "UNIT_NAME";
-   if (hasAnnot) {
-      if (hasName)   output << sep << "GENE_NAME";
-      if (hasSymbol) output << sep << "GENE_SYMBOL";
-      if (hasCyto)   output << sep << "CYTOBAND";
-   }//if
-   if (n == 1) {
-      if (hasCall)   output << sep << "CALL";
-      if (hasPVal)   output << sep << "PVALUE";
-   } else {
-      for (Int_t i=0; i<n; i++) {
-         if (hasCall)  output << sep << (names[i] + "_CALL");
-         if (hasPVal)  output << sep << (names[i] + "_PVALUE");
-      }//for_i
-   }//if
+   for (Short_t j=1; j<=idx; j++) {
+      if (hasUnit == j) output << sep << "UnitName";
+
+      if (hasAnnot > 0) {
+         if (hasTrans  == j) output << sep << "ProbesetID";
+         if (hasName   == j) output << sep << "GeneName";
+         if (hasSymbol == j) output << sep << "GeneSymbol";
+         if (hasAccess == j) output << sep << "GeneAccession";
+         if (hasEntrez == j) output << sep << "EntrezID";
+         if (hasChromo == j) output << sep << "Chromosome";
+         if (hasStart  == j) output << sep << "Start";
+         if (hasStop   == j) output << sep << "Stop";
+         if (hasStrand == j) output << sep << "Strand";
+         if (hasCyto   == j) output << sep << "Cytoband";
+      }//if
+
+      if (hasData == j) {
+         if (n == 1) {
+            if (hasCall)  output << sep << "CALL";
+            if (hasPVal)  output << sep << "PVALUE";
+         } else {
+            for (Int_t k=0; k<n; k++) {
+               if (hasCall)  output << sep << (names[k] + "_CALL");
+               if (hasPVal)  output << sep << (names[k] + "_PVALUE");
+            }//for_k
+         }//if
+      }//if
+   }//for_j
    output << endl;
 
 // Loop over tree entries and tree branches
    for (Int_t i=0; i<entries; i++) {
-      for (Int_t k=0; k<n; k++) {
-         tree[k]->GetEntry(i);
+      tree[0]->GetEntry(i);
+
+      Int_t unitID = call[0]->GetUnitID();
+      output << unitID;
+
+      for (Short_t j=1; j<=idx; j++) {
+         // export unitname
+         if (hasUnit == j) {
+            unittree->GetEntry(unitID + numctrls); //unit names for genes only
+            output << sep << unit->GetUnitName();
+         }//if
 
          // export annotation
-         if (k == 0) {
-            Int_t unitID = call[k]->GetUnitID();
-            output << unitID;
-
-            if (hasUnit) {
-               unittree->GetEntry(unitID + numctrls); //unit names for genes only
-               output << sep << unit->GetUnitName();
-            }//if
-
-            if (hasAnnot) {
-               anntree->GetEntry(unitID + numctrls);
-               if (hasName)   output << sep << annot->GetName();
-               if (hasSymbol) output << sep << annot->GetSymbol();
-               if (hasCyto)   output << sep << annot->GetCytoBand();
-            }//if
+         if (hasAnnot > 0) {
+            anntree->GetEntry(unitID);
+            if (hasTrans  == j) output << sep << annot->GetTranscriptID();
+            if (hasName   == j) output << sep << annot->GetName();
+            if (hasSymbol == j) output << sep << annot->GetSymbol();
+            if (hasAccess == j) output << sep << annot->GetAccession();
+            if (hasEntrez == j) output << sep << annot->GetEntrezID();
+            if (hasChromo == j) output << sep << annot->GetChromosome();
+            if (hasStart  == j) output << sep << annot->GetStart();
+            if (hasStop   == j) output << sep << annot->GetStop();
+            if (hasStrand == j) output << sep << annot->GetStrand();
+            if (hasCyto   == j) output << sep << annot->GetCytoBand();
          }//if
 
          // export data
-         if (hasCall) {
-            Int_t cl = call[k]->GetCall();
-            char *ch = "NA";
-            if      (cl == 2) ch = "P";
-            else if (cl == 0) ch = "A";
-            else if (cl == 1) ch = "M";
-            output << sep << ch;
-         }//if
+         if (hasData == j) {
+            for (Int_t k=0; k<n; k++) {
+               tree[k]->GetEntry(i);
 
-         if (hasPVal) {
-            output << sep << call[k]->GetPValue();
+               if (hasCall) {
+                  Int_t cl = call[k]->GetCall();
+                  char *ch = "NA";
+                  if      (cl == 2) ch = "P";
+                  else if (cl == 0) ch = "A";
+                  else if (cl == 1) ch = "M";
+                  output << sep << ch;
+               }//if
+
+               if (hasPVal) {
+                  output << sep << call[k]->GetPValue();
+               }//if
+            }//for_k
          }//if
       }//for_j
-
       output << endl;
    }//for_i
 
@@ -6190,51 +6283,75 @@ Int_t XGenomeProcesSet::ExportExprTrees(Int_t n, TString *names, const char *var
    Int_t err = errNoErr;
 
 // Decompose varlist
-   Bool_t hasUnit   = kFALSE;
-   Bool_t hasName   = kFALSE;
-   Bool_t hasSymbol = kFALSE;
-   Bool_t hasCyto   = kFALSE;
-   Bool_t hasAnnot  = kFALSE;
-   Bool_t hasLevel  = kFALSE;
-   Bool_t hasStdev  = kFALSE;
-   Bool_t hasNAtoms = kFALSE;
-////////////////
-//TO DO
-//fTranscriptID
-//fAccession
-//fEntrezID
-//fChromosome
-//fStart
-//fStop
-//fStrand
-////////////////
+   Short_t hasUnit   = 0;  //unit name
+   Short_t hasTrans  = 0;  //transcript_id
+   Short_t hasName   = 0;  //gene name
+   Short_t hasSymbol = 0;  //gens symbol
+   Short_t hasAccess = 0;  //mRNA accession
+   Short_t hasEntrez = 0;  //entrez ID
+   Short_t hasChromo = 0;  //chromosome
+   Short_t hasStart  = 0;  //start position
+   Short_t hasStop   = 0;  //stop position
+   Short_t hasStrand = 0;  //strand
+   Short_t hasCyto   = 0;  //cytoband
+   Short_t hasLevel  = 0;  //expression level
+   Short_t hasStdev  = 0;  //standard deviation
+   Short_t hasNPairs = 0;  //number of pairs
 
+   Short_t hasAnnot  = 0;  //annotation
+   Short_t hasData   = 0;  //data
+
+   Short_t idx = 0;
    if (strcmp(varlist,"*")  == 0) {
-      hasUnit   = kTRUE;
-      hasName   = kTRUE;
-      hasSymbol = kTRUE;
-      hasCyto   = kTRUE;
-      hasLevel  = kTRUE;
-      hasStdev  = kTRUE;
-      hasNAtoms = kTRUE;
+      hasUnit   = ++idx;
+      hasTrans  = ++idx;
+      hasName   = ++idx;
+      hasSymbol = ++idx;
+      hasAccess = ++idx;
+      hasEntrez = ++idx;
+      hasChromo = ++idx;
+      hasStart  = ++idx;
+      hasStop   = ++idx;
+      hasStrand = ++idx;
+      hasCyto   = ++idx;
+      hasLevel  = ++idx;
+      hasStdev  = ++idx;
+      hasNPairs = ++idx;
    } else {
       char *name  = new char[strlen(varlist) + 1];
       char *dname = name;
       name = strtok(strcpy(name,varlist),":");
       while(name) {
-         if (strcmp(name,"fUnitName") == 0) {hasUnit   = kTRUE;}
-         if (strcmp(name,"fName")     == 0) {hasName   = kTRUE;}
-         if (strcmp(name,"fSymbol")   == 0) {hasSymbol = kTRUE;}
-         if (strcmp(name,"fCytoBand") == 0) {hasCyto   = kTRUE;}
-         if (strcmp(name,"fLevel")    == 0) {hasLevel  = kTRUE;}
-         if (strcmp(name,"fStdev")    == 0) {hasStdev  = kTRUE;}
-         if (strcmp(name,"fNPairs")   == 0) {hasNAtoms = kTRUE;}
+         if (strcmp(name,"fUnitName")     == 0) {hasUnit   = ++idx;}
+         if (strcmp(name,"fTranscriptID") == 0) {hasTrans  = ++idx;}
+         if (strcmp(name,"fName")         == 0) {hasName   = ++idx;}
+         if (strcmp(name,"fSymbol")       == 0) {hasSymbol = ++idx;}
+         if (strcmp(name,"fAccession")    == 0) {hasAccess = ++idx;}
+         if (strcmp(name,"fEntrezID")     == 0) {hasEntrez = ++idx;}
+         if (strcmp(name,"fChromosome")   == 0) {hasChromo = ++idx;}
+         if (strcmp(name,"fStart")        == 0) {hasStart  = ++idx;}
+         if (strcmp(name,"fStop")         == 0) {hasStop   = ++idx;}
+         if (strcmp(name,"fStrand")       == 0) {hasStrand = ++idx;}
+         if (strcmp(name,"fCytoBand")     == 0) {hasCyto   = ++idx;}
+         if (strcmp(name,"fLevel")        == 0) {hasLevel  = ++idx;}
+         if (strcmp(name,"fStdev")        == 0) {hasStdev  = ++idx;}
+         if (strcmp(name,"fNPairs")       == 0) {hasNPairs = ++idx;}
          name = strtok(NULL, ":");
          if (name == 0) break;
       }//while
       delete [] dname;
    }//if
-   hasAnnot = (hasName || hasSymbol || hasCyto);
+
+   // check for presence of at least one annotation variable
+   hasAnnot = (hasTrans + hasName  + hasSymbol + hasAccess + hasEntrez
+            + hasChromo + hasStart + hasStop   + hasStrand + hasCyto);
+   // check for presence of at least one of fLevel, fStdev, fNPairs
+   hasData = (hasStdev > 0 
+           ? (hasStdev <= hasNPairs ? hasStdev : (hasNPairs > 0 ? hasNPairs : hasStdev))
+           : hasNPairs);
+   hasData = (hasLevel > 0 
+           ? (hasLevel <= hasData ? hasLevel : (hasData > 0 ? hasData : hasLevel))
+           : hasData);
 
 // Get trees
    TTree       *tree[n];
@@ -6317,70 +6434,101 @@ Int_t XGenomeProcesSet::ExportExprTrees(Int_t n, TString *names, const char *var
 
 // Output header
    output << "UNIT_ID";
-   if (hasUnit)      output << sep << "UNIT_NAME";
-   if (hasAnnot) {
-      if (hasName)   output << sep << "GENE_NAME";
-      if (hasSymbol) output << sep << "GENE_SYMBOL";
-      if (hasCyto)   output << sep << "CYTOBAND";
-   }//if
-   if (n == 1) {
-      if (hasLevel)  output << sep << "LEVEL";
-      if (hasStdev)  output << sep << "STDEV";
-      if (hasNAtoms) output << sep << "NUMBER_ATOMS";
-   } else {
-      for (Int_t k=0; k<n; k++) {
-         if (hasLevel)  output << sep << (names[k] + "_LEVEL");
-         if (hasStdev)  output << sep << (names[k] + "_STDEV");
-         if (hasNAtoms) output << sep << (names[k] + "_NUMBER_ATOMS");
-      }//for_k
-   }//if
+   for (Short_t j=1; j<=idx; j++) {
+      if (hasUnit == j) output << sep << "UnitName";
+
+      if (hasAnnot > 0) {
+         if (hasTrans  == j) output << sep << "ProbesetID";
+         if (hasName   == j) output << sep << "GeneName";
+         if (hasSymbol == j) output << sep << "GeneSymbol";
+         if (hasAccess == j) output << sep << "GeneAccession";
+         if (hasEntrez == j) output << sep << "EntrezID";
+         if (hasChromo == j) output << sep << "Chromosome";
+         if (hasStart  == j) output << sep << "Start";
+         if (hasStop   == j) output << sep << "Stop";
+         if (hasStrand == j) output << sep << "Strand";
+         if (hasCyto   == j) output << sep << "Cytoband";
+      }//if
+
+      if (hasData == j) {
+         if (n == 1) {
+            if (hasLevel)  output << sep << "LEVEL";
+            if (hasStdev)  output << sep << "STDEV";
+            if (hasNPairs) output << sep << "NUMBER_PAIRS";
+         } else {
+            for (Int_t k=0; k<n; k++) {
+               if (hasLevel)  output << sep << (names[k] + "_LEVEL");
+               if (hasStdev)  output << sep << (names[k] + "_STDEV");
+               if (hasNPairs) output << sep << (names[k] + "_NUMBER_PAIRS");
+            }//for_k
+         }//if
+      }//if
+   }//for_j
    output << endl;
 
 // Loop over tree entries and trees
-   Int_t idx = 0;
+   Int_t index = 0;
    Int_t entries = (Int_t)(tree[0]->GetEntries());
    for (Int_t i=0; i<entries; i++) {
-      for (Int_t k=0; k<n; k++) {
-         tree[k]->GetEntry(i);
+      tree[0]->GetEntry(i);
+
+      Int_t unitID = expr[0]->GetUnitID();
+      output << unitID;
+
+      unittree->GetEntry(index++);
+      while (unitID != unit->GetUnitID()) {
+         if (index == numunits) {
+           cerr << "Error: UnitID <" << unitID << "> not found." << endl;
+           err = errAbort; goto cleanup;
+         }//if
+
+         unittree->GetEntry(index++);
+      }//while
+
+      for (Short_t j=1; j<=idx; j++) {
+         // export unitname
+         if (hasUnit == j) {
+            output << sep << unit->GetUnitName();
+         }//if
 
          // export annotation
-         if (k == 0) {
-            Int_t unitID = expr[k]->GetUnitID();
-            output << unitID;
-
-            unittree->GetEntry(idx++);
-            while (unitID != unit->GetUnitID()) {
-               if (idx == numunits) {
-                 cerr << "Error: UnitID <" << unitID << "> not found." << endl;
-                 err = errAbort; goto cleanup;
-               }//if
-
-               unittree->GetEntry(idx++);
-            }//while
-
-            if (hasUnit) {
-               output << sep << unit->GetUnitName();
-            }//if
-
-            if (hasAnnot) {
-               idxstr = (XIdxString*)(htable->FindObject(unit->GetUnitName()));
-               if (idxstr) {
-                  anntree->GetEntry(idxstr->GetIndex());
-                  if (hasName)   output << sep << annot->GetName();
-                  if (hasSymbol) output << sep << annot->GetSymbol();
-                  if (hasCyto)   output << sep << annot->GetCytoBand();
-               } else {
-                  if (hasName)   output << sep << "NA";
-                  if (hasSymbol) output << sep << "NA";
-                  if (hasCyto)   output << sep << "NA";
-               }//if
+         if (hasAnnot > 0) {
+            idxstr = (XIdxString*)(htable->FindObject(unit->GetUnitName()));
+            if (idxstr) {
+               anntree->GetEntry(idxstr->GetIndex());
+               if (hasTrans  == j) output << sep << annot->GetTranscriptID();
+               if (hasName   == j) output << sep << annot->GetName();
+               if (hasSymbol == j) output << sep << annot->GetSymbol();
+               if (hasAccess == j) output << sep << annot->GetAccession();
+               if (hasEntrez == j) output << sep << annot->GetEntrezID();
+               if (hasChromo == j) output << sep << annot->GetChromosome();
+               if (hasStart  == j) output << sep << annot->GetStart();
+               if (hasStop   == j) output << sep << annot->GetStop();
+               if (hasStrand == j) output << sep << annot->GetStrand();
+               if (hasCyto   == j) output << sep << annot->GetCytoBand();
+            } else {
+               if (hasTrans  == j) output << sep << "NA";
+               if (hasName   == j) output << sep << "NA";
+               if (hasSymbol == j) output << sep << "NA";
+               if (hasAccess == j) output << sep << "NA";
+               if (hasEntrez == j) output << sep << "NA";
+               if (hasChromo == j) output << sep << "NA";
+               if (hasStart  == j) output << sep << "-1";
+               if (hasStop   == j) output << sep << "-1";
+               if (hasStrand == j) output << sep << "?";
+               if (hasCyto   == j) output << sep << "NA";
             }//if
          }//if
 
          // export data
-         if (hasLevel)  output << sep << expr[k]->GetLevel();
-         if (hasStdev)  output << sep << ((XGCExpression*)expr[k])->GetStdev();
-         if (hasNAtoms) output << sep << ((XGCExpression*)expr[k])->GetNumPairs();
+         if (hasData == j) {
+            for (Int_t k=0; k<n; k++) {
+               tree[k]->GetEntry(i);
+               if (hasLevel)  output << sep << expr[k]->GetLevel();
+               if (hasStdev)  output << sep << ((XGCExpression*)expr[k])->GetStdev();
+               if (hasNPairs) output << sep << ((XGCExpression*)expr[k])->GetNumPairs();
+            }//for_k
+         }//if
       }//for_j
       output << endl;
    }//for_i
@@ -6406,48 +6554,69 @@ Int_t XGenomeProcesSet::ExportCallTrees(Int_t n, TString *names, const char *var
    Int_t err = errNoErr;
 
 // Decompose varlist
-   Bool_t hasUnit   = kFALSE;
-   Bool_t hasName   = kFALSE;
-   Bool_t hasSymbol = kFALSE;
-   Bool_t hasCyto   = kFALSE;
-   Bool_t hasAnnot  = kFALSE;
-   Bool_t hasCall   = kFALSE;
-   Bool_t hasPVal   = kFALSE;
-////////////////
-//TO DO
-//fTranscriptID
-//fAccession
-//fEntrezID
-//fChromosome
-//fStart
-//fStop
-//fStrand
-////////////////
+   Short_t hasUnit   = 0;  //unit name
+   Short_t hasTrans  = 0;  //transcript_id
+   Short_t hasName   = 0;  //gene name
+   Short_t hasSymbol = 0;  //gens symbol
+   Short_t hasAccess = 0;  //mRNA accession
+   Short_t hasEntrez = 0;  //entrez ID
+   Short_t hasChromo = 0;  //chromosome
+   Short_t hasStart  = 0;  //start position
+   Short_t hasStop   = 0;  //stop position
+   Short_t hasStrand = 0;  //strand
+   Short_t hasCyto   = 0;  //cytoband
+   Short_t hasCall   = 0;  //detection call
+   Short_t hasPVal   = 0;  //detection p-value
 
+   Short_t hasAnnot  = 0;  //annotation
+   Short_t hasData   = 0;  //data
+
+   Short_t idx = 0;
    if (strcmp(varlist,"*")  == 0) {
-      hasUnit   = kTRUE;
-      hasName   = kTRUE;
-      hasSymbol = kTRUE;
-      hasCyto   = kTRUE;
-      hasCall   = kTRUE;
-      hasPVal   = kTRUE;
+      hasUnit   = ++idx;
+      hasTrans  = ++idx;
+      hasName   = ++idx;
+      hasSymbol = ++idx;
+      hasAccess = ++idx;
+      hasEntrez = ++idx;
+      hasChromo = ++idx;
+      hasStart  = ++idx;
+      hasStop   = ++idx;
+      hasStrand = ++idx;
+      hasCyto   = ++idx;
+      hasCall   = ++idx;
+      hasPVal   = ++idx;
    } else {
       char *name  = new char[strlen(varlist) + 1];
       char *dname = name;
       name = strtok(strcpy(name,varlist),":");
       while(name) {
-         if (strcmp(name,"fUnitName") == 0) {hasUnit   = kTRUE;}
-         if (strcmp(name,"fName")     == 0) {hasName   = kTRUE;}
-         if (strcmp(name,"fSymbol")   == 0) {hasSymbol = kTRUE;}
-         if (strcmp(name,"fCytoBand") == 0) {hasCyto   = kTRUE;}
-         if (strcmp(name,"fCall")     == 0) {hasCall   = kTRUE;}
-         if (strcmp(name,"fPValue")   == 0) {hasPVal   = kTRUE;}
+         if (strcmp(name,"fUnitName")     == 0) {hasUnit   = ++idx;}
+         if (strcmp(name,"fTranscriptID") == 0) {hasTrans  = ++idx;}
+         if (strcmp(name,"fName")         == 0) {hasName   = ++idx;}
+         if (strcmp(name,"fSymbol")       == 0) {hasSymbol = ++idx;}
+         if (strcmp(name,"fAccession")    == 0) {hasAccess = ++idx;}
+         if (strcmp(name,"fEntrezID")     == 0) {hasEntrez = ++idx;}
+         if (strcmp(name,"fChromosome")   == 0) {hasChromo = ++idx;}
+         if (strcmp(name,"fStart")        == 0) {hasStart  = ++idx;}
+         if (strcmp(name,"fStop")         == 0) {hasStop   = ++idx;}
+         if (strcmp(name,"fStrand")       == 0) {hasStrand = ++idx;}
+         if (strcmp(name,"fCytoBand")     == 0) {hasCyto   = ++idx;}
+         if (strcmp(name,"fCall")         == 0) {hasCall   = ++idx;}
+         if (strcmp(name,"fPValue")       == 0) {hasPVal   = ++idx;}
          name = strtok(NULL, ":");
          if (name == 0) break;
       }//while
       delete [] dname;
    }//if
-   hasAnnot = (hasName || hasSymbol || hasCyto);
+
+   // check for presence of at least one annotation variable
+   hasAnnot = (hasTrans + hasName  + hasSymbol + hasAccess + hasEntrez
+            + hasChromo + hasStart + hasStop   + hasStrand + hasCyto);
+   // check for presence of at least one of fCall, fPValue
+   hasData = (hasCall > 0 
+           ? (hasCall <= hasPVal ? hasCall : (hasPVal > 0 ? hasPVal : hasCall))
+           : hasPVal);
 
 // Get trees
    TTree  *tree[n];
@@ -6530,76 +6699,108 @@ Int_t XGenomeProcesSet::ExportCallTrees(Int_t n, TString *names, const char *var
 
 // Output header
    output << "UNIT_ID";
-   if (hasUnit)      output << sep << "UNIT_NAME";
-   if (hasAnnot) {
-      if (hasName)   output << sep << "GENE_NAME";
-      if (hasSymbol) output << sep << "GENE_SYMBOL";
-      if (hasCyto)   output << sep << "CYTOBAND";
-   }//if
-   if (n == 1) {
-      if (hasCall)   output << sep << "CALL";
-      if (hasPVal)   output << sep << "PVALUE";
-   } else {
-      for (Int_t k=0; k<n; k++) {
-         if (hasCall)  output << sep << (names[k] + "_CALL");
-         if (hasPVal)  output << sep << (names[k] + "_PVALUE");
-      }//for_k
-   }//if
+   for (Short_t j=1; j<=idx; j++) {
+      if (hasUnit == j) output << sep << "UnitName";
+
+      if (hasAnnot > 0) {
+         if (hasTrans  == j) output << sep << "ProbesetID";
+         if (hasName   == j) output << sep << "GeneName";
+         if (hasSymbol == j) output << sep << "GeneSymbol";
+         if (hasAccess == j) output << sep << "GeneAccession";
+         if (hasEntrez == j) output << sep << "EntrezID";
+         if (hasChromo == j) output << sep << "Chromosome";
+         if (hasStart  == j) output << sep << "Start";
+         if (hasStop   == j) output << sep << "Stop";
+         if (hasStrand == j) output << sep << "Strand";
+         if (hasCyto   == j) output << sep << "Cytoband";
+      }//if
+
+      if (hasData == j) {
+         if (n == 1) {
+            if (hasCall) output << sep << "CALL";
+            if (hasPVal) output << sep << "PVALUE";
+         } else {
+            for (Int_t k=0; k<n; k++) {
+               if (hasCall) output << sep << (names[k] + "_CALL");
+               if (hasPVal) output << sep << (names[k] + "_PVALUE");
+            }//for_k
+         }//if
+      }//if
+   }//for_j
    output << endl;
 
 // Loop over tree entries and trees
-   Int_t idx = 0;
+   Int_t index = 0;
    Int_t entries = (Int_t)(tree[0]->GetEntries());
    for (Int_t i=0; i<entries; i++) {
-      for (Int_t k=0; k<n; k++) {
-         tree[k]->GetEntry(i);
+      tree[0]->GetEntry(i);
+
+      Int_t unitID = call[0]->GetUnitID();
+      output << unitID;
+
+      unittree->GetEntry(index++);
+      while (unitID != unit->GetUnitID()) {
+         if (index == numunits) {
+           cerr << "Error: UnitID <" << unitID << "> not found." << endl;
+           err = errAbort; goto cleanup;
+         }//if
+
+         unittree->GetEntry(index++);
+      }//while
+
+      for (Short_t j=1; j<=idx; j++) {
+         // export unitname
+         if (hasUnit == j) {
+            output << sep << unit->GetUnitName();
+         }//if
 
          // export annotation
-         if (k == 0) {
-            Int_t unitID = call[k]->GetUnitID();
-            output << unitID;
-
-            unittree->GetEntry(idx++);
-            while (unitID != unit->GetUnitID()) {
-               if (idx == numunits) {
-                 cerr << "Error: UnitID <" << unitID << "> not found." << endl;
-                 err = errAbort; goto cleanup;
-               }//if
-
-               unittree->GetEntry(idx++);
-            }//while
-
-            if (hasUnit) {
-               output << sep << unit->GetUnitName();
-            }//if
-
-            if (hasAnnot) {
-               idxstr = (XIdxString*)(htable->FindObject(unit->GetUnitName()));
-               if (idxstr) {
-                  anntree->GetEntry(idxstr->GetIndex());
-                  if (hasName)   output << sep << annot->GetName();
-                  if (hasSymbol) output << sep << annot->GetSymbol();
-                  if (hasCyto)   output << sep << annot->GetCytoBand();
-               } else {
-                  if (hasName)   output << sep << "NA";
-                  if (hasSymbol) output << sep << "NA";
-                  if (hasCyto)   output << sep << "NA";
-               }//if
+         if (hasAnnot > 0) {
+            idxstr = (XIdxString*)(htable->FindObject(unit->GetUnitName()));
+            if (idxstr) {
+               anntree->GetEntry(idxstr->GetIndex());
+               if (hasTrans  == j) output << sep << annot->GetTranscriptID();
+               if (hasName   == j) output << sep << annot->GetName();
+               if (hasSymbol == j) output << sep << annot->GetSymbol();
+               if (hasAccess == j) output << sep << annot->GetAccession();
+               if (hasEntrez == j) output << sep << annot->GetEntrezID();
+               if (hasChromo == j) output << sep << annot->GetChromosome();
+               if (hasStart  == j) output << sep << annot->GetStart();
+               if (hasStop   == j) output << sep << annot->GetStop();
+               if (hasStrand == j) output << sep << annot->GetStrand();
+               if (hasCyto   == j) output << sep << annot->GetCytoBand();
+            } else {
+               if (hasTrans  == j) output << sep << "NA";
+               if (hasName   == j) output << sep << "NA";
+               if (hasSymbol == j) output << sep << "NA";
+               if (hasAccess == j) output << sep << "NA";
+               if (hasEntrez == j) output << sep << "NA";
+               if (hasChromo == j) output << sep << "NA";
+               if (hasStart  == j) output << sep << "-1";
+               if (hasStop   == j) output << sep << "-1";
+               if (hasStrand == j) output << sep << "?";
+               if (hasCyto   == j) output << sep << "NA";
             }//if
          }//if
 
          // export data
-         if (hasCall) {
-            Int_t cl = call[k]->GetCall();
-            char *ch = "NA";
-            if      (cl == 2) ch = "P";
-            else if (cl == 0) ch = "A";
-            else if (cl == 1) ch = "M";
-            output << sep << ch;
-         }//if
+         if (hasData == j) {
+            for (Int_t k=0; k<n; k++) {
+               tree[k]->GetEntry(i);
 
-         if (hasPVal) {
-            output << sep << call[k]->GetPValue();
+               if (hasCall) {
+                  Int_t cl = call[k]->GetCall();
+                  char *ch = "NA";
+                  if      (cl == 2) ch = "P";
+                  else if (cl == 0) ch = "A";
+                  else if (cl == 1) ch = "M";
+                  output << sep << ch;
+               }//if
+
+               if (hasPVal) {
+                  output << sep << call[k]->GetPValue();
+               }//if
+            }//for_k
          }//if
       }//for_j
       output << endl;
@@ -8290,56 +8491,75 @@ Int_t XExonProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varli
    Int_t err = errNoErr;
 
 // Decompose varlist
-   Bool_t hasUnit   = kFALSE;
-   Bool_t hasName   = kFALSE;
-   Bool_t hasSymbol = kFALSE;
-   Bool_t hasCyto   = kFALSE;
-   Bool_t hasAnnot  = kFALSE;
-   Bool_t hasLevel  = kFALSE;
-   Bool_t hasStdev  = kFALSE;
-   Bool_t hasNAtoms = kFALSE;
-////////////////
-//TO DO
-//fTranscriptID
-//fAccession
-//fEntrezID
-//fChromosome
-//fStart
-//fStop
-//fStrand
-//for exon:
-//fExonID
-//for probeset
-//??
-//??
-////////////////
+   Short_t hasUnit   = 0;  //unit name
+   Short_t hasTrans  = 0;  //transcript_id
+   Short_t hasName   = 0;  //gene name
+   Short_t hasSymbol = 0;  //gens symbol
+   Short_t hasAccess = 0;  //mRNA accession
+   Short_t hasEntrez = 0;  //entrez ID
+   Short_t hasChromo = 0;  //chromosome
+   Short_t hasStart  = 0;  //start position
+   Short_t hasStop   = 0;  //stop position
+   Short_t hasStrand = 0;  //strand
+   Short_t hasCyto   = 0;  //cytoband
+   Short_t hasLevel  = 0;  //expression level
+   Short_t hasStdev  = 0;  //standard deviation
+   Short_t hasNAtoms = 0;  //number of pairs
 
+   Short_t hasAnnot  = 0;  //annotation
+   Short_t hasData   = 0;  //data
+
+   Short_t idx = 0;
    if (strcmp(varlist,"*")  == 0) {
-      hasUnit   = kTRUE;
-      hasName   = kTRUE;
-      hasSymbol = kTRUE;
-      hasCyto   = kTRUE;
-      hasLevel  = kTRUE;
-      hasStdev  = kTRUE;
-      hasNAtoms = kTRUE;
+      hasUnit   = ++idx;
+      hasTrans  = ++idx;
+      hasName   = ++idx;
+      hasSymbol = ++idx;
+      hasAccess = ++idx;
+      hasEntrez = ++idx;
+      hasChromo = ++idx;
+      hasStart  = ++idx;
+      hasStop   = ++idx;
+      hasStrand = ++idx;
+      hasCyto   = ++idx;
+      hasLevel  = ++idx;
+      hasStdev  = ++idx;
+      hasNAtoms = ++idx;
    } else {
       char *name  = new char[strlen(varlist) + 1];
       char *dname = name;
       name = strtok(strcpy(name,varlist),":");
       while(name) {
-         if (strcmp(name,"fUnitName") == 0) {hasUnit   = kTRUE;}
-         if (strcmp(name,"fName")     == 0) {hasName   = kTRUE;}
-         if (strcmp(name,"fSymbol")   == 0) {hasSymbol = kTRUE;}
-         if (strcmp(name,"fCytoBand") == 0) {hasCyto   = kTRUE;}
-         if (strcmp(name,"fLevel")    == 0) {hasLevel  = kTRUE;}
-         if (strcmp(name,"fStdev")    == 0) {hasStdev  = kTRUE;}
-         if (strcmp(name,"fNPairs")   == 0) {hasNAtoms = kTRUE;}
+         if (strcmp(name,"fUnitName")     == 0) {hasUnit   = ++idx;}
+         if (strcmp(name,"fTranscriptID") == 0) {hasTrans  = ++idx;}
+         if (strcmp(name,"fName")         == 0) {hasName   = ++idx;}
+         if (strcmp(name,"fSymbol")       == 0) {hasSymbol = ++idx;}
+         if (strcmp(name,"fAccession")    == 0) {hasAccess = ++idx;}
+         if (strcmp(name,"fEntrezID")     == 0) {hasEntrez = ++idx;}
+         if (strcmp(name,"fChromosome")   == 0) {hasChromo = ++idx;}
+         if (strcmp(name,"fStart")        == 0) {hasStart  = ++idx;}
+         if (strcmp(name,"fStop")         == 0) {hasStop   = ++idx;}
+         if (strcmp(name,"fStrand")       == 0) {hasStrand = ++idx;}
+         if (strcmp(name,"fCytoBand")     == 0) {hasCyto   = ++idx;}
+         if (strcmp(name,"fLevel")        == 0) {hasLevel  = ++idx;}
+         if (strcmp(name,"fStdev")        == 0) {hasStdev  = ++idx;}
+         if (strcmp(name,"fNPairs")       == 0) {hasNAtoms = ++idx;}
          name = strtok(NULL, ":");
          if (name == 0) break;
       }//while
       delete [] dname;
    }//if
-   hasAnnot = (hasName || hasSymbol || hasCyto);
+
+   // check for presence of at least one annotation variable
+   hasAnnot = (hasTrans + hasName  + hasSymbol + hasAccess + hasEntrez
+            + hasChromo + hasStart + hasStop   + hasStrand + hasCyto);
+   // check for presence of at least one of fLevel, fStdev, fNPairs
+   hasData = (hasStdev > 0 
+           ? (hasStdev <= hasNAtoms ? hasStdev : (hasNAtoms > 0 ? hasNAtoms : hasStdev))
+           : hasNAtoms);
+   hasData = (hasLevel > 0 
+           ? (hasLevel <= hasData ? hasLevel : (hasData > 0 ? hasData : hasLevel))
+           : hasData);
 
 // Get trees
    TTree       *tree[n];
@@ -8451,72 +8671,103 @@ Int_t XExonProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varli
 
 // Output header
    output << "UNIT_ID";
-   if (hasUnit)      output << sep << "UNIT_NAME";
-   if (hasAnnot) {
-      if (hasName)   output << sep << "GENE_NAME";
-      if (hasSymbol) output << sep << "GENE_SYMBOL";
-      if (hasCyto)   output << sep << "CYTOBAND";
-   }//if
-   if (n == 1) {
-      if (hasLevel)  output << sep << "LEVEL";
-      if (hasStdev)  output << sep << "STDEV";
-      if (hasNAtoms) output << sep << "NUMBER_ATOMS";
-   } else {
-      for (Int_t k=0; k<n; k++) {
-         if (hasLevel)  output << sep << (names[k] + "_LEVEL");
-         if (hasStdev)  output << sep << (names[k] + "_STDEV");
-         if (hasNAtoms) output << sep << (names[k] + "_NUMBER_ATOMS");
-      }//for_k
-   }//if
+   for (Short_t j=1; j<=idx; j++) {
+      if (hasUnit == j) output << sep << "UnitName";
+
+      if (hasAnnot > 0) {
+         if (hasTrans  == j) output << sep << "ProbesetID";
+         if (hasName   == j) output << sep << "GeneName";
+         if (hasSymbol == j) output << sep << "GeneSymbol";
+         if (hasAccess == j) output << sep << "GeneAccession";
+         if (hasEntrez == j) output << sep << "EntrezID";
+         if (hasChromo == j) output << sep << "Chromosome";
+         if (hasStart  == j) output << sep << "Start";
+         if (hasStop   == j) output << sep << "Stop";
+         if (hasStrand == j) output << sep << "Strand";
+         if (hasCyto   == j) output << sep << "Cytoband";
+      }//if
+
+      if (hasData == j) {
+         if (n == 1) {
+            if (hasLevel)  output << sep << "LEVEL";
+            if (hasStdev)  output << sep << "STDEV";
+            if (hasNAtoms) output << sep << "NUMBER_ATOMS";
+         } else {
+            for (Int_t k=0; k<n; k++) {
+               if (hasLevel)  output << sep << (names[k] + "_LEVEL");
+               if (hasStdev)  output << sep << (names[k] + "_STDEV");
+               if (hasNAtoms) output << sep << (names[k] + "_NUMBER_ATOMS");
+            }//for_k
+         }//if
+      }//if
+   }//for_j
    output << endl;
 
 // Loop over tree entries and trees
-   Int_t idx = 0;
+   Int_t index = 0;
    Int_t entries = (Int_t)(tree[0]->GetEntries());
    for (Int_t i=0; i<entries; i++) {
-      for (Int_t k=0; k<n; k++) {
-         tree[k]->GetEntry(i);
+      tree[0]->GetEntry(i);
+
+      Int_t unitID = expr[0]->GetUnitID();
+      output << unitID;
+
+      unittree->GetEntry(index++);
+      while (unitID != unit->GetUnitID()) {
+         if (index == numunits) {
+           cerr << "Error: UnitID <" << unitID << "> not found." << endl;
+           err = errAbort; goto cleanup;
+         }//if
+
+         unittree->GetEntry(index++);
+      }//while
+
+      for (Short_t j=1; j<=idx; j++) {
+         // export unitname
+         if (hasUnit == j) {
+            output << sep << unit->GetUnitName();
+         }//if
 
          // export annotation
-         if (k == 0) {
-            Int_t unitID = expr[k]->GetUnitID();
-            output << unitID;
-
-            unittree->GetEntry(idx++);
-            while (unitID != unit->GetUnitID()) {
-               if (idx == numunits) {
-                 cerr << "Error: UnitID <" << unitID << "> not found." << endl;
-                 err = errAbort; goto cleanup;
-               }//if
-
-               unittree->GetEntry(idx++);
-            }//while
-
-            if (hasUnit) {
-               output << sep << unit->GetSubUnitID();
-            }//if
-
-            if (hasAnnot) {
-               str.Form("%d", unit->GetSubUnitID());
-               idxstr = (XIdxString*)(htable->FindObject(str.Data()));
-               if (idxstr) {
-                  anntree->GetEntry(idxstr->GetIndex());
-                  if (hasName)   output << sep << annot->GetName();
-                  if (hasSymbol) output << sep << annot->GetSymbol();
-                  if (hasCyto)   output << sep << annot->GetCytoBand();
-               } else {
-                  if (hasName)   output << sep << "NA";
-                  if (hasSymbol) output << sep << "NA";
-                  if (hasCyto)   output << sep << "NA";
-               }//if
+         if (hasAnnot > 0) {
+            str.Form("%d", unit->GetSubUnitID());
+            idxstr = (XIdxString*)(htable->FindObject(str.Data()));
+            if (idxstr) {
+               anntree->GetEntry(idxstr->GetIndex());
+               if (hasTrans  == j) output << sep << annot->GetTranscriptID();
+               if (hasName   == j) output << sep << annot->GetName();
+               if (hasSymbol == j) output << sep << annot->GetSymbol();
+               if (hasAccess == j) output << sep << annot->GetAccession();
+               if (hasEntrez == j) output << sep << annot->GetEntrezID();
+               if (hasChromo == j) output << sep << annot->GetChromosome();
+               if (hasStart  == j) output << sep << annot->GetStart();
+               if (hasStop   == j) output << sep << annot->GetStop();
+               if (hasStrand == j) output << sep << annot->GetStrand();
+               if (hasCyto   == j) output << sep << annot->GetCytoBand();
+            } else {
+               if (hasTrans  == j) output << sep << "NA";
+               if (hasName   == j) output << sep << "NA";
+               if (hasSymbol == j) output << sep << "NA";
+               if (hasAccess == j) output << sep << "NA";
+               if (hasEntrez == j) output << sep << "NA";
+               if (hasChromo == j) output << sep << "NA";
+               if (hasStart  == j) output << sep << "-1";
+               if (hasStop   == j) output << sep << "-1";
+               if (hasStrand == j) output << sep << "?";
+               if (hasCyto   == j) output << sep << "NA";
             }//if
          }//if
 
          // export data
-         if (hasLevel)  output << sep << expr[k]->GetLevel();
-         if (hasStdev)  output << sep << ((XGCExpression*)expr[k])->GetStdev();
-         if (hasNAtoms) output << sep << ((XGCExpression*)expr[k])->GetNumPairs();
-      }//for_k
+         if (hasData == j) {
+            for (Int_t k=0; k<n; k++) {
+               tree[k]->GetEntry(i);
+               if (hasLevel)  output << sep << expr[k]->GetLevel();
+               if (hasStdev)  output << sep << ((XGCExpression*)expr[k])->GetStdev();
+               if (hasNAtoms) output << sep << ((XGCExpression*)expr[k])->GetNumPairs();
+            }//for_k
+         }//if
+      }//for_j
       output << endl;
    }//for_i
 
@@ -8541,53 +8792,69 @@ Int_t XExonProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varli
    Int_t err = errNoErr;
 
 // Decompose varlist
-   Bool_t hasUnit   = kFALSE;
-   Bool_t hasName   = kFALSE;
-   Bool_t hasSymbol = kFALSE;
-   Bool_t hasCyto   = kFALSE;
-   Bool_t hasAnnot  = kFALSE;
-   Bool_t hasCall   = kFALSE;
-   Bool_t hasPVal   = kFALSE;
-////////////////
-//TO DO
-//fTranscriptID
-//fAccession
-//fEntrezID
-//fChromosome
-//fStart
-//fStop
-//fStrand
-//for exon:
-//fExonID
-//for probeset
-//??
-//??
-////////////////
+   Short_t hasUnit   = 0;  //unit name
+   Short_t hasTrans  = 0;  //transcript_id
+   Short_t hasName   = 0;  //gene name
+   Short_t hasSymbol = 0;  //gens symbol
+   Short_t hasAccess = 0;  //mRNA accession
+   Short_t hasEntrez = 0;  //entrez ID
+   Short_t hasChromo = 0;  //chromosome
+   Short_t hasStart  = 0;  //start position
+   Short_t hasStop   = 0;  //stop position
+   Short_t hasStrand = 0;  //strand
+   Short_t hasCyto   = 0;  //cytoband
+   Short_t hasCall   = 0;  //detection call
+   Short_t hasPVal   = 0;  //detection p-value
 
+   Short_t hasAnnot  = 0;  //annotation
+   Short_t hasData   = 0;  //data
+
+   Short_t idx = 0;
    if (strcmp(varlist,"*")  == 0) {
-      hasUnit   = kTRUE;
-      hasName   = kTRUE;
-      hasSymbol = kTRUE;
-      hasCyto   = kTRUE;
-      hasCall   = kTRUE;
-      hasPVal   = kTRUE;
+      hasUnit   = ++idx;
+      hasTrans  = ++idx;
+      hasName   = ++idx;
+      hasSymbol = ++idx;
+      hasAccess = ++idx;
+      hasEntrez = ++idx;
+      hasChromo = ++idx;
+      hasStart  = ++idx;
+      hasStop   = ++idx;
+      hasStrand = ++idx;
+      hasCyto   = ++idx;
+      hasCall   = ++idx;
+      hasPVal   = ++idx;
    } else {
       char *name  = new char[strlen(varlist) + 1];
       char *dname = name;
       name = strtok(strcpy(name,varlist),":");
       while(name) {
-         if (strcmp(name,"fUnitName") == 0) {hasUnit   = kTRUE;}
-         if (strcmp(name,"fName")     == 0) {hasName   = kTRUE;}
-         if (strcmp(name,"fSymbol")   == 0) {hasSymbol = kTRUE;}
-         if (strcmp(name,"fCytoBand") == 0) {hasCyto   = kTRUE;}
-         if (strcmp(name,"fCall")     == 0) {hasCall   = kTRUE;}
-         if (strcmp(name,"fPValue")   == 0) {hasPVal   = kTRUE;}
+         if (strcmp(name,"fUnitName")     == 0) {hasUnit   = ++idx;}
+         if (strcmp(name,"fTranscriptID") == 0) {hasTrans  = ++idx;}
+         if (strcmp(name,"fName")         == 0) {hasName   = ++idx;}
+         if (strcmp(name,"fSymbol")       == 0) {hasSymbol = ++idx;}
+         if (strcmp(name,"fAccession")    == 0) {hasAccess = ++idx;}
+         if (strcmp(name,"fEntrezID")     == 0) {hasEntrez = ++idx;}
+         if (strcmp(name,"fChromosome")   == 0) {hasChromo = ++idx;}
+         if (strcmp(name,"fStart")        == 0) {hasStart  = ++idx;}
+         if (strcmp(name,"fStop")         == 0) {hasStop   = ++idx;}
+         if (strcmp(name,"fStrand")       == 0) {hasStrand = ++idx;}
+         if (strcmp(name,"fCytoBand")     == 0) {hasCyto   = ++idx;}
+         if (strcmp(name,"fCall")         == 0) {hasCall   = ++idx;}
+         if (strcmp(name,"fPValue")       == 0) {hasPVal   = ++idx;}
          name = strtok(NULL, ":");
          if (name == 0) break;
       }//while
       delete [] dname;
    }//if
-   hasAnnot = (hasName || hasSymbol || hasCyto);
+
+   // check for presence of at least one annotation variable
+   hasAnnot = (hasTrans + hasName  + hasSymbol + hasAccess + hasEntrez
+            + hasChromo + hasStart + hasStop   + hasStrand + hasCyto);
+   // check for presence of at least one of fCall, fPValue
+   hasData = (hasCall > 0 
+           ? (hasCall <= hasPVal ? hasCall : (hasPVal > 0 ? hasPVal : hasCall))
+           : hasPVal);
 
 // Get trees
    TTree  *tree[n];
@@ -8699,79 +8966,111 @@ Int_t XExonProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varli
 
 // Output header
    output << "UNIT_ID";
-   if (hasUnit)      output << sep << "UNIT_NAME";
-   if (hasAnnot) {
-      if (hasName)   output << sep << "GENE_NAME";
-      if (hasSymbol) output << sep << "GENE_SYMBOL";
-      if (hasCyto)   output << sep << "CYTOBAND";
-   }//if
-   if (n == 1) {
-      if (hasCall)   output << sep << "CALL";
-      if (hasPVal)   output << sep << "PVALUE";
-   } else {
-      for (Int_t k=0; k<n; k++) {
-         if (hasCall)  output << sep << (names[k] + "_CALL");
-         if (hasPVal)  output << sep << (names[k] + "_PVALUE");
-      }//for_k
-   }//if
+   for (Short_t j=1; j<=idx; j++) {
+      if (hasUnit == j) output << sep << "UnitName";
+
+      if (hasAnnot > 0) {
+         if (hasTrans  == j) output << sep << "ProbesetID";
+         if (hasName   == j) output << sep << "GeneName";
+         if (hasSymbol == j) output << sep << "GeneSymbol";
+         if (hasAccess == j) output << sep << "GeneAccession";
+         if (hasEntrez == j) output << sep << "EntrezID";
+         if (hasChromo == j) output << sep << "Chromosome";
+         if (hasStart  == j) output << sep << "Start";
+         if (hasStop   == j) output << sep << "Stop";
+         if (hasStrand == j) output << sep << "Strand";
+         if (hasCyto   == j) output << sep << "Cytoband";
+      }//if
+
+      if (hasData == j) {
+         if (n == 1) {
+            if (hasCall) output << sep << "CALL";
+            if (hasPVal) output << sep << "PVALUE";
+         } else {
+            for (Int_t k=0; k<n; k++) {
+               if (hasCall) output << sep << (names[k] + "_CALL");
+               if (hasPVal) output << sep << (names[k] + "_PVALUE");
+            }//for_k
+         }//if
+      }//if
+   }//for_j
    output << endl;
 
 // Loop over tree entries and trees
-   Int_t idx = 0;
+   Int_t index = 0;
    Int_t entries = (Int_t)(tree[0]->GetEntries());
    for (Int_t i=0; i<entries; i++) {
-      for (Int_t k=0; k<n; k++) {
-         tree[k]->GetEntry(i);
+      tree[0]->GetEntry(i);
+
+      Int_t unitID = call[0]->GetUnitID();
+      output << unitID;
+
+      unittree->GetEntry(index++);
+      while (unitID != unit->GetUnitID()) {
+         if (index == numunits) {
+           cerr << "Error: UnitID <" << unitID << "> not found." << endl;
+           err = errAbort; goto cleanup;
+         }//if
+
+         unittree->GetEntry(index++);
+      }//while
+
+      for (Short_t j=1; j<=idx; j++) {
+         // export unitname
+         if (hasUnit == j) {
+            output << sep << unit->GetUnitName();
+         }//if
 
          // export annotation
-         if (k == 0) {
-            Int_t unitID = call[k]->GetUnitID();
-            output << unitID;
-
-            unittree->GetEntry(idx++);
-            while (unitID != unit->GetUnitID()) {
-               if (idx == numunits) {
-                 cerr << "Error: UnitID <" << unitID << "> not found." << endl;
-                 err = errAbort; goto cleanup;
-               }//if
-
-               unittree->GetEntry(idx++);
-            }//while
-
-            if (hasUnit) {
-               output << sep << unit->GetSubUnitID();
-            }//if
-
-            if (hasAnnot) {
-               str.Form("%d", unit->GetSubUnitID());
-               idxstr = (XIdxString*)(htable->FindObject(str.Data()));
-               if (idxstr) {
-                  anntree->GetEntry(idxstr->GetIndex());
-                  if (hasName)   output << sep << annot->GetName();
-                  if (hasSymbol) output << sep << annot->GetSymbol();
-                  if (hasCyto)   output << sep << annot->GetCytoBand();
-               } else {
-                  if (hasName)   output << sep << "NA";
-                  if (hasSymbol) output << sep << "NA";
-                  if (hasCyto)   output << sep << "NA";
-               }//if
+         if (hasAnnot > 0) {
+            str.Form("%d", unit->GetSubUnitID());
+            idxstr = (XIdxString*)(htable->FindObject(str.Data()));
+            if (idxstr) {
+               anntree->GetEntry(idxstr->GetIndex());
+               if (hasTrans  == j) output << sep << annot->GetTranscriptID();
+               if (hasName   == j) output << sep << annot->GetName();
+               if (hasSymbol == j) output << sep << annot->GetSymbol();
+               if (hasAccess == j) output << sep << annot->GetAccession();
+               if (hasEntrez == j) output << sep << annot->GetEntrezID();
+               if (hasChromo == j) output << sep << annot->GetChromosome();
+               if (hasStart  == j) output << sep << annot->GetStart();
+               if (hasStop   == j) output << sep << annot->GetStop();
+               if (hasStrand == j) output << sep << annot->GetStrand();
+               if (hasCyto   == j) output << sep << annot->GetCytoBand();
+            } else {
+               if (hasTrans  == j) output << sep << "NA";
+               if (hasName   == j) output << sep << "NA";
+               if (hasSymbol == j) output << sep << "NA";
+               if (hasAccess == j) output << sep << "NA";
+               if (hasEntrez == j) output << sep << "NA";
+               if (hasChromo == j) output << sep << "NA";
+               if (hasStart  == j) output << sep << "-1";
+               if (hasStop   == j) output << sep << "-1";
+               if (hasStrand == j) output << sep << "?";
+               if (hasCyto   == j) output << sep << "NA";
             }//if
          }//if
 
          // export data
-         if (hasCall) {
-            Int_t cl = call[k]->GetCall();
-            char *ch = "NA";
-            if      (cl == 2) ch = "P";
-            else if (cl == 0) ch = "A";
-            else if (cl == 1) ch = "M";
-            output << sep << ch;
-         }//if
+         if (hasData == j) {
+            for (Int_t k=0; k<n; k++) {
+               tree[k]->GetEntry(i);
 
-         if (hasPVal) {
-            output << sep << call[k]->GetPValue();
+               if (hasCall) {
+                  Int_t cl = call[k]->GetCall();
+                  char *ch = "NA";
+                  if      (cl == 2) ch = "P";
+                  else if (cl == 0) ch = "A";
+                  else if (cl == 1) ch = "M";
+                  output << sep << ch;
+               }//if
+
+               if (hasPVal) {
+                  output << sep << call[k]->GetPValue();
+               }//if
+            }//for_k
          }//if
-      }//for_k
+      }//for_j
       output << endl;
    }//for_i
 

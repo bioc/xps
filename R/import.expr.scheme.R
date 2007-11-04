@@ -10,6 +10,7 @@ function(filename   = character(0),
          schemefile = character(0),
          probefile  = character(0),
          annotfile  = character(0),
+         chipname   = NULL,
          add.mask   = FALSE,
          verbose    = TRUE)
 {
@@ -38,8 +39,11 @@ function(filename   = character(0),
    scheme <- scheme[length(scheme)];
    scheme <- unlist(strsplit(scheme, "\\."));
 
-   chipname <- scheme[1];
-   exten    <- scheme[length(scheme)];
+   ## get chipname from scheme if not given
+   if (is.null(chipname)) {
+      chipname <- scheme[1];
+   }#if
+   exten <- scheme[length(scheme)];
 
    if (!((exten == "CDF") || (exten == "cdf"))) {
       stop(paste(sQuote("schemefile"), "is not a CDF-file"))
@@ -59,8 +63,9 @@ function(filename   = character(0),
    }#if
 
    ## check for presence of annotation file
-   if (annotfile == "") {
+   if (length(annotfile) == 0 || annotfile == "") {
       warning("no annotation file is given");
+      annotfile <- "";
    } else if (!file.exists(annotfile)) {
       stop("missing chip annotation file");
    } else {
