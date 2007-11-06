@@ -178,13 +178,13 @@ I. Install ROOT:
 
 II. Install package 'xps' from source
 
-   Currently, xps can be downloaded as gezipped source file "xps_0.3.10.tar.gz"
+   Currently, xps can be downloaded as gezipped source file "xps_0.3.11.tar.gz"
    for MacOS X (Intel and PPC) and for Linux
 
    It can be installed with:
-      R CMD INSTALL xps_0.3.10.tar.gz
+      R CMD INSTALL xps_0.3.11.tar.gz
    or e.g. on a Mac in the User library:
-      R CMD INSTALL -l ~/Library/R/library xps_0.3.10.tar.gz
+      R CMD INSTALL -l ~/Library/R/library xps_0.3.11.tar.gz
 
    Tested architectues:
    Currently, package 'xps' has been built (with R CMD INSTALL) and

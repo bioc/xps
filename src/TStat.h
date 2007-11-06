@@ -1,4 +1,4 @@
-// Author: Christian Stratowa 11/25/2002             last modified: 07/26/2007
+// Author: Christian Stratowa 11/25/2002             last modified: 11/05/2007
 
 /*
  *******************************************************************************
@@ -109,6 +109,9 @@ class TStat {
       static Double_t Mean(Int_t n, const Double_t *arr, const Double_t *w,
                          const Double_t trim, Double_t &var, Int_t &len);
       static Double_t Median(Int_t n, const Double_t *arr);
+      static Double_t MAD(Int_t n, const Double_t *arr, Float_t constant = 1.4826);
+      static Double_t MAD(Int_t n, const Double_t *arr, const Double_t trim,
+                         Float_t constant = 1.4826);
       static Double_t StDev(Int_t n, const Double_t *arr, const Double_t mean);
       static Double_t Var(Int_t n, const Double_t *arr, const Double_t mean);
       static Double_t Var(Int_t n, const Double_t *arr, const Double_t mean,

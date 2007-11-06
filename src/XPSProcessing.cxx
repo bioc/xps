@@ -146,7 +146,8 @@ const char *kTypeFltr[]  = { "prefilter",
                              ""};
 
 // pre-filter trees
-const char *kPreFltr[]   = { "cv",
+const char *kPreFltr[]   = { "mad",
+                             "cv",
                              "variance",
                              "difference",
                              "ratio",
