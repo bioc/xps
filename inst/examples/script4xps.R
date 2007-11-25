@@ -228,11 +228,20 @@ str(data.test3)
 
 # alternatively import CEL files and information about the project
 project <- new("ProjectInfo",submitter="Christian", laboratory="home",contact="email")
-projectInfo(project) <- c("TestProject","20060106","use Test3 data for testing")
-authorInfo(project)  <- c("Stratowa","Christian","Home","Lab","mymail","1234567")
-datasetInfo(project) <- c("Test3Set","MC","Tissue","Stratowa","20060106","description")
-sourceInfo(project)  <- c("Unknown","Homo sapiens","caucasian","description")
-arrayInfo(project)   <- c("Test3","GeneChip","description")
+projectInfo(project)    <- c("TestProject","20060106","Project Type","use Test3 data for testing","my comment")
+authorInfo(project)     <- c("Stratowa","Christian","Project Leader","Company","Dept","cstrato.at.aon.at","++43-1-1234","my comment")
+datasetInfo(project)    <- c("Test3Set","MC","Tissue","Stratowa","20060106","description","my comment")
+sourceInfo(project)     <- c("Unknown","source type","Homo sapiens","caucasian","description","my comment")
+cellineInfo(project)    <- c("HeLa-S3","cell type","HeLa","ATCC-12.3","pCSV transfected","female","my pheno","my genotype","RNA extraction",FALSE,"","",0.0,"", "my comment")
+arrayInfo(project)      <- c("Test3","GeneChip","description","my comment")
+hybridizInfo(project)   <- c(c("TestA1","hyb type","TestA1.CEL",20071117,"my prep1","standard protocol","A1",1,"my comment"),
+                             c("TestA2","hyb type","TestA2.CEL",20071117,"my prep2","standard protocol","A2",1,"my comment"),
+                             c("TestB1","hyb type","TestB1.CEL",20071117,"my prep1","standard protocol","B1",2,"my comment"),
+                             c("TestB2","hyb type","TestB2.CEL",20071117,"my prep2","standard protocol","B2",2,"my comment"))
+treatmentInfo(project)  <- c(c("TestA1","DMSO",4.3,"mM",1.0,"hours","intravenous","my comment"),
+                             c("TestA2","DMSO",4.3,"mM",8.0,"hours","intravenous","my comment"),
+                             c("TestB1","DrugA2",4.3,"mM",1.0,"hours","intravenous","my comment"),
+                             c("TestB2","DrugA2",4.3,"mM",8.0,"hours","intravenous","my comment"))
 # need to delete old ROOT file "DataTest3_cel.root" first!
 data.test3 <- import.data(scheme.test3,"DataTest3",filedir="./data",celdir=celdir,project=project)
 str(data.test3)

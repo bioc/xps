@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 09/19/2007
+// File created: 08/05/2002                          last modified: 11/18/2007
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -46,6 +46,10 @@
 #include "XPSData.h"
 #endif
 
+#ifndef __XProjectHandler__
+#include "XPSProjectHandler.h"
+#endif
+
 // tree preprocessing extensions and types
 extern const char *kExtenBgrd[];
 extern const char *kTypeBgrd[];
@@ -69,6 +73,7 @@ extern const char *kExtenFltr[];
 extern const char *kTypeFltr[];
 extern const char *kPreFltr[];
 extern const char *kUniFltr[];
+extern const char *kMultiFltr[];
 extern const char *kExtenUTst[];
 extern const char *kTypeUTst[];
 extern const char *kExtenMTst[];
@@ -93,14 +98,6 @@ enum EErrorProcessing {
    errSchemeDerived = -302,
 };
 
-//classes for database
-class XLoginInfo;
-class XProjectInfo;
-class XAuthorInfo;
-class XDatasetInfo;
-class XSourceInfo;
-class XArrayInfo;
-
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
@@ -109,7 +106,7 @@ class XArrayInfo;
 // Base class for processing of microarray data                         //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
-class XProcessManager: public XManager {
+class XProcessManager: public XManager, public XProjectHandler {
 
    protected:
       TFile          *fSchemeFile;    //! file containing chip definitions
@@ -143,48 +140,23 @@ class XProcessManager: public XManager {
 
       Int_t InitData(TFile *datafile, Bool_t isOwner = kFALSE);
       Int_t InitSchemes(TFile *schemefile, Bool_t isOwner = kFALSE,
-               const char *schemename = "");
+               const char *schemename = "", const char *schemetype = "");
       Int_t OpenData(const char *fullname, Option_t *option = "READ");
-      Int_t OpenSchemes(const char *fullname, const char *schemename = "");
+      Int_t OpenSchemes(const char *fullname, const char *schemename = "",
+               const char *schemetype = "");
       void  CloseData();
       void  CloseSchemes();
 
       // methods to support database
-      virtual TString LoginInfo(XLoginInfo *info,
-                         Bool_t copy = kFALSE, Bool_t replace = kFALSE);
-      virtual void    LoginInfo(const char *userID, const char *password,
-                         Bool_t replace = kFALSE);
-      virtual TString ProjectInfo(XProjectInfo *info,
-                         Bool_t copy = kFALSE, Bool_t replace = kFALSE);
-      virtual void    ProjectInfo(const char *name, Long_t date,
-                         const char *description = "", Bool_t replace = kFALSE);
-      virtual TString AuthorInfo(XAuthorInfo *info,
-                         Bool_t copy = kFALSE, Bool_t replace = kFALSE);
-      virtual void    AuthorInfo(const char *lastname, const char *firstname,
-                         const char *company, const char *department = "",
-                         const char *phone ="", const char *mail ="",
-                         Bool_t replace = kFALSE);
-      virtual TString DatasetInfo(XDatasetInfo *info,
-                         Bool_t copy = kFALSE, Bool_t replace = kFALSE);
-      virtual void    DatasetInfo(const char *name, const char *type,
-                         const char *sample, const char *submitter, Long_t date,
-                         const char *description = "", Bool_t replace = kFALSE);
-      virtual TString SourceInfo(XSourceInfo *info,
-                         Bool_t copy = kFALSE, Bool_t replace = kFALSE);
-      virtual void    SourceInfo(const char *name, const char *species,
-                         const char *subspecies, const char *description = "",
-                         Bool_t replace = kFALSE);
-      virtual TString ArrayInfo(XArrayInfo *info,
-                         Bool_t copy = kFALSE, Bool_t replace = kFALSE);
-      virtual void    ArrayInfo(const char *name, const char *type,
-                         const char *description = "", Bool_t replace = kFALSE);
+      virtual Int_t BeginTransaction(const char *name = "");
+      virtual Int_t CommitTransaction();
 
       TFile    *GetDataFile()   const {return fDataFile;}
       TFile    *GetSchemeFile() const {return fSchemeFile;}
       XFolder  *GetData()       const {return fData;}
       XFolder  *GetSchemes()    const {return fSchemes;}
       
-      ClassDef(XProcessManager,1) //ProcessManager
+      ClassDef(XProcessManager,2) //ProcessManager
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -250,7 +222,8 @@ class XProcesSetting: public XSetting {
    protected:
       TFile      *fDataFile;     //! file containing chip data
       TFile      *fSchemeFile;   //! file containing chip definitions
-      TString     fSchemeName;   //! name of chip type
+      TString     fSchemeName;   //! name of chip 
+      TString     fSchemeType;   //! chip type
 
    public:
       XProcesSetting();
@@ -260,9 +233,11 @@ class XProcesSetting: public XSetting {
       void    SetDataFile(TFile *file)    {fDataFile   = file;}
       void    SetSchemeFile(TFile *file)  {fSchemeFile = file;}
       void    SetSchemeName(TString chip) {fSchemeName = chip;}
+      void    SetSchemeType(TString type) {fSchemeType = type;}
       TFile  *GetDataFile()         const {return fDataFile;}
       TFile  *GetSchemeFile()       const {return fSchemeFile;}
       TString GetSchemeName()       const {return fSchemeName;}
+      TString GetSchemeType()       const {return fSchemeType;}
 
       ClassDef(XProcesSetting,1) //ProcesSetting
 };
@@ -282,12 +257,12 @@ class XProcesSet: public XTreeSet {
       XFolder      *fSchemes;     //! content of scheme file
       TFile        *fDataFile;    //! currently open data file
       XFolder      *fData;        //! content of current data file
-      TString       fSchemeName;  //! name of chip type
-//??      TString       fSchemeName;  //name of chip type
-//??      TList        *fBaselines;   //list of selected baseline trees
-//??      TList        *fReferences;  //list of selected reference trees
+//old      TString       fSchemeName;  //! name of chip
+      TString       fSchemeName;  //name of chip
       TList        *fBaselines;   //! list of selected baseline trees
       TList        *fReferences;  //! list of selected reference trees
+//??      TList        *fBaselines;   //list of selected baseline trees
+//??      TList        *fReferences;  //list of selected reference trees
       TString       fBaseOpt;     //baseline option: none, mean or median
       TString       fRefOpt;      //reference option: none, mean or median
       Double_t      fBaseTrim;    //trim value if fBaseOpt is mean
@@ -312,7 +287,10 @@ class XProcesSet: public XTreeSet {
       Int_t SetBaseLine(TTree *tree, Option_t *option = "", Double_t trim = 0.0);
       Int_t SetReference(TTree *tree, Option_t *option = "", Double_t trim = 0.0);
 
-      ClassDef(XProcesSet,1) //ProcesSet
+      void    SetSchemeName(const char *name) {fSchemeName = name;}
+      TString GetSchemeName()           const {return fSchemeName;}
+
+      ClassDef(XProcesSet,2) //ProcesSet
 };
 
 #endif

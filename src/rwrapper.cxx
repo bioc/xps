@@ -152,8 +152,11 @@ void ImportData(char **filename, char **dirname, char **chiptype,
                 char **celfiles, char **celnames, int *numdata,
                 char **project, int *nproject, char **author, int *nauthor,
                 char **dataset, int *ndataset, char **source, int *nsource,
-                char **array, int *narray, int *replace, int *update,
-                int *verbose, int *err)
+                char **sample, int *nsample, char **cell, int *ncell,
+                char **pcell, int *npcell, char **tissue, int *ntissue,
+                char **biopsy, int *nbiopsy, char **array, int *narray,
+                char **hyb, int *nhyb, char **treat, int *ntreat, 
+                int *replace, int *update, int *verbose, int *err)
 {
 // Import Affymetrix *.CEL files into XPS
 
@@ -178,22 +181,77 @@ void ImportData(char **filename, char **dirname, char **chiptype,
    }//if
 
 // optional: add database info
-   if (*nproject == 3) {
-      manager->ProjectInfo(project[0], atol(project[1]), project[2], *replace);
+   int nh = *nhyb/9;    //number of hybridization infos
+   int nt = *ntreat/8;  //number of treatment infos
+   int db = *nproject + *nauthor + *ndataset + *nsource + *nsample 
+          + *ncell + *npcell + *ntissue + *nbiopsy + *narray + nh + nt;
+   if (db > 0) {
+      manager->BeginTransaction();
    }//if
-   if (*nauthor == 6) {
-      manager->AuthorInfo(author[0], author[1], author[2], author[3],
-                          author[4], author[5], *replace);
+   if (*nproject == 5) {
+      manager->ProjectInfo(project[0], atol(project[1]), project[2],
+                           project[3], project[4], *replace);
    }//if
-   if (*ndataset == 6) {
+   if (*nauthor == 8) {
+      manager->AuthorInfo(author[0], author[1], author[2], author[3], author[4],
+                          author[5], author[6], author[7], *replace);
+   }//if
+   if (*ndataset == 7) {
       manager->DatasetInfo(dataset[0], dataset[1], dataset[2], dataset[3],
-                           atol(dataset[4]), dataset[5], *replace);
+                           atol(dataset[4]), dataset[5], dataset[6], *replace);
    }//if
-   if (*nsource == 4) {
-      manager->SourceInfo(source[0], source[1], source[2], source[3], *replace);
+   if (*nsource == 6) {
+      manager->SourceInfo(source[0], source[1], source[2], source[3],
+                          source[4], source[5], *replace);
    }//if
-   if (*narray == 3) {
-      manager->ArrayInfo(array[0], array[1], array[2], *replace);
+   if (*nsample == 12) {
+      manager->SampleInfo(sample[0], sample[1], sample[2], sample[3],
+                          sample[4], sample[5], atoi(sample[6]), sample[7],
+                          sample[8], atof(sample[9]), sample[10], sample[11],
+                          *replace);
+   }//if
+   if (*ncell == 15) {
+      manager->CellLineInfo(cell[0], cell[1], cell[2], cell[3], cell[4],
+                            cell[5], cell[6], cell[7], cell[8], atoi(cell[9]),
+                            cell[10], cell[11], atof(cell[12]), cell[13],
+                            cell[14], *replace);
+   }//if
+   if (*npcell == 14) {
+      manager->PrimaryCellInfo(pcell[0], pcell[1], atol(pcell[2]), pcell[3], 
+                               pcell[4], pcell[5], pcell[6], pcell[7],
+                               atoi(pcell[8]), pcell[9], pcell[10],
+                               atof(pcell[11]), pcell[12], pcell[13], *replace);
+   }//if
+   if (*ntissue == 19) {
+      manager->TissueInfo(tissue[0], tissue[1], tissue[2], tissue[3], tissue[4],
+                          tissue[5], atof(tissue[6]), tissue[7], tissue[8],
+                          tissue[9], tissue[10], tissue[11], tissue[12],
+                          atoi(tissue[13]), tissue[14], tissue[15],
+                          atof(tissue[16]), tissue[17], tissue[18], *replace);
+   }//if
+   if (*nbiopsy == 19) {
+      manager->BiopsyInfo(biopsy[0], biopsy[1], biopsy[2], biopsy[3], biopsy[4],
+                          atof(biopsy[5]), biopsy[6], biopsy[7], biopsy[8],
+                          biopsy[9], biopsy[10], biopsy[11], atoi(biopsy[12]),
+                          biopsy[13], biopsy[14], atof(biopsy[15]),
+                          biopsy[16], biopsy[17], *replace);
+   }//if
+   if (*narray == 4) {
+      manager->ArrayInfo(array[0], array[1], array[2], array[3], *replace);
+   }//if
+   for (int i=0; i<nh; i++) {
+      manager->HybridizationInfo(hyb[0+9*i], hyb[1+9*i], hyb[2+9*i],
+                                 atol(hyb[3+9*i]), hyb[4+9*i], hyb[5+9*i],
+                                 hyb[6+9*i], atoi(hyb[7+9*i]), hyb[8+9*i],
+                                 *replace);
+   }//for_i
+   for (int i=0; i<nt; i++) {
+      manager->TreatmentInfo(treat[0+8*i], treat[1+8*i], atof(treat[2+8*i]),
+                             treat[3+8*i], atof(treat[4+8*i]), treat[5+8*i],
+                             treat[6+8*i], treat[7+8*i], *replace);
+   }//for_i
+   if (db > 0) {
+      manager->CommitTransaction();
    }//if
 
 // store *.CEL data as trees in data file
@@ -331,7 +389,7 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
       } else if (strcmp(chiptype[0], "GenomeChip") == 0) {
 //??         int normlevel = 16383; 
          int normlevel = *level; //use only those probes which are also used for expression
-         r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, normlevel);
+         r += manager->InitAlgorithm("selector", "probe", "genome", 0, 1, normlevel);
       } else if (strcmp(chiptype[0], "ExonChip") == 0) {
 //??         int normlevel = 16383; 
          int normlevel = *level; //use only those probes which are also used for expression
@@ -345,7 +403,7 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
    if (strcmp(chiptype[0], "GeneChip") == 0) {
       r += manager->InitAlgorithm("selector", "probe", "pmonly", 0);
    } else if (strcmp(chiptype[0], "GenomeChip") == 0) {
-      r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *level);
+      r += manager->InitAlgorithm("selector", "probe", "genome", 0, 1, *level);
    } else if (strcmp(chiptype[0], "ExonChip") == 0) {
       r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *level);
    }//if
@@ -560,13 +618,13 @@ void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
       callopt = strcat(callopt, ":adjusted");
 
       // initialize backgrounder
-      r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *level);
+      r += manager->InitAlgorithm("selector", "probe", "genome", 0, 1, *level);
       // the following setting calculates bg but does not subtract bg from intensity:
       r += manager->InitAlgorithm("backgrounder", "weightedsector", "correctbg", bgrdfile, 6, 0.02, 4, 4, 0, 100, 0.5);
 //?      r += manager->InitAlgorithm("backgrounder", "weightedsector", "none", bgrdfile, 6, 0.02, 4, 4, 0, 100, -1.0);
 
       // initialize call detector
-      r += manager->InitAlgorithm("selector", "probe", "exon", 0, 2, *level, -2); //??mm=antigenommic??
+      r += manager->InitAlgorithm("selector", "probe", "genome", 0, 2, *level, -2); //??mm=antigenommic??
       r += manager->InitAlgorithm("calldetector", "dc5", callopt, 0, 6, *tau, *alpha1, *alpha2, *ignore, 0, 0);
    } else if (strcmp(chiptype[0], "ExonChip") == 0) {
       callopt = new char[strlen(calloption[0]) + 9];
@@ -753,7 +811,7 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
       if (strcmp(chiptype[0], "GeneChip") == 0) {
          r += manager->InitAlgorithm("selector", "probe", normselection[0], 0);
       } else if (strcmp(chiptype[0], "GenomeChip") == 0) {
-         r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *level);
+         r += manager->InitAlgorithm("selector", "probe", "genome", 0, 1, *level);
       } else if (strcmp(chiptype[0], "ExonChip") == 0) {
          r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *level);
       }//if
@@ -778,7 +836,7 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
       if (strcmp(chiptype[0], "GeneChip") == 0) {
          r += manager->InitAlgorithm("selector", "probe", exprselection[0], 0, 0);
       } else if (strcmp(chiptype[0], "GenomeChip") == 0) {
-         r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *level);
+         r += manager->InitAlgorithm("selector", "probe", "genome", 0, 1, *level);
       } else if (strcmp(chiptype[0], "ExonChip") == 0) {
          r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *level);
       }//if
@@ -971,7 +1029,7 @@ void Normalize(char **filename, char **dirname, char **chiptype,
    if (strcmp(chiptype[0], "GeneChip") == 0) {
       r += manager->InitAlgorithm("selector", "probe", seloption[0], 0);
    } else if (strcmp(chiptype[0], "GenomeChip") == 0) {
-      r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *level);
+      r += manager->InitAlgorithm("selector", "probe", "genome", 0, 1, *level);
    } else if (strcmp(chiptype[0], "ExonChip") == 0) {
       r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *level);
    }//if
@@ -1056,7 +1114,7 @@ void Summarize(char **filename, char **dirname, char **chipname, char **chiptype
    if (strcmp(chiptype[0], "GeneChip") == 0) {
       r += manager->InitAlgorithm("selector", "probe", seloption[0], 0, 0);
    } else if (strcmp(chiptype[0], "GenomeChip") == 0) {
-      r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *level);
+      r += manager->InitAlgorithm("selector", "probe", "genome", 0, 1, *level);
    } else if (strcmp(chiptype[0], "ExonChip") == 0) {
       r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *level);
    }//if

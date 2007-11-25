@@ -3115,7 +3115,8 @@ Int_t XGeneChip::ReadData(ifstream &input, Option_t *option,
             input.getline(nextline, kBufSize, delim);
          }//while
          unitname = &nextline[1];
-         unitname = unitname.Remove(unitname.Length()-2);
+         unitname = RemoveEnds(unitname.Data()); // remove "\n"
+//old         unitname = unitname.Remove(unitname.Length()-2);
 
          // get type ID of control
          while (strncmp("Type=", nextline, 5) != 0) {
@@ -3199,7 +3200,8 @@ Int_t XGeneChip::ReadData(ifstream &input, Option_t *option,
             input.getline(nextline, kBufSize, delim);
          }//while
          unitname = &nextline[5];
-         unitname = unitname.Remove(unitname.Length()-1); // remove "\n"
+//old         unitname = unitname.Remove(unitname.Length()-1); // remove "\n"
+         unitname = RemoveEnds(unitname.Data()); // remove "\n"
 
          // get number of atoms
          while (strncmp("NumAtoms=", nextline, 9) != 0) {
@@ -3920,10 +3922,14 @@ Int_t XGeneChip::ImportTransAnnotation(ifstream &input, Option_t *option,
          goto cleanup;
       }//if
 
-      // replace all "\",\"" with backslash "\"" 
+      // replace all "\",\"" with tab "\t" and remove "\""
       str = TString(nextline);
+      // first need to replace "" with NA
+      str.ReplaceAll("\"\"", "\"NA\"");
       // replace csv with tab
       str.ReplaceAll(csv, tab);
+      // remove all "\"" from line
+      str.ReplaceAll("\"", "");
 
       // check number of separators
       if (numsep != NumSeparators(str, tab)) {
@@ -3978,7 +3984,10 @@ Int_t XGeneChip::ImportTransAnnotation(ifstream &input, Option_t *option,
 
       // ceck if name exists
       if (strcmp(name.Data(),"---") != 0) {
-         name = RemoveEnds(strtok((char*)name.Data(), "/"));
+         Int_t index = 0;
+         index = name.Index(kSepSl3, kNumSl3, index, TString::kExact);
+         // index>0 only if name is a multipart entry
+         name = (index > 0) ? name(0, index) : name;
          arrName[idx] = name;
       } else {
          arrName[idx] = "NA";
@@ -4332,7 +4341,8 @@ Int_t XSNPChip::ReadData(ifstream &input, Option_t *option,
             input.getline(nextline, kBufSize, delim);
          }//while
          unitname = &nextline[1];
-         unitname = unitname.Remove(unitname.Length()-2);
+         unitname = RemoveEnds(unitname.Data()); // remove "\n"
+//old         unitname = unitname.Remove(unitname.Length()-2);
 
          // get type ID of control
          while (strncmp("Type=", nextline, 5) != 0) {
@@ -4406,7 +4416,8 @@ Int_t XSNPChip::ReadData(ifstream &input, Option_t *option,
             input.getline(nextline, kBufSize, delim);
          }//while
          unitname = &nextline[5];
-         unitname = unitname.Remove(unitname.Length()-1); // remove "\n"
+//old         unitname = unitname.Remove(unitname.Length()-1); // remove "\n"
+         unitname = RemoveEnds(unitname.Data()); // remove "\n"
 
          // get direction
 //?? use direction?

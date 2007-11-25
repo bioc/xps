@@ -1,4 +1,4 @@
-// File created: 10/27/2001                          last modified: 12/11/2005
+// File created: 10/27/2001                          last modified: 11/23/2007
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -59,21 +59,61 @@ class XDataTypeInfo: public TNamed {
       TString   fDataType;    //data type
 //??      Bool_t    fHasInfo;     //has datatype info
       Bool_t    fHasInfo;     //! has datatype info
+      Bool_t    fReplace;     //! replace current datatype info
+      TString   fComment;     //Comment
 
    public:
       XDataTypeInfo();
-      XDataTypeInfo(const char *name, const char *title = "", const char *type = "");
+      XDataTypeInfo(const char *name, const char *title = "",
+         const char *type = "", const char *comment = "");
       XDataTypeInfo(const XDataTypeInfo &info);
       XDataTypeInfo& operator=(const XDataTypeInfo& rhs);
       virtual ~XDataTypeInfo();
 
       void SetDataType(const char *type) {fDataType = type;}
       void SetHasInfo(Bool_t hasInfo)    {fHasInfo  = hasInfo;}
+      void SetReplace(Bool_t replace)    {fReplace  = replace;}
+      void SetComment(const char *name)  {fComment = name;}
 
       TString GetDataType() const {return fDataType;}
       Bool_t  HasInfo()     const {return fHasInfo;}
+      Bool_t  Replace()     const {return fReplace;}
+      TString GetComment()  const {return fComment;}
 
-      ClassDef(XDataTypeInfo,1) //DataTypeInfo
+      ClassDef(XDataTypeInfo,2) //DataTypeInfo
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XDataTypeList                                                        //
+//                                                                      //
+// Class containing list of datatype infos                              //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+class XDataTypeList: public XDataTypeInfo {
+
+   protected:
+      TList       *fList;            //List of datatype infos
+
+   public:
+      XDataTypeList();
+      XDataTypeList(const char *name, const char *title = "",
+         const char *type = "", const char *comment = "");
+      XDataTypeList(const XDataTypeList &list);
+      XDataTypeList& operator=(const XDataTypeList& rhs);
+      virtual ~XDataTypeList();
+
+      void           Add(XDataTypeInfo *info);
+      void           AddAt(XDataTypeInfo *info, Int_t idx);
+      Int_t          Remove(const char *name);
+      XDataTypeInfo *At(Int_t idx);
+      XDataTypeInfo *FindDataTypeInfo(const char *name);
+
+      TList  *GetList()             const {return fList;}
+      Int_t   GetSize()             const {return fList ? fList->GetSize() : 0;}
+
+      ClassDef(XDataTypeList,1) //DataTypeList
 };
 
 
@@ -93,7 +133,8 @@ class XDatabaseInfo: public XDataTypeInfo {
 
    public:
       XDatabaseInfo();
-      XDatabaseInfo(const char *name, const char *directory);
+      XDatabaseInfo(const char *name, const char *directory, const char *type = "",
+         const char *comment = "");
       XDatabaseInfo(const XDatabaseInfo &info);
       XDatabaseInfo& operator=(const XDatabaseInfo& rhs);
       virtual ~XDatabaseInfo();
@@ -131,7 +172,8 @@ class XProjectInfo: public XDataTypeInfo {
 
    public:
       XProjectInfo();
-      XProjectInfo(const char *name, Long_t date = 0, const char *description = "");
+      XProjectInfo(const char *name, Long_t date = 0, const char *type = "",
+         const char *description = "", const char *comment = "");
       XProjectInfo(const XProjectInfo &info);
       XProjectInfo& operator=(const XProjectInfo& rhs);
       virtual ~XProjectInfo();
@@ -165,8 +207,9 @@ class XAuthorInfo: public XDataTypeInfo {
 
    public:
       XAuthorInfo();
-      XAuthorInfo(const char *last, const char *first = "", const char *company = "",
-         const char *lab = "", const char *mail = "", const char *phone = "");
+      XAuthorInfo(const char *last, const char *first = "", const char *type = "",
+         const char *company = "", const char *lab = "", const char *mail = "",
+         const char *phone = "", const char *comment = "");
       XAuthorInfo(const XAuthorInfo &info);
       XAuthorInfo& operator=(const XAuthorInfo& rhs);
       virtual ~XAuthorInfo();
@@ -202,7 +245,7 @@ class XLoginInfo: public XDataTypeInfo {
 
    public:
       XLoginInfo();
-      XLoginInfo(const char *userID, const char *password = "");
+      XLoginInfo(const char *userID, const char *password = "", const char *comment = "");
       XLoginInfo(const XLoginInfo &info);
       XLoginInfo& operator=(const XLoginInfo& rhs);
       virtual ~XLoginInfo();
@@ -228,7 +271,6 @@ class XLoginInfo: public XDataTypeInfo {
 class XDatasetInfo: public XDataTypeInfo {
 
    protected:
-      TString      fType;          //Dataset type: UD, TS, DR, MC
       TString      fSample;        //Sample type
       TString      fSubmitter;     //Submitter name
       Long_t       fDate;          //Date of creation
@@ -237,19 +279,18 @@ class XDatasetInfo: public XDataTypeInfo {
    public:
       XDatasetInfo();
       XDatasetInfo(const char *name, const char *type = "", const char *sample = "",
-         const char *submitter = "", Long_t date = 0, const char *description = "");
+         const char *submitter = "", Long_t date = 0, const char *description = "",
+         const char *comment = "");
       XDatasetInfo(const XDatasetInfo &info);
       XDatasetInfo& operator=(const XDatasetInfo& rhs);
       virtual ~XDatasetInfo();
 
       void SetDatasetName(const char *name) {SetTitle(name);}
-      void SetDatasetType(const char *name) {fType        = name;}
       void SetSampleType(const char *name)  {fSample      = name;}
       void SetSubmitter(const char *name)   {fSubmitter   = name;}
       void SetDate(Long_t date)             {fDate        = date;}
       void SetDescription(const char *name) {fDescription = name;}
       TString GetDatasetName()        const {return GetTitle();}
-      TString GetDatasetType()        const {return fType;}
       TString GetSampleType()         const {return fSample;}
       TString GetSubmitter()          const {return fSubmitter;}
       Long_t  GetDate()               const {return fDate;}
@@ -275,8 +316,9 @@ class XSourceInfo: public XDataTypeInfo {
 
    public:
       XSourceInfo();
-      XSourceInfo(const char *source, const char *species = "",
-         const char *subspecies = "", const char *description = "");
+      XSourceInfo(const char *source, const char *type = "",
+         const char *species = "", const char *subspecies = "",
+         const char *description = "", const char *comment = "");
       XSourceInfo(const XSourceInfo &info);
       XSourceInfo& operator=(const XSourceInfo& rhs);
       virtual ~XSourceInfo();
@@ -304,21 +346,19 @@ class XSourceInfo: public XDataTypeInfo {
 class XArrayInfo: public XDataTypeInfo {
 
    protected:
-      TString      fType;          //Array type, e.g. GeneChip
       TString      fDescription;   //Description
 
    public:
       XArrayInfo();
-      XArrayInfo(const char *name, const char *type = "", const char *description = "");
+      XArrayInfo(const char *name, const char *type = "",
+         const char *description = "", const char *comment = "");
       XArrayInfo(const XArrayInfo &info);
       XArrayInfo& operator=(const XArrayInfo& rhs);
       virtual ~XArrayInfo();
 
       void SetArrayName(const char *name)   {SetTitle(name);}
-      void SetArrayType(const char *name)   {fType        = name;}
       void SetDescription(const char *name) {fDescription = name;}
       TString GetArrayName()          const {return GetTitle();}
-      TString GetArrayType()          const {return fType;}
       TString GetDescription()        const {return fDescription;}
 
       ClassDef(XArrayInfo,1) //ArrayInfo
@@ -339,15 +379,14 @@ class XHybInfo: public XDataTypeInfo {
       TString      fPreparation;   //Hybridization preparation
       TString      fProtocol;      //Hybridization protocol
       TString      fReplicaName;   //Name for group of replica
-      TString      fComment;       //Comment
       Long_t       fDate;          //Date of hybridization
       Int_t        fReplica;       //Replica number
 
    public:
       XHybInfo();
-      XHybInfo(const char *hybname, const char *input = "", Long_t date = 0, 
-          Int_t replica = 1, const char *prep = "", const char *protocol = "",
-          const char *comment = "");
+      XHybInfo(const char *hybname, const char *type = "", const char *input = "",
+          Long_t date = 0, const char *prep = "", const char *protocol = "",
+          const char *repname = "", Int_t replica = 1, const char *comment = "");
       XHybInfo(const XHybInfo &info);
       XHybInfo& operator=(const XHybInfo& rhs);
       virtual ~XHybInfo();
@@ -357,7 +396,6 @@ class XHybInfo: public XDataTypeInfo {
       void SetHybPrep(const char *name)     {fPreparation = name;}
       void SetProtocol(const char *name)    {fProtocol    = name;}
       void SetReplicaName(const char *name) {fReplicaName = name;}
-      void SetComment(const char *name)     {fComment     = name;}
       void SetDate(Long_t date)             {fDate        = date;}
       void SetReplicaNumber(Int_t num)      {fReplica     = num;}
       TString GetHybName()            const {return GetTitle();}
@@ -365,11 +403,32 @@ class XHybInfo: public XDataTypeInfo {
       TString GetHybPrep()            const {return fPreparation;}
       TString GetProtocol()           const {return fProtocol;}
       TString GetReplicaName()        const {return fReplicaName;}
-      TString GetComment()            const {return fComment;}
       Long_t  GetDate()               const {return fDate;}
       Int_t   GetReplicaNumber()      const {return fReplica;}
 
       ClassDef(XHybInfo,1) //HybInfo
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XHybridizationList                                                   //
+//                                                                      //
+// Class describing sample hybridizations                               //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+class XHybridizationList: public XDataTypeList {
+
+   protected:
+
+   public:
+      XHybridizationList();
+      XHybridizationList(const char *type, const char *comment = "");
+      XHybridizationList(const XHybridizationList &list);
+      XHybridizationList& operator=(const XHybridizationList& rhs);
+      virtual ~XHybridizationList();
+
+      ClassDef(XHybridizationList,1) //HybridizationList
 };
 
 
@@ -387,7 +446,6 @@ class XSampleInfo: public XDataTypeInfo {
       TString      fPhenotype;     //Phenotype
       TString      fGenotype;      //Genotype
       TString      fExtraction;    //Extraction
-      TString      fComment;       //Comment
       TString      fXenoStrain;    //Strain for xenograft
       TString      fXenoSex;       //Sex of acceptor strain
       TString      fAgeUnits;      //Age units
@@ -396,10 +454,10 @@ class XSampleInfo: public XDataTypeInfo {
 
    public:
       XSampleInfo();
-      XSampleInfo(const char *name, const char *sex = "", const char *pheno = "", 
-         const char *geno = "", const char *extract = "", const char *comment = "",
+      XSampleInfo(const char *name, const char *type = "", const char *sex = "",
+         const char *pheno = "", const char *geno = "", const char *extract = "",
          Bool_t isXeno = kFALSE, const char *xenostrain = "", const char *xenosex = "",
-         Double_t xenoage = 0.0, const char *xageunits = "");
+         Double_t xenoage = 0.0, const char *xageunits = "", const char *comment = "");
       XSampleInfo(const XSampleInfo &info);
       XSampleInfo& operator=(const XSampleInfo& rhs);
       virtual ~XSampleInfo();
@@ -409,7 +467,6 @@ class XSampleInfo: public XDataTypeInfo {
       void SetPhenotype(const char *name)  {fPhenotype  = name;}
       void SetGenotype(const char *name)   {fGenotype   = name;}
       void SetExtraction(const char *name) {fExtraction = name;}
-      void SetComment(const char *name)    {fComment    = name;}
       void SetXenoStrain(const char *name) {fXenoStrain = name;}
       void SetXenoSex(const char *name)    {fXenoSex    = name;}
       void SetAgeUnits(const char *name)   {fAgeUnits   = name;}
@@ -419,7 +476,6 @@ class XSampleInfo: public XDataTypeInfo {
       TString  GetPhenotype()        const {return fPhenotype;}
       TString  GetGenotype()         const {return fGenotype;}
       TString  GetExtraction()       const {return fExtraction;}
-      TString  GetComment()          const {return fComment;}
       TString  GetXenoStrain()       const {return fXenoStrain;}
       TString  GetXenoSex()          const {return fXenoSex;}
       TString  GetAgeUnits()         const {return fAgeUnits;}
@@ -439,7 +495,6 @@ class XSampleInfo: public XDataTypeInfo {
 class XCellLineInfo: public XSampleInfo {
 
    protected:
-      TString      fCellType;      //Cell type
       TString      fParentCell;    //Parent cell line
       TString      fATCC;          //ATCC number
       TString      fModification;  //Modification
@@ -449,18 +504,15 @@ class XCellLineInfo: public XSampleInfo {
       XCellLineInfo(const char *name, const char *type, const char *parent = "", 
          const char *atcc = "", const char *mod = "", const char *sex = "",
          const char *pheno = "", const char *geno = "", const char *extract = "",
-         const char *comment = "", Bool_t isXeno = kFALSE,
-         const char *xenostrain = "", const char *xenosex = "",
-         Double_t xenoage = 0, const char *xageunits = "years");
+         Bool_t isXeno = kFALSE, const char *xenostrain = "", const char *xenosex = "",
+         Double_t xenoage = 0, const char *xageunits = "years", const char *comment = "");
       XCellLineInfo(const XCellLineInfo &info);
       XCellLineInfo& operator=(const XCellLineInfo& rhs);
       virtual ~XCellLineInfo();
 
-      void SetCellType(const char *name)     {fCellType     = name;}
       void SetParentCell(const char *name)   {fParentCell   = name;}
       void SetATCCNumber(const char *name)   {fATCC         = name;}
       void SetModification(const char *name) {fModification = name;}
-      TString GetCellType()            const {return fCellType;}
       TString GetParentCell()          const {return fParentCell;}
       TString GetATCCNumber()          const {return fATCC;}
       TString GetModification()        const {return fModification;}
@@ -479,7 +531,6 @@ class XCellLineInfo: public XSampleInfo {
 class XPrimaryCellInfo: public XSampleInfo {
 
    protected:
-      TString      fCellType;      //Cell type
       Long_t       fIsolationDate; //Date of isolation of primary cell
       TString      fDescription;   //Description
 
@@ -488,19 +539,16 @@ class XPrimaryCellInfo: public XSampleInfo {
       XPrimaryCellInfo(const char *name, const char *type, Long_t date, 
          const char *description = "", const char *sex = "",
          const char *pheno = "", const char *geno = "", const char *extract = "",
-         const char *comment = "", Bool_t isXeno = kFALSE,
-         const char *xenostrain = "", const char *xenosex = "",
-         Double_t xenoage = 0, const char *xageunits = "years");
+         Bool_t isXeno = kFALSE, const char *xenostrain = "", const char *xenosex = "",
+         Double_t xenoage = 0, const char *xageunits = "years", const char *comment = "");
       XPrimaryCellInfo(const XPrimaryCellInfo &info);
       XPrimaryCellInfo& operator=(const XPrimaryCellInfo& rhs);
       virtual ~XPrimaryCellInfo();
 
-      void SetCellType(const char *name)     {fCellType      = name;}
-      void SetIsolationDate(Long_t date)     {fIsolationDate = date;}
-      void SetDescription(const char *name)  {fDescription   = name;}
-      TString GetCellType()            const {return fCellType;}
-      Long_t  GetIsolationDate()       const {return fIsolationDate;}
-      TString GetDescription()         const {return fDescription;}
+      void SetIsolationDate(Long_t date)    {fIsolationDate = date;}
+      void SetDescription(const char *name) {fDescription   = name;}
+      Long_t  GetIsolationDate()      const {return fIsolationDate;}
+      TString GetDescription()        const {return fDescription;}
 
       ClassDef(XPrimaryCellInfo,1) //PrimaryCellInfo
 };
@@ -516,7 +564,6 @@ class XPrimaryCellInfo: public XSampleInfo {
 class XTissueInfo: public XSampleInfo {
 
    protected:
-      TString      fTissueType;    //Tissue type
       TString      fDevelopment;   //Development stage
       TString      fMorphology;    //Morphology
       TString      fDisease;       //Disease
@@ -531,14 +578,13 @@ class XTissueInfo: public XSampleInfo {
          const char *morphology = "", const char *disease = "", const char *stage = "",
          Double_t donorage = 0, const char *ageunits = "", const char *status = "",
          const char *sex = "", const char *pheno = "", const char *geno = "",
-         const char *extract = "", const char *comment = "", Bool_t isXeno = kFALSE,
-         const char *xenostrain = "", const char *xenosex = "",
-         Double_t xenoage = 0, const char *xageunits = "years");
+         const char *extract = "", Bool_t isXeno = kFALSE, const char *xenostrain = "",
+         const char *xenosex = "", Double_t xenoage = 0, const char *xageunits = "years",
+         const char *comment = "");
       XTissueInfo(const XTissueInfo &info);
       XTissueInfo& operator=(const XTissueInfo& rhs);
       virtual ~XTissueInfo();
 
-      void SetTissueType(const char *name)       {fTissueType   = name;}
       void SetDevelopmentStage(const char *name) {fDevelopment  = name;}
       void SetMorphology(const char *name)       {fMorphology   = name;}
       void SetDisease(const char *name)          {fDisease      = name;}
@@ -546,7 +592,6 @@ class XTissueInfo: public XSampleInfo {
       void SetDonorAge(Double_t age)             {fDonorAge     = age;}
       void SetAgeUnits(const char *name)         {fAgeUnits     = name;}
       void SetDonorStatus(const char *name)      {fDonorStatus  = name;}
-      TString  GetTissueType()             const {return fTissueType;}
       TString  GetDevelopmentStage()       const {return fDevelopment;}
       TString  GetMorphology()             const {return fMorphology;}
       TString  GetDisease()                const {return fDisease;}
@@ -569,7 +614,6 @@ class XTissueInfo: public XSampleInfo {
 class XBiopsyInfo: public XSampleInfo {
 
    protected:
-      TString      fBiopsyType;    //Biopsy type
       TString      fMorphology;    //Morphology
       TString      fDisease;       //Disease
       TString      fDiseaseStage;  //Disease stage
@@ -583,21 +627,18 @@ class XBiopsyInfo: public XSampleInfo {
          const char *disease = "", const char *stage = "", Double_t donorage = 0,
          const char *ageunits = "", const char *status = "", const char *sex = "",
          const char *pheno = "", const char *geno = "", const char *extract = "",
-         const char *comment = "", Bool_t isXeno = kFALSE,
-         const char *xenostrain = "", const char *xenosex = "",
-         Double_t xenoage = 0, const char *xageunits = "years");
+         Bool_t isXeno = kFALSE, const char *xenostrain = "", const char *xenosex = "",
+         Double_t xenoage = 0, const char *xageunits = "years", const char *comment = "");
       XBiopsyInfo(const XBiopsyInfo &info);
       XBiopsyInfo& operator=(const XBiopsyInfo& rhs);
       virtual ~XBiopsyInfo();
 
-      void SetBiopsyType(const char *name)   {fBiopsyType   = name;}
       void SetMorphology(const char *name)   {fMorphology   = name;}
       void SetDisease(const char *name)      {fDisease      = name;}
       void SetDiseaseStage(const char *name) {fDiseaseStage = name;}
       void SetDonorAge(Double_t age)         {fDonorAge     = age;}
       void SetAgeUnits(const char *name)     {fAgeUnits     = name;}
       void SetDonorStatus(const char *name)  {fDonorStatus  = name;}
-      TString  GetBiopsyType()         const {return fBiopsyType;}
       TString  GetMorphology()         const {return fMorphology;}
       TString  GetDisease()            const {return fDisease;}
       TString  GetDiseaseStage()       const {return fDiseaseStage;}
@@ -611,15 +652,14 @@ class XBiopsyInfo: public XSampleInfo {
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
-// XTreatment                                                           //
+// XTreatmentInfo                                                       //
 //                                                                      //
 // Class describing a single treatment                                  //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
-class XTreatment: public TNamed {
+class XTreatmentInfo: public XDataTypeInfo {
 
    protected:
-      TString      fType;           //Treatment type
       Double_t     fConcentration;  //Concentration
       TString      fConcUnit;       //Concentration units
       Double_t     fTime;           //Time
@@ -627,63 +667,50 @@ class XTreatment: public TNamed {
       TString      fAdministration; //Administration
 
    public:
-      XTreatment();
-      XTreatment(const char *name, const char *type = "", Double_t conc = 0.0,
+      XTreatmentInfo();
+      XTreatmentInfo(const char *name, const char *type = "", Double_t conc = 0.0,
          const char *concunit = "", Double_t time = 0.0, const char *timeunit = "",
-         const char *admin = "");
-      XTreatment(const XTreatment &info);
-      XTreatment& operator=(const XTreatment& rhs);
-      virtual ~XTreatment();
+         const char *admin = "", const char *comment = "");
+      XTreatmentInfo(const XTreatmentInfo &info);
+      XTreatmentInfo& operator=(const XTreatmentInfo& rhs);
+      virtual ~XTreatmentInfo();
 
-      void SetTreatment(const char *name)      {SetTitle(name);}
-      void SetTreatmentType(const char *type)  {fType           = type;}
+      void SetTreatmentName(const char *name)  {SetTitle(name);}
       void SetConcentration(Double_t conc)     {fConcentration  = conc;}
       void SetConcUnit(const char *name)       {fConcUnit       = name;}
       void SetTime(Double_t time)              {fTime           = time;}
       void SetTimeUnit(const char *name)       {fTimeUnit       = name;}
       void SetAdministration(const char *name) {fAdministration = name;}
-      TString  GetTreatment()            const {return GetTitle();}
-      TString  GetTreatmentType()        const {return fType;}
+      TString  GetTreatmentName()        const {return GetTitle();}
       Double_t GetConcentration()        const {return fConcentration;}
       TString  GetConcUnit()             const {return fConcUnit;}
       Double_t GetTime()                 const {return fTime;}
       TString  GetTimeUnit()             const {return fTimeUnit;}
       TString  GetAdministration()       const {return fAdministration;}
 
-      ClassDef(XTreatment,1) //Treatment
+      ClassDef(XTreatmentInfo,1) //TreatmentInfo
 };
 
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
-// XTreatmentInfo                                                       //
+// XTreatmentList                                                       //
 //                                                                      //
 // Class describing sample treatments                                   //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
-class XTreatmentInfo: public XDataTypeInfo {
+class XTreatmentList: public XDataTypeList {
 
    protected:
-      TList       *fTreatments;     //List of treatments
-      TString      fComment;        //Comment
 
    public:
-      XTreatmentInfo();
-      XTreatmentInfo(const char *type, const char *comment = "");
-      XTreatmentInfo(const XTreatmentInfo &info);
-      XTreatmentInfo& operator=(const XTreatmentInfo& rhs);
-      virtual ~XTreatmentInfo();
+      XTreatmentList();
+      XTreatmentList(const char *type, const char *comment = "");
+      XTreatmentList(const XTreatmentList &list);
+      XTreatmentList& operator=(const XTreatmentList& rhs);
+      virtual ~XTreatmentList();
 
-      void  AddTreatment(XTreatment *treat);
-      Int_t RemoveTreatment(const char *name);
-      XTreatment *GetTreatment(const char *name);
-
-      void SetTreatmentType(const char *name) {SetTitle(name);}
-      void SetComment(const char *name)       {fComment = name;}
-      TString GetTreatmentType()        const {return GetTitle();}
-      TString GetComment()              const {return fComment;}
-
-      ClassDef(XTreatmentInfo,1) //TreatmentInfo
+      ClassDef(XTreatmentList,1) //TreatmentList
 };
 
 #endif

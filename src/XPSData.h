@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 09/20/2007
+// File created: 08/05/2002                          last modified: 11/21/2007
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -38,7 +38,14 @@
 #ifndef __XPSData__
 #define __XPSData__
 
+
+#ifndef __XPSSchemes__
 #include "XPSSchemes.h"
+#endif
+
+#ifndef __XProjectHandler__
+#include "XPSProjectHandler.h"
+#endif
 
 // tree data extensions
 extern const char *kExtenData[];
@@ -66,14 +73,6 @@ class XHybridization;
 class XPosition;
 class XPlot;
 
-//classes for database
-class XLoginInfo;
-class XProjectInfo;
-class XAuthorInfo;
-class XDatasetInfo;
-class XSourceInfo;
-class XArrayInfo;
-
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
 // XDataManager                                                         //
@@ -81,13 +80,7 @@ class XArrayInfo;
 // Class for managing import of microarray data                         //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
-
-///////
-//?? ev.????
-//class XDataManager: public XProcessManager {
-///////
-
-class XDataManager: public XManager {
+class XDataManager: public XManager, public XProjectHandler {
 
    private:
       TFile          *fSchemeFile;    //! file containing chip definitions
@@ -132,39 +125,13 @@ class XDataManager: public XManager {
                        const char *var2sort = "");
 
       // methods to support database
-      virtual TString LoginInfo(XLoginInfo *info,
-                         Bool_t copy = kFALSE, Bool_t replace = kFALSE);
-      virtual void    LoginInfo(const char *userID, const char *password,
-                         Bool_t replace = kFALSE);
-      virtual TString ProjectInfo(XProjectInfo *info,
-                         Bool_t copy = kFALSE, Bool_t replace = kFALSE);
-      virtual void    ProjectInfo(const char *name, Long_t date,
-                         const char *description = "", Bool_t replace = kFALSE);
-      virtual TString AuthorInfo(XAuthorInfo *info,
-                         Bool_t copy = kFALSE, Bool_t replace = kFALSE);
-      virtual void    AuthorInfo(const char *lastname, const char *firstname,
-                         const char *company, const char *department = "",
-                         const char *phone ="", const char *mail ="",
-                         Bool_t replace = kFALSE);
-      virtual TString DatasetInfo(XDatasetInfo *info,
-                         Bool_t copy = kFALSE, Bool_t replace = kFALSE);
-      virtual void    DatasetInfo(const char *name, const char *type,
-                         const char *sample, const char *submitter, Long_t date,
-                         const char *description = "", Bool_t replace = kFALSE);
-      virtual TString SourceInfo(XSourceInfo *info,
-                         Bool_t copy = kFALSE, Bool_t replace = kFALSE);
-      virtual void    SourceInfo(const char *name, const char *species,
-                         const char *subspecies, const char *description = "",
-                         Bool_t replace = kFALSE);
-      virtual TString ArrayInfo(XArrayInfo *info,
-                         Bool_t copy = kFALSE, Bool_t replace = kFALSE);
-      virtual void    ArrayInfo(const char *name, const char *type,
-                         const char *description = "", Bool_t replace = kFALSE);
+      virtual Int_t BeginTransaction(const char *name = "");
+      virtual Int_t CommitTransaction();
 
       TFile    *GetSchemeFile() const {return fSchemeFile;}
       XFolder  *GetSchemes()    const {return fSchemes;}
       
-      ClassDef(XDataManager,1) //DataManager
+      ClassDef(XDataManager,2) //DataManager
 };
 
 //////////////////////////////////////////////////////////////////////////

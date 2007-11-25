@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 09/19/2007
+// File created: 08/05/2002                          last modified: 11/18/2007
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -49,6 +49,9 @@
 * May 2005 - Replace XContent with XFolder.
 * Jun 2005 - Add methods to support database.
 * Mar 2006 - Add support for alternative schemes, i.e. CDF files.
+* Nov 2007 - Save fSchemeName of class XProcesSet, increase ClassDef to 2.
+*          - XProcessManager now inherits from XManager and XProjectHandler
+*          - database methods ProjectInfo() etc are moved to XProjectHandler
 *
 ******************************************************************************/
 
@@ -168,6 +171,13 @@ const char *kUniFltr[]   = { "foldchange",
                              "call",
                              ""};
 
+// multivariate filter trees
+const char *kMultiFltr[]   = { "foldchange",
+                               "statistic",
+                               "pvalue",
+                               "call",
+                               ""};
+
 // univariate test trees
 const char *kExtenUTst[] = { "uvt", "stt", "wil", "var", ""};
 const char *kTypeUTst[]  = { "normaltest",
@@ -238,7 +248,7 @@ ClassImp(XProcesSet);
 
 //______________________________________________________________________________
 XProcessManager::XProcessManager()
-                :XManager()
+                :XManager(), XProjectHandler()
 {
    // Default ProcessManager constructor
    if(kCS) cout << "---XProcessManager::XProcessManager(default)------" << endl;
@@ -253,7 +263,7 @@ XProcessManager::XProcessManager()
 
 //______________________________________________________________________________
 XProcessManager::XProcessManager(const char *name, const char *arraytype, Int_t verbose)
-                :XManager(name, arraytype, verbose)
+                :XManager(name, arraytype, verbose), XProjectHandler(name, arraytype)
 {
    // Normal ProcessManager constructor
    if(kCS) cout << "---XProcessManager::XProcessManager------" << endl;
@@ -573,7 +583,7 @@ Int_t XProcessManager::InitData(TFile *datafile, Bool_t isOwner)
 
 //______________________________________________________________________________
 Int_t XProcessManager::InitSchemes(TFile *schemefile, Bool_t isOwner,
-                       const char *schemename)
+                       const char *schemename, const char *schemetype)
 {
    // Initialize processmanager with external root schemefile
    // Set isOwner = kTRUE if schemefile should be deleted by XProcessManager
@@ -606,6 +616,7 @@ Int_t XProcessManager::InitSchemes(TFile *schemefile, Bool_t isOwner,
    if (fSetting) {
       ((XProcesSetting*)fSetting)->SetSchemeFile(fSchemeFile);
       ((XProcesSetting*)fSetting)->SetSchemeName(schemename);
+      ((XProcesSetting*)fSetting)->SetSchemeType(schemetype);
    }//if
 
    savedir->cd();
@@ -650,7 +661,8 @@ Int_t XProcessManager::OpenData(const char *fullname, Option_t *option)
 }//OpenData
 
 //______________________________________________________________________________
-Int_t XProcessManager::OpenSchemes(const char *fullname, const char *schemename)
+Int_t XProcessManager::OpenSchemes(const char *fullname, const char *schemename,
+                       const char *schemetype)
 {
    // Open root scheme file using full path 
    // Optional select alternative scheme "schemename"
@@ -684,6 +696,7 @@ Int_t XProcessManager::OpenSchemes(const char *fullname, const char *schemename)
    if (fSetting) {
       ((XProcesSetting*)fSetting)->SetSchemeFile(fSchemeFile);
       ((XProcesSetting*)fSetting)->SetSchemeName(schemename);
+      ((XProcesSetting*)fSetting)->SetSchemeType(schemetype);
    }//if
 
    savedir->cd();
@@ -723,303 +736,104 @@ void XProcessManager::CloseSchemes()
 }//CloseSchemes
 
 //______________________________________________________________________________
-TString XProcessManager::LoginInfo(XLoginInfo *info, Bool_t copy, Bool_t replace)
+Int_t XProcessManager::BeginTransaction(const char *name)
 {
-   // Store login information in content folder and return userID
-   // If copy is kTRUE then create new XLoginInfo before adding to content
-   // If replace is kTRUE then replace existing XLoginInfo in content
-   if(kCS) cout << "------XProcessManager::LoginInfo------" << endl;
+   // Begin transaction
+   if(kCS) cout << "------XProcessManager::BeginTransaction------" << endl;
 
-   if (fAbort || (info == 0)) return 0;
-
-   XLoginInfo *loginfo = info;
-   if (copy) {
-      loginfo = new XLoginInfo(*info);
-   }//if
-
-   if (replace) {
-      fContent->Remove(fContent->FindObject("Login", "XLoginInfo"));
-   }//if
-
-   fContent->Add(loginfo);
-   return loginfo->GetUserID();
-}//LoginInfo
+   if (fAbort) return errAbort;
+   
+   return errNoErr;
+}//BeginTransaction
 
 //______________________________________________________________________________
-void XProcessManager::LoginInfo(const char *userID, const char *password,
-                      Bool_t replace)
+Int_t XProcessManager::CommitTransaction()
 {
-   // Store login information in content folder
-   // If replace is kTRUE then replace existing XLoginInfo in content
-   if(kCS) cout << "------XProcessManager::LoginInfo------" << endl;
+   // Commit transaction
+   if(kCS) cout << "------XProcessManager::CommitTransaction------" << endl;
 
-   if (fAbort) return;
+   if (fAbort) return errAbort;
 
-   XLoginInfo *info = new XLoginInfo(userID, password);
+   if (fList && fList->GetSize() > 0) {
+      for (Int_t i=0; i<fList->GetSize(); i++) {
+         XDataTypeInfo *info = (XDataTypeInfo*)(fList->At(i));
 
-   if (replace) {
-      fContent->Remove(fContent->FindObject("Login", "XLoginInfo"));
+         if (strcmp(info->ClassName(), "XDatasetInfo") == 0) {
+            // set data type for data contained in dataset
+            info->SetDataType(fDataType);
+
+            if (info->Replace() == kTRUE) {
+               XDatasetInfo *oldinfo = 0;
+               oldinfo = (XDatasetInfo*)fContent->FindObject("Dataset", "XDatasetInfo");
+               if (oldinfo == 0) {
+                  fContent->Add(info);
+                  return errNoErr;
+               }//if
+
+               TString oldname = oldinfo->GetDatasetName();
+               TString newname = ((XDatasetInfo*)info)->GetDatasetName();
+               if (strcmp(oldname.Data(), newname.Data()) != 0) {
+                  cout << "Warning: Currently it is not possible to change dataset name <"
+                       << oldname << "> to dataset name <" << newname <<">." << endl;
+                  ((XDatasetInfo*)info)->SetDatasetName(oldname);
+               }//if
+
+               fContent->Remove(oldinfo);
+            }//if
+         } else if (strcmp(info->ClassName(), "XHybridizationList") == 0) {
+            //check for existance of info in case of update file and/or replace info
+            XHybridizationList *oldlist = 0;
+            oldlist = (XHybridizationList*)fContent->FindObject(info->GetName(), info->ClassName());
+
+            if (oldlist) {
+               XHybridizationList *newlist = (XHybridizationList*)info;
+
+               XHybInfo *oldhyb = 0;
+               XHybInfo *newhyb = 0;
+               for (Int_t i=(oldlist->GetSize()-1); i>-1; i--) {
+                  oldhyb = (XHybInfo*)(oldlist->At(i));
+                  newhyb = (XHybInfo*)(newlist->FindDataTypeInfo(oldhyb->GetHybName()));
+
+                  if (newhyb == 0) { //add only if not replaced by new info
+                     newlist->AddAt(oldhyb, 0);
+                  }//if
+               }//for_i
+
+               fContent->Remove(oldlist);
+            }//if
+         } else if (strcmp(info->ClassName(), "XTreatmentList") == 0) {
+            //check for existance of info in case of update file and/or replace info
+            XTreatmentList *oldlist = 0;
+            oldlist = (XTreatmentList*)fContent->FindObject(info->GetName(), info->ClassName());
+
+            if (oldlist) {
+               XTreatmentList *newlist = (XTreatmentList*)info;
+
+               XTreatmentInfo *oldtreat = 0;
+               XTreatmentInfo *newtreat = 0;
+               for (Int_t i=(oldlist->GetSize()-1); i>-1; i--) {
+                  oldtreat = (XTreatmentInfo*)(oldlist->At(i));
+                  newtreat = (XTreatmentInfo*)(newlist->FindDataTypeInfo(oldtreat->GetTreatmentName()));
+
+                  if (newtreat == 0) { //add only if not replaced by new info
+                     newlist->AddAt(oldtreat, 0);
+                  }//if
+               }//for_i
+
+               fContent->Remove(oldlist);
+            }//if
+         } else if (info->Replace() == kTRUE) {
+            fContent->Remove(fContent->FindObject(info->GetName(), info->ClassName()));
+         }//if
+
+         fContent->Add(info);
+      }//for_i
+   } else {
+      cerr << "Error: Could not add DataTypes to Content!" << endl;
    }//if
-   fContent->Add(info);
-}//LoginInfo
-
-//______________________________________________________________________________
-TString XProcessManager::ProjectInfo(XProjectInfo *info, Bool_t copy, Bool_t replace)
-{
-   // Store project information in content folder and return project name
-   // If copy is kTRUE then create new XProjectInfo before adding to content
-   // If replace is kTRUE then replace existing XProjectInfo in content
-   if(kCS) cout << "------XProcessManager::ProjectInfo------" << endl;
-
-   if (fAbort || (info == 0)) return 0;
-
-   XProjectInfo *projectinfo = info;
-   if (copy) {
-      projectinfo = new XProjectInfo(*info);
-   }//if
-
-   if (replace) {
-      fContent->Remove(fContent->FindObject("Project", "XProjectInfo"));
-   }//if
-
-   fContent->Add(projectinfo);
-   return projectinfo->GetProjectName();
-}//ProjectInfo
-
-//______________________________________________________________________________
-void XProcessManager::ProjectInfo(const char *name, Long_t date,
-                      const char *description, Bool_t replace)
-{
-   // Store project information in content folder
-   // If replace is kTRUE then replace existing XProjectInfo in content
-   if(kCS) cout << "------XProcessManager::ProjectInfo------" << endl;
-
-   if (fAbort) return;
-
-   XProjectInfo *info = new XProjectInfo(name, date, description);
-
-   if (replace) {
-      fContent->Remove(fContent->FindObject("Project", "XProjectInfo"));
-   }//if
-
-   fContent->Add(info);
-}//ProjectInfo
-
-//______________________________________________________________________________
-TString XProcessManager::AuthorInfo(XAuthorInfo *info, Bool_t copy, Bool_t replace)
-{
-   // Store author information in content folder and return author name
-   // If copy is kTRUE then create new XAuthorInfo before adding to content
-   // If replace is kTRUE then replace existing XAuthorInfo in content
-   if(kCS) cout << "------XProcessManager::AuthorInfo------" << endl;
-
-   if (fAbort || (info == 0)) return 0;
-
-   XAuthorInfo *authorinfo = info;
-   if (copy) {
-      authorinfo = new XAuthorInfo(*info);
-   }//if
-
-   if (replace) {
-      fContent->Remove(fContent->FindObject("Author", "XAuthorInfo"));
-   }//if
-
-   fContent->Add(authorinfo);
-   return authorinfo->GetLastName();
-}//AuthorInfo
-
-//______________________________________________________________________________
-void XProcessManager::AuthorInfo(const char *lastname, const char *firstname,
-                      const char *company, const char *department,
-                      const char *phone, const char *mail, Bool_t replace)
-{
-   // Store author information in content folder
-   // If replace is kTRUE then replace existing XAuthorInfo in content
-   if(kCS) cout << "------XProcessManager::AuthorInfo------" << endl;
-
-   if (fAbort) return;
-
-   XAuthorInfo *info = new XAuthorInfo(lastname, firstname, company, department,
-                                       phone, mail);
-
-   if (replace) {
-      fContent->Remove(fContent->FindObject("Author", "XAuthorInfo"));
-   }//if
-
-   fContent->Add(info);
-}//AuthorInfo
-
-//______________________________________________________________________________
-TString XProcessManager::DatasetInfo(XDatasetInfo *info, Bool_t copy, Bool_t replace)
-{
-   // Store dataset information in content folder and return datset name
-   // If copy is kTRUE then create new XDatasetInfo before adding to content
-   // If replace is kTRUE then replace existing XDatasetInfo in content
-   if(kCS) cout << "------XProcessManager::DatasetInfo------" << endl;
-
-   if (fAbort || (info == 0)) return 0;
-
-   XDatasetInfo *setinfo = info;
-   if (copy) {
-      setinfo = new XDatasetInfo(*info);
-   }//if
-
-   // set data type for data contained in dataset
-   setinfo->SetDataType(fDataType);
-
-   if (replace) {
-///////////////////////
-// TO DO: Problem if new dataset name! Two possibilities:
-// 1, do not allow changing dataset name (current implementation)
-// 2, change dataset name in all DataTreeInfos in all trees in TFile
-///////////////////////
-      XDatasetInfo *oldinfo = 0;
-      oldinfo = (XDatasetInfo*)fContent->FindObject("Dataset", "XDatasetInfo");
-      if (oldinfo == 0) {
-         fContent->Add(setinfo);
-         return setinfo->GetDatasetName();
-      }//if
-
-      TString oldname = oldinfo->GetDatasetName();
-      TString newname = setinfo->GetDatasetName();
-      if (strcmp(oldname.Data(), newname.Data()) != 0) {
-         cout << "Warning: Currently it is not possible to change dataset name <"
-              << oldname << "> to dataset name <" << newname <<">." << endl;
-         setinfo->SetDatasetName(oldname);
-      }//if
-
-      fContent->Remove(oldinfo);
-   }//if
-
-   fContent->Add(setinfo);
-   return setinfo->GetDatasetName();
-}//DatasetInfo
-
-//______________________________________________________________________________
-void XProcessManager::DatasetInfo(const char *name, const char *type,
-                      const char *sample, const char *submitter, Long_t date,
-                      const char *description, Bool_t replace)
-{
-   // Store dataset information in content folder
-   // If replace is kTRUE then replace existing XDatasetInfo in content
-   if(kCS) cout << "------XProcessManager::DatasetInfo------" << endl;
-
-   if (fAbort) return;
-
-   XDatasetInfo *setinfo = new XDatasetInfo(name, type, sample, submitter, date,
-                                            description);
-
-   if (replace) {
-///////////////////////
-// TO DO: Problem if new dataset name! Two possibilities:
-// 1, do not allow changing dataset name (current implementation)
-// 2, change dataset name in all DataTreeInfos in all trees in TFile
-///////////////////////
-      XDatasetInfo *oldinfo = 0;
-      oldinfo = (XDatasetInfo*)fContent->FindObject("Dataset", "XDatasetInfo");
-      if (oldinfo == 0) {
-         fContent->Add(setinfo);
-         return;
-      }//if
-
-      TString oldname = oldinfo->GetDatasetName();
-      TString newname = setinfo->GetDatasetName();
-      if (strcmp(oldname.Data(), newname.Data()) != 0) {
-         cout << "Warning: Currently it is not possible to change dataset name <"
-              << oldname << "> to dataset name <" << newname <<">." << endl;
-         setinfo->SetDatasetName(oldname);
-      }//if
-
-      fContent->Remove(oldinfo);
-   }//if
-
-   fContent->Add(setinfo);
-}//DatasetInfo
-
-//______________________________________________________________________________
-TString XProcessManager::SourceInfo(XSourceInfo *info, Bool_t copy, Bool_t replace)
-{
-   // Store source information in content folder and return source name
-   // If copy is kTRUE then create new XSourceInfo before adding to content
-   // If replace is kTRUE then replace existing XSourceInfo in content
-   if(kCS) cout << "------XProcessManager::SourceInfo------" << endl;
-
-   if (fAbort || (info == 0)) return 0;
-
-   XSourceInfo *sourceinfo = info;
-   if (copy) {
-      sourceinfo = new XSourceInfo(*info);
-   }//if
-
-   if (replace) {
-      fContent->Remove(fContent->FindObject("Source", "XSourceInfo"));
-   }//if
-
-   fContent->Add(sourceinfo);
-   return sourceinfo->GetSourceName();
-}//SourceInfo
-
-//______________________________________________________________________________
-void XProcessManager::SourceInfo(const char *name, const char *species,
-                      const char *subspecies, const char *description,
-                      Bool_t replace)
-{
-   // Store source information in content folder
-   // If replace is kTRUE then replace existing XSourceInfo in content
-   if(kCS) cout << "------XProcessManager::SourceInfo------" << endl;
-
-   if (fAbort) return;
-
-   XSourceInfo *info = new XSourceInfo(name, species, subspecies, description);
-
-   if (replace) {
-      fContent->Remove(fContent->FindObject("Source", "XSourceInfo"));
-   }//if
-
-   fContent->Add(info);
-}//SourceInfo
-
-//______________________________________________________________________________
-TString XProcessManager::ArrayInfo(XArrayInfo *info, Bool_t copy, Bool_t replace)
-{
-   // Store array information in content folder and return array name
-   // If copy is kTRUE then create new XArrayInfo before adding to content
-   // If replace is kTRUE then replace existing XArrayInfo in content
-   if(kCS) cout << "------XProcessManager::ArrayInfo------" << endl;
-
-   if (fAbort || (info == 0)) return 0;
-
-   XArrayInfo *arrayinfo = info;
-   if (copy) {
-      arrayinfo = new XArrayInfo(*info);
-   }//if
-
-   if (replace) {
-      fContent->Remove(fContent->FindObject("Array", "XArrayInfo"));
-   }//if
-
-   fContent->Add(arrayinfo);
-   return arrayinfo->GetArrayName();
-}//ArrayInfo
-
-//______________________________________________________________________________
-void XProcessManager::ArrayInfo(const char *name, const char *type,
-                      const char *description, Bool_t replace)
-{
-   // Store array information in content folder
-   // If replace is kTRUE then replace existing XArrayInfo in content
-   if(kCS) cout << "------XProcessManager::ArrayInfo------" << endl;
-
-   if (fAbort) return;
-
-   XArrayInfo *info = new XArrayInfo(name, type, description);
-
-   if (replace) {
-      fContent->Remove(fContent->FindObject("Array", "XArrayInfo"));
-   }//if
-
-   fContent->Add(info);
-}//ArrayInfo
+   
+   return errNoErr;
+}//CommitTransaction
 
 //______________________________________________________________________________
 XSetting *XProcessManager::NewSetting(const char *type, const char *infile)

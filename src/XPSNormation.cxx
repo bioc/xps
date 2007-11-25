@@ -663,7 +663,7 @@ Int_t XNormedSet::FillExprTree(const char *name, Int_t n, Int_t *idx, Double_t *
    }//for_i
 
 // Add tree info to tree
-   AddExprTreeInfo(tree, name, "", n, min, max);
+   AddExprTreeInfo(tree, name, fNormalizer->GetOption(), n, min, max);
 
 // Write expression tree to file 
    if ((err = WriteTree(tree, TObject::kOverwrite)) == errNoErr) {
@@ -805,7 +805,7 @@ Int_t XNormedSet::FillMaskTree(const char *name, Int_t n, Int_t *idx, Int_t *arr
    }//for_i
 
 // Add tree info to tree
-   AddMaskTreeInfo(tree, name, "", n, nflags);
+   AddMaskTreeInfo(tree, name, fSelector->GetOption(), n, nflags);
 
 // Write mask tree to file 
    if ((err = WriteTree(tree, TObject::kOverwrite)) == errNoErr) {

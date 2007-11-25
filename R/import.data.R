@@ -84,34 +84,63 @@ function(xps.scheme,
    }#if
 
    ## project information
-   nproject <- 0;
-   nauthor  <- 0;
-   ndataset <- 0;
-   nsource  <- 0;
-   narray   <- 0;
-   projct  <- "";
-   author  <- "";
-   dataset <- "";
-   source  <- "";
-   array   <- "";
+   projct  <- ""; nproject <- 0;
+   author  <- ""; nauthor  <- 0;
+   dataset <- ""; ndataset <- 0;
+   source  <- ""; nsource  <- 0;
+   sample  <- ""; nsample  <- 0;
+   cell    <- ""; ncell    <- 0;
+   pcell   <- ""; npcell   <- 0;
+   tissue  <- ""; ntissue  <- 0;
+   biopsy  <- ""; nbiopsy  <- 0;
+   array   <- ""; narray   <- 0;
+   hyb     <- ""; nhyb     <- 0;
+   treat   <- ""; ntreat   <- 0;
+
    if (!is.null(project) && is(project, "ProjectInfo")) {
       nproject <- length(projectInfo(project));
       nauthor  <- length(authorInfo(project));
       ndataset <- length(datasetInfo(project));
       nsource  <- length(sourceInfo(project));
+      nsample  <- length(sampleInfo(project));
+      ncell    <- length(cellineInfo(project));
+      npcell   <- length(primcellInfo(project));
+      ntissue  <- length(tissueInfo(project));
+      nbiopsy  <- length(biopsyInfo(project));
       narray   <- length(arrayInfo(project));
+      nhyb     <- length(unlist(hybridizInfo(project)));
+      ntreat   <- length(unlist(treatmentInfo(project)));
 
-      if (nproject == 3) projct  <- projectInfo(project) else projct  <- "";
-      if (nauthor  == 6) author  <- authorInfo(project)  else author  <- "";
-      if (ndataset == 6) dataset <- datasetInfo(project) else dataset <- "";
-      if (nsource  == 4) source  <- sourceInfo(project)  else source  <- "";
-      if (narray   == 3) array   <- arrayInfo(project)   else array   <- "";
+      if (nproject == 5)  projct  <- projectInfo(project)  else projct  <- "";
+      if (nauthor  == 8)  author  <- authorInfo(project)   else author  <- "";
+      if (ndataset == 7)  dataset <- datasetInfo(project)  else dataset <- "";
+      if (nsource  == 6)  source  <- sourceInfo(project)   else source  <- "";
+      if (nsample  == 12) sample  <- sampleInfo(project)   else sample  <- "";
+      if (ncell    == 15) cell    <- cellineInfo(project)  else cell    <- "";
+      if (npcell   == 14) pcell   <- primcellInfo(project) else pcell   <- "";
+      if (ntissue  == 19) tissue  <- tissueInfo(project)   else tissue  <- "";
+      if (nbiopsy  == 19) biopsy  <- biopsyInfo(project)   else biopsy  <- "";
+      if (narray   == 4)  array   <- arrayInfo(project)    else array   <- "";
 
-      if ((narray == 3) & (array$chipname != chipname)) {
+      if ((narray == 4) & (array$chipname != chipname)) {
          stop(paste(sQuote("arrayInfo$chipname"), " must be", sQuote(chipname)));
       }#if
-      if ((narray == 3) & (array$chiptype != chiptype)) {
+      if ((narray == 4) & (array$chiptype != chiptype)) {
          stop(paste(sQuote("arrayInfo$chiptype"), " must be", sQuote(chiptype)));
+      }#if
+
+###########
+# to do: check if hybnames and treatnames are identical to celnames
+###########
+      if (nhyb >= 9) {
+         hyb <- as.vector(unlist(t(hybridizInfo(project))));
+      } else {
+         hyb <- "";
+      }#if
+      if (ntreat >= 8) {
+         treat <- as.vector(unlist(t(treatmentInfo(project))));
+      } else {
+         treat <- "";
       }#if
    }#if
 
@@ -137,8 +166,22 @@ function(xps.scheme,
            as.integer(ndataset),
            as.character(source),
            as.integer(nsource),
+           as.character(sample),
+           as.integer(nsample),
+           as.character(cell),
+           as.integer(ncell),
+           as.character(pcell),
+           as.integer(npcell),
+           as.character(tissue),
+           as.integer(ntissue),
+           as.character(biopsy),
+           as.integer(nbiopsy),
            as.character(array),
            as.integer(narray),
+           as.character(hyb),
+           as.integer(nhyb),
+           as.character(treat),
+           as.integer(ntreat),
            as.integer(0),
            as.integer(0),
            as.integer(verbose),

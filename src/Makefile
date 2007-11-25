@@ -25,6 +25,11 @@ MYHDR      += XPSDataTypes.h
 MYOBJ      += XPSDataTypes.$(ObjSuf)
 MYSRC      += XPSDataTypes.$(SrcSuf)
 
+# XProjectHandler
+MYHDR      += XPSProjectHandler.h
+MYOBJ      += XPSProjectHandler.$(ObjSuf)
+MYSRC      += XPSProjectHandler.$(SrcSuf)
+
 # XPSData
 MYHDR      += XPSData.h
 MYOBJ      += XPSData.$(ObjSuf)

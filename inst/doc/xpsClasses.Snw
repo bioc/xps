@@ -381,19 +381,35 @@ getClassDef("ProjectInfo")
   \item{{\tt author}:}{ Object of class "list", representing the author information.}
   \item{{\tt dataset}:}{ Object of class "list", representing the dataset information.}
   \item{{\tt source}:}{ Object of class "list", representing the sample source information.}
+  \item{{\tt sample}:}{ Object of class "list", representing the sample information.}
+  \item{{\tt celline}:}{ Object of class "list", representing the sample information for cell lines.}
+  \item{{\tt primarycell}:}{ Object of class "list", representing the sample information for primary cells.}
+  \item{{\tt tissue}:}{ Object of class "list", representing the sample information for tissues.}
+  \item{{\tt biopsy}:}{ Object of class "list", representing the sample information for biopsies.}
   \item{{\tt arraytype}:}{ Object of class "list", representing the array information.}
+  \item{{\tt hybridizations}:}{ Object of class "data.frame", representing the hybridization information for each hybridization.}
+  \item{{\tt treatments}:}{ Object of class "data.frame", representing the treatment information for each hybridization.}
 \end{description}
 
  This class must be created explicitely first using \Rcode{new}, before it can be
  added to class \Rclass{DataTreeSet}. Here is a simple example for \Robject{data.test3}:
 
 <<>>=
-project <- new("ProjectInfo",submitter="Christian", laboratory="home",contact="cstrato at aon dot at")
-projectInfo(project) <- c("TestProject","20060106","use Test3 data for testing")
-authorInfo(project)  <- c("Stratowa","Christian","Home","Lab","cstrato at aon dot at","1234567")
-datasetInfo(project) <- c("Test3Set","MC","Tissue","Stratowa","20060106","short description")
-sourceInfo(project)  <- c("Unknown","Homo sapiens","caucasian","short description")
-arrayInfo(project)   <- c("Test3","GeneChip","short description")
+project <- new("ProjectInfo",submitter="Christian", laboratory="home",contact="email")
+projectInfo(project)    <- c("TestProject","20060106","Project Type","use Test3 data for testing","my comment")
+authorInfo(project)     <- c("Stratowa","Christian","Project Leader","Company","Dept","cstrato.at.aon.at","++43-1-1234","my comment")
+datasetInfo(project)    <- c("Test3Set","MC","Tissue","Stratowa","20060106","description","my comment")
+sourceInfo(project)     <- c("Unknown","source type","Homo sapiens","caucasian","description","my comment")
+primcellInfo(project)   <- c("Mel31","primary cell",20071123,"extracted from patient","male","my pheno","my genotype","RNA extraction",TRUE,"NMRI","female",7.0,"months", "my comment")
+arrayInfo(project)      <- c("Test3","GeneChip","description","my comment")
+hybridizInfo(project)   <- c(c("TestA1","hyb type","TestA1.CEL",20071117,"my prep1","standard protocol","A1",1,"my comment"),
+                             c("TestA2","hyb type","TestA2.CEL",20071117,"my prep2","standard protocol","A2",1,"my comment"),
+                             c("TestB1","hyb type","TestB1.CEL",20071117,"my prep1","standard protocol","B1",2,"my comment"),
+                             c("TestB2","hyb type","TestB2.CEL",20071117,"my prep2","standard protocol","B2",2,"my comment"))
+treatmentInfo(project)  <- c(c("TestA1","DMSO",4.3,"mM",1.0,"hours","intravenous","my comment"),
+                             c("TestA2","DMSO",4.3,"mM",8.0,"hours","intravenous","my comment"),
+                             c("TestB1","DrugA2",4.3,"mM",1.0,"hours","intravenous","my comment"),
+                             c("TestB2","DrugA2",4.3,"mM",8.0,"hours","intravenous","my comment"))
 show(project)
 @ 
 
@@ -401,3 +417,4 @@ show(project)
 \bibliography{xps}
 
 \end{document}
+

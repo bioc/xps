@@ -17,51 +17,65 @@
 
 # class ProjectInfo
 setClass("ProjectInfo",
-   representation(submitter     = "character",
-                  laboratory    = "character",
-                  contact       = "character",
-                  project       = "list",
-                  author        = "list",
-                  dataset       = "list",
-                  source        = "list",
-#                  hybridization = "list",
-#                  sampletype    = "character",
-#                  celline       = "list",
-#                  primarycell   = "list",
-#                  tissue        = "list",
-#                  biopsy        = "list",
-#                  treatment     = "list",
-                  arraytype     = "list"
+   representation(submitter      = "character",
+                  laboratory     = "character",
+                  contact        = "character",
+                  project        = "list",
+                  author         = "list",
+                  dataset        = "list",
+                  source         = "list",
+                  sample         = "list",
+                  celline        = "list",
+                  primarycell    = "list",
+                  tissue         = "list",
+                  biopsy         = "list",
+                  arraytype      = "list",
+                  hybridizations = "data.frame",
+                  treatments     = "data.frame"
    ),
-   prototype(submitter     = "",
-             laboratory    = "",
-             contact       = "",
-             project       = list(),
-             author        = list(),
-             dataset       = list(),
-             source        = list(),
-#             hybridization = list(),
-#             sampletype    = "",
-#             celline       = list(),
-#             primarycell   = list(),
-#             tissue        = list(),
-#             biopsy        = list(),
-#             treatment     = list(),
-             arraytype     = list()
+   prototype(submitter      = "",
+             laboratory     = "",
+             contact        = "",
+             project        = list(),
+             author         = list(),
+             dataset        = list(),
+             source         = list(),
+             sample         = list(),
+             celline        = list(),
+             primarycell    = list(),
+             tissue         = list(),
+             biopsy         = list(),
+             arraytype      = list(),
+             hybridizations = data.frame(matrix(nr=0,nc=0)),
+             treatments     = data.frame(matrix(nr=0,nc=0))
    )
 )#ProjectInfo
 
 # generic methods for class ProjectInfo
-setGeneric("projectInfo",   function(object) standardGeneric("projectInfo"));
-setGeneric("projectInfo<-", function(object, value) standardGeneric("projectInfo<-"));
-setGeneric("authorInfo",    function(object) standardGeneric("authorInfo"));
-setGeneric("authorInfo<-",  function(object, value) standardGeneric("authorInfo<-"));
-setGeneric("datasetInfo",   function(object) standardGeneric("datasetInfo"));
-setGeneric("datasetInfo<-", function(object, value) standardGeneric("datasetInfo<-"));
-setGeneric("sourceInfo",    function(object) standardGeneric("sourceInfo"));
-setGeneric("sourceInfo<-",  function(object, value) standardGeneric("sourceInfo<-"));
-setGeneric("arrayInfo",     function(object) standardGeneric("arrayInfo"));
-setGeneric("arrayInfo<-",   function(object, value) standardGeneric("arrayInfo<-"));
+setGeneric("projectInfo",     function(object) standardGeneric("projectInfo"));
+setGeneric("projectInfo<-",   function(object, value) standardGeneric("projectInfo<-"));
+setGeneric("authorInfo",      function(object) standardGeneric("authorInfo"));
+setGeneric("authorInfo<-",    function(object, value) standardGeneric("authorInfo<-"));
+setGeneric("datasetInfo",     function(object) standardGeneric("datasetInfo"));
+setGeneric("datasetInfo<-",   function(object, value) standardGeneric("datasetInfo<-"));
+setGeneric("sourceInfo",      function(object) standardGeneric("sourceInfo"));
+setGeneric("sourceInfo<-",    function(object, value) standardGeneric("sourceInfo<-"));
+setGeneric("sampleInfo",      function(object) standardGeneric("sampleInfo"));
+setGeneric("sampleInfo<-",    function(object, value) standardGeneric("sampleInfo<-"));
+setGeneric("cellineInfo",     function(object) standardGeneric("cellineInfo"));
+setGeneric("cellineInfo<-",   function(object, value) standardGeneric("cellineInfo<-"));
+setGeneric("primcellInfo",    function(object) standardGeneric("primcellInfo"));
+setGeneric("primcellInfo<-",  function(object, value) standardGeneric("primcellInfo<-"));
+setGeneric("tissueInfo",      function(object) standardGeneric("tissueInfo"));
+setGeneric("tissueInfo<-",    function(object, value) standardGeneric("tissueInfo<-"));
+setGeneric("biopsyInfo",      function(object) standardGeneric("biopsyInfo"));
+setGeneric("biopsyInfo<-",    function(object, value) standardGeneric("biopsyInfo<-"));
+setGeneric("arrayInfo",       function(object) standardGeneric("arrayInfo"));
+setGeneric("arrayInfo<-",     function(object, value) standardGeneric("arrayInfo<-"));
+setGeneric("hybridizInfo",    function(object) standardGeneric("hybridizInfo"));
+setGeneric("hybridizInfo<-",  function(object, value) standardGeneric("hybridizInfo<-"));
+setGeneric("treatmentInfo",   function(object) standardGeneric("treatmentInfo"));
+setGeneric("treatmentInfo<-", function(object, value) standardGeneric("treatmentInfo<-"));
 
 
 #------------------------------------------------------------------------------#

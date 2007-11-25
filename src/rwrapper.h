@@ -34,8 +34,11 @@ void ImportData(char **filename, char **dirname, char **chiptype,
                 char **celfiles, char **celnames, int *numdata,
                 char **project, int *nproject, char **author, int *nauthor,
                 char **dataset, int *ndataset, char **source, int *nsource,
-                char **array, int *narray, int *replace, int *update,
-                int *verbose, int *err);
+                char **sample, int *nsample, char **cell, int *ncell,
+                char **pcell, int *npcell, char **tissue, int *ntissue,
+                char **biopsy, int *nbiopsy, char **array, int *narray,
+                char **hyb, int *nhyb, char **treat, int *ntreat, 
+                int *replace, int *update, int *verbose, int *err);
 void ExportData(char **filename, char **schemefile, char **chiptype,
                 char **datatype, char **treenames, int *ntrees, char **exten,
                 char **varlist, char **outfile, char **sep,

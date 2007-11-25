@@ -1,4 +1,4 @@
-// File created: 10/27/2001                          last modified: 12/11/2005
+// File created: 10/27/2001                          last modified: 11/23/2007
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -41,6 +41,8 @@
 * Oct 2001 - Initial versions finished
 * Jun 2005 - Derive classes from base class XDataTypeInfo.
 * Oct 2005 - Add member fDataType to base class XDataTypeInfo.
+* Nov 2007 - Add member fReplace to base class XDataTypeInfo and set ClassDef=2.
+*          - Add classes XDataTypeList, XHybridizationList, XTreatmentList.
 *
 ******************************************************************************/
 
@@ -49,9 +51,11 @@
 
 #include "XPSDataTypes.h"
 
-const Bool_t  kCS  = 0; //debug: print function names
+const Bool_t kCS  = 0; //debug: print function names
+const Bool_t kCSa = 0; //debug: print function names in loops
 
 ClassImp(XDataTypeInfo);
+ClassImp(XDataTypeList);
 ClassImp(XDatabaseInfo);
 ClassImp(XProjectInfo);
 ClassImp(XAuthorInfo);
@@ -60,13 +64,14 @@ ClassImp(XDatasetInfo);
 ClassImp(XSourceInfo);
 ClassImp(XArrayInfo);
 ClassImp(XHybInfo);
+ClassImp(XHybridizationList);
 ClassImp(XSampleInfo);
 ClassImp(XCellLineInfo);
 ClassImp(XPrimaryCellInfo);
 ClassImp(XTissueInfo);
 ClassImp(XBiopsyInfo);
-ClassImp(XTreatment);
 ClassImp(XTreatmentInfo);
+ClassImp(XTreatmentList);
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -86,17 +91,22 @@ XDataTypeInfo::XDataTypeInfo()
 
    fDataType = "";
    fHasInfo  = kFALSE;
+   fReplace  = kFALSE;
+   fComment  = "";
 }//Constructor
 
 //______________________________________________________________________________
-XDataTypeInfo::XDataTypeInfo(const char *name, const char *title, const char *type)
+XDataTypeInfo::XDataTypeInfo(const char *name, const char *title, const char *type,
+               const char *comment)
               :TNamed(name, title)
 {
    // Datatype information constructor
    if(kCS) cout << "---XDataTypeInfo::XDataTypeInfo------" << endl;
 
    fDataType = type;
+   fComment  = comment;
    fHasInfo  = kFALSE;
+   fReplace  = kFALSE;
 }//Constructor
 
 //______________________________________________________________________________
@@ -116,7 +126,10 @@ XDataTypeInfo& XDataTypeInfo::operator=(const XDataTypeInfo& rhs)
 
    if (this != &rhs) {
       TNamed::operator=(rhs);
-      fHasInfo = rhs.fHasInfo;
+      fDataType = rhs.fDataType;
+      fComment  = rhs.fComment;
+      fHasInfo  = rhs.fHasInfo;
+      fReplace  = rhs.fReplace;
    }//if
    return *this;
 }//operator=
@@ -129,6 +142,142 @@ XDataTypeInfo::~XDataTypeInfo()
 
 }//Destructor
 
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XDataTypeList                                                        //
+//                                                                      //
+// Class containing list of datatype infos                              //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+XDataTypeList::XDataTypeList()
+              :XDataTypeInfo()
+{
+   // Default datatype information constructor
+   if(kCS) cout << "---XDataTypeList::XDataTypeList(default)------" << endl;
+
+   fList = new TList();
+}//Constructor
+
+//______________________________________________________________________________
+XDataTypeList::XDataTypeList(const char *name, const char *title, const char *type,
+               const char *comment)
+              :XDataTypeInfo(name, title, type, comment)
+{
+   // Treatment datatype information constructor
+   if(kCS) cout << "---XDataTypeList::XDataTypeList------" << endl;
+
+   fList = new TList();
+}//Constructor
+
+//______________________________________________________________________________
+XDataTypeList::XDataTypeList(const XDataTypeList &list) 
+              :XDataTypeInfo(list)
+{
+   // Datatype information copy constructor
+   if(kCS) cout << "---XDataTypeList::XDataTypeList(copy)------" << endl;
+
+//to do: test if correct?
+   fList = 0;
+   if (list.fList != 0) {
+      fList = new TList();
+      for (Int_t i=0; i<(list.fList)->GetSize(); i++) {
+         fList->AddAt((list.fList)->At(i), i);
+      }//for_i
+   }//if
+}//CopyConstructor
+
+//______________________________________________________________________________
+XDataTypeList& XDataTypeList::operator=(const XDataTypeList& rhs)
+{
+   // Datatype information assignment operator.
+   if(kCS) cout << "---XDataTypeList::operator=------" << endl;
+
+   if (this != &rhs) {
+      XDataTypeInfo::operator=(rhs);
+      fList = 0;
+      if (rhs.fList != 0) {
+         fList = new TList();
+         for (Int_t i=0; i<(rhs.fList)->GetSize(); i++) {
+            fList->AddAt((rhs.fList)->At(i), i);
+         }//for_i
+      }//if
+   }//if
+   return *this;
+}//operator=
+
+//______________________________________________________________________________
+XDataTypeList::~XDataTypeList()
+{
+   // Datatype information destructor
+   if(kCS) cout << "---XDataTypeList::~XDataTypeList------" << endl;
+
+   if(fList) {fList->Delete(); delete fList; fList = 0;}
+}//Destructor
+
+//______________________________________________________________________________
+void XDataTypeList::Add(XDataTypeInfo *info)
+{
+   // Add datatype info to datatype list
+   if(kCSa) cout << "------XDataTypeList::Add------" << endl;
+
+   fList->Add(info);
+   fHasInfo = kTRUE;
+}//Add
+
+//______________________________________________________________________________
+void XDataTypeList::AddAt(XDataTypeInfo *info, Int_t idx)
+{
+   // Add datatype info to datatype list
+   if(kCSa) cout << "------XDataTypeList::AddAt------" << endl;
+
+   fList->AddAt(info, idx);
+   fHasInfo = kTRUE;
+}//AddAt
+
+//______________________________________________________________________________
+Int_t XDataTypeList::Remove(const char *name)
+{
+   // Remove datatype info name from datatype list 
+   if(kCS) cout << "------XDataTypeList::Remove------" << endl;
+
+   Int_t size = fList->GetSize();
+   if (size == 0) {fHasInfo = kFALSE; return 0;}
+
+// Loop over treatment list
+   TIter next(fList);
+   XDataTypeInfo *info = 0;
+   while ((info = (XDataTypeInfo*)next())) {
+      TString infoname = info->GetName();
+      if (strcmp(name,  infoname.Data())  == 0) {
+         fList->Remove(info);
+         size--;
+      }//if
+   }//while
+
+   fHasInfo = (size > 0) ? kTRUE: kFALSE;
+   return size;
+}//Remove
+
+//______________________________________________________________________________
+XDataTypeInfo *XDataTypeList::At(Int_t idx)
+{
+   // Return datatype info at idx of list
+   if(kCSa) cout << "------XDataTypeList::At------" << endl;
+
+   return (XDataTypeInfo*)(fList->At(idx));
+}//AddAt
+
+//______________________________________________________________________________
+XDataTypeInfo *XDataTypeList::FindDataTypeInfo(const char *name)
+{
+   // Find datatype info with name stored in list fList
+   if(kCS) cout << "------XDataTypeList::FindDataTypeInfo------" << endl;
+
+   return (XDataTypeInfo*)fList->FindObject(name);
+}//FindDataTypeInfo
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -152,8 +301,9 @@ XDatabaseInfo::XDatabaseInfo()
 }//Constructor
 
 //______________________________________________________________________________
-XDatabaseInfo::XDatabaseInfo(const char *name, const char *directory)
-              :XDataTypeInfo("Database", name)
+XDatabaseInfo::XDatabaseInfo(const char *name, const char *directory, const char *type,
+               const char *comment)
+              :XDataTypeInfo("Database", name, type, comment)
 {
    // Database information constructor
    if(kCS) cout << "---XDatabaseInfo::XDatabaseInfo------" << endl;
@@ -287,8 +437,9 @@ XProjectInfo::XProjectInfo()
 }//Constructor
 
 //______________________________________________________________________________
-XProjectInfo::XProjectInfo(const char *name, Long_t date, const char *description)
-             :XDataTypeInfo("Project", name)
+XProjectInfo::XProjectInfo(const char *name, Long_t date, const char *type,
+              const char *description, const char *comment)
+             :XDataTypeInfo("Project", name, type, comment)
 {
    // Project information constructor
    if(kCS) cout << "---XProjectInfo::XProjectInfo------" << endl;
@@ -356,9 +507,10 @@ XAuthorInfo::XAuthorInfo()
 }//Constructor
 
 //______________________________________________________________________________
-XAuthorInfo::XAuthorInfo(const char *last, const char *first, const char *company,
-             const char *lab, const char *mail, const char *phone)
-            :XDataTypeInfo("Author", last)
+XAuthorInfo::XAuthorInfo(const char *last, const char *first, const char *type,
+             const char *company, const char *lab, const char *mail,
+             const char *phone, const char *comment)
+            :XDataTypeInfo("Author", last, type, comment)
 {
    // Author information constructor
    if(kCS) cout << "---XAuthorInfo::XAuthorInfo------" << endl;
@@ -426,8 +578,8 @@ XLoginInfo::XLoginInfo()
 }//Constructor
 
 //______________________________________________________________________________
-XLoginInfo::XLoginInfo(const char *userID, const char *password)
-           :XDataTypeInfo("Login", userID)
+XLoginInfo::XLoginInfo(const char *userID, const char *password, const char *comment)
+           :XDataTypeInfo("Login", userID, "", comment)
 {
    // Login information constructor
    if(kCS) cout << "---XLoginInfo::XLoginInfo------" << endl;
@@ -523,7 +675,6 @@ XDatasetInfo::XDatasetInfo()
    // Default dataset information constructor
    if(kCS) cout << "---XDatasetInfo::XDatasetInfo(default)------" << endl;
 
-   fType        = "";
    fSample      = "";
    fSubmitter   = "";
    fDate        = 0;
@@ -532,13 +683,14 @@ XDatasetInfo::XDatasetInfo()
 
 //______________________________________________________________________________
 XDatasetInfo::XDatasetInfo(const char *name, const char *type, const char *sample,
-              const char *submitter, Long_t date, const char *description)
-             :XDataTypeInfo("Dataset", name)
+              const char *submitter, Long_t date, const char *description,
+              const char *comment)
+             :XDataTypeInfo("Dataset", name, type, comment)
 {
    // Dataset information constructor
+   // type: dataset type: UD, TS, DR, MC
    if(kCS) cout << "---XDatasetInfo::XDatasetInfo------" << endl;
 
-   fType        = type;
    fSample      = sample;
    fSubmitter   = submitter;
    fDate        = date;
@@ -548,8 +700,8 @@ XDatasetInfo::XDatasetInfo(const char *name, const char *type, const char *sampl
 
 //______________________________________________________________________________
 XDatasetInfo::XDatasetInfo(const XDatasetInfo &info) 
-             :XDataTypeInfo(info),fType(info.fType),fSample(info.fSample),
-              fSubmitter(info.fSubmitter),fDescription(info.fDescription)
+             :XDataTypeInfo(info), fSample(info.fSample), fSubmitter(info.fSubmitter),
+              fDescription(info.fDescription)
 {
    // Dataset information copy constructor
    if(kCS) cout << "---XDatasetInfo::XDatasetInfo(copy)------" << endl;
@@ -565,7 +717,6 @@ XDatasetInfo& XDatasetInfo::operator=(const XDatasetInfo& rhs)
 
    if (this != &rhs) {
       XDataTypeInfo::operator=(rhs);
-      fType        = rhs.fType;
       fSample      = rhs.fSample;
       fSubmitter   = rhs.fSubmitter;
       fDate        = rhs.fDate;
@@ -604,9 +755,9 @@ XSourceInfo::XSourceInfo()
 }//Constructor
 
 //______________________________________________________________________________
-XSourceInfo::XSourceInfo(const char *source, const char *species,
-             const char *subspecies, const char *description)
-            :XDataTypeInfo("Source", source)
+XSourceInfo::XSourceInfo(const char *source, const char *type, const char *species,
+             const char *subspecies, const char *description, const char *comment)
+            :XDataTypeInfo("Source", source, type, comment)
 {
    // Source information constructor
    if(kCS) cout << "---XSourceInfo::XSourceInfo------" << endl;
@@ -666,25 +817,24 @@ XArrayInfo::XArrayInfo()
    // Default array information constructor
    if(kCS) cout << "---XArrayInfo::XArrayInfo(default)------" << endl;
 
-   fType        = "";
    fDescription = "";
 }//Constructor
 
 //______________________________________________________________________________
-XArrayInfo::XArrayInfo(const char *name, const char *type, const char *description)
-           :XDataTypeInfo("Array", name)
+XArrayInfo::XArrayInfo(const char *name, const char *type, const char *description,
+            const char *comment)
+           :XDataTypeInfo("Array", name, type, comment)
 {
    // Array information constructor
    if(kCS) cout << "---XArrayInfo::XArrayInfo------" << endl;
 
-   fType        = type;
    fDescription = description;
    fHasInfo     = kTRUE;
 }//Constructor
 
 //______________________________________________________________________________
 XArrayInfo::XArrayInfo(const XArrayInfo &info) 
-           :XDataTypeInfo(info),fType(info.fType),fDescription(info.fDescription)
+           :XDataTypeInfo(info), fDescription(info.fDescription)
 {
    // Array information copy constructor
    if(kCS) cout << "---XArrayInfo::XArrayInfo(copy)------" << endl;
@@ -699,7 +849,6 @@ XArrayInfo& XArrayInfo::operator=(const XArrayInfo& rhs)
 
    if (this != &rhs) {
       XDataTypeInfo::operator=(rhs);
-      fType        = rhs.fType;
       fDescription = rhs.fDescription;
    }//if
    return *this;
@@ -718,7 +867,7 @@ XArrayInfo::~XArrayInfo()
 //                                                                      //
 // XHybInfo                                                             //
 //                                                                      //
-// Class describing hybridization parameters                            //
+// Class describing hybridization parameters for one sample             //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
@@ -733,15 +882,15 @@ XHybInfo::XHybInfo()
    fPreparation = "";
    fProtocol    = "";
    fReplicaName = "";
-   fComment     = "";
    fDate        = 0;
    fReplica     = 0;
 }//Constructor
 
 //______________________________________________________________________________
-XHybInfo::XHybInfo(const char *hybname, const char *input, Long_t date,
-          Int_t replica, const char *prep, const char *protocol, const char *comment)
-         :XDataTypeInfo("Hybridization", hybname)
+XHybInfo::XHybInfo(const char *hybname, const char *type, const char *input,
+          Long_t date, const char *prep, const char *protocol, const char *repname,
+          Int_t replica, const char *comment)
+         :XDataTypeInfo("Hybridization", hybname, type, comment)
 {
    // Hybridization information constructor
    if(kCS) cout << "---XHybInfo::XHybInfo------" << endl;
@@ -752,8 +901,7 @@ XHybInfo::XHybInfo(const char *hybname, const char *input, Long_t date,
    fInput       = input;
    fPreparation = prep;
    fProtocol    = protocol;
-   fReplicaName = "";
-   fComment     = comment;
+   fReplicaName = repname;
    fDate        = date;
    fReplica     = replica;
    fHasInfo     = kTRUE;
@@ -762,8 +910,7 @@ XHybInfo::XHybInfo(const char *hybname, const char *input, Long_t date,
 //______________________________________________________________________________
 XHybInfo::XHybInfo(const XHybInfo &info) 
          :XDataTypeInfo(info),fInput(info.fInput),fPreparation(info.fPreparation),
-          fProtocol(info.fProtocol),fReplicaName(info.fReplicaName),
-          fComment(info.fComment)
+          fProtocol(info.fProtocol),fReplicaName(info.fReplicaName)
 {
    // Hybridization information copy constructor
    if(kCS) cout << "---XHybInfo::XHybInfo(copy)------" << endl;
@@ -784,7 +931,6 @@ XHybInfo& XHybInfo::operator=(const XHybInfo& rhs)
       fPreparation = rhs.fPreparation;
       fProtocol    = rhs.fProtocol;
       fReplicaName = rhs.fReplicaName;
-      fComment     = rhs.fComment;
       fDate        = rhs.fDate;
       fReplica     = rhs.fReplica;
    }//if
@@ -796,6 +942,62 @@ XHybInfo::~XHybInfo()
 {
    // Hybridization information destructor
    if(kCS) cout << "---XHybInfo::~XHybInfo------" << endl;
+
+}//Destructor
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XHybridizationList                                                   //
+//                                                                      //
+// Class describing sample hybridizations                               //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+XHybridizationList::XHybridizationList()
+                   :XDataTypeList()
+{
+   // Default hybridization list constructor
+   if(kCS) cout << "---XHybridizationList::XHybridizationList(default)------" << endl;
+
+}//Constructor
+
+//______________________________________________________________________________
+XHybridizationList::XHybridizationList(const char *type, const char *comment)
+                   :XDataTypeList("Hybridizations", "HybridizationList", type, comment)
+{
+   // Treatment hybridization list constructor
+   if(kCS) cout << "---XHybridizationList::XHybridizationList------" << endl;
+
+}//Constructor
+
+//______________________________________________________________________________
+XHybridizationList::XHybridizationList(const XHybridizationList &list) 
+                   :XDataTypeList(list)
+{
+   // Hybridization list copy constructor
+   if(kCS) cout << "---XHybridizationList::XHybridizationList(copy)------" << endl;
+
+}//CopyConstructor
+
+//______________________________________________________________________________
+XHybridizationList& XHybridizationList::operator=(const XHybridizationList& rhs)
+{
+   // Hybridization list assignment operator.
+   if(kCS) cout << "---XHybridizationList::operator=------" << endl;
+
+   if (this != &rhs) {
+      XDataTypeList::operator=(rhs);
+   }//if
+   return *this;
+}//operator=
+
+//______________________________________________________________________________
+XHybridizationList::~XHybridizationList()
+{
+   // Hybridization information destructor
+   if(kCS) cout << "---XHybridizationList::~XHybridizationList------" << endl;
 
 }//Destructor
 
@@ -819,7 +1021,6 @@ XSampleInfo::XSampleInfo()
    fPhenotype   = "";
    fGenotype    = "";
    fExtraction  = "";
-   fComment     = "";
    fXenoStrain  = "";
    fXenoSex     = "";
    fAgeUnits    = "";
@@ -828,11 +1029,11 @@ XSampleInfo::XSampleInfo()
 }//Constructor
 
 //______________________________________________________________________________
-XSampleInfo::XSampleInfo(const char *name, const char *sex, const char *pheno, 
-             const char *geno, const char *extract, const char *comment,
-             Bool_t isXeno, const char *xenostrain, const char *xenosex,
-             Double_t xenoage, const char *ageunits)
-            :XDataTypeInfo("Sample", name)
+XSampleInfo::XSampleInfo(const char *name, const char *type, const char *sex,
+             const char *pheno, const char *geno, const char *extract, Bool_t isXeno,
+             const char *xenostrain, const char *xenosex, Double_t xenoage,
+             const char *ageunits, const char *comment)
+            :XDataTypeInfo("Sample", name, type, comment)
 {
    // Sample information constructor
    if(kCS) cout << "---XSampleInfo::XSampleInfo------" << endl;
@@ -841,7 +1042,6 @@ XSampleInfo::XSampleInfo(const char *name, const char *sex, const char *pheno,
    fPhenotype   = pheno;
    fGenotype    = geno;
    fExtraction  = extract;
-   fComment     = comment;
    fXenoStrain  = xenostrain;
    fXenoSex     = xenosex;
    fAgeUnits    = ageunits;
@@ -852,10 +1052,10 @@ XSampleInfo::XSampleInfo(const char *name, const char *sex, const char *pheno,
 
 //______________________________________________________________________________
 XSampleInfo::XSampleInfo(const XSampleInfo &info) 
-            :XDataTypeInfo(info),fSex(info.fSex),fPhenotype(info.fPhenotype),
-             fGenotype(info.fGenotype),fExtraction(info.fExtraction),
-             fComment(info.fComment),fXenoStrain(info.fXenoStrain),
-             fXenoSex(info.fXenoSex),fAgeUnits(info.fAgeUnits)
+            :XDataTypeInfo(info), fSex(info.fSex), fPhenotype(info.fPhenotype),
+             fGenotype(info.fGenotype), fExtraction(info.fExtraction),
+             fXenoStrain(info.fXenoStrain), fXenoSex(info.fXenoSex),
+             fAgeUnits(info.fAgeUnits)
 {
    // Sample information copy constructor
    if(kCS) cout << "---XSampleInfo::XSampleInfo(copy)------" << endl;
@@ -876,7 +1076,6 @@ XSampleInfo& XSampleInfo::operator=(const XSampleInfo& rhs)
       fPhenotype   = rhs.fPhenotype;
       fGenotype    = rhs.fGenotype;
       fExtraction  = rhs.fExtraction;
-      fComment     = rhs.fComment;
       fXenoStrain  = rhs.fXenoStrain;
       fXenoSex     = rhs.fXenoSex;
       fAgeUnits    = rhs.fAgeUnits;
@@ -910,7 +1109,6 @@ XCellLineInfo::XCellLineInfo()
    // Default cell line information constructor
    if(kCS) cout << "---XCellLineInfo::XCellLineInfo(default)------" << endl;
 
-   fCellType     = "";
    fParentCell   = "";
    fATCC         = "";
    fModification = "";
@@ -918,17 +1116,16 @@ XCellLineInfo::XCellLineInfo()
 
 //______________________________________________________________________________
 XCellLineInfo::XCellLineInfo(const char *name, const char *type, const char *parent, 
-               const char *atcc, const char *mod, const char *sex,
-               const char *pheno, const char *geno, const char *extract,
-               const char *comment, Bool_t isXeno, const char *xenostrain,
-               const char *xenosex, Double_t xenoage, const char *ageunits)
-              :XSampleInfo(name, sex, pheno, geno, extract, comment,
-               isXeno, xenostrain, xenosex, xenoage, ageunits)
+               const char *atcc, const char *mod, const char *sex, const char *pheno,
+               const char *geno, const char *extract, Bool_t isXeno,
+               const char *xenostrain, const char *xenosex, Double_t xenoage,
+               const char *ageunits, const char *comment)
+              :XSampleInfo(name, type, sex, pheno, geno, extract, isXeno,
+               xenostrain, xenosex, xenoage, ageunits, comment)
 {
    // Cell line information constructor
    if(kCS) cout << "---XCellLineInfo::XCellLineInfo------" << endl;
 
-   fCellType     = type;
    fParentCell   = parent;
    fATCC         = atcc;
    fModification = mod;
@@ -936,8 +1133,8 @@ XCellLineInfo::XCellLineInfo(const char *name, const char *type, const char *par
 
 //______________________________________________________________________________
 XCellLineInfo::XCellLineInfo(const XCellLineInfo &info) 
-              :XSampleInfo(info),fCellType(info.fCellType),fParentCell(info.fParentCell),
-               fATCC(info.fATCC),fModification(info.fModification)
+              :XSampleInfo(info), fParentCell(info.fParentCell),
+               fATCC(info.fATCC), fModification(info.fModification)
 {
    // Cell line information copy constructor
    if(kCS) cout << "---XCellLineInfo::XCellLineInfo(copy)------" << endl;
@@ -952,7 +1149,6 @@ XCellLineInfo& XCellLineInfo::operator=(const XCellLineInfo& rhs)
 
    if (this != &rhs) {
       XSampleInfo::operator=(rhs);
-      fCellType     = rhs.fCellType;
       fParentCell   = rhs.fParentCell;
       fATCC         = rhs.fATCC;
       fModification = rhs.fModification;
@@ -984,7 +1180,6 @@ XPrimaryCellInfo::XPrimaryCellInfo()
    // Default primary cell information constructor
    if(kCS) cout << "---XPrimaryCellInfo::XPrimaryCellInfo(default)------" << endl;
 
-   fCellType      = "";
    fIsolationDate = 0;
    fDescription   = "";
 }//Constructor
@@ -993,23 +1188,21 @@ XPrimaryCellInfo::XPrimaryCellInfo()
 XPrimaryCellInfo::XPrimaryCellInfo(const char *name, const char *type,  
                   Long_t date, const char *description, const char *sex,
                   const char *pheno, const char *geno, const char *extract,
-                  const char *comment, Bool_t isXeno, const char *xenostrain,
-                  const char *xenosex, Double_t xenoage, const char *xageunits)
-                 :XSampleInfo(name, sex, pheno, geno, extract, comment,
-                  isXeno, xenostrain, xenosex, xenoage, xageunits)
+                  Bool_t isXeno, const char *xenostrain, const char *xenosex,
+                  Double_t xenoage, const char *xageunits, const char *comment)
+                 :XSampleInfo(name, type, sex, pheno, geno, extract, isXeno,
+                  xenostrain, xenosex, xenoage, xageunits, comment)
 {
    // Primary cell information constructor
    if(kCS) cout << "---XPrimaryCellInfo::XPrimaryCellInfo------" << endl;
 
-   fCellType      = type;
    fIsolationDate = date;
    fDescription   = description;
 }//Constructor
 
 //______________________________________________________________________________
 XPrimaryCellInfo::XPrimaryCellInfo(const XPrimaryCellInfo &info) 
-                 :XSampleInfo(info),fCellType(info.fCellType),
-                  fDescription(info.fDescription)
+                 :XSampleInfo(info), fDescription(info.fDescription)
 {
    // Primary cell information copy constructor
    if(kCS) cout << "---XPrimaryCellInfo::XPrimaryCellInfo(copy)------" << endl;
@@ -1025,7 +1218,6 @@ XPrimaryCellInfo& XPrimaryCellInfo::operator=(const XPrimaryCellInfo& rhs)
 
    if (this != &rhs) {
       XSampleInfo::operator=(rhs);
-      fCellType      = rhs.fCellType;
       fIsolationDate = rhs.fIsolationDate;
       fDescription   = rhs.fDescription;
    }//if
@@ -1056,7 +1248,6 @@ XTissueInfo::XTissueInfo()
    // Default tissue information constructor
    if(kCS) cout << "---XTissueInfo::XTissueInfo(default)------" << endl;
 
-   fTissueType   = "";
    fDevelopment  = "";
    fMorphology   = "";
    fDisease      = "";
@@ -1071,15 +1262,14 @@ XTissueInfo::XTissueInfo(const char *name, const char *type, const char *develop
              const char *morphology, const char *disease, const char *stage,
              Double_t donorage, const char *ageunits, const char *status,
              const char *sex, const char *pheno, const char *geno, const char *extract,
-             const char *comment, Bool_t isXeno, const char *xenostrain,
-             const char *xenosex, Double_t xenoage, const char *xageunits)
-            :XSampleInfo(name, sex, pheno, geno, extract, comment,
-             isXeno, xenostrain, xenosex, xenoage, xageunits)
+             Bool_t isXeno, const char *xenostrain, const char *xenosex,
+             Double_t xenoage, const char *xageunits, const char *comment)
+            :XSampleInfo(name, type, sex, pheno, geno, extract, isXeno,
+             xenostrain, xenosex, xenoage, xageunits, comment)
 {
    // Tissue information constructor
    if(kCS) cout << "---XTissueInfo::XTissueInfo------" << endl;
 
-   fTissueType   = type;
    fDevelopment  = development;
    fMorphology   = morphology;
    fDisease      = disease;
@@ -1091,10 +1281,10 @@ XTissueInfo::XTissueInfo(const char *name, const char *type, const char *develop
 
 //______________________________________________________________________________
 XTissueInfo::XTissueInfo(const XTissueInfo &info) 
-            :XSampleInfo(info),fTissueType(info.fTissueType),
-             fDevelopment(info.fDevelopment),fMorphology(info.fMorphology),
-             fDisease(info.fDisease),fDiseaseStage(info.fDiseaseStage),
-             fAgeUnits(info.fAgeUnits),fDonorStatus(info.fDonorStatus)
+            :XSampleInfo(info), fDevelopment(info.fDevelopment),
+             fMorphology(info.fMorphology), fDisease(info.fDisease),
+             fDiseaseStage(info.fDiseaseStage), fAgeUnits(info.fAgeUnits),
+             fDonorStatus(info.fDonorStatus)
 {
    // Tissue information copy constructor
    if(kCS) cout << "---XTissueInfo::XTissueInfo(copy)------" << endl;
@@ -1110,7 +1300,6 @@ XTissueInfo& XTissueInfo::operator=(const XTissueInfo& rhs)
 
    if (this != &rhs) {
       XSampleInfo::operator=(rhs);
-      fTissueType   = rhs.fTissueType;
       fDevelopment  = rhs.fDevelopment;
       fMorphology   = rhs.fMorphology;
       fDisease      = rhs.fDisease;
@@ -1146,7 +1335,6 @@ XBiopsyInfo::XBiopsyInfo()
    // Default biopsy information constructor
    if(kCS) cout << "---XBiopsyInfo::XBiopsyInfo(default)------" << endl;
 
-   fBiopsyType   = "";
    fMorphology   = "";
    fDisease      = "";
    fDiseaseStage = "";
@@ -1160,15 +1348,14 @@ XBiopsyInfo::XBiopsyInfo(const char *name, const char *type,
              const char *morphology, const char *disease, const char *stage,
              Double_t donorage, const char *ageunits, const char *status,
              const char *sex, const char *pheno, const char *geno, const char *extract,
-             const char *comment, Bool_t isXeno, const char *xenostrain,
-             const char *xenosex, Double_t xenoage, const char *xageunits)
-            :XSampleInfo(name, sex, pheno, geno, extract, comment,
-             isXeno, xenostrain, xenosex, xenoage, xageunits)
+             Bool_t isXeno, const char *xenostrain, const char *xenosex,
+             Double_t xenoage, const char *xageunits, const char *comment)
+            :XSampleInfo(name, type, sex, pheno, geno, extract, isXeno,
+             xenostrain, xenosex, xenoage, xageunits, comment)
 {
    // Biopsy information constructor
    if(kCS) cout << "---XBiopsyInfo::XBiopsyInfo------" << endl;
 
-   fBiopsyType   = type;
    fMorphology   = morphology;
    fDisease      = disease;
    fDiseaseStage = stage;
@@ -1179,8 +1366,7 @@ XBiopsyInfo::XBiopsyInfo(const char *name, const char *type,
 
 //______________________________________________________________________________
 XBiopsyInfo::XBiopsyInfo(const XBiopsyInfo &info) 
-            :XSampleInfo(info),fBiopsyType(info.fBiopsyType),
-             fMorphology(info.fMorphology),fDisease(info.fDisease),
+            :XSampleInfo(info),fMorphology(info.fMorphology),fDisease(info.fDisease),
              fDiseaseStage(info.fDiseaseStage),fAgeUnits(info.fAgeUnits),
              fDonorStatus(info.fDonorStatus)
 {
@@ -1198,7 +1384,6 @@ XBiopsyInfo& XBiopsyInfo::operator=(const XBiopsyInfo& rhs)
 
    if (this != &rhs) {
       XSampleInfo::operator=(rhs);
-      fBiopsyType   = rhs.fBiopsyType;
       fMorphology   = rhs.fMorphology;
       fDisease      = rhs.fDisease;
       fDiseaseStage = rhs.fDiseaseStage;
@@ -1220,20 +1405,19 @@ XBiopsyInfo::~XBiopsyInfo()
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
-// XTreatment                                                           //
+// XTreatmentInfo                                                       //
 //                                                                      //
 // Class describing a single treatment                                  //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-XTreatment::XTreatment()
-           :TNamed()
+XTreatmentInfo::XTreatmentInfo()
+               :XDataTypeInfo()
 {
-   // Default treatment constructor
-   if(kCS) cout << "---XTreatment::XTreatment(default)------" << endl;
+   // Default treatment info constructor
+   if(kCS) cout << "---XTreatmentInfo::XTreatmentInfo(default)------" << endl;
 
-   fType           = "";
    fConcentration  = 0;
    fConcUnit       = "";
    fTime           = 0;
@@ -1242,15 +1426,14 @@ XTreatment::XTreatment()
 }//Constructor
 
 //______________________________________________________________________________
-XTreatment::XTreatment(const char *name, const char *type, Double_t conc,
-            const char *concunit, Double_t time, const char *timeunit,
-            const char *admin)
-           :TNamed("Treatment", name)
+XTreatmentInfo::XTreatmentInfo(const char *name, const char *type, Double_t conc,
+                const char *concunit, Double_t time, const char *timeunit,
+                const char *admin, const char *comment)
+               :XDataTypeInfo("Treatment", name, type, comment)
 {
-   // Treatment constructor
-   if(kCS) cout << "---XTreatment::XTreatment------" << endl;
+   // Treatment info constructor
+   if(kCS) cout << "---XTreatmentInfo::XTreatmentInfo------" << endl;
 
-   fType           = type;
    fConcentration  = conc;
    fConcUnit       = concunit;
    fTime           = time;
@@ -1259,26 +1442,25 @@ XTreatment::XTreatment(const char *name, const char *type, Double_t conc,
 }//Constructor
 
 //______________________________________________________________________________
-XTreatment::XTreatment(const XTreatment &info) 
-           :TNamed(info),fType(info.fType),fConcUnit(info.fConcUnit),
-            fTimeUnit(info.fTimeUnit),fAdministration(info.fAdministration)
+XTreatmentInfo::XTreatmentInfo(const XTreatmentInfo &info) 
+               :XDataTypeInfo(info), fConcUnit(info.fConcUnit),
+                fTimeUnit(info.fTimeUnit), fAdministration(info.fAdministration)
 {
-   // Treatment copy constructor
-   if(kCS) cout << "---XTreatment::XTreatment(copy)------" << endl;
+   // Treatment info copy constructor
+   if(kCS) cout << "---XTreatmentInfo::XTreatmentInfo(copy)------" << endl;
 
    fConcentration = info.fConcentration;
    fTime          = info.fTime;
 }//CopyConstructor
 
 //______________________________________________________________________________
-XTreatment& XTreatment::operator=(const XTreatment& rhs)
+XTreatmentInfo& XTreatmentInfo::operator=(const XTreatmentInfo& rhs)
 {
-   // Treatment assignment operator.
-   if(kCS) cout << "---XTreatment::operator=------" << endl;
+   // Treatment info assignment operator.
+   if(kCS) cout << "---XTreatmentInfo::operator=------" << endl;
 
    if (this != &rhs) {
-      TNamed::operator=(rhs);
-      fType           = rhs.fType;
+      XDataTypeInfo::operator=(rhs);
       fConcentration  = rhs.fConcentration;
       fConcUnit       = rhs.fConcUnit;
       fTime           = rhs.fTime;
@@ -1289,131 +1471,65 @@ XTreatment& XTreatment::operator=(const XTreatment& rhs)
 }//operator=
 
 //______________________________________________________________________________
-XTreatment::~XTreatment()
+XTreatmentInfo::~XTreatmentInfo()
 {
-   // Treatment destructor
-   if(kCS) cout << "---XTreatment::~XTreatment------" << endl;
+   // Treatment info destructor
+   if(kCS) cout << "---XTreatmentInfo::~XTreatmentInfo------" << endl;
 
 }//Destructor
 
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
-// XTreatmentInfo                                                       //
+// XTreatmentList                                                       //
 //                                                                      //
 // Class describing sample treatments                                   //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-XTreatmentInfo::XTreatmentInfo()
-               :XDataTypeInfo()
+XTreatmentList::XTreatmentList()
+               :XDataTypeList()
 {
-   // Default treatment information constructor
-   if(kCS) cout << "---XTreatmentInfo::XTreatmentInfo(default)------" << endl;
+   // Default treatment list constructor
+   if(kCS) cout << "---XTreatmentList::XTreatmentList(default)------" << endl;
 
-   fTreatments = 0;
-   fComment    = "";
 }//Constructor
 
 //______________________________________________________________________________
-XTreatmentInfo::XTreatmentInfo(const char *type, const char *comment)
-               :XDataTypeInfo("Treatments", type)
+XTreatmentList::XTreatmentList(const char *type, const char *comment)
+               :XDataTypeList("Treatments", "TreatmentList", type, comment)
 {
-   // Treatment information constructor
-   if(kCS) cout << "---XTreatmentInfo::XTreatmentInfo------" << endl;
+   // Treatment list constructor
+   if(kCS) cout << "---XTreatmentList::XTreatmentList------" << endl;
 
-   fTreatments = new TList();
-   fComment    = comment;
-   fHasInfo    = kTRUE;
 }//Constructor
 
 //______________________________________________________________________________
-XTreatmentInfo::XTreatmentInfo(const XTreatmentInfo &info) 
-               :XDataTypeInfo(info),fComment(info.fComment)
+XTreatmentList::XTreatmentList(const XTreatmentList &list) 
+               :XDataTypeList(list)
 {
-   // Treatment information copy constructor
-   if(kCS) cout << "---XTreatmentInfo::XTreatmentInfo(copy)------" << endl;
+   // Treatment list copy constructor
+   if(kCS) cout << "---XTreatmentList::XTreatmentList(copy)------" << endl;
 
-//to do: test if correct?
-   fTreatments = 0;
-   if (info.fTreatments != 0) {
-      fTreatments = new TList();
-      for (Int_t i=0; i<(info.fTreatments)->GetSize(); i++) {
-         fTreatments->AddAt((info.fTreatments)->At(i), i);
-      }//for_i
-   }//if
 }//CopyConstructor
 
 //______________________________________________________________________________
-XTreatmentInfo& XTreatmentInfo::operator=(const XTreatmentInfo& rhs)
+XTreatmentList& XTreatmentList::operator=(const XTreatmentList& rhs)
 {
-   // Treatment information assignment operator.
-   if(kCS) cout << "---XTreatmentInfo::operator=------" << endl;
+   // Treatment list assignment operator.
+   if(kCS) cout << "---XTreatmentList::operator=------" << endl;
 
    if (this != &rhs) {
-      XDataTypeInfo::operator=(rhs);
-      fComment = rhs.fComment;
-//to do: need to copy fTreatments!!!
-   cout << "Error: Copy of fTreatments not yet implemented." << endl;
+      XDataTypeList::operator=(rhs);
    }//if
    return *this;
 }//operator=
 
 //______________________________________________________________________________
-XTreatmentInfo::~XTreatmentInfo()
+XTreatmentList::~XTreatmentList()
 {
-   // Treatment information destructor
-   if(kCS) cout << "---XTreatmentInfo::~XTreatmentInfo------" << endl;
+   // Treatment list destructor
+   if(kCS) cout << "---XTreatmentList::~XTreatmentList------" << endl;
 
-   if(fTreatments) {fTreatments->Delete(); delete fTreatments; fTreatments = 0;}
 }//Destructor
-
-//______________________________________________________________________________
-void XTreatmentInfo::AddTreatment(XTreatment *treat)
-{
-   // Add treatment to treatment list
-   if(kCS) cout << "------XTreatmentInfo::AddTreatment------" << endl;
-
-//??
-   fTreatments->Add(treat);
-}//AddTreatment
-
-//______________________________________________________________________________
-Int_t XTreatmentInfo::RemoveTreatment(const char *name)
-{
-   // Remove treatment name from treatment list 
-   if(kCS) cout << "------XTreatmentInfo::RemoveTreatment------" << endl;
-
-   Int_t size = fTreatments->GetSize();
-   if (size == 0) return 0;
-
-// Loop over treatment list
-   TIter next(fTreatments);
-   XTreatment *treat = 0;
-   while ((treat = (XTreatment*)next())) {
-      TString tname = treat->GetTreatment();
-      if (strcmp(name,  tname.Data())  == 0) {
-         fTreatments->Remove(treat);
-         size--;
-      }//if
-   }//while
-
-   return size;
-}//RemoveTreatment
-
-//______________________________________________________________________________
-XTreatment *XTreatmentInfo::GetTreatment(const char *name)
-{
-   // Find treatment with name stored in list fTreatments
-   if(kCS) cout << "------XTreatmentInfo::GetTreatment------" << endl;
-
-   XTreatment *treat = 0;
-   treat = (XTreatment*)fTreatments->FindObject(name);
-   if (treat) {
-      return treat;
-   } else {
-      return 0;
-   }//if
-}//GetTreatment
-

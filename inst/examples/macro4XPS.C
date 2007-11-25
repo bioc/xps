@@ -2,7 +2,7 @@
 * Macro to test XPS command line                                              *
 *                                                                             *
 * Author: Christian Stratowa, Vienna, Austria    .                            *
-* Created: 15 Mar 2003                             Last modified: 04 Oct 2007 *
+* Created: 15 Mar 2003                             Last modified: 25 Nov 2007 *
 ******************************************************************************/
 //
 ///////////////////////////
@@ -259,6 +259,93 @@ void ImportDataTest3(const char *filename   = "DataTest3",
    manager->Close();
    delete manager;
 }//ImportDataTest3
+
+//______________________________________________________________________________
+void ImportDataTest3A(const char *filename   = "DataTest3",
+                      const char *filedir    = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.12",
+                      const char *schemefile = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.12/SchemeTest3.root")
+{
+// Import Affymetrix *.CEL files into XPS
+
+// create new data manager
+   XDataManager *manager = new XDataManager("DataManager");
+
+// initialize chip type and variable list
+   manager->Initialize("GeneChip");
+   manager->InitInput("Test3","cel","MEAN/D:STDV/D:NPIXELS/I","RawData");
+
+// create new root data file 
+   manager->New(filename, filedir, "GeneChip");
+
+// open root scheme file
+   manager->OpenSchemes(schemefile);
+
+// optionally add database info
+   manager->BeginTransaction();
+//?   manager->LoginInfo("strato", "password");
+   manager->ProjectInfo("TestProject",20060126, "Project Type","use Test3 data for testing","my comment");
+   manager->AuthorInfo("Stratowa","Christian","Project Leader","Company","Dept","cstrato.at.aon.at","++43-1-1234","my comment");
+   manager->DatasetInfo("DataSet","MC","Tissue","Stratowa",20060126,"description","my comment");
+   manager->SourceInfo("Unknown","source type","Homo sapiens","caucasian","description","my comment");
+   // demo only: use only one of SampleInfo, CellLineInfo, PrimaryCellInfo, TissueInfo, BiopsyInfo!!!
+   manager->SampleInfo("Yeast","sample type","NA","my pheno","my genotype","RNA extraction",0,"","",0.0,"", "my comment");
+   manager->CellLineInfo("HeLa-S3","cell type","HeLa","ATCC-12.3","pCSV transfected","female","my pheno","my genotype","RNA extraction",0,"","",0.0,"", "my comment");
+   manager->PrimaryCellInfo("Mel31","primary cell",20071123,"extracted from patient","male","my pheno","my genotype","RNA extraction",1,"NMRI","female",7.0,"months", "my comment");
+   manager->TissueInfo("Liver","tissue type","adult","morphology","carcinoma","Grade 3",34.6,"years","dead","male","my pheno","my genotype","RNA extraction",0,"","",0.0,"", "my comment");
+   manager->BiopsyInfo("Breast","needle biopsy","morphology","carcinoma","Grade 3",45.5,"years","alive","female","my pheno","my genotype","RNA extraction",0,"","",0.0,"", "my comment");
+   manager->ArrayInfo("Test3","GeneChip","description","my comment");
+   manager->HybridizationInfo("TestA1","hyb type","TestA1.CEL",20071117,"my prep1","standard protocol","A1",1,"my comment");
+   manager->HybridizationInfo("TestA2","hyb type","TestA2.CEL",20071117,"my prep2","standard protocol","A2",1,"my comment");
+   manager->TreatmentInfo("TestA1","DMSO",4.3,"mM",1.0,"hours","intravenous","my comment");
+   manager->TreatmentInfo("TestA2","DMSO",4.3,"mM",8.0,"hours","intravenous","my comment");
+   manager->CommitTransaction();
+
+// store *.CEL data as tree in data file
+   manager->Import("DataSet","/Volumes/CoreData/ROOT/rootdata/testAB/raw/TestA1.CEL","TestA1");
+   manager->Import("DataSet","/Volumes/CoreData/ROOT/rootdata/testAB/raw/TestA2.CEL","TestA2");
+
+// cleanup
+   manager->Close();
+   delete manager;
+}//ImportDataTest3
+
+//______________________________________________________________________________
+void UpdateDataTest3A(const char *filename   = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.12/DataTest3_cel.root",
+                      const char *schemefile = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.12/SchemeTest3.root")
+{
+// Import Affymetrix *.CEL files into XPS
+
+// create new data manager
+   XDataManager *manager = new XDataManager("DataManager");
+
+// initialize chip type and variable list
+   manager->Initialize("GeneChip");
+   manager->InitInput("Test3","cel","MEAN/D:STDV/D:NPIXELS/I","RawData");
+
+// open root scheme file
+   manager->OpenSchemes(schemefile);
+
+// update root data file (filname must end with *.root)
+   manager->Update(filename);
+
+   manager->BeginTransaction();
+   manager->ProjectInfo("TestProject",20070523,"Project Update","use Test3 data for updating","my comment");
+   manager->AuthorInfo("Stratowa","Christian","Project Leader","Home","home","email","++43-1-1234","my comment",kTRUE);
+   manager->DatasetInfo("DataSet","MC","Tissue","StratowaUp",20070106,"description up","my comment",kTRUE);
+   manager->HybridizationInfo("TestB1","hyb type","TestB1.CEL",20071117,"my prep1","standard protocol","B1",2,"my comment");
+   manager->HybridizationInfo("TestB2","hyb type","TestB2.CEL",20071117,"my prep2","standard protocol","B2",2,"my comment");
+   manager->TreatmentInfo("TestB1","DrugA2",4.3,"mM",1.0,"hours","intravenous","my comment");
+   manager->TreatmentInfo("TestB2","DrugA2",4.3,"mM",8.0,"hours","intravenous","my comment");
+   manager->CommitTransaction();
+
+// store *.CEL data for mix as tree in data file
+   manager->Import("DataSet","/Volumes/CoreData/ROOT/rootdata/testAB/raw/TestB1.CEL","TestB1");
+   manager->Import("DataSet","/Volumes/CoreData/ROOT/rootdata/testAB/raw/TestB2.CEL","TestB2");
+
+// cleanup
+   manager->Close();
+   delete manager;
+}//UpdateDataTest3
 
 //______________________________________________________________________________
 void ImportDataU133P2(const char *filename   = "U133P2Tissues",

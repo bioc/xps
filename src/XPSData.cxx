@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 09/19/2007
+// File created: 08/05/2002                          last modified: 11/21/2007
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -56,6 +56,8 @@
 *            XExonChipPivot.
 * Aug 2007 - Add support for whole genome arrays, classes XGenomeChipHyb, 
 *            XGenomeChipMetrics, XGenomeChipPivot.
+* Nov 2007 - XDataManager now inherits from XManager and XProjectHandler
+*          - database methods ProjectInfo() etc are moved to XProjectHandler
 *
 ******************************************************************************/
 
@@ -182,7 +184,7 @@ const Bool_t kCSa = 0; //debug: print function names in loops
 
 //______________________________________________________________________________
 XDataManager::XDataManager()
-             :XManager()
+             :XManager(), XProjectHandler()
 {
    // Default DataManager constructor
    if(kCS) cout << "---XDataManager::XDataManager(default)------" << endl;
@@ -194,7 +196,7 @@ XDataManager::XDataManager()
 
 //______________________________________________________________________________
 XDataManager::XDataManager(const char *name, const char *title, Int_t verbose)
-             :XManager(name, title, verbose)
+             :XManager(name, title, verbose), XProjectHandler(name, title)
 {
    // Normal DataManager constructor
    if(kCS) cout << "---XDataManager::XDataManager------" << endl;
@@ -486,303 +488,104 @@ Int_t XDataManager::DrawUnit(const char *canvasname, const char *treename,
 }//DrawUnit
 
 //______________________________________________________________________________
-TString XDataManager::LoginInfo(XLoginInfo *info, Bool_t copy, Bool_t replace)
+Int_t XDataManager::BeginTransaction(const char *name)
 {
-   // Store login information in content folder and return userID
-   // If copy is kTRUE then create new XLoginInfo before adding to content
-   // If replace is kTRUE then replace existing XLoginInfo in content
-   if(kCS) cout << "------XDataManager::LoginInfo------" << endl;
+   // Begin transaction
+   if(kCS) cout << "------XDataManager::BeginTransaction------" << endl;
 
-   if (fAbort || (info == 0)) return 0;
-
-   XLoginInfo *loginfo = info;
-   if (copy) {
-      loginfo = new XLoginInfo(*info);
-   }//if
-
-   if (replace) {
-      fContent->Remove(fContent->FindObject("Login", "XLoginInfo"));
-   }//if
-
-   fContent->Add(loginfo);
-   return loginfo->GetUserID();
-}//LoginInfo
+   if (fAbort) return errAbort;
+   
+   return errNoErr;
+}//BeginTransaction
 
 //______________________________________________________________________________
-void XDataManager::LoginInfo(const char *userID, const char *password,
-                   Bool_t replace)
+Int_t XDataManager::CommitTransaction()
 {
-   // Store login information in content folder
-   // If replace is kTRUE then replace existing XLoginInfo in content
-   if(kCS) cout << "------XDataManager::LoginInfo------" << endl;
+   // Commit transaction
+   if(kCS) cout << "------XDataManager::CommitTransaction------" << endl;
 
-   if (fAbort) return;
+   if (fAbort) return errAbort;
 
-   XLoginInfo *info = new XLoginInfo(userID, password);
+   if (fList && fList->GetSize() > 0) {
+      for (Int_t i=0; i<fList->GetSize(); i++) {
+         XDataTypeInfo *info = (XDataTypeInfo*)(fList->At(i));
 
-   if (replace) {
-      fContent->Remove(fContent->FindObject("Login", "XLoginInfo"));
+         if (strcmp(info->ClassName(), "XDatasetInfo") == 0) {
+            // set data type for data contained in dataset
+            info->SetDataType(fDataType);
+
+            if (info->Replace() == kTRUE) {
+               XDatasetInfo *oldinfo = 0;
+               oldinfo = (XDatasetInfo*)fContent->FindObject("Dataset", "XDatasetInfo");
+               if (oldinfo == 0) {
+                  fContent->Add(info);
+                  return errNoErr;
+               }//if
+
+               TString oldname = oldinfo->GetDatasetName();
+               TString newname = ((XDatasetInfo*)info)->GetDatasetName();
+               if (strcmp(oldname.Data(), newname.Data()) != 0) {
+                  cout << "Warning: Currently it is not possible to change dataset name <"
+                       << oldname << "> to dataset name <" << newname <<">." << endl;
+                  ((XDatasetInfo*)info)->SetDatasetName(oldname);
+               }//if
+
+               fContent->Remove(oldinfo);
+            }//if
+         } else if (strcmp(info->ClassName(), "XHybridizationList") == 0) {
+            //check for existance of info in case of update file and/or replace info
+            XHybridizationList *oldlist = 0;
+            oldlist = (XHybridizationList*)fContent->FindObject(info->GetName(), info->ClassName());
+
+            if (oldlist) {
+               XHybridizationList *newlist = (XHybridizationList*)info;
+
+               XHybInfo *oldhyb = 0;
+               XHybInfo *newhyb = 0;
+               for (Int_t i=(oldlist->GetSize()-1); i>-1; i--) {
+                  oldhyb = (XHybInfo*)(oldlist->At(i));
+                  newhyb = (XHybInfo*)(newlist->FindDataTypeInfo(oldhyb->GetHybName()));
+
+                  if (newhyb == 0) { //add only if not replaced by new info
+                     newlist->AddAt(oldhyb, 0);
+                  }//if
+               }//for_i
+
+               fContent->Remove(oldlist);
+            }//if
+         } else if (strcmp(info->ClassName(), "XTreatmentList") == 0) {
+            //check for existance of info in case of update file and/or replace info
+            XTreatmentList *oldlist = 0;
+            oldlist = (XTreatmentList*)fContent->FindObject(info->GetName(), info->ClassName());
+
+            if (oldlist) {
+               XTreatmentList *newlist = (XTreatmentList*)info;
+
+               XTreatmentInfo *oldtreat = 0;
+               XTreatmentInfo *newtreat = 0;
+               for (Int_t i=(oldlist->GetSize()-1); i>-1; i--) {
+                  oldtreat = (XTreatmentInfo*)(oldlist->At(i));
+                  newtreat = (XTreatmentInfo*)(newlist->FindDataTypeInfo(oldtreat->GetTreatmentName()));
+
+                  if (newtreat == 0) { //add only if not replaced by new info
+                     newlist->AddAt(oldtreat, 0);
+                  }//if
+               }//for_i
+
+               fContent->Remove(oldlist);
+            }//if
+         } else if (info->Replace() == kTRUE) {
+            fContent->Remove(fContent->FindObject(info->GetName(), info->ClassName()));
+         }//if
+
+         fContent->Add(info);
+      }//for_i
+   } else {
+      cerr << "Error: Could not add DataTypes to Content!" << endl;
    }//if
-
-   fContent->Add(info);
-}//LoginInfo
-
-//______________________________________________________________________________
-TString XDataManager::ProjectInfo(XProjectInfo *info, Bool_t copy, Bool_t replace)
-{
-   // Store project information in content folder and return project name
-   // If copy is kTRUE then create new XProjectInfo before adding to content
-   // If replace is kTRUE then replace existing XProjectInfo in content
-   if(kCS) cout << "------XDataManager::ProjectInfo------" << endl;
-
-   if (fAbort || (info == 0)) return 0;
-
-   XProjectInfo *projectinfo = info;
-   if (copy) {
-      projectinfo = new XProjectInfo(*info);
-   }//if
-
-   if (replace) {
-      fContent->Remove(fContent->FindObject("Project", "XProjectInfo"));
-   }//if
-
-   fContent->Add(projectinfo);
-   return projectinfo->GetProjectName();
-}//ProjectInfo
-
-//______________________________________________________________________________
-void XDataManager::ProjectInfo(const char *name, Long_t date,
-                   const char *description, Bool_t replace)
-{
-   // Store project information in content folder
-   // If replace is kTRUE then replace existing XProjectInfo in content
-   if(kCS) cout << "------XDataManager::ProjectInfo------" << endl;
-
-   if (fAbort) return;
-
-   XProjectInfo *info = new XProjectInfo(name, date, description);
-
-   if (replace) {
-      fContent->Remove(fContent->FindObject("Project", "XProjectInfo"));
-   }//if
-
-   fContent->Add(info);
-}//ProjectInfo
-
-//______________________________________________________________________________
-TString XDataManager::AuthorInfo(XAuthorInfo *info, Bool_t copy, Bool_t replace)
-{
-   // Store author information in content folder and return author name
-   // If copy is kTRUE then create new XAuthorInfo before adding to content
-   // If replace is kTRUE then replace existing XAuthorInfo in content
-   if(kCS) cout << "------XDataManager::AuthorInfo------" << endl;
-
-   if (fAbort || (info == 0)) return 0;
-
-   XAuthorInfo *authorinfo = info;
-   if (copy) {
-      authorinfo = new XAuthorInfo(*info);
-   }//if
-
-   if (replace) {
-      fContent->Remove(fContent->FindObject("Author", "XAuthorInfo"));
-   }//if
-
-   fContent->Add(authorinfo);
-   return authorinfo->GetLastName();
-}//AuthorInfo
-
-//______________________________________________________________________________
-void XDataManager::AuthorInfo(const char *lastname, const char *firstname,
-                   const char *company, const char *department,
-                   const char *phone, const char *mail, Bool_t replace)
-{
-   // Store author information in content folder
-   // If replace is kTRUE then replace existing XAuthorInfo in content
-   if(kCS) cout << "------XDataManager::AuthorInfo------" << endl;
-
-   if (fAbort) return;
-
-   XAuthorInfo *info = new XAuthorInfo(lastname, firstname, company, department,
-                                       phone, mail);
-
-   if (replace) {
-      fContent->Remove(fContent->FindObject("Author", "XAuthorInfo"));
-   }//if
-
-   fContent->Add(info);
-}//AuthorInfo
-
-//______________________________________________________________________________
-TString XDataManager::DatasetInfo(XDatasetInfo *info, Bool_t copy, Bool_t replace)
-{
-   // Store dataset information in content folder and return datset name
-   // If copy is kTRUE then create new XDatasetInfo before adding to content
-   // If replace is kTRUE then replace existing XDatasetInfo in content
-   if(kCS) cout << "------XDataManager::DatasetInfo------" << endl;
-
-   if (fAbort || (info == 0)) return 0;
-
-   XDatasetInfo *setinfo = info;
-   if (copy) {
-      setinfo = new XDatasetInfo(*info);
-   }//if
-
-   if (replace) {
-///////////////////////
-//to do: Problem if new dataset name! Two possibilities:
-// 1, do not allow changing dataset name (current implementation)
-// 2, change dataset name in all DataTreeInfos in all trees in TFile, and TDirectory!
-///////////////////////
-      XDatasetInfo *oldinfo = 0;
-      oldinfo = (XDatasetInfo*)fContent->FindObject("Dataset", "XDatasetInfo");
-      if (oldinfo == 0) {
-         fContent->Add(setinfo);
-         return setinfo->GetDatasetName();
-      }//if
-
-      TString oldname = oldinfo->GetDatasetName();
-      TString newname = setinfo->GetDatasetName();
-      if (strcmp(oldname.Data(), newname.Data()) != 0) {
-         cout << "Warning: Currently it is not possible to change dataset name <"
-              << oldname << "> to dataset name <" << newname <<">." << endl;
-         setinfo->SetDatasetName(oldname);
-      }//if
-
-      fContent->Remove(oldinfo);
-   }//if
-
-   fContent->Add(setinfo);
-   return setinfo->GetDatasetName();
-}//DatasetInfo
-
-//______________________________________________________________________________
-void XDataManager::DatasetInfo(const char *name, const char *type,
-                   const char *sample, const char *submitter, Long_t date,
-                   const char *description, Bool_t replace)
-{
-   // Store dataset information in content folder
-   // If replace is kTRUE then replace existing XDatasetInfo in content
-   if(kCS) cout << "------XDataManager::DatasetInfo------" << endl;
-
-   if (fAbort) return;
-
-   XDatasetInfo *setinfo = new XDatasetInfo(name, type, sample, submitter, date,
-                                            description);
-
-   // set data type for data contained in dataset
-   setinfo->SetDataType(fDataType);
-
-   if (replace) {
-///////////////////////
-//to do: Problem if new dataset name! Two possibilities:
-// 1, do not allow changing dataset name (current implementation)
-// 2, change dataset name in all DataTreeInfos in all trees in TFile
-///////////////////////
-      XDatasetInfo *oldinfo = 0;
-      oldinfo = (XDatasetInfo*)fContent->FindObject("Dataset", "XDatasetInfo");
-      if (oldinfo == 0) {
-         fContent->Add(setinfo);
-         return;
-      }//if
-
-      TString oldname = oldinfo->GetDatasetName();
-      TString newname = setinfo->GetDatasetName();
-      if (strcmp(oldname.Data(), newname.Data()) != 0) {
-         cout << "Warning: Currently it is not possible to change dataset name <"
-              << oldname << "> to dataset name <" << newname <<">." << endl;
-         setinfo->SetDatasetName(oldname);
-      }//if
-
-      fContent->Remove(oldinfo);
-   }//if
-
-   fContent->Add(setinfo);
-}//DatasetInfo
-
-//______________________________________________________________________________
-TString XDataManager::SourceInfo(XSourceInfo *info, Bool_t copy, Bool_t replace)
-{
-   // Store source information in content folder and return source name
-   // If copy is kTRUE then create new XSourceInfo before adding to content
-   // If replace is kTRUE then replace existing XSourceInfo in content
-   if(kCS) cout << "------XDataManager::SourceInfo------" << endl;
-
-   if (fAbort || (info == 0)) return 0;
-
-   XSourceInfo *sourceinfo = info;
-   if (copy) {
-      sourceinfo = new XSourceInfo(*info);
-   }//if
-
-   if (replace) {
-      fContent->Remove(fContent->FindObject("Source", "XSourceInfo"));
-   }//if
-
-   fContent->Add(sourceinfo);
-   return sourceinfo->GetSourceName();
-}//SourceInfo
-
-//______________________________________________________________________________
-void XDataManager::SourceInfo(const char *name, const char *species,
-                   const char *subspecies, const char *description, Bool_t replace)
-{
-   // Store source information in content folder
-   // If replace is kTRUE then replace existing XSourceInfo in content
-   if(kCS) cout << "------XDataManager::SourceInfo------" << endl;
-
-   if (fAbort) return;
-
-   XSourceInfo *info = new XSourceInfo(name, species, subspecies, description);
-
-   if (replace) {
-      fContent->Remove(fContent->FindObject("Source", "XSourceInfo"));
-   }//if
-
-   fContent->Add(info);
-}//SourceInfo
-
-//______________________________________________________________________________
-TString XDataManager::ArrayInfo(XArrayInfo *info, Bool_t copy, Bool_t replace)
-{
-   // Store array information in content folder and return array name
-   // If copy is kTRUE then create new XArrayInfo before adding to content
-   // If replace is kTRUE then replace existing XArrayInfo in content
-   if(kCS) cout << "------XDataManager::ArrayInfo------" << endl;
-
-   if (fAbort || (info == 0)) return 0;
-
-   XArrayInfo *arrayinfo = info;
-   if (copy) {
-      arrayinfo = new XArrayInfo(*info);
-   }//if
-
-   if (replace) {
-      fContent->Remove(fContent->FindObject("Array", "XArrayInfo"));
-   }//if
-
-   fContent->Add(arrayinfo);
-   return arrayinfo->GetArrayName();
-}//ArrayInfo
-
-//______________________________________________________________________________
-void XDataManager::ArrayInfo(const char *name, const char *type,
-                   const char *description, Bool_t replace)
-{
-   // Store array information in content folder
-   // If replace is kTRUE then replace existing XArrayInfo in content
-   if(kCS) cout << "------XDataManager::ArrayInfo------" << endl;
-
-   if (fAbort) return;
-
-   XArrayInfo *info = new XArrayInfo(name, type, description);
-
-   if (replace) {
-      fContent->Remove(fContent->FindObject("Array", "XArrayInfo"));
-   }//if
-
-   fContent->Add(info);
-}//ArrayInfo
+   
+   return errNoErr;
+}//CommitTransaction
 
 //______________________________________________________________________________
 Int_t XDataManager::ImportDefaults(const char *infile)

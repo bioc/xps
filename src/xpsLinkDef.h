@@ -58,6 +58,7 @@
 
 //XPSDataTypes.h
 #pragma link C++ class XDataTypeInfo+;
+#pragma link C++ class XDataTypeList+;
 #pragma link C++ class XDatabaseInfo+;
 #pragma link C++ class XProjectInfo+;
 #pragma link C++ class XAuthorInfo+;
@@ -66,13 +67,18 @@
 #pragma link C++ class XSourceInfo+;
 #pragma link C++ class XArrayInfo+;
 #pragma link C++ class XHybInfo+;
+#pragma link C++ class XHybridizationList+;
 #pragma link C++ class XSampleInfo+;
 #pragma link C++ class XCellLineInfo+;
 #pragma link C++ class XPrimaryCellInfo+;
 #pragma link C++ class XTissueInfo+;
 #pragma link C++ class XBiopsyInfo+;
-#pragma link C++ class XTreatment+;
 #pragma link C++ class XTreatmentInfo+;
+#pragma link C++ class XTreatmentList+;
+
+//XProjectHandler.h
+#pragma link C++ class XHandler+;
+#pragma link C++ class XProjectHandler+;
 
 //XPSData.h
 #pragma link C++ class XDataManager+;
