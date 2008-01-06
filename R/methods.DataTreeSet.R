@@ -1,6 +1,6 @@
 #==============================================================================#
 # methods.DataTreeSet.R: initialization, accessors, methods
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # initialize:
 # setValidity:
 # nrows:
@@ -324,7 +324,7 @@ setMethod("validBgrd", "DataTreeSet", bgrdDataTreeSet);
 
 "addDataDataTreeSet" <-
 function(object,
-         celdir   = getwd(),
+         celdir   = NULL,
          celfiles = "",
          celnames = NULL,
          project  = NULL,
@@ -333,21 +333,28 @@ function(object,
    if (debug.xps()) print("------addDataDataTreeSet------")
 
    ## check for presence of cel-file directory
-   if (celdir == "") {
-      celdir <- getwd();
-   }#if
-   if (!file.exists(celdir)) {
-      stop(paste("argument", sQuote("celdir"), "is not a system directory"));
-   }#if
-   if (substr(celdir,nchar(celdir),nchar(celdir)) != "/") {
-      celdir <- paste(celdir, "/", sep="");
+   if (!is.null(celdir)) {
+      if (celdir == "") {
+         celdir <- getwd();
+      }#if
+      if (!file.exists(celdir)) {
+         stop(paste("argument", sQuote("celdir"), "is not a system directory"));
+      }#if
+      if (substr(celdir,nchar(celdir),nchar(celdir)) != "/") {
+         celdir <- paste(celdir, "/", sep="");
+      }#if
    }#if
 
    ## get cel-files
-   tmpfiles <- list.files(celdir, pattern = "\\.[cC][eE][lL]");
    if (celfiles[1] == "*") {
-      celfiles <- tmpfiles;
+      celfiles <- list.files(celdir, pattern = "\\.[cC][eE][lL]");
+   } else if (is.null(celdir)) {
+      existing <- file.exists(celfiles);
+      if (length(existing[existing==TRUE]) != length(celfiles)) {
+         stop(paste("some", sQuote("celfiles"), " are not found."));
+      }#if
    } else {
+      tmpfiles <- list.files(celdir, pattern = "\\.[cC][eE][lL]");
       tmpfiles <- match(celfiles, tmpfiles);
       if (length(tmpfiles[is.na(tmpfiles)]) > 0) {
          stop(paste("some", sQuote("celfiles"), " are not found in directory",
@@ -367,7 +374,8 @@ function(object,
                  sQuote("celfiles")));
    }#if
    if (is.null(celnames)) {
-      celnames <- "";
+#      celnames <- "";
+      celnames <- CELNames(celfiles);
    } else {
       celnames <- unlist(strsplit(celnames, "\\.[cC][eE][lL]"));
    }#if
@@ -2217,5 +2225,4 @@ setMethod("image", signature(x="DataTreeSet"),
 )#image
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 

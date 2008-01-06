@@ -1,11 +1,16 @@
 #==============================================================================#
 # methods.ProcesSet.R: initialization, accessors, methods
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # initialize:
 # setValidity:
 # schemeFile:
+# schemeFile<-:
+# schemeSet:
+# schemeSet<-:
 # chipName:
 # chipType:
+# getTreeData:
+# validData:
 # export:
 # boxplot:
 # mboxplot:
@@ -144,7 +149,7 @@ setMethod("getTreeData", signature(object="ProcesSet"),
 
 "dataProcesSet" <-
 function(object,
-         which = "UNIT_NAME") 
+         which = "UnitName") 
 {
    if (debug.xps()) print("------dataProcesSet------")
 
@@ -154,7 +159,7 @@ function(object,
       stop(paste("slot", sQuote("data"), "has no data"));
    }#if
 
-   ## use row names from column "which"
+   ## use names from column "which" as rownames
    if (!is.na(match(which, colnames(data)))) {
       rownames(data) <- data[,which];
    }#if
@@ -211,6 +216,15 @@ function(object,
       varlist <- "*";
    }#if
 
+   ## check for presence of valid separator and outfile
+   exten <- validSeparator(sep);
+   if (length(outfile) && outfile != "") {
+      if (regexpr(".txt",outfile) > 0 || regexpr(".csv",outfile) > 0) {
+         outfile <- substr(outfile, 1, nchar(outfile)-4);
+      }#if
+      outfile <- paste(outfile, exten, sep=".");
+   }#if
+
    ## check for presence of outfile=/path/outname
    outname <- "";
    if (numtrees > 1 || treenames[1] == "*") {
@@ -219,9 +233,6 @@ function(object,
       outname <- treenames;
    }#if
    outfile <- validOutfile(outname, outfile);
-
-   ## check for presence of valid separator
-   validSeparator(sep);
 
    ## get tree names "treeset.treename.treetype"
    if (numtrees == 1) {

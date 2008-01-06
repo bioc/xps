@@ -1,19 +1,24 @@
 #==============================================================================#
 # TreeSetClasses.R: contains all class definitions and method definitions
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# methods.ProjectInfo.R:   contains methods for ProjectInfo
-# methods.TreeSet.R:       contains methods for TreeSet
-# methods.SchemeTreeSet.R: contains methods for SchemeTreeSet
-# methods.ProcesSet.R:     contains methods for ProcesSet
-# methods.DataTreeSet.R:   contains methods for DataTreeSet
-# methods.ExprTreeSet.R:   contains methods for ExprTreeSet
-# methods.CallTreeSet.R:   contains methods for CallTreeSet
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# methods.ProjectInfo.R:     contains methods for ProjectInfo
+# methods.TreeSet.R:         contains methods for TreeSet
+# methods.SchemeTreeSet.R:   contains methods for SchemeTreeSet
+# methods.ProcesSet.R:       contains methods for ProcesSet
+# methods.DataTreeSet.R:     contains methods for DataTreeSet
+# methods.ExprTreeSet.R:     contains methods for ExprTreeSet
+# methods.CallTreeSet.R:     contains methods for CallTreeSet
+# methods.Filter.R:          contains methods for Filter
+# methods.PreFilter.R:       contains methods for PreFilter
+# methods.UniFilter.R:       contains methods for UniFilter
+# methods.FilterTreeSet.R:   contains methods for FilterTreeSet
+# methods.AnalysisTreeSet.R: contains methods for AnalysisTreeSet
 #==============================================================================#
 
 
 #------------------------------------------------------------------------------#
 # ProjectInfo:
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # class ProjectInfo
 setClass("ProjectInfo",
@@ -80,7 +85,7 @@ setGeneric("treatmentInfo<-", function(object, value) standardGeneric("treatment
 
 #------------------------------------------------------------------------------#
 # TreeSet: virtual superset for 'SchemeTreeSet', 'DataTreeSet' etc
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # class TreeSet
 setClass("TreeSet",
@@ -117,7 +122,7 @@ setGeneric("root.browser", function(object) standardGeneric("root.browser"));
 
 #------------------------------------------------------------------------------#
 # SchemeTreeSet: 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 setClass("SchemeTreeSet",
    representation(chipname  = "character",
@@ -148,7 +153,7 @@ setGeneric("removeMask", function(object) standardGeneric("removeMask"));
 
 #------------------------------------------------------------------------------#
 # ProcesSet: 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 setClass("ProcesSet",
    representation(scheme = "SchemeTreeSet",
@@ -176,7 +181,7 @@ setGeneric("hist",        function(x, ...) standardGeneric("hist"));
 
 #------------------------------------------------------------------------------#
 # DataTreeSet: 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 setClass("DataTreeSet",
    representation(bgtreenames = "list",
@@ -219,7 +224,7 @@ setGeneric("image",         function(x, ...) standardGeneric("image"));
 
 #------------------------------------------------------------------------------#
 # ExprTreeSet: 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 setClass("ExprTreeSet",
    representation(exprtype = "character",
@@ -232,19 +237,21 @@ setClass("ExprTreeSet",
 )#ExprTreeSet
 
 # generic methods for class ExprTreeSet
-setGeneric("exprType",   function(object) standardGeneric("exprType"));
-setGeneric("exprType<-", function(object, value) standardGeneric("exprType<-"));
-setGeneric("normType",   function(object) standardGeneric("normType"));
-setGeneric("normType<-", function(object, value) standardGeneric("normType<-"));
-setGeneric("exprs",      function(object) standardGeneric("exprs"));
-setGeneric("exprs<-",    function(object, value) standardGeneric("exprs<-"));
-setGeneric("se.exprs",   function(object) standardGeneric("se.exprs"));
-setGeneric("mvaplot",    function(x, ...) standardGeneric("mvaplot"));
+setGeneric("exprType",     function(object) standardGeneric("exprType"));
+setGeneric("exprType<-",   function(object, value) standardGeneric("exprType<-"));
+setGeneric("normType",     function(object) standardGeneric("normType"));
+setGeneric("normType<-",   function(object, value) standardGeneric("normType<-"));
+setGeneric("exprs",        function(object) standardGeneric("exprs"));
+setGeneric("exprs<-",      function(object, value) standardGeneric("exprs<-"));
+setGeneric("xpsPreFilter", function(object, ...) standardGeneric("xpsPreFilter"));
+setGeneric("xpsUniFilter", function(object, ...) standardGeneric("xpsUniFilter"));
+setGeneric("se.exprs",     function(object) standardGeneric("se.exprs"));
+setGeneric("mvaplot",      function(x, ...) standardGeneric("mvaplot"));
 
 
 #------------------------------------------------------------------------------#
 # CallTreeSet: 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 setClass("CallTreeSet",
    representation(calltype = "character",
@@ -264,6 +271,142 @@ setGeneric("presCall<-", function(object, value) standardGeneric("presCall<-"));
 setGeneric("validCall",  function(object) standardGeneric("validCall"));
 setGeneric("callplot",   function(x, ...) standardGeneric("callplot"));
 
+
+#------------------------------------------------------------------------------#
+# Filter:
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# class Filter
+setClass("Filter",
+   representation(numfilters = "numeric"
+   ),
+   prototype(numfilters = 0
+   )
+)#Filter
+
+# generic methods for class Filter
+setGeneric("numberFilters", function(object) standardGeneric("numberFilters"));
+
+
+#------------------------------------------------------------------------------#
+# PreFilter:
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# class PreFilter
+setClass("PreFilter",
+   representation(mad         = "list",
+                  cv          = "list",
+                  variance    = "list",
+                  difference  = "list",
+                  ratio       = "list",
+                  gap         = "list",
+                  lothreshold = "list",
+                  hithreshold = "list",
+                  quantile    = "list",
+                  prescall    = "list"
+   ),
+   contains=c("Filter"),
+   prototype(mad         = list(),
+             cv          = list(),
+             variance    = list(),
+             difference  = list(),
+             ratio       = list(),
+             gap         = list(),
+             lothreshold = list(),
+             hithreshold = list(),
+             quantile    = list(),
+             prescall    = list()
+   )
+)#PreFilter
+
+# generic methods for class PreFilter
+setGeneric("madFilter",        function(object) standardGeneric("madFilter"));
+setGeneric("madFilter<-",      function(object, value) standardGeneric("madFilter<-"));
+setGeneric("cvFilter",         function(object) standardGeneric("cvFilter"));
+setGeneric("cvFilter<-",       function(object, value) standardGeneric("cvFilter<-"));
+setGeneric("varFilter",        function(object) standardGeneric("varFilter"));
+setGeneric("varFilter<-",      function(object, value) standardGeneric("varFilter<-"));
+setGeneric("diffFilter",       function(object) standardGeneric("diffFilter"));
+setGeneric("diffFilter<-",     function(object, value) standardGeneric("diffFilter<-"));
+setGeneric("ratioFilter",      function(object) standardGeneric("ratioFilter"));
+setGeneric("ratioFilter<-",    function(object, value) standardGeneric("ratioFilter<-"));
+setGeneric("gapFilter",        function(object) standardGeneric("gapFilter"));
+setGeneric("gapFilter<-",      function(object, value) standardGeneric("gapFilter<-"));
+setGeneric("lowFilter",        function(object) standardGeneric("lowFilter"));
+setGeneric("lowFilter<-",      function(object, value) standardGeneric("lowFilter<-"));
+setGeneric("highFilter",       function(object) standardGeneric("highFilter"));
+setGeneric("highFilter<-",     function(object, value) standardGeneric("highFilter<-"));
+setGeneric("quantileFilter",   function(object) standardGeneric("quantileFilter"));
+setGeneric("quantileFilter<-", function(object, value) standardGeneric("quantileFilter<-"));
+setGeneric("callFilter",       function(object) standardGeneric("callFilter"));
+setGeneric("callFilter<-",     function(object, value) standardGeneric("callFilter<-"));
+
+
+#------------------------------------------------------------------------------#
+# UniFilter:
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# class UniFilter
+setClass("UniFilter",
+   representation(foldchange = "list",
+                  prescall   = "list",
+                  unifilter  = "list",
+                  unitest    = "list"
+   ),
+   contains=c("Filter"),
+   prototype(foldchange = list(),
+             prescall   = list(),
+             unifilter  = list(),
+             unitest    = list()
+   )
+)#UniFilter
+
+# generic methods for class UniFilter
+setGeneric("fcFilter",        function(object) standardGeneric("fcFilter"));
+setGeneric("fcFilter<-",      function(object, value) standardGeneric("fcFilter<-"));
+setGeneric("unitestFilter",   function(object) standardGeneric("unitestFilter"));
+setGeneric("unitestFilter<-", function(object, value) standardGeneric("unitestFilter<-"));
+setGeneric("uniTest",         function(object) standardGeneric("uniTest"));
+setGeneric("uniTest<-",       function(object, value) standardGeneric("uniTest<-"));
+
+
+#------------------------------------------------------------------------------#
+# FilterTreeSet:
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setClass("FilterTreeSet",
+   representation(filter  = "Filter",
+                  exprset = "ExprTreeSet",
+                  callset = "CallTreeSet"
+   ),
+   contains=c("ProcesSet"),
+   prototype(filter  = new("Filter"),
+             exprset = new("ExprTreeSet"),
+             callset = new("CallTreeSet")
+#??             callset = NULL
+   )
+)#FilterTreeSet
+
+# generic methods for class FilterTreeSet
+setGeneric("exprTreeset", function(object) standardGeneric("exprTreeset"));
+setGeneric("callTreeset", function(object) standardGeneric("callTreeset"));
+
+
+#------------------------------------------------------------------------------#
+# AnalysisTreeSet:
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setClass("AnalysisTreeSet",
+   representation(fltrset = "FilterTreeSet"
+   ),
+   contains=c("ProcesSet"),
+   prototype(fltrset = new("FilterTreeSet")
+   )
+)#AnalysisTreeSet
+
+# generic methods for class AnalysisTreeSet
+setGeneric("filterTreeset", function(object) standardGeneric("filterTreeset"));
+setGeneric("validFilter",   function(object) standardGeneric("validFilter"));
 
 
 #------------------------------------------------------------------------------#

@@ -9,7 +9,7 @@
 \emph{Usage}
 
 \code{
-addData(object, celdir = getwd(), celfiles = "", celnames = NULL, project = NULL, verbose = TRUE)
+addData(object, celdir = NULL, celfiles = "", celnames = NULL, project = NULL, verbose = TRUE)
 }
 }
 \arguments{
@@ -21,7 +21,11 @@ addData(object, celdir = getwd(), celfiles = "", celnames = NULL, project = NULL
   \item{verbose}{logical, if \code{TRUE} print status information.}
 }
 \details{
-Import additional CEL-files and update \code{\link{ROOT}} data file \code{rootfile}.}
+ Import additional CEL-files and update \code{\link{ROOT}} data file \code{rootfile}.
+
+ To import CEL-files from different directories, vector \code{celfiles} must contain the
+ full path for each CEL-file and \code{celdir} must be \code{celdir=NULL}. 
+}
 \value{
   A \code{DataTreeSet} object.
 }

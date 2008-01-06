@@ -2,7 +2,7 @@
 \alias{mas5}
 \alias{xpsMAS5-methods}
 \alias{xpsMAS5}
-\title{MAS 5.0 expression measure}
+\title{MAS 5.0 Expression Measure}
 \description{
  This function converts a \code{\link{DataTreeSet}} into an \code{\link{ExprTreeSet}}
  using the XPS implementation of Affymetrix's MAS 5.0 expression measure.

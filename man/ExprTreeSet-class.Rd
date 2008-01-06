@@ -18,6 +18,8 @@
 \alias{se.exprs,ExprTreeSet-method}
 \alias{se.exprs}
 \alias{xpsNormalize,ExprTreeSet-method}
+\alias{xpsPreFilter,ExprTreeSet-method}
+\alias{xpsUniFilter,ExprTreeSet-method}
 
 \title{Class ExprTreeSet}
 \description{This class provides the link to the \code{\link{ROOT}} expression file and 
@@ -68,6 +70,8 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
     \item{normType<-}{\code{signature(object = "ExprTreeSet", value = "character")}: replaces slot \code{normtype}.}
     \item{se.exprs}{\code{signature(object = "ExprTreeSet")}: extracts the standard deviation data.frame.}
     \item{xpsNormalize}{\code{signature(object = "ExprTreeSet")}: applies normalization methods.}
+    \item{xpsPreFilter}{\code{signature(object = "ExprTreeSet")}: applies prefiltering methods.}
+    \item{xpsUniFilter}{\code{signature(object = "ExprTreeSet")}: applies unifiltering methods.}
 	 }
 }
 \author{Christian Stratowa}

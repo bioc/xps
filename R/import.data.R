@@ -8,7 +8,7 @@
 function(xps.scheme,
          filename = character(0),
          filedir  = getwd(),
-         celdir   = getwd(),
+         celdir   = NULL,
          celfiles = "*",
          celnames = NULL,
          project  = NULL,
@@ -25,9 +25,8 @@ function(xps.scheme,
 
    ## check for presence of parameters
    if (!(is.character(filename) &&
-         is.character(filedir) &&
-         is.character(celdir))) {
-      stop("arguments <filename,filedir,celdir> must be of type character");
+         is.character(filedir))) {
+      stop("arguments <filename,filedir> must be of type character");
    }#if
 
    ## root data file
@@ -35,21 +34,28 @@ function(xps.scheme,
    rootfile <- rootDirFile(rootdata, filedir);
 
    ## check for presence of cel-file directory
-   if (celdir == "") {
-      celdir <- getwd();
-   }#if
-   if (!file.exists(celdir)) {
-      stop(paste("argument", sQuote("celdir"), "is not a system directory"));
-   }#if
-   if (substr(celdir,nchar(celdir),nchar(celdir)) != "/") {
-      celdir <- paste(celdir, "/", sep="");
+   if (!is.null(celdir)) {
+      if (celdir == "") {
+         celdir <- getwd();
+      }#if
+      if (!file.exists(celdir)) {
+         stop(paste("argument", sQuote("celdir"), "is not a system directory"));
+      }#if
+      if (substr(celdir,nchar(celdir),nchar(celdir)) != "/") {
+         celdir <- paste(celdir, "/", sep="");
+      }#if
    }#if
 
    ## get cel-files
-   tmpfiles <- list.files(celdir, pattern = "\\.[cC][eE][lL]");
    if (celfiles[1] == "*") {
-      celfiles <- tmpfiles;
+      celfiles <- list.files(celdir, pattern = "\\.[cC][eE][lL]");
+   } else if (is.null(celdir)) {
+      existing <- file.exists(celfiles);
+      if (length(existing[existing==TRUE]) != length(celfiles)) {
+         stop(paste("some", sQuote("celfiles"), " are not found."));
+      }#if
    } else {
+      tmpfiles <- list.files(celdir, pattern = "\\.[cC][eE][lL]");
       tmpfiles <- match(celfiles, tmpfiles);
       if (length(tmpfiles[is.na(tmpfiles)]) > 0) {
          stop(paste("some", sQuote("celfiles"), " are not found in directory",
@@ -69,7 +75,8 @@ function(xps.scheme,
                  sQuote("celfiles")));
    }#if
    if (is.null(celnames)) {
-      celnames <- "";
+#      celnames <- "";
+      celnames <- CELNames(celfiles);
    } else {
       celnames <- unlist(strsplit(celnames, "\\.[cC][eE][lL]"));
    }#if

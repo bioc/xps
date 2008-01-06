@@ -26,7 +26,7 @@
 \begin{document}
 
 \title{Introduction to the xps Package: Overview}
-\date{October, 2007}
+\date{January, 2008}
 \author{Christian Stratowa}
 \maketitle
 
@@ -95,23 +95,24 @@ Throughout this tutorial we will use a set of four {\it CEL} files supplied with
 package. The necessary \ROOT\ \Rclass{scheme} file \Rclass{SchemeTest3.root} for GeneChip 
 {\it Test3.CDF} is also supplied as well as the \ROOT\ \Rclass{data} file 
 \Rclass{DataTest3\_cel.root}. These files need to be loaded for every new \Robject{R}-session,
-which has not been saved.
+unless the session has been saved.
 
 \subsection{Reading CEL file information}
 
-All {\it CEL} files need to be moved to a common directory. They will be imported
-into a \ROOT\ \Rclass{data} file as \ROOT\ \Rclass{Trees}. Once the \ROOT\ \Rclass{data} file
-is created, the {\it CEL} files are no longer needed, since subsequent \Robject{R}-sessions
-need only load the \ROOT\ \Rclass{data} file. However, it is possible to load only a
-subset  of {\it CEL} files, and it is also possible to save new {\it CEL} files in the same
-\ROOT\ \Rclass{data} file at a later time. In this demo we will show how to achieve this.
+The {\it CEL} files can be located in a common directory or in different directories, see 
+\Rcode{?import.data} how to import {\it CEL} files from different directories. {\it CEL} files 
+will be imported into a \ROOT\ \Rclass{data} file as \ROOT\ \Rclass{Trees}. Once the \ROOT\ 
+\Rclass{data} file is created, the {\it CEL} files are no longer needed, since subsequent 
+\Robject{R}-sessions need only load the \ROOT\ \Rclass{data} file. However, it is possible to 
+load only a subset  of {\it CEL} files, and it is also possible to save new {\it CEL} files in 
+the same \ROOT\ \Rclass{data} file at a later time. In this demo we will show how to achieve this.
 
 First we load the \xps\ package.
 <<results=hide>>=
 library(xps)
 @
 
-All {\it CEL} files need to be in a common directory, in our case in:
+For this demonstration {\it CEL} files are located in a common directory, in our case in:
 <<>>=
 celdir <- paste(.path.package("xps"),"raw",sep="/")
 @ 
@@ -149,24 +150,28 @@ getTreeNames(rootFile(data.test3))
 Now we have all {\it CEL} files imported as \ROOT\ \Rclass{Trees}. In later \Robject{R}-sessions
 we only need to load the corresponding \ROOT\ \Rclass{data} file using function 
 \Rfunction{root.data}. In this tutorial we will not use the file just created but
-the \ROOT\ \Rclass{data} file \Rclass{DataTest3\_cel.root}.
+the \ROOT\ \Rclass{data} file \Rclass{DataTest3\_cel.root}. \\
 
-{\bf Note 1:} Since \ROOT\ \Rclass{data} files contain the raw data, it is proposed
+
+{\bf Note 1:} It is also possible to import `phenotypic-data' describing samples and 
+further project--relevant data for the experiment, see S4 class \Rclass{ProjectInfo}.
+
+{\bf Note 2:} Since \ROOT\ \Rclass{data} files contain the raw data, it is proposed
 to create them in a common system directory, which may be accessible to others, too.
 
-{\bf Note 2:} Usually, \ROOT\ \Rclass{data} files are kept permanently. Thus it is not
+{\bf Note 3:} Usually, \ROOT\ \Rclass{data} files are kept permanently. Thus it is not
 possible to accidently overwrite a \ROOT\ \Rclass{data} file with another file of the
 same name; you will get an error message. If you want to create a temporary \ROOT\ 
 \Rclass{data} file, which can be overwritten, the name must start with `tmp\_', as we
 have done in the example above.
 
-{\bf Note 3:} In order to distinguish \ROOT\ \Rclass{data} files containing the raw data 
+{\bf Note 4:} In order to distinguish \ROOT\ \Rclass{data} files containing the raw data 
 from other \ROOT\ files, extension `\_cel' is automatically added to the file name. Thus
 creating a raw data file with name \Rclass{DataTest3} will result in a \ROOT\ file with
 name \Rclass{DataTest3\_cel.root}. Extension `root' is always added to each \ROOT\ file.
 
-{\bf Note 4:} It is highly recommended to keep the default setting \Rcode{verbose=TRUE}, 
-especially when working with expression arrays.
+{\bf Note 5:} It is highly recommended to keep the default setting \Rcode{verbose=TRUE}, 
+especially when working with exon arrays.
 
 
 \subsection{Accessing raw data}
@@ -221,7 +226,8 @@ data.test3 <- attachInten(data.test3)
 @
 {\bf Note:} We have applied method \Rfunction{attachMask} to \Rclass{data.test3} and not
 to \Rclass{scheme.test3}, since \Rclass{data.test3} contains its  own copy of 
-\Rclass{scheme.test3}.
+\Rclass{scheme.test3}. \\
+
 
 First, we create a density plot:
 
@@ -231,7 +237,7 @@ hist(data.test3)
 @
 \end{center}
 
-%\pagebreak
+\pagebreak
 The corresponding boxplots are:
 
 \begin{center}
@@ -240,7 +246,7 @@ boxplot(data.test3)
 @
 \end{center}
 
-%\pagebreak
+\pagebreak
 It is also possible to create an image for e.g. sample TestA1:
 
 \begin{center}
@@ -249,7 +255,7 @@ image(data.test3, names="TestA1.cel_MEAN")
 @
 \end{center}
 
-%\pagebreak
+\pagebreak
 Finally we include a PM-MM-plot of the data:
 
 \begin{center}
@@ -291,7 +297,8 @@ store the results as \ROOT\ \Rclass{Trees} in \ROOT\ file \Rclass{tmp\_Test3RMA.
 <<results=hide>>=
 data.rma <- rma(data.test3, "tmp_Test3RMA", verbose=FALSE)
 @
-{\bf Note:} In this example and the following examples we suppress the usual output.
+{\bf Note:} In this example and the following examples we suppress the usual output. \\
+
 
 Then we preprocess the raw data using method `MAS5' to compute expression levels, and
 store the results in \ROOT\ file \Rclass{tmp\_Test3MAS5.root}:
@@ -300,7 +307,8 @@ data.mas5 <- mas5(data.test3, "tmp_Test3MAS5", normalize=TRUE, sc=500, update=TR
 @
 
 Now we want to compare the results by plotting the expression levels for the first sample.
-For this purpose we need to extract the expression levels as data.frames first:
+For this purpose we need to extract the expression levels from the resulting S4 classes 
+\Rclass{ExprTreeSet} as data.frames first:
 <<>>=
 expr.rma <- validData(data.rma)
 expr.mas5 <- validData(data.mas5)
@@ -330,9 +338,10 @@ call.dabg <- dabg.call(data.test3,"tmp_Test3DABG", verbose=FALSE)
 {\bf Note:} YES, in principle it is indeed possible to compute the DABG call not only 
 for exon arrays but for expression arrays, too. However, computation may take a long
 time, e.g. on a computer with 2.3GHz Intel Core 2 Duo processor and 2GB RAM, computing
-DABG calls for HG-U133\_Plus\_2 arrays will take about 45 min/array.
+DABG calls for HG-U133\_Plus\_2 arrays will take about 45 min/array. \\
 
-Both, detection call, and detecion p-value can be extracted as data.frame:
+
+Both, detection call, and detecion p-value can be extracted as \Robject{data.frame}:
 <<>>=
 pres.mas5 <- presCall(call.mas5)
 head(pres.mas5)
@@ -353,7 +362,7 @@ stored in the \Robject{R} objects, e.g. in \Rclass{data.rma}, an instance of S4 
 respectively.
 
 
-%\pagebreak
+\pagebreak
 First, we create a density plot:
 
 \begin{center}
@@ -371,7 +380,7 @@ boxplot(data.rma)
 @
 \end{center}
 
-%\pagebreak
+\pagebreak
 It is also possible to create M vs A plots for one or more samples:
 
 \begin{center}
@@ -380,7 +389,7 @@ mvaplot(data.rma, pch=20, ylim=c(-2,2), names="TestB1.mdp_LEVEL")
 @
 \end{center}
 
-%\pagebreak
+\pagebreak
 Finally we create present call plots:
 
 \begin{center}
@@ -453,6 +462,133 @@ exprs(vv)
 This class \Rclass{ExpressionSet} can now be used from within other Bioconductor packages.
 
 
+\section{Filtering expression measures}
+
+The \xps\ package can also be used to filter (select) genes according to a variety of 
+different filtering mechanisms, similar to Bioconductor package \Rpackage{genefilter}.
+
+It is important to note that filters can be split into the non--specific filters and 
+the specific filters. Usually, non--specific filters are used to reduce the number of 
+genes remaining for further analysis e.g. by reducing the noise in the dataset. In 
+contrast, specific means that we are filtering with reference to a particular covariate. 
+For example we want to select genes that are differentially expressed in two groups. 
+Here we use the term `prefilter' for non--specific filters and the term `unifilter' for 
+specific filters applied to two groups.
+
+
+\subsection{Applying non--specific filters: PreFilter}
+
+Applying non--specific filters is a simple two-step process: First, select the filters
+of interest using constructor \Rcode{PreFilter}. Second, apply the resulting class 
+\Rclass{PreFilter} to an instance of class \Rclass{ExprTreeSet} using function \Rcode{prefilter}.
+
+
+Currently it is possible to select up to ten non--specific filters which are defined in 
+S4 class \Rclass{PreFilter}. For this example let us initialize the following three 
+non--specific filters:
+\begin{enumerate}
+\item \Rcode{madFilter}: A `median absolute deviation' filter, which selects only genes
+ where \Rcode{mad} across all samples is at least 0.5, i.e. \Rcode{mad >= 0.5}.
+\item \Rcode{lowFilter}: A `lower threshold' filter to select genes where the trimmed
+ mean of the \Rcode{log2}--expression levels is above 7.0 (with \Rcode{trim = 0.02}).
+\item \Rcode{highFilter}: An `upper threshold' filter to select genes that are
+ \Rcode{log2}--expressed below 10.5 in at least 80 percent of the samples.
+\end{enumerate}
+Furthermore, a gene should be selected for further analysis only if it satisfies at least 
+two of the three filters. \\
+
+
+Initialization of the filters is done using the constructor \Rcode{PreFilter}:
+<<results=hide>>=
+prefltr <- PreFilter(mad=c(0.5), lothreshold=c(7.0,0.02,"mean"), hithreshold=c(10.5,80.0,"percent"))
+str(prefltr)
+@
+
+This filter is then applied to expression data \Rclass{data.rma} created earlier, 
+using function \Rfunction{prefilter} with parameter \Rcode{minfilters=2}:
+<<echo=FALSE>>=
+data.rma@rootfile <- paste(.path.package("xps"),"rootdata/tmp_Test3RMA.root",sep="/")
+data.rma@filedir  <- paste(.path.package("xps"),"rootdata",sep="/")
+@
+
+<<results=hide>>=
+rma.pfr <- prefilter(data.rma, "tmp_Test3Prefilter", getwd(), filter=prefltr, minfilters=2, verbose=FALSE)
+@
+
+The resulting filter mask can be extracted as \Robject{data.frame}:
+<<>>=
+tmp <- validData(rma.pfr)
+head(tmp)
+dim(tmp[tmp[,"FLAG"]==1,])
+@
+
+The data show that 181 genes of the 345 genes on the Test3 GeneChip are selected for 
+further analysis.
+
+
+\subsection{Applying specific filters for two groups: UniFilter}
+
+Applying univariate filters is also a simple two-step process: First, select the 
+filters of interest using constructor \Rcode{UniFilter}. Second, apply the resulting 
+class \Rclass{UniFilter} to an instance of class \Rclass{ExprTreeSet} using function 
+\Rcode{unifilter}.
+
+Currently it is possible to select three univariate filters which are defined in 
+S4 class \Rclass{UniFilter}. For this example let us initialize the following two 
+filters:
+\begin{enumerate}
+\item \Rcode{fcFilter}: A `fold--change' filter, which selects only genes with an 
+ absolute fold--change of at least 1.3, i.e. \Rcode{abs(mean(GrpB)/mean(GrpA)) >= 1.3}.
+\item \Rcode{unitestFilter}: A `unitest' filter to select genes where the p--value of
+ the applied unitest, i.e. the \Rcode{t.test} is less than 0.1 (\Rcode{pval <= 0.1}).
+\end{enumerate}
+Only genes satisfying both filters are considered to be differentially expressed.
+
+{\bf Note:} If you want to change the default settings for \Rcode{t.test} and/or
+compute and adjusted p--value for multiple comparisons you need to initialize 
+method \Rcode{uniTest}, too. \\
+
+
+Initialization of the filters is done using the constructor \Rcode{UniFilter}:
+<<results=hide>>=
+unifltr <- UniFilter(foldchange=c(1.3,"both"), unifilter=c(0.1,"pval"))
+@
+
+This filter is then applied to expression data \Rclass{data.rma} using function 
+\Rfunction{unifilter} where parameter \Rcode{group} allocates each sample to one of 
+two groups. Furthermore, since we want to use only the pre--selected genes from 
+\Rfunction{prefilter} we need to set \Rcode{xps.fltr=rma.pfr}:
+<<echo=FALSE>>=
+data.rma@rootfile <- paste(.path.package("xps"),"rootdata/tmp_Test3RMA.root",sep="/")
+data.rma@filedir  <- paste(.path.package("xps"),"rootdata",sep="/")
+@
+
+<<results=hide>>=
+rma.ufr <- unifilter(data.rma, "tmp_Test3Unifilter", getwd(), unifltr, group=c("GrpA","GrpA","GrpB","GrpB"), xps.fltr=rma.pfr, verbose=FALSE)
+@
+
+The resulting data can be extracted as \Robject{data.frame}:
+<<>>=
+tmp <- validData(rma.ufr)
+tmp
+@
+
+The data show that only 9 genes of the pre--selected 181 genes are considered to be 
+differentially expressed.
+
+{\bf Note:} If you want to extract all data as \Robject{data.frame} as well as the 
+resulting filter mask you can do:
+<<>>=
+msk <- validFilter(rma.ufr)
+tmp <- validData(rma.ufr, which="UnitName")
+tmp <- cbind(tmp, msk)
+dim(tmp)
+@
+
+Now all pre--selected 181 genes are extracted as \Robject{data.frame} together with 
+the corresponding filter mask.
+
+
 \pagebreak
 \appendix
 
@@ -480,7 +616,6 @@ and saved in subdirectories \Rcode{libraryfiles} and \Rcode{Annotation}, respect
 In a new \Robject{R}-session we load our library and define the directories, where
 the library files and the annotation files are saved, respectively, and the directory,
 where the \ROOT\ \Rclass{scheme} files should be saved:
-
 <<eval=FALSE>>=
 library(xps)
 libdir <- "/path/to/Affy/libraryfiles"
@@ -489,7 +624,6 @@ scmdir <- "/path/to/CRAN/Workspaces/Schemes"
 @
 
 Now we can create a \ROOT\ \Rclass{scheme} file:
-
 <<eval=FALSE>>=
 scheme.test3 <- import.expr.scheme("Scheme\_Test3\_na22", 
                        filedir=scmdir,  
@@ -508,7 +642,8 @@ scheme.test3 <- root.scheme(paste(scmdir,"SchemeTest3.root",sep="/"))
 
 Package \xps\ includes a file {\it script4xps.R} which contains code to import some of the 
 main CDF and annotation files, which can be copied to an \Robject{R}-session, including
-code to create \ROOT\ \Rclass{scheme} files for the currently available Exon arrays.
+code to create \ROOT\ \Rclass{scheme} files for the currently available Exon arrays and
+Gene arrays.
 
 {\bf Note:} As mentioned earlier, slot \Rcode{mask} of \Rclass{scheme.test3} needs to
 be attached to instances of S4 class \Rclass{DataTreeSet} before accessing raw data,

@@ -3,6 +3,7 @@
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # xpsOptions:
 # isChipType:
+# isFilterCondition:
 # isROOTFile:
 # rootDirFile:
 # validLogbase:
@@ -16,6 +17,7 @@
 # validTreenames:
 # validTreetype:
 # getDatatype:
+# CELNames:
 # exonLevel:
 # extenPart:
 # namePart:
@@ -45,6 +47,8 @@
                 "dc5", "dab",
                 "amn", "gmn", "wmn", "wdf", "adf", "tbw", "mdp");
    NRMTYPE <- c("tmn", "med", "ksm", "low", "sup", "qua", "mdp");
+   FLRTYPE <- c("pfr", "ufr", "mfr");
+   UNITYPE <- c("uvt", "stt", "wil", "var");
 
 
 #------------------------------------------------------------------------------#
@@ -74,6 +78,17 @@ isChipType <- function(chiptype) {
    if (is.na(match(chiptype, TYPE))) return(FALSE);
    return(TRUE);
 }#isChipType
+
+#------------------------------------------------------------------------------#
+# isFilterCondition: check for correct filter condition
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+isFilterCondition <- function(condition) {
+   if (debug.xps()) print("------isFilterCondition------")
+
+   CONDITION <- c("percent", "samples", "mean", "percentile");
+   if (is.na(match(condition, CONDITION))) return(FALSE);
+   return(TRUE);
+}#isFilterCondition
 
 #------------------------------------------------------------------------------#
 # isROOTFile: check if filename is a ROOT file, i.e. "filename.root"
@@ -247,13 +262,16 @@ validSchemeTreeSet <- function(object) {
 }#validSchemeTreeSet
 
 #------------------------------------------------------------------------------#
-# validSeparator: check for presence of valid separator
+# validSeparator: check for presence of valid separator and return extension
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 validSeparator <- function(sep) {
    if (debug.xps()) print("------validSeparator------")
 
-   if(!(identical(sep, " ") || identical(sep, "\t") ||
-        identical(sep, ",") || identical(sep, ";"))) {
+   if (identical(sep, " ") || identical(sep, "\t")) {
+      return("txt");
+   } else if (identical(sep, ",") || identical(sep, ";")) {
+      return("csv");
+   } else {
       stop(paste(sQuote(sep), "is not a valid separator"));
    }#if
 }#validSeparator
@@ -320,8 +338,14 @@ validTreetype <- function(treetype, datatype) {
       TYPE <- PRETYPE;
    } else if (datatype == "normation") {
       TYPE <- NRMTYPE;
+   } else if (datatype == "prefilter") {
+      TYPE <- FLRTYPE[1];
+   } else if (datatype == "unifilter") {
+      TYPE <- FLRTYPE[2];
+   } else if (datatype == "UnivariateAnalysis") {
+      TYPE <- c(UNITYPE, FLRTYPE[2]);
    } else if (datatype == "all") {
-      TYPE <- c(RAWTYPE, PRETYPE, NRMTYPE);
+      TYPE <- c(RAWTYPE, PRETYPE, NRMTYPE, FLRTYPE, UNITYPE);
    } else {
       stop(paste("invalid parameter", sQuote("datatype")));
    }#if
@@ -352,6 +376,17 @@ getDatatype <- function(treetype) {
 
    return(datatype);
 }#getDatatype
+
+#------------------------------------------------------------------------------#
+# CELNames: utility function to get name part of CEL-file only
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+CELNames <- function(celnames) {
+   if (debug.xps()) print("------CELNames------")
+
+   cel <- sapply(celnames,function(x){y<-unlist(strsplit(x, "/")); y[length(y)]});
+   cel <- unlist(strsplit(cel, "\\.[cC][eE][lL]"));
+   return(cel);
+}#CELNames
 
 #------------------------------------------------------------------------------#
 # exonLevel: utility function for setValidity

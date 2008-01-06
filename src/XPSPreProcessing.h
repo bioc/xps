@@ -222,7 +222,7 @@ class XPreProcesSet: public XProcesSet {
                        const char *infile = "", const char *treename = "");
       virtual Int_t Preprocess(const char */*method*/)          {return 0;}
 
-      ClassDef(XPreProcesSet,1) //PreProcesSet
+      ClassDef(XPreProcesSet,2) //PreProcesSet
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -300,7 +300,7 @@ class XGCProcesSet: public XPreProcesSet {
       virtual Int_t ExportTreeXML(const char *exten, Int_t n, TString *names,  
                        const char *varlist, ofstream &output, const char *sep);
 
-      ClassDef(XGCProcesSet,1) //GCProcesSet
+      ClassDef(XGCProcesSet,2) //GCProcesSet
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -339,7 +339,7 @@ class XGenomeProcesSet: public XGCProcesSet {
       XGenomeProcesSet(const char *name, const char *type);
       virtual ~XGenomeProcesSet();
 
-      ClassDef(XGenomeProcesSet,1) //GenomeProcesSet
+      ClassDef(XGenomeProcesSet,2) //GenomeProcesSet
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -376,7 +376,7 @@ class XExonProcesSet: public XGenomeProcesSet {
       XExonProcesSet(const char *name, const char *type);
       virtual ~XExonProcesSet();
 
-      ClassDef(XExonProcesSet,1) //ExonProcesSet
+      ClassDef(XExonProcesSet,2) //ExonProcesSet
 };
 
 #endif

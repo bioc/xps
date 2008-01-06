@@ -5,6 +5,7 @@
 # export.data: 
 # export.expr: 
 # export.call: 
+# export.filter: 
 # export.root: 
 #==============================================================================#
 
@@ -121,6 +122,39 @@ function(xps.call,
       stop(paste(sQuote("xps.call"), "is not a class", sQuote("CallTreeSet")));
    }#if
 }#export.call
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+"export.filter" <-
+function(xps.fltr,
+         treename     = "*",
+         treetype     = character(0),
+         varlist      = "*",
+         outfile      = character(0),
+         sep          = "\t",
+         as.dataframe = FALSE,
+         verbose      = TRUE) 
+{
+   if (is(xps.fltr, "FilterTreeSet") || is(xps.fltr, "AnalysisTreeSet")) {
+      if (length(treetype) == 0) {
+         treename1 <- as.character(treeNames(xps.fltr)[1]);
+         treetype  <- unlist(strsplit(treename1, "\\."))[2];
+      }#if
+
+      ds <- export(xps.fltr,
+                   treename     = treename,
+                   treetype     = treetype,
+                   varlist      = varlist,
+                   outfile      = outfile,
+                   sep          = sep,
+                   as.dataframe = as.dataframe,
+                   verbose      = verbose);
+      return(ds);
+   } else {
+      stop(paste(sQuote("xps.fltr"), "must be class", sQuote("FilterTreeSet"),
+                 "or", sQuote("AnalysisTreeSet")));
+   }#if
+}#export.filter
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

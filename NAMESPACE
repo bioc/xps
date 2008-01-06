@@ -1,135 +1,204 @@
+##
+## NAMESPACE file for the xps package.
+##
 useDynLib(xps)
 
+## packages
 import(graphics, methods)
 
+## S4 classes
 exportClasses(ProjectInfo,
               TreeSet,
+              Filter,
+              PreFilter,
+              UniFilter,
               SchemeTreeSet,
               ProcesSet,
               DataTreeSet,
               ExprTreeSet,
-              CallTreeSet)
+              CallTreeSet,
+              FilterTreeSet,
+              AnalysisTreeSet)
 
-exportMethods("addData",
-              "attachBgrd",
-              "attachInten",
-              "attachMask",
-              "arrayInfo",
+## class ProjectInfo
+exportMethods("arrayInfo",
               "arrayInfo<-",
               "authorInfo",
               "authorInfo<-",
-              "background",
-              "background<-",
-              "bgtreeNames",
               "biopsyInfo",
               "biopsyInfo<-",
-              "boxplot",
-              "callplot",
               "cellineInfo",
               "cellineInfo<-",
-              "chipMask",
-              "chipMask<-",
-              "chipName",
-              "chipType",
-              "chipType<-",
               "datasetInfo",
               "datasetInfo<-",
-              "export",
-              "exprs",
-              "exprs<-",
-              "exprType",
-              "exprType<-",
-              "fileDir",
-              "fileDir<-",
-              "getTreeData",
-              "hist",
               "hybridizInfo",
               "hybridizInfo<-",
-              "image",
-              "intensity",
-              "intensity<-",
-              "mboxplot",
-              "mvaplot",
-              "mm",
-              "ncols",
-              "nrows",
-              "normType",
-              "normType<-",
-              "pm",
-              "pmplot",
-              "presCall",
-              "presCall<-",
               "primcellInfo",
               "primcellInfo<-",
-              "probeInfo",
               "projectInfo",
               "projectInfo<-",
-              "pvalData",
-              "pvalData<-",
-              "removeBgrd",
-              "removeInten",
-              "removeMask",
-              "root.browser",
-              "rootFile",
-              "rootFile<-",
               "sampleInfo",
               "sampleInfo<-",
-              "schemeFile",
-              "schemeFile<-",
-              "schemeSet",
-              "schemeSet<-",
-              "se.exprs",
-              "setName",
-              "setName<-",
-              "setType",
-              "setType<-",
               "show",
               "sourceInfo",
               "sourceInfo<-",
               "tissueInfo",
               "tissueInfo<-",
               "treatmentInfo",
-              "treatmentInfo<-",
-              "treeNames",
+              "treatmentInfo<-")
+
+## class TreeSet
+exportMethods("export",
+              "fileDir",
+              "fileDir<-",
+              "initialize",
+              "root.browser",
+              "rootFile",
+              "rootFile<-",
+              "setName",
+              "setName<-",
+              "setType",
+              "setType<-",
+              "treeNames")
+
+## class SchemeTreeSet
+exportMethods("attachMask",
+              "chipMask",
+              "chipMask<-",
+              "chipName",
+              "chipType",
+              "chipType<-",
+              "ncols",
+              "nrows",
+              "probeInfo",
+              "removeMask")
+
+## class ProcesSet
+exportMethods("boxplot",
+              "getTreeData",
+              "hist",
+              "mboxplot",
+              "schemeFile",
+              "schemeFile<-",
+              "schemeSet",
+              "schemeSet<-",
+              "validData")
+
+## class DataTreeSet
+exportMethods("addData",
+              "attachBgrd",
+              "attachInten",
+              "background",
+              "background<-",
+              "bgtreeNames",
+              "image",
+              "intensity",
+              "intensity<-",
+              "mm",
+              "pm",
+              "pmplot",
+              "removeBgrd",
+              "removeInten",
               "validBgrd",
-              "validCall",
-              "validData",
               "xpsBgCorrect",
               "xpsDABGCall",
               "xpsMAS5Call",
               "xpsMAS5",
               "xpsMAS4",
               "xpsNormalize",
+              "xpsPreprocess",
               "xpsSummarize",
               "xpsRMA")
 
+## class ExprTreeSet
+exportMethods("exprs",
+              "exprs<-",
+              "exprType",
+              "exprType<-",
+              "mvaplot",
+              "normType",
+              "normType<-",
+              "se.exprs",
+              "xpsPreFilter",
+              "xpsUniFilter")
 
-export(xpsOptions, debug.xps)
-export(import.expr.scheme, import.exon.scheme, import.genome.scheme, root.scheme)
-export(import.data, root.data)
-export(export.scheme, export.data, export.expr, export.call, export.root)
+## class CallTreeSet
+exportMethods("pvalData",
+              "pvalData<-",
+              "presCall",
+              "presCall<-",
+              "validCall",
+              "callplot")
+
+## class Filter
+exportMethods("numberFilters")
+
+## class PreFilter
+exportMethods("callFilter",
+              "callFilter<-",
+              "cvFilter",
+              "cvFilter<-",
+              "diffFilter",
+              "diffFilter<-",
+              "gapFilter",
+              "gapFilter<-",
+              "highFilter",
+              "highFilter<-",
+              "lowFilter",
+              "lowFilter<-",
+              "madFilter",
+              "madFilter<-",
+              "quantileFilter",
+              "quantileFilter<-",
+              "ratioFilter",
+              "ratioFilter<-",
+              "varFilter",
+              "varFilter<-")
+
+## class UniFilter
+exportMethods("fcFilter",
+              "fcFilter<-",
+              "unitestFilter",
+              "unitestFilter<-",
+              "uniTest",
+              "uniTest<-")
+
+## class FilterTreeSet
+exportMethods("callTreeset",
+              "exprTreeset")
+
+## class AnalysisTreeSet
+exportMethods("filterTreeset",
+              "validFilter")
+
+## functions
+export(import.expr.scheme, import.exon.scheme, import.genome.scheme, import.data)
+export(export.scheme, export.data, export.expr, export.call, export.filter, export.root)
 export(rma, mas4, mas5, mas5.call, dabg.call)
 export(bgcorrect, normalize, summarize, express)
 export(bgcorrect.mas4, bgcorrect.mas5, bgcorrect.rma, bgcorrect.gc)
 export(normalize.constant, normalize.quantiles, normalize.lowess, normalize.supsmu)
 export(summarize.mas4, summarize.mas5, summarize.rma)
 export(boxplot.dev, image.dev, mvaplot.dev)
+export(prefilter, unifilter)
 
+## contructor functions
+export(ProjectInfo)
+export(PreFilter, UniFilter)
+
+## root.functions
+export(root.scheme, root.data)
 export(root.image)
 export(root.graph1D, root.graph2D, root.mvaplot)
 export(root.hist1D, root.hist2D, root.hist3D)
 export(root.density)
 
+## utility functions
+export(xpsOptions, debug.xps)
 export(getDatatype, validTreetype)
 export(getChipName, getChipType, getNameType, getProbeInfo)
 export(getNumberTrees, getTreeNames)
 export(isROOTFile)
 export(type2Exten)
-
-
-
-
-
-
 
 

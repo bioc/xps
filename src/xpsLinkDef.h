@@ -173,5 +173,33 @@
 #pragma link C++ class XQuantileNormalizer+;
 
 //XPSAnalysis.h
+#pragma link C++ class XAnalysisManager+;
+#pragma link C++ class XAnalySetting+;
+#pragma link C++ class XPreFilterHeader+;
+#pragma link C++ class XUniFilterHeader+;
+#pragma link C++ class XMultiFilterHeader+;
+#pragma link C++ class XUniTestHeader+;
+#pragma link C++ class XMultiTestHeader+;
+#pragma link C++ class XClusterHeader+;
+#pragma link C++ class XRegressionHeader+;
+#pragma link C++ class XAnalySet+;
+#pragma link C++ class XPreFilterSet+;
+#pragma link C++ class XUnivarSet+;
+#pragma link C++ class XMultivarSet+;
+#pragma link C++ class XClusterSet+;
+#pragma link C++ class XRegressionSet+;
+#pragma link C++ class XAnalyser+;
+#pragma link C++ class XUniTester+;
+#pragma link C++ class XMultiTester+;
+#pragma link C++ class XClusterizer+;
+#pragma link C++ class XRegressor+;
+#pragma link C++ class XFilter+;
+#pragma link C++ class XPreFilter+;
+#pragma link C++ class XUniFilter+;
+#pragma link C++ class XMultiFilter+;
+#pragma link C++ class XScore+;
+#pragma link C++ class XGrpMn+;
+#pragma link C++ class XChance+;
+#pragma link C++ class XAdjust+;
 
 #endif

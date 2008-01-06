@@ -8,7 +8,7 @@ Import the Affymetrix CEL files into a ROOT file and create S4 class DataTreeSet
 import.data(xps.scheme,
             filename = character(0),
             filedir  = getwd(),
-            celdir   = getwd(),
+            celdir   = NULL,
             celfiles = "*",
             celnames = NULL,
             project  = NULL,
@@ -28,6 +28,9 @@ import.data(xps.scheme,
  \code{import.data} is used to import CEL-files from directory \code{celdir} into 
  a \code{\link{ROOT}} data file. To import only a subset of CEL-files, list these CEL-files 
  as vector \code{celfiles}.
+
+ To import CEL-files from different directories, vector \code{celfiles} must contain the
+ full path for each CEL-file and \code{celdir} must be \code{celdir=NULL}. 
 
  An S4 class \code{\link{DataTreeSet}} will be created, serving as R wrapper to the 
  \code{\link{ROOT}} data file \code{filename}.

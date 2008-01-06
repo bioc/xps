@@ -41,6 +41,9 @@ MYOBJ      += XPSProcessing.$(ObjSuf) XPSHybridizer.$(ObjSuf) XPSSelector.$(ObjS
 MYSRC      += XPSProcessing.$(SrcSuf) XPSHybridizer.$(SrcSuf) XPSSelector.$(SrcSuf) XPSNormalizer.$(SrcSuf) XPSPreProcessing.$(SrcSuf) XPSNormation.$(SrcSuf)
 
 # XPSAnalysis
+MYHDR      += XPSFilter.h XPSAnalyzer.h XPSAnalysis.h 
+MYOBJ      += XPSFilter.$(ObjSuf) XPSAnalyzer.$(ObjSuf) XPSAnalysis.$(ObjSuf)
+MYSRC      += XPSFilter.$(SrcSuf) XPSAnalyzer.$(SrcSuf)XPSAnalysis.$(SrcSuf)
 
 # xps
 MYHDR      += rwrapper.h $(MAIN)LinkDef.h

@@ -2,7 +2,7 @@
 \alias{rma}
 \alias{xpsRMA-methods}
 \alias{xpsRMA}
-\title{Robust Multi-Array Average expression measure}
+\title{Robust Multi-Array Average Expression Measure}
 \description{
  This function converts a \code{\link{DataTreeSet}} into an \code{\link{ExprTreeSet}}
  using the robust multi-array average (RMA) expression measure.

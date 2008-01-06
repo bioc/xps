@@ -2,7 +2,7 @@
 \alias{mas4}
 \alias{xpsMAS4-methods}
 \alias{xpsMAS4}
-\title{MAS 4.0 expression measure}
+\title{MAS 4.0 Expression Measure}
 \description{
  This function converts a \code{\link{DataTreeSet}} into an \code{\link{ExprTreeSet}}
  using the XPS implementation of Affymetrix's MAS 4.0 expression measure.

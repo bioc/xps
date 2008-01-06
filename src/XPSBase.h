@@ -509,9 +509,9 @@ class XManager: public TNamed {
       virtual Int_t  InitNA(Double_t na);
       virtual Int_t  InitAlgorithm(const char *name, const char *type,
                         Option_t *options, const char *filename = 0,
-                        Int_t npars = 0, Double_t p1 = 0, Double_t p2 = 0,
-                        Double_t p3 = 0, Double_t p4 = 0, Double_t p5 = 0,
-                        Double_t p6 = 0, Double_t p7 = 0, Double_t p8 = 0);
+                        Int_t npars = 0, Double_t p1 = 0, Double_t p2 = 0, Double_t p3 = 0,
+                        Double_t p4 = 0, Double_t p5 = 0, Double_t p6 = 0, Double_t p7 = 0,
+                        Double_t p8 = 0, Double_t p9 = 0, Double_t p10 = 0);
       virtual void   ResetAlgorithm(const char *name, const char *type = "");
 
       virtual Int_t  New(const char *name, const char *dir = "",

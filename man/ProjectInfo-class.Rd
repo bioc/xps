@@ -1,7 +1,6 @@
 \name{ProjectInfo-class}
 \docType{class}
 \alias{ProjectInfo-class}
-\alias{ProjectInfo}
 \alias{arrayInfo,ProjectInfo-method}
 \alias{arrayInfo}
 \alias{arrayInfo<-,ProjectInfo,character-method}
@@ -57,7 +56,8 @@
 \code{\link{ROOT}} data file and in class \code{\link{DataTreeSet}}.}
 \section{Objects from the Class}{
 Objects can be created by calls of the form \cr
-\code{new("ProjectInfo", submitter=[character], laboratory=[character], contact=[character], ...)}.
+\code{new("ProjectInfo", submitter=[character], laboratory=[character], contact=[character], ...)}. \cr
+Alternatively, the constructor \code{\link{ProjectInfo}} can be used.
 }
 \section{Slots}{
 	 \describe{
@@ -82,7 +82,7 @@ Objects can be created by calls of the form \cr
   \describe{
     \item{projectInfo}{\code{signature(object = "ProjectInfo")}: extracts slot \code{project}.}
     \item{projectInfo<-}{\code{signature(object = "ProjectInfo", value = "character")}: replaces 
-     slot \code{project} with character vector c(name,date,description).}
+     slot \code{project} with character vector c(name,date,type,description,comments).}
     \item{authorInfo}{\code{signature(object = "ProjectInfo")}: extracts slot \code{author}.}
     \item{authorInfo<-}{\code{signature(object = "ProjectInfo", value = "character")}: replaces 
      slot \code{author} with character vector c(lastname,firstname,type,company,department,email,

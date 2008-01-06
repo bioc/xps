@@ -28,7 +28,7 @@
 #include "XPSData.h"
 #include "XPSPreProcessing.h"
 #include "XPSNormation.h"
-//#include "XPSAnalysis.h"
+#include "XPSAnalysis.h"
 
 
 /*//////////////////////////////////////////////////////////////////////////////
@@ -295,6 +295,21 @@ void ExportData(char **filename, char **schemefile, char **chiptype,
 
       r += manager->Initialize(chiptype[0], "normation", "R");
       r += ((XNormationManager*)manager)->OpenSchemes(schemefile[0]);
+   } else if (strcmp(datatype[0], "prefilter") == 0) {
+      manager = new XAnalysisManager("AnalysisManager","", *verbose);
+
+      r += manager->Initialize("PreFilter", "", "R");
+      r += ((XAnalysisManager*)manager)->OpenSchemes(schemefile[0]);
+   } else if (strcmp(datatype[0], "unifilter")          == 0 ||
+              strcmp(datatype[0], "UnivariateAnalysis") == 0) {
+      manager = new XAnalysisManager("AnalysisManager","", *verbose);
+
+      r += manager->Initialize("UnivariateAnalysis", "", "R");
+      r += ((XAnalysisManager*)manager)->OpenSchemes(schemefile[0]);
+   } else {
+      printf("Error in ExportData(): datatype=%s not known\n", datatype[0]);
+      *err = 1;
+      return;
    }//if
 
 // open root data file
@@ -1231,6 +1246,182 @@ void Normxpress(char **filename, char **dirname, char **chiptype,
    manager->Close();
    delete manager;
 }//Normxpress
+
+
+/*////////////////////////////////////////////////////////////////////////////////
+//                                                                              //
+// XAnalysisManager: analyze results, e.g. prefilter, unifilter, ttest          //
+//                                                                              //
+////////////////////////////////////////////////////////////////////////////////*/
+
+/*____________________________________________________________________________*/
+void PreFilter(char **filename, char **dirname, char **chiptype, char **chipname,
+               char **schemefile, char **treeset, char **treename,
+               int *min, char **logbase,
+               int *nvarpar, double *varpars, char **varoption,
+               int *nlowpar, double *lowpars,  char **lowoption,
+               int *nhighpar, double *highpars, char **highoption,
+               int *nquanpar, double *quanpars, char **quanoption,
+               int *ncallpar, double *callpars, char **calloption,
+               char **exprtrees, int *nexpr, char **calltrees, int *ncall,
+               int *verbose, int *err)
+{
+// Apply different pre-filter methods
+
+// create new analysis manager
+   XAnalysisManager *manager = new XAnalysisManager("AnalysisManager","", *verbose);
+
+// init default settings: type should be type of analysis
+   int r = 0;
+   r += manager->Initialize("PreFilter");
+   // need to clear default filters before initializing filters
+   r += manager->InitSetting(*min, logbase[0], 1.0);
+
+// init different pre-filter methods
+   if (*nvarpar >= 2) {
+      int    n  = *nvarpar;
+      double p0, p1, p2, p3, p4, p5, p6, p7, p8;
+      p0 = p1 = p2 = p3 = p4 = p5 = p6 = p7 = p8 = 0.0;
+      if (n > 0) p0 = varpars[0];
+      if (n > 1) p1 = varpars[1];
+      if (n > 2) p2 = varpars[2];
+      if (n > 3) p3 = varpars[3];
+      if (n > 4) p4 = varpars[4];
+      if (n > 5) p5 = varpars[5];
+      if (n > 6) p6 = varpars[6];
+      if (n > 7) p7 = varpars[7];
+      if (n > 8) p8 = varpars[8];
+
+      r += manager->InitAlgorithm("prefilter", "variation", varoption[0],
+                                  "", n, p0, p1, p2, p3, p4, p5, p6, p7, p8);
+   }//if
+
+   if (*nlowpar == 2) {
+      r += manager->InitAlgorithm("prefilter", "LowerThreshold", lowoption[0],
+                                  "", 2, lowpars[0], lowpars[1]);
+   }//if
+
+   if (*nhighpar == 2) {
+      r += manager->InitAlgorithm("prefilter", "UpperThreshold", highoption[0],
+                                  "", 2, highpars[0], highpars[1]);
+   }//if
+
+   if (*nquanpar == 3) {
+      r += manager->InitAlgorithm("prefilter", "Quantile", quanoption[0], 
+                                  "", 3, quanpars[0], quanpars[1], quanpars[2]);
+   }//if
+
+   if (*ncallpar == 2) {
+      r += manager->InitAlgorithm("prefilter", "call", calloption[0],
+                                  "", 2, callpars[0], callpars[1]);
+   }//if
+
+// create new root analysis file 
+   r += manager->New(filename[0], dirname[0], "PreFilter");
+
+// open root scheme file
+   r += manager->OpenSchemes(schemefile[0], chipname[0], chiptype[0]);
+
+// add expression trees
+   for (int i=0; i<*nexpr; i++) {
+      r += manager->AddTree(treeset[0], exprtrees[i]);
+   }//for_i
+
+// add expression trees
+   for (int i=0; i<*ncall; i++) {
+      r += manager->AddTree(treeset[0], calltrees[i]);
+   }//for_i
+
+// do pre-filter
+   r += manager->Analyse(treeset[0], "fLevel", treename[0]);
+   *err = (int)r;
+
+// cleanup
+   manager->Close();
+   delete manager;
+}//PreFilter
+
+
+/*____________________________________________________________________________*/
+void UniFilter(char **filename, char **dirname, char **chiptype, char **chipname,
+               char **schemefile, char **treeset, char **treename,
+               int *min, char **logbase,
+               char **unitest, int *nunipar, double *unipars, char **unioption,
+               int *nfcpar, double *fcpars,  char **fcoption,
+               int *nufpar, double *ufpars,  char **ufoption,
+               int *ncallpar, double *callpars, char **calloption,
+               char **exprtrees, int *nexpr, char **calltrees, int *ncall,
+               char **group, int *grpidx, char **fltrtree, int *nfltr,
+               char **varlist, int *update, int *verbose, int *err)
+{
+// Apply different uni-filter methods
+
+// create new analysis manager
+   XAnalysisManager *manager = new XAnalysisManager("AnalysisManager","", *verbose);
+
+// init default settings: type should be type of analysis
+   int r = 0;
+   r += manager->Initialize("UnivariateAnalysis");
+   // need to clear default filters before initializing filters
+   r += manager->InitSetting(*min, logbase[0], 1.0);
+
+// init different uni-filter methods
+   if (*nunipar == 5) {
+      r += manager->InitAlgorithm("UniTest", unitest[0], unioption[0],
+                                  "", 5, unipars[0], unipars[1],
+                                  unipars[2], unipars[3], unipars[4]);
+   }//if
+
+   if (*nfcpar == 2) {
+      r += manager->InitAlgorithm("UniFilter", "FoldChange", fcoption[0], 
+                                  "", 2, fcpars[0], fcpars[1]);
+   }//if
+
+   if (*nufpar == 1) {
+      r += manager->InitAlgorithm("UniFilter", "unitest", ufoption[0], 
+                                  "", 1, ufpars[0]);
+   }//if
+
+   if (*ncallpar == 2) {
+      r += manager->InitAlgorithm("UniFilter", "call", calloption[0],
+                                  "", 2, callpars[0], callpars[1]);
+   }//if
+
+// open root scheme file
+   r += manager->OpenSchemes(schemefile[0], chipname[0], chiptype[0]);
+
+// create/update root analysis file 
+   if (*update == 1) {
+      r += manager->Update(filename[0], "", "R");
+      // need to force to delete root file from memory to prevent R using former root file!
+      manager->SetFileOwner(kTRUE);
+   } else {
+      r += manager->New(filename[0], dirname[0], "UnivariateAnalysis");
+   }//if
+
+// add expression trees
+   for (int i=0; i<*nexpr; i++) {
+      r += manager->AddTree(treeset[0], exprtrees[i], grpidx[i], group[i]);
+   }//for_i
+
+// add call trees
+   for (int i=0; i<*ncall; i++) {
+      r += manager->AddTree(treeset[0], calltrees[i], grpidx[i], "call");
+   }//for_i
+
+// add prefilter tree
+   if (*nfltr == 1) {
+      r += manager->AddTree(treeset[0], fltrtree[0], 3, "filter");
+   }//if
+
+// do pre-filter
+   r += manager->Analyse(treeset[0], "fLevel", treename[0], varlist[0]);
+   *err = (int)r;
+
+// cleanup
+   manager->Close();
+   delete manager;
+}//UniFilter
 
 
 /*//////////////////////////////////////////////////////////////////////////////

@@ -104,6 +104,27 @@ void Normxpress(char **filename, char **dirname, char **chiptype,
                 char **reftree, char **refmethod, int *update,
                 int *verbose, int *err);
 
+void PreFilter(char **filename, char **dirname, char **chiptype, char **chipname,
+               char **schemefile, char **treeset, char **treename,
+               int *min, char **logbase,
+               int *nvarpar, double *varpars, char **varoption,
+               int *nlowpar, double *lowpars,  char **lowoption,
+               int *nhighpar, double *highpars, char **highoption,
+               int *nquanpar, double *quanpars, char **quanoption,
+               int *ncallpar, double *callpars, char **calloption,
+               char **exprtrees, int *nexpr, char **calltrees, int *ncall,
+               int *verbose, int *err);
+void UniFilter(char **filename, char **dirname, char **chiptype, char **chipname,
+               char **schemefile, char **treeset, char **treename,
+               int *min, char **logbase,
+               char **unitest, int *nunipar, double *unipars, char **unioption,
+               int *nfcpar, double *fcpars,  char **fcoption,
+               int *nufpar, double *ufpars,  char **ufoption,
+               int *ncallpar, double *callpars, char **calloption,
+               char **exprtrees, int *nexpr, char **calltrees, int *ncall,
+               char **group, int *grpidx, char **fltrtree, int *nfltr,
+               char **varlist, int *update, int *verbose, int *err);
+
 void ChipNameType(char **filename, char **nametype);
 void GeneChipProbeInfo(char **filename, int *value);
 void GetNumberOfTrees(char **filename, char **setname, char **exten, int *numtrees);

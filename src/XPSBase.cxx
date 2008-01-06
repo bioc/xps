@@ -1491,8 +1491,8 @@ Int_t XManager::InitNA(Double_t na)
 //______________________________________________________________________________
 Int_t XManager::InitAlgorithm(const char *name, const char *type,
                 Option_t *options, const char *filename, Int_t npars,
-                Double_t p1, Double_t p2, Double_t p3, Double_t p4,
-                Double_t p5, Double_t p6, Double_t p7, Double_t p8)
+                Double_t p1, Double_t p2, Double_t p3, Double_t p4, Double_t p5,
+                Double_t p6, Double_t p7, Double_t p8, Double_t p9, Double_t p10)
 //                Int_t npars, ...)
 {
    // Initialize algorithm with name and type and with options,
@@ -1519,9 +1519,9 @@ Int_t XManager::InitAlgorithm(const char *name, const char *type,
    }//for_i
    va_end(argPtr);
 */
-   if (npars > 8) {
-      npars = 8;
-      cout << "Warning: Maximum number of allowed parameters is eight." << endl;
+   if (npars > 10) {
+      npars = 10;
+      cout << "Warning: Maximum number of allowed parameters is ten." << endl;
    }//if
    Double_t *pars = new Double_t[npars];
    if (npars > 0) pars[0] = p1;
@@ -1532,6 +1532,8 @@ Int_t XManager::InitAlgorithm(const char *name, const char *type,
    if (npars > 5) pars[5] = p6;
    if (npars > 6) pars[6] = p7;
    if (npars > 7) pars[7] = p8;
+   if (npars > 8) pars[8] = p9;
+   if (npars > 9) pars[9] = p10;
 
 // To lower
    TString sname = name;    sname.ToLower();

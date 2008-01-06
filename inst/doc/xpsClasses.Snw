@@ -30,7 +30,7 @@
 \bibliographystyle{plainnat}
 
 \title{Introduction to the xps Package: Classes structure}
-\date{October, 2007}
+\date{December, 2008}
 \author{Christian Stratowa}
 \maketitle
 
@@ -118,7 +118,36 @@
  class \Rclass{CallTreeSet}.
 \end{description}
 
- All of these S4 classes are derived from the same virtual base class \Rclass{TreeSet}.
+ All of these S4 classes are derived from the same virtual base class \Rclass{TreeSet}. \\
+
+
+ The following classes are relevant for filtering and analysis of expression values:
+
+\begin{description}
+\item
+{{\tt PreFilter}:} This class allows the initialization of different non--specific filters
+ and stores the relevant parameters of each filter. 
+
+\item
+{{\tt UniFilter}:} This class allows the initialization of different univariate filters
+ and stores the relevant parameters of each filter.. 
+
+\item
+{{\tt FilterTreeSet}:} This class provides a link between class \Rclass{ExprTreeSet}, the
+ filter class applied to this \Rclass{ExprTreeSet} and the resulting \ROOT\ filter file and 
+ the \ROOT\ mask tree contained therein. 
+
+\item
+{{\tt AnalysisTreeSet}:} Univariate analysis allows the selection of differentially
+ expressed genes. This class provides a link between class \Rclass{FilterTreeSet}
+ containing the relevant filtering information, and the resulting \ROOT\ filter file and 
+ the \ROOT\ trees contained therein.
+\end{description}
+
+ The S4 classes \Rclass{PreFilter} and \Rclass{UniFilter} are derived from base class 
+ \Rclass{Filter} while S4 classes \Rclass{FilterTreeSet} and \Rclass{AnalysisTreeSet} 
+ are derived from the virtual base class \Rclass{TreeSet}. \\
+
 
  An optional S4 class, called \Rclass{ProjectInfo}, can be used to describe the relevant
  phenotypic and MIAME-like project information.
@@ -391,11 +420,12 @@ getClassDef("ProjectInfo")
   \item{{\tt treatments}:}{ Object of class "data.frame", representing the treatment information for each hybridization.}
 \end{description}
 
- This class must be created explicitely first using \Rcode{new}, before it can be
- added to class \Rclass{DataTreeSet}. Here is a simple example for \Robject{data.test3}:
+ This class must be created explicitely first using the constructor function \Rcode{ProjectInfo},
+ before it can be added to class \Rclass{DataTreeSet}. Here is a simple example for
+ \Robject{data.test3}:
 
 <<>>=
-project <- new("ProjectInfo",submitter="Christian", laboratory="home",contact="email")
+project <- ProjectInfo(submitter="Christian", laboratory="home",contact="email")
 projectInfo(project)    <- c("TestProject","20060106","Project Type","use Test3 data for testing","my comment")
 authorInfo(project)     <- c("Stratowa","Christian","Project Leader","Company","Dept","cstrato.at.aon.at","++43-1-1234","my comment")
 datasetInfo(project)    <- c("Test3Set","MC","Tissue","Stratowa","20060106","description","my comment")
@@ -412,6 +442,133 @@ treatmentInfo(project)  <- c(c("TestA1","DMSO",4.3,"mM",1.0,"hours","intravenous
                              c("TestB2","DrugA2",4.3,"mM",8.0,"hours","intravenous","my comment"))
 show(project)
 @ 
+
+
+\subsection{{\tt Filter} class} 
+
+ This is the base class for the S4 classes \Rclass{PreFilter} and \Rclass{UniFilter}.
+
+<<R>>=
+getClassDef("Filter")
+@
+
+ The meaning of the slots is as follows:
+\begin{description}
+  \item{{\tt numfilters}:}{ Object of class "numeric" giving the number of filters applied.}
+\end{description}
+
+
+\subsection{{\tt PreFilter} class} 
+
+ Class \Rclass{PreFilter} allows to apply different filters to class \Rcode{ExprTreeSet},
+ i.e. to the expression level data.frame \Rcode{data}..
+
+<<R>>=
+getClassDef("PreFilter")
+@
+
+ The meaning of the slots is as follows:
+\begin{description}
+  \item{{\tt mad}:}{Object of class "list" describing parameters for \Rcode{madFilter}.}
+  \item{{\tt cv}:}{Object of class "list" describing parameters for \Rcode{cvFilter}.}
+  \item{{\tt variance}:}{Object of class "list" describing parameters for \Rcode{varFilter}.}
+  \item{{\tt difference}:}{Object of class "list" describing parameters for \Rcode{diffFilter}.}
+  \item{{\tt ratio}:}{Object of class "list" describing parameters for \Rcode{RratioFilter}.}
+  \item{{\tt gap}:}{Object of class "list" describing parameters for \Rcode{RgapFilter}.}
+  \item{{\tt hithreshold}:}{Object of class "list" describing parameters for \Rcode{highFilter}.}
+  \item{{\tt lothreshold}:}{Object of class "list" describing parameters for \Rcode{lowFilter}.}
+  \item{{\tt quantile}:}{Object of class "list" describing parameters for \Rcode{quantileFilter}.}
+  \item{{\tt prescall}:}{Object of class "list" describing parameters for \Rcode{callFilter}.}
+\end{description}
+
+ This class must be created explicitely using the constructor function \Rcode{PreFilter},
+ and is added as parameter \Rcode{filter} to function \Rfunction{prefilter}. Here is an example,
+ where all filters are initialized for demonstration purposes only:
+
+<<>>=
+prefltr <- PreFilter()
+madFilter(prefltr) <- c(0.5,0.01)
+cvFilter(prefltr) <- c(0.3,0.0,0.01)
+varFilter(prefltr) <- c(0.6,0.02,0.01)
+diffFilter(prefltr) <- c(2.2,0.0,0.01)
+ratioFilter(prefltr) <- c(1.5)
+gapFilter(prefltr) <- c(0.3,0.05,0.0,0.01)
+lowFilter(prefltr) <- c(4.0,3,"samples")
+highFilter(prefltr) <- c(14.5,75.0,"percent")
+quantileFilter(prefltr) <- c(3.0, 0.05, 0.95)
+callFilter(prefltr) <- c(0.02,80.0,"percent")
+str(prefltr)
+@ 
+
+
+\subsection{{\tt UniFilter} class} 
+
+ Class \Rclass{UniFilter} allows to apply different unitest filters to class \Rcode{ExprTreeSet},
+ i.e. to the expression level data.frame \Rcode{data}.
+
+<<R>>=
+getClassDef("UniFilter")
+@
+
+ The meaning of the slots is as follows:
+\begin{description}
+  \item{{\tt foldchange}:}{Object of class "list" describing parameters for \Rcode{fcFilter}.}
+  \item{{\tt prescall}:}{Object of class "list" describing parameters for \Rcode{callFilter}.}
+  \item{{\tt unifilter}:}{Object of class "list" describing parameters for \Rcode{unitestFilter}.}
+  \item{{\tt unitest}:}{Object of class "list" describing parameters for \Rcode{uniTest}.}
+\end{description}
+
+ This class must be created explicitely using the constructor function \Rcode{UniFilter},
+ and is added as parameter \Rcode{filter} to function \Rfunction{unifilter}. Here is an example,
+ where all filters are initialized for demonstration purposes only:
+
+<<>>=
+unifltr <- UniFilter()
+fcFilter(unifltr) <- c(1.5,"both")
+callFilter(unifltr) <- c(0.02,80.0,"percent")
+unitestFilter(unifltr) <- c(0.01,"pval")
+uniTest(unifltr) <- c("t.test","two.sided","wy",5000,0.0,FALSE,0.98,TRUE)
+str(unifltr)
+@ 
+
+
+\subsection{{\tt FilterTreeSet} class} 
+
+ Class \Rclass{FilterTreeSet} is obtained as result of filtering an instance of class
+ \Rclass{ExprTreeSet}. It contains the filter mask in slot \Rcode{data}. 
+
+<<R>>=
+getClassDef("FilterTreeSet")
+@
+
+ In addition to the slots of classes \Rclass{ProcesSet} and \Rclass{TreeSet} it contains
+ the following slots:
+\begin{description}
+  \item{{\tt filter}:}{Object of class \Rcode{"Filter"} currently providing access to 
+     the \Rcode{PreFilter} settings.}
+  \item{{\tt exprset}:}{Object of class \Rcode{"ExprTreeSet"} providing direct access to 
+     the \Rcode{ExprTreeSet} used for filtering.}
+  \item{{\tt callset}:}{Object of class \Rcode{"CallTreeSet"} providing direct access to 
+     the optional \Rcode{CallTreeSet} used for filtering.}
+\end{description}
+
+
+\subsection{{\tt AnalysisTreeSet} class} 
+
+ Class \Rclass{AnalysisTreeSet} is obtained as result of filtering an instance of class
+ \Rclass{ExprTreeSet} using function \Rfunction{unifilter}. It contains currently the results
+ of the univariate analysis in slot \Rcode{data}. 
+
+<<R>>=
+getClassDef("AnalysisTreeSet")
+@
+
+ In addition to the slots of classes \Rclass{ProcesSet} and \Rclass{TreeSet} it contains
+ the following slots:
+\begin{description}
+  \item{{\tt fltrset}:}{Object of class \Rcode{"FilterTreeSet"} providing indirect access to 
+     the \Rcode{ExprTreeSet} used and the \Rcode{UniFilter} settings.}
+\end{description}
 
 
 \bibliography{xps}
