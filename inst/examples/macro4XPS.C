@@ -10,35 +10,35 @@
 // in new root session(s):
 //   0.step: initialize
 //     > .L macro4XPS.C 
-//     > Init("/Volumes/CoreData/ROOT/rootcode/xps-0.3.5/src/xps.so") 
+//     > Init("/Volumes/CoreData/ROOT/rootcode/xps-0.4.1/src/xps.so") 
 //   1.step: create new root scheme file and add schemes
 //     Test3:
-//     > ImportSchemeTest3("SchemeTest3","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5")
+//     > ImportSchemeTest3("SchemeTest3","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1")
 //     U133P2:
-//     > ImportSchemeU133P2("SchemeU133P2","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6")
+//     > ImportSchemeU133P2("SchemeU133P2","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1")
 //     HuGene:
-//     > ImportSchemeHuGene("HumanGeneScheme_v1","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5")
+//     > ImportSchemeHuGene("HumanGeneScheme_v1","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1")
 //     HuExon:
-//     > ImportSchemeHuExon("HumanExonScheme_r2","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5")
+//     > ImportSchemeHuExon("HumanExonScheme_r2","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1")
 //   2.step: create new root data file and add raw data (hybridizations)
 //     Test3:
-//     > ImportDataTest3("DataTest3","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5")
+//     > ImportDataTest3("DataTest3","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1")
 //     U133P2:
-//     > ImportDataU133P2("U133P2Tissues","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6")
+//     > ImportDataU133P2("U133P2Tissues","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1")
 //     HuGene:
-//     > ImportDataHuGene("HuGeneTissues","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5")
+//     > ImportDataHuGene("HuGeneTissues","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1")
 //     HuExon:
-//     > ImportDataHuExon("HuExonTissues","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5")
+//     > ImportDataHuExon("HuExonTissues","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1")
 //   3.step: create new root expression file and summarize raw data
 //     Test3:
-//     > RMATest3("Test3_rma","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5")
-//     > MAS5Test3("Test3_mas5","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5")
+//     > RMATest3("Test3_rma","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1")
+//     > MAS5Test3("Test3_mas5","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1")
 //     U133P2:
-//     > RMAU133P2("U133P2_rma","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6")
-//     > MAS5U133P2("U133P2_mas5","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6")
+//     > RMAU133P2("U133P2_rma","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1")
+//     > MAS5U133P2("U133P2_mas5","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1")
 //     HuGene:
-//     > RMAHuGene("HuGene_rma",9216,"/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5")
-//     > MAS5HuGene("HuGene_mas5",9216,"/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5")
+//     > RMAHuGene("HuGene_rma",9216,"/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1")
+//     > MAS5HuGene("HuGene_mas5",9216,"/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1")
 //     HuExon:
 //     > RMAHuExon("HuExon_rma_tr9216",9216,"log2")
 //     > RMAHuExon("HuExon_rma_ps9216",9216,"probeset:log2")
@@ -46,13 +46,13 @@
 //     > MAS5HuExon("HuExon_mas5_ps9216",9216,"probeset:log2")
 //   4.step: create new root call file and compute detection call
 //     Test3:
-//     > MAS5CallTest3("Test3_dc5","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5")
-//     > DABGCallTest3("Test3_dabg","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5")
+//     > MAS5CallTest3("Test3_dc5","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1")
+//     > DABGCallTest3("Test3_dabg","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1")
 //     U133P2:
-//     > MAS5CallU133P2("U133P2_dc5","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6")
+//     > MAS5CallU133P2("U133P2_dc5","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1")
 //     HuGene:
-//     > MAS5CallHuGene("HuGene_dc5",9216,"/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5")
-//     > DABGCallHuGene("HuGene_dabg",9216,"/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5")
+//     > MAS5CallHuGene("HuGene_dc5",9216,"/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1")
+//     > DABGCallHuGene("HuGene_dabg",9216,"/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1")
 //     HuExon:
 //     > MAS5CallHuExon("HuExon_dc5_tr9216",9216,"adjusted")
 //     > MAS5CallHuExon("HuExon_dc5_ps9216",9216,"probeset:adjusted")
@@ -60,44 +60,44 @@
 //     > DABGCallHuExon("HuExon_dabg_ps9216",9216,"probeset:raw")
 //   5.step: export trees
 //     Test3:
-//     > ExportScheme("/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/SchemeTest3.root","Test3.Test3.scm","*")
-//     > ExportScheme("/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/SchemeTest3.root","Test3.Test3.idx","*")
-//     > ExportScheme("/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/SchemeTest3.root","Test3.Test3.ann","*")
-//     > ExportScheme("/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/SchemeTest3.root","Test3.Test3.prb","*")
-//     > ExportDataset("/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/SchemeTest3.root","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/DataTest3_cel.root","DataSet/*.cel","*","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/DataTest3_cel.txt")
-//     > ExportPreprocess("GeneChip","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/SchemeTest3.root","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/Test3_rma.root","RMASet.*.mdp","*","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/Test3_mdp.txt")
-//     > ExportPreprocess("GeneChip","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/SchemeTest3.root","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/Test3_rma.root","RMASet.*.mdp","fLevel","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/Test3_mdp_level.txt")
-//     > ExportPreprocess("GeneChip","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/SchemeTest3.root","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/Test3_mas5.root","MAS5Set.*.tbw","*","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/Test3_tbw.txt")
-//     > ExportPreprocess("GeneChip","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/SchemeTest3.root","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/Test3_dc5.root","MAS5CallSet.*.dc5","*","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/Test3_dc5.txt")
-//     > ExportPreprocess("GeneChip","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/SchemeTest3.root","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/Test3_dabg.root","DABGCallSet.*.dab","*","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/Test3_dab.txt")
+//     > ExportScheme("/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/SchemeTest3.root","Test3.Test3.scm","*")
+//     > ExportScheme("/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/SchemeTest3.root","Test3.Test3.idx","*")
+//     > ExportScheme("/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/SchemeTest3.root","Test3.Test3.ann","*")
+//     > ExportScheme("/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/SchemeTest3.root","Test3.Test3.prb","*")
+//     > ExportDataset("/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/SchemeTest3.root","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/DataTest3_cel.root","DataSet/*.cel","*","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/DataTest3_cel.txt")
+//     > ExportPreprocess("GeneChip","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/SchemeTest3.root","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/Test3_rma.root","RMASet.*.mdp","*","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/Test3_mdp.txt")
+//     > ExportPreprocess("GeneChip","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/SchemeTest3.root","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/Test3_rma.root","RMASet.*.mdp","fLevel","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/Test3_mdp_level.txt")
+//     > ExportPreprocess("GeneChip","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/SchemeTest3.root","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/Test3_mas5.root","MAS5Set.*.tbw","*","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/Test3_tbw.txt")
+//     > ExportPreprocess("GeneChip","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/SchemeTest3.root","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/Test3_dc5.root","MAS5CallSet.*.dc5","*","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/Test3_dc5.txt")
+//     > ExportPreprocess("GeneChip","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/SchemeTest3.root","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/Test3_dabg.root","DABGCallSet.*.dab","*","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/Test3_dab.txt")
 //     U133P2:
-//     > ExportScheme("/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/SchemeU133P2.root","HG-U133_Plus_2.HG-U133_Plus_2.scm","*")
-//     > ExportScheme("/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/SchemeU133P2.root","HG-U133_Plus_2.HG-U133_Plus_2.idx","*")
-//     > ExportPreprocess("GeneChip","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/SchemeU133P2.root","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2_rma.root","RMASet.*.mdp","*","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2_mdp.txt")
-//     > ExportPreprocess("GeneChip","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/SchemeU133P2.root","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2_mas5.root","MAS5Set.*.tbw","*","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2_tbw.txt")
-//     > ExportPreprocess("GeneChip","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/SchemeU133P2.root","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2_dc5.root","MAS5CallSet.*.dc5","*","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2_dc5.txt")
+//     > ExportScheme("/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/SchemeU133P2.root","HG-U133_Plus_2.HG-U133_Plus_2.scm","*")
+//     > ExportScheme("/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/SchemeU133P2.root","HG-U133_Plus_2.HG-U133_Plus_2.idx","*")
+//     > ExportPreprocess("GeneChip","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/SchemeU133P2.root","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2_rma.root","RMASet.*.mdp","*","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2_mdp.txt")
+//     > ExportPreprocess("GeneChip","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/SchemeU133P2.root","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2_mas5.root","MAS5Set.*.tbw","*","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2_tbw.txt")
+//     > ExportPreprocess("GeneChip","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/SchemeU133P2.root","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2_dc5.root","MAS5CallSet.*.dc5","*","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2_dc5.txt")
 //     HuGene:
-//     > ExportScheme("/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HumanGeneScheme_v1.root","HuGene-1_0-st-v1.HuGene-1_0-st-v1.ann","*")
-//     > ExportDataset("/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HumanGeneScheme_v1.root","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root","DataSet/*.cel","*","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.txt")
-//     > ExportPreprocess("GenomeChip","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HumanGeneScheme_v1.root","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGene_rma.root","RMASet.*.mdp","*")
-//     > ExportPreprocess("GenomeChip","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HumanGeneScheme_v1.root","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGene_rma.root","RMASet.*.mdp","*","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGene_mdp.txt")
-//     > ExportPreprocess("GenomeChip","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HumanGeneScheme_v1.root","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGene_rma.root","RMASet.*.mdp","fLevel","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGene_mdp_level.txt")
-//     > ExportPreprocess("GenomeChip","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HumanGeneScheme_v1.root","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGene_mas5.root","MAS5Set.*.tbw","*","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGene_tbw.txt")
-//     > ExportPreprocess("GenomeChip","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HumanGeneScheme_v1.root","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGene_dc5.root","MAS5CallSet.*.dc5","*","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGene_dc5.txt")
-//     > ExportPreprocess("GenomeChip","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HumanGeneScheme_v1.root","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGene_dabg.root","DABGCallSet.*.dab","*","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGene_dab.txt")
+//     > ExportScheme("/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HumanGeneScheme_v1.root","HuGene-1_0-st-v1.HuGene-1_0-st-v1.ann","*")
+//     > ExportDataset("/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HumanGeneScheme_v1.root","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root","DataSet/*.cel","*","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.txt")
+//     > ExportPreprocess("GenomeChip","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HumanGeneScheme_v1.root","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGene_rma.root","RMASet.*.mdp","*")
+//     > ExportPreprocess("GenomeChip","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HumanGeneScheme_v1.root","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGene_rma.root","RMASet.*.mdp","*","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGene_mdp.txt")
+//     > ExportPreprocess("GenomeChip","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HumanGeneScheme_v1.root","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGene_rma.root","RMASet.*.mdp","fLevel","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGene_mdp_level.txt")
+//     > ExportPreprocess("GenomeChip","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HumanGeneScheme_v1.root","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGene_mas5.root","MAS5Set.*.tbw","*","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGene_tbw.txt")
+//     > ExportPreprocess("GenomeChip","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HumanGeneScheme_v1.root","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGene_dc5.root","MAS5CallSet.*.dc5","*","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGene_dc5.txt")
+//     > ExportPreprocess("GenomeChip","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HumanGeneScheme_v1.root","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGene_dabg.root","DABGCallSet.*.dab","*","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGene_dab.txt")
 //     HuExon:
 //     > ExportScheme("/Volumes/GigaDrive/ROOT/rootdata/huexon/HumanExonScheme_r2.root","HuEx-1_0-st-v2.HuEx-1_0-st-v2.scm","*")
 //     > ExportScheme("/Volumes/GigaDrive/ROOT/rootdata/huexon/HumanExonScheme_r2.root","HuEx-1_0-st-v2.HuEx-1_0-st-v2.idx","*")
-//     > ExportPreprocess("ExonChip","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HumanExonScheme_r2.root","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExon_rma_tr9216.root","RMASet.*.mdp","*","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExon_mdp_tr9216.txt")
-//     > ExportPreprocess("ExonChip","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HumanExonScheme_r2.root","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExon_rma_tr9216.root","RMASet.*.mdp","fLevel","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExon_mdp_tr9216_level.txt")
-//     > ExportPreprocess("ExonChip","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HumanExonScheme_r2.root","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExon_mas5_tr9216.root","MAS5Set.*.tbw","*","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExon_tbw_tr9216.txt")
-//     > ExportPreprocess("ExonChip","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HumanExonScheme_r2.root","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExon_dc5_tr9216.root","MAS5CallSet.*.dc5","*","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExon_dc5_tr9216.txt")
-//     > ExportPreprocess("ExonChip","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HumanExonScheme_r2.root","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExon_dabg_tr9216.root","DABGCallSet.*.dab","*","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExon_dab_tr9216.txt")
+//     > ExportPreprocess("ExonChip","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HumanExonScheme_r2.root","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExon_rma_tr9216.root","RMASet.*.mdp","*","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExon_mdp_tr9216.txt")
+//     > ExportPreprocess("ExonChip","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HumanExonScheme_r2.root","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExon_rma_tr9216.root","RMASet.*.mdp","fLevel","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExon_mdp_tr9216_level.txt")
+//     > ExportPreprocess("ExonChip","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HumanExonScheme_r2.root","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExon_mas5_tr9216.root","MAS5Set.*.tbw","*","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExon_tbw_tr9216.txt")
+//     > ExportPreprocess("ExonChip","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HumanExonScheme_r2.root","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExon_dc5_tr9216.root","MAS5CallSet.*.dc5","*","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExon_dc5_tr9216.txt")
+//     > ExportPreprocess("ExonChip","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HumanExonScheme_r2.root","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExon_dabg_tr9216.root","DABGCallSet.*.dab","*","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExon_dab_tr9216.txt")
 //
 ///////////////////////////
 
 //______________________________________________________________________________
-void Init(const char *libxps = "/Volumes/CoreData/ROOT/rootcode/xps-0.3.5/src/xps.so")
+void Init(const char *libxps = "/Volumes/CoreData/ROOT/rootcode/xps-0.4.1/src/xps.so")
 {
 // load libraries
    gSystem->Load("libGui.so");
@@ -231,8 +231,8 @@ void ExportScheme(const char *filename, const char *treename, const char *varlis
 
 //______________________________________________________________________________
 void ImportDataTest3(const char *filename   = "DataTest3",
-                     const char *filedir    = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5",
-                     const char *schemefile = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/SchemeTest3.root")
+                     const char *filedir    = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1",
+                     const char *schemefile = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/SchemeTest3.root")
 {
 // Import Affymetrix *.CEL files into XPS
 
@@ -349,8 +349,8 @@ void UpdateDataTest3A(const char *filename   = "/Volumes/CoreData/ROOT/rootdata/
 
 //______________________________________________________________________________
 void ImportDataU133P2(const char *filename   = "U133P2Tissues",
-                      const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6",
-                      const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/SchemeU133P2.root")
+                      const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1",
+                      const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/SchemeU133P2.root")
 {
 // Import Affymetrix *.CEL files into XPS
 
@@ -383,8 +383,8 @@ void ImportDataU133P2(const char *filename   = "U133P2Tissues",
 
 //______________________________________________________________________________
 void ImportDataHuGene(const char *filename   = "HuGeneTissues",
-                      const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5",
-                      const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HumanGeneScheme_v1.root")
+                      const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1",
+                      const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HumanGeneScheme_v1.root")
 {
 // Import Affymetrix *.CEL files into XPS
 
@@ -417,8 +417,8 @@ void ImportDataHuGene(const char *filename   = "HuGeneTissues",
 
 //______________________________________________________________________________
 void ImportDataHuExon(const char *filename   = "HuExonTissues",
-                      const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5",
-                      const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HumanExonScheme_r2.root")
+                      const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1",
+                      const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HumanExonScheme_r2.root")
 {
 // Import Affymetrix *.CEL files into XPS
 
@@ -488,8 +488,8 @@ void ExportDataset(const char *schemefile, const char *datafile, const char *tre
 
 //______________________________________________________________________________
 void RMATest3(const char *filename   = "Test3_rma",
-              const char *filedir    = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5",
-              const char *schemefile = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/SchemeTest3.root")
+              const char *filedir    = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1",
+              const char *schemefile = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/SchemeTest3.root")
 {
 // Preprocess RMA
 
@@ -519,10 +519,10 @@ void RMATest3(const char *filename   = "Test3_rma",
    manager->OpenSchemes(schemefile);
 
 // add trees for preprocessing
-   manager->AddTree("RMASet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/DataTest3_cel.root/DataSet/TestA1.cel");
-   manager->AddTree("RMASet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/DataTest3_cel.root/DataSet/TestA2.cel");
-   manager->AddTree("RMASet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/DataTest3_cel.root/DataSet/TestB1.cel");
-   manager->AddTree("RMASet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/DataTest3_cel.root/DataSet/TestB2.cel");
+   manager->AddTree("RMASet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/DataTest3_cel.root/DataSet/TestA1.cel");
+   manager->AddTree("RMASet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/DataTest3_cel.root/DataSet/TestA2.cel");
+   manager->AddTree("RMASet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/DataTest3_cel.root/DataSet/TestB1.cel");
+   manager->AddTree("RMASet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/DataTest3_cel.root/DataSet/TestB2.cel");
 
 // preprocess expression values and store as trees in new file
    manager->Preprocess("RMASet", "preprocess");
@@ -534,8 +534,8 @@ void RMATest3(const char *filename   = "Test3_rma",
 
 //______________________________________________________________________________
 void MAS5Test3(const char *filename   = "Test3_mas5",
-               const char *filedir    = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5",
-               const char *schemefile = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/SchemeTest3.root")
+               const char *filedir    = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1",
+               const char *schemefile = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/SchemeTest3.root")
 {
 // Preprocess MAS5
 
@@ -564,10 +564,10 @@ void MAS5Test3(const char *filename   = "Test3_mas5",
    manager->OpenSchemes(schemefile);
 
 // add trees for preprocessing
-   manager->AddTree("MAS5Set","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/DataTest3_cel.root/DataSet/TestA1.cel");
-   manager->AddTree("MAS5Set","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/DataTest3_cel.root/DataSet/TestA2.cel");
-   manager->AddTree("MAS5Set","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/DataTest3_cel.root/DataSet/TestB1.cel");
-   manager->AddTree("MAS5Set","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/DataTest3_cel.root/DataSet/TestB2.cel");
+   manager->AddTree("MAS5Set","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/DataTest3_cel.root/DataSet/TestA1.cel");
+   manager->AddTree("MAS5Set","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/DataTest3_cel.root/DataSet/TestA2.cel");
+   manager->AddTree("MAS5Set","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/DataTest3_cel.root/DataSet/TestB1.cel");
+   manager->AddTree("MAS5Set","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/DataTest3_cel.root/DataSet/TestB2.cel");
 
 // preprocess expression values and store as trees in new file
    manager->Preprocess("MAS5Set", "preprocess");
@@ -579,8 +579,8 @@ void MAS5Test3(const char *filename   = "Test3_mas5",
 
 //______________________________________________________________________________
 void MAS5CallTest3(const char *filename   = "Test3_dc5",
-                   const char *filedir    = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5",
-                   const char *schemefile = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/SchemeTest3.root")
+                   const char *filedir    = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1",
+                   const char *schemefile = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/SchemeTest3.root")
 {
 // Preprocess MAS5 call
 
@@ -601,10 +601,10 @@ void MAS5CallTest3(const char *filename   = "Test3_dc5",
    manager->OpenSchemes(schemefile);
 
 // add trees for preprocessing
-   manager->AddTree("MAS5CallSet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/DataTest3_cel.root/DataSet/TestA1.cel");
-   manager->AddTree("MAS5CallSet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/DataTest3_cel.root/DataSet/TestA2.cel");
-   manager->AddTree("MAS5CallSet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/DataTest3_cel.root/DataSet/TestB1.cel");
-   manager->AddTree("MAS5CallSet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/DataTest3_cel.root/DataSet/TestB2.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/DataTest3_cel.root/DataSet/TestA1.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/DataTest3_cel.root/DataSet/TestA2.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/DataTest3_cel.root/DataSet/TestB1.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/DataTest3_cel.root/DataSet/TestB2.cel");
 
 // preprocess call values and store as trees in new file
    manager->Preprocess("MAS5CallSet", "preprocess");
@@ -616,8 +616,8 @@ void MAS5CallTest3(const char *filename   = "Test3_dc5",
 
 //______________________________________________________________________________
 void DABGCallTest3(const char *filename   = "Test3_dabg",
-                   const char *filedir    = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5",
-                   const char *schemefile = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/SchemeTest3.root")
+                   const char *filedir    = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1",
+                   const char *schemefile = "/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/SchemeTest3.root")
 {
 // Preprocess DABG call
 
@@ -638,10 +638,10 @@ void DABGCallTest3(const char *filename   = "Test3_dabg",
    manager->OpenSchemes(schemefile);
 
 // add trees for preprocessing
-   manager->AddTree("DABGCallSet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/DataTest3_cel.root/DataSet/TestA1.cel");
-   manager->AddTree("DABGCallSet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/DataTest3_cel.root/DataSet/TestA2.cel");
-   manager->AddTree("DABGCallSet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/DataTest3_cel.root/DataSet/TestB1.cel");
-   manager->AddTree("DABGCallSet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.3.5/DataTest3_cel.root/DataSet/TestB2.cel");
+   manager->AddTree("DABGCallSet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/DataTest3_cel.root/DataSet/TestA1.cel");
+   manager->AddTree("DABGCallSet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/DataTest3_cel.root/DataSet/TestA2.cel");
+   manager->AddTree("DABGCallSet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/DataTest3_cel.root/DataSet/TestB1.cel");
+   manager->AddTree("DABGCallSet","/Volumes/CoreData/ROOT/rootdata/testAB/xps-0.4.1/DataTest3_cel.root/DataSet/TestB2.cel");
 
 // preprocess call values and store as trees in new file
    manager->Preprocess("DABGCallSet", "preprocess");
@@ -653,8 +653,8 @@ void DABGCallTest3(const char *filename   = "Test3_dabg",
 
 //______________________________________________________________________________
 void RMAU133P2(const char *filename   = "U133P2_rma",
-               const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6",
-               const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/SchemeU133P2.root")
+               const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1",
+               const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/SchemeU133P2.root")
 {
 // Preprocess RMA
 
@@ -683,12 +683,12 @@ void RMAU133P2(const char *filename   = "U133P2_rma",
    manager->OpenSchemes(schemefile);
 
 // add trees for preprocessing
-   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2Tissues_cel.root/DataSet/BreastA.cel");
-   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2Tissues_cel.root/DataSet/BreastB.cel");
-   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2Tissues_cel.root/DataSet/BreastC.cel");
-   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2Tissues_cel.root/DataSet/ProstateA.cel");
-   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2Tissues_cel.root/DataSet/ProstateB.cel");
-   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2Tissues_cel.root/DataSet/ProstateC.cel");
+   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2Tissues_cel.root/DataSet/BreastA.cel");
+   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2Tissues_cel.root/DataSet/BreastB.cel");
+   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2Tissues_cel.root/DataSet/BreastC.cel");
+   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2Tissues_cel.root/DataSet/ProstateA.cel");
+   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2Tissues_cel.root/DataSet/ProstateB.cel");
+   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2Tissues_cel.root/DataSet/ProstateC.cel");
 
 // preprocess expression values and store as trees in new file
    manager->Preprocess("RMASet", "preprocess");
@@ -700,8 +700,8 @@ void RMAU133P2(const char *filename   = "U133P2_rma",
 
 //______________________________________________________________________________
 void MAS5U133P2(const char *filename   = "U133P2_mas5",
-                const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6",
-                const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/SchemeU133P2.root")
+                const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1",
+                const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/SchemeU133P2.root")
 {
 // Preprocess MAS5
 
@@ -730,12 +730,12 @@ void MAS5U133P2(const char *filename   = "U133P2_mas5",
    manager->OpenSchemes(schemefile);
 
 // add trees for preprocessing
-   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2Tissues_cel.root/DataSet/BreastA.cel");
-   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2Tissues_cel.root/DataSet/BreastB.cel");
-   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2Tissues_cel.root/DataSet/BreastC.cel");
-   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2Tissues_cel.root/DataSet/ProstateA.cel");
-   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2Tissues_cel.root/DataSet/ProstateB.cel");
-   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2Tissues_cel.root/DataSet/ProstateC.cel");
+   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2Tissues_cel.root/DataSet/BreastA.cel");
+   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2Tissues_cel.root/DataSet/BreastB.cel");
+   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2Tissues_cel.root/DataSet/BreastC.cel");
+   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2Tissues_cel.root/DataSet/ProstateA.cel");
+   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2Tissues_cel.root/DataSet/ProstateB.cel");
+   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2Tissues_cel.root/DataSet/ProstateC.cel");
 
 // preprocess expression values and store as trees in new file
    manager->Preprocess("MAS5Set", "preprocess");
@@ -747,8 +747,8 @@ void MAS5U133P2(const char *filename   = "U133P2_mas5",
 
 //______________________________________________________________________________
 void MAS5CallU133P2(const char *filename   = "U133P2_dc5",
-                    const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6",
-                    const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/SchemeU133P2.root")
+                    const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1",
+                    const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/SchemeU133P2.root")
 {
 // Preprocess MAS5 call
 
@@ -769,12 +769,12 @@ void MAS5CallU133P2(const char *filename   = "U133P2_dc5",
    manager->OpenSchemes(schemefile);
 
 // add trees for preprocessing
-   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2Tissues_cel.root/DataSet/BreastA.cel");
-   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2Tissues_cel.root/DataSet/BreastB.cel");
-   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2Tissues_cel.root/DataSet/BreastC.cel");
-   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2Tissues_cel.root/DataSet/ProstateA.cel");
-   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2Tissues_cel.root/DataSet/ProstateB.cel");
-   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.3.6/U133P2Tissues_cel.root/DataSet/ProstateC.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2Tissues_cel.root/DataSet/BreastA.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2Tissues_cel.root/DataSet/BreastB.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2Tissues_cel.root/DataSet/BreastC.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2Tissues_cel.root/DataSet/ProstateA.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2Tissues_cel.root/DataSet/ProstateB.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/u133p2/xps-0.4.1/U133P2Tissues_cel.root/DataSet/ProstateC.cel");
 
 // preprocess call values and store as trees in new file
    manager->Preprocess("MAS5CallSet", "preprocess");
@@ -786,8 +786,8 @@ void MAS5CallU133P2(const char *filename   = "U133P2_dc5",
 
 //______________________________________________________________________________
 void RMAHuGene(const char *filename   = "HuGene_rma", Int_t level = 9216,
-               const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5",
-               const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HumanGeneScheme_v1.root")
+               const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1",
+               const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HumanGeneScheme_v1.root")
 {
 // Preprocess RMA
 
@@ -804,12 +804,12 @@ void RMAHuGene(const char *filename   = "HuGene_rma", Int_t level = 9216,
 // initialize normalizer
    manager->InitAlgorithm("selector","probe","genome",0, 1, level);
    manager->InitAlgorithm("normalizer","quantile","together:none:0","", 1,0.0);
-//   manager->InitAlgorithm("normalizer","quantile","together:none:0","/Volumes/GigaDrive/ROOT/rootcode/xps-0.3.5/tmp_rkq.root", 1,0.0);
+//   manager->InitAlgorithm("normalizer","quantile","together:none:0","/Volumes/GigaDrive/ROOT/rootcode/xps-0.4.1/tmp_rkq.root", 1,0.0);
 
 // initialize expressor
    manager->InitAlgorithm("selector","probe","genome",0, 1, level);
    manager->InitAlgorithm("expressor","medianpolish","log2","",3,10,0.01,1.0);
-//   manager->InitAlgorithm("expressor","medianpolish","log2","/Volumes/GigaDrive/ROOT/rootcode/xps-0.3.5/tmp.root",3,10,0.01,1.0);
+//   manager->InitAlgorithm("expressor","medianpolish","log2","/Volumes/GigaDrive/ROOT/rootcode/xps-0.4.1/tmp.root",3,10,0.01,1.0);
 
 // create new root data file 
    manager->New(filename, filedir, "GenomeChip");
@@ -818,12 +818,12 @@ void RMAHuGene(const char *filename   = "HuGene_rma", Int_t level = 9216,
    manager->OpenSchemes(schemefile);
 
 // add trees for mas
-   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Breast01.cel");
-   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Breast02.cel");
-   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Breast03.cel");
-   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Prostate01.cel");
-   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Prostate02.cel");
-   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Prostate03.cel");
+   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Breast01.cel");
+   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Breast02.cel");
+   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Breast03.cel");
+   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Prostate01.cel");
+   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Prostate02.cel");
+   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Prostate03.cel");
 
 // preprocess expression values and store as trees in new file
    manager->Preprocess("RMASet", "preprocess");
@@ -835,8 +835,8 @@ void RMAHuGene(const char *filename   = "HuGene_rma", Int_t level = 9216,
 
 //______________________________________________________________________________
 void MAS5HuGene(const char *filename   = "HuGene_mas5", Int_t level = 9216,
-                const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5",
-                const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HumanGeneScheme_v1.root")
+                const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1",
+                const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HumanGeneScheme_v1.root")
 {
 // Preprocess MAS5
 
@@ -861,12 +861,12 @@ void MAS5HuGene(const char *filename   = "HuGene_mas5", Int_t level = 9216,
    manager->OpenSchemes(schemefile);
 
 // add trees for mas
-   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Breast01.cel");
-   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Breast02.cel");
-   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Breast03.cel");
-   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Prostate01.cel");
-   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Prostate02.cel");
-   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Prostate03.cel");
+   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Breast01.cel");
+   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Breast02.cel");
+   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Breast03.cel");
+   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Prostate01.cel");
+   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Prostate02.cel");
+   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Prostate03.cel");
 
 // preprocess expression values and store as trees in new file
    manager->Preprocess("MAS5Set", "preprocess");
@@ -878,8 +878,8 @@ void MAS5HuGene(const char *filename   = "HuGene_mas5", Int_t level = 9216,
 
 //______________________________________________________________________________
 void MAS5CallHuGene(const char *filename   = "HuGene_dc5", Int_t level = 9216,
-                    const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5",
-                    const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HumanGeneScheme_v1.root")
+                    const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1",
+                    const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HumanGeneScheme_v1.root")
 {
 // Preprocess MAS5 call
 
@@ -904,12 +904,12 @@ void MAS5CallHuGene(const char *filename   = "HuGene_dc5", Int_t level = 9216,
    manager->OpenSchemes(schemefile);
 
 // add trees for mas
-   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Breast01.cel");
-   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Breast02.cel");
-   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Breast03.cel");
-   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Prostate01.cel");
-   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Prostate02.cel");
-   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Prostate03.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Breast01.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Breast02.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Breast03.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Prostate01.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Prostate02.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Prostate03.cel");
 
 // preprocess call values and store as trees in new file
    manager->Preprocess("MAS5CallSet", "preprocess");
@@ -921,8 +921,8 @@ void MAS5CallHuGene(const char *filename   = "HuGene_dc5", Int_t level = 9216,
 
 //______________________________________________________________________________
 void DABGCallHuGene(const char *filename   = "HuGene_dabg", Int_t level = 9216,
-                    const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5",
-                    const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HumanGeneScheme_v1.root")
+                    const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1",
+                    const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HumanGeneScheme_v1.root")
 {
 // Preprocess DABG call
 
@@ -943,12 +943,12 @@ void DABGCallHuGene(const char *filename   = "HuGene_dabg", Int_t level = 9216,
    manager->OpenSchemes(schemefile);
 
 // add trees for mas
-   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Breast01.cel");
-   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Breast02.cel");
-   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Breast03.cel");
-   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Prostate01.cel");
-   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Prostate02.cel");
-   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.3.5/HuGeneTissues_cel.root/DataSet/Prostate03.cel");
+   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Breast01.cel");
+   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Breast02.cel");
+   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Breast03.cel");
+   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Prostate01.cel");
+   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Prostate02.cel");
+   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/hugene/xps-0.4.1/HuGeneTissues_cel.root/DataSet/Prostate03.cel");
 
 // preprocess call values and store as trees in new file
    manager->Preprocess("DABGCallSet", "preprocess");
@@ -961,8 +961,8 @@ void DABGCallHuGene(const char *filename   = "HuGene_dabg", Int_t level = 9216,
 //______________________________________________________________________________
 void RMAHuExon(const char *filename   = "HuExon_rma", Int_t level = 9216,
                const char *exproption = "log2",
-               const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5",
-               const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HumanExonScheme_r2.root")
+               const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1",
+               const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HumanExonScheme_r2.root")
 {
 // Preprocess RMA
 
@@ -979,12 +979,12 @@ void RMAHuExon(const char *filename   = "HuExon_rma", Int_t level = 9216,
 // initialize normalizer
    manager->InitAlgorithm("selector","probe","exon",0, 1, level);
    manager->InitAlgorithm("normalizer","quantile","together:none:0","", 1,0.0);
-//   manager->InitAlgorithm("normalizer","quantile","together:none:0","/Volumes/GigaDrive/ROOT/rootcode/xps-0.3.5/tmp_rkq.root", 1,0.0);
+//   manager->InitAlgorithm("normalizer","quantile","together:none:0","/Volumes/GigaDrive/ROOT/rootcode/xps-0.4.1/tmp_rkq.root", 1,0.0);
 
 // initialize expressor
    manager->InitAlgorithm("selector","probe","exon",0, 1, level);
    manager->InitAlgorithm("expressor","medianpolish",exproption,"",3,10,0.01,1.0);
-//   manager->InitAlgorithm("expressor","medianpolish",exproption,"/Volumes/GigaDrive/ROOT/rootcode/xps-0.3.5/tmp.root",3,10,0.01,1.0);
+//   manager->InitAlgorithm("expressor","medianpolish",exproption,"/Volumes/GigaDrive/ROOT/rootcode/xps-0.4.1/tmp.root",3,10,0.01,1.0);
 
 // create new root data file 
    manager->New(filename, filedir, "ExonChip");
@@ -993,12 +993,12 @@ void RMAHuExon(const char *filename   = "HuExon_rma", Int_t level = 9216,
    manager->OpenSchemes(schemefile);
 
 // add trees for mas
-   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/BreastA.cel");
-   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/BreastB.cel");
-   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/BreastC.cel");
-   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/ProstateA.cel");
-   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/ProstateB.cel");
-   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/ProstateC.cel");
+   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/BreastA.cel");
+   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/BreastB.cel");
+   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/BreastC.cel");
+   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/ProstateA.cel");
+   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/ProstateB.cel");
+   manager->AddTree("RMASet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/ProstateC.cel");
 
 // preprocess expression values and store as trees in new file
    manager->Preprocess("RMASet", "preprocess");
@@ -1011,8 +1011,8 @@ void RMAHuExon(const char *filename   = "HuExon_rma", Int_t level = 9216,
 //______________________________________________________________________________
 void MAS5HuExon(const char *filename   = "HuExon_mas5", Int_t level = 9216,
                 const char *exproption = "log2",
-                const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5",
-                const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HumanExonScheme_r2.root")
+                const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1",
+                const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HumanExonScheme_r2.root")
 {
 // Preprocess MAS5
 
@@ -1037,12 +1037,12 @@ void MAS5HuExon(const char *filename   = "HuExon_mas5", Int_t level = 9216,
    manager->OpenSchemes(schemefile);
 
 // add trees for mas
-   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/BreastA.cel");
-   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/BreastB.cel");
-   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/BreastC.cel");
-   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/ProstateA.cel");
-   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/ProstateB.cel");
-   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/ProstateC.cel");
+   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/BreastA.cel");
+   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/BreastB.cel");
+   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/BreastC.cel");
+   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/ProstateA.cel");
+   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/ProstateB.cel");
+   manager->AddTree("MAS5Set","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/ProstateC.cel");
 
 // preprocess expression values and store as trees in new file
    manager->Preprocess("MAS5Set", "preprocess");
@@ -1055,8 +1055,8 @@ void MAS5HuExon(const char *filename   = "HuExon_mas5", Int_t level = 9216,
 //______________________________________________________________________________
 void MAS5CallHuExon(const char *filename   = "HuExon_dc5", Int_t level = 9216,
                     const char *calloption = "adjusted",
-                    const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5",
-                    const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HumanExonScheme_r2.root")
+                    const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1",
+                    const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HumanExonScheme_r2.root")
 {
 // Preprocess MAS5 call
 
@@ -1083,12 +1083,12 @@ void MAS5CallHuExon(const char *filename   = "HuExon_dc5", Int_t level = 9216,
    manager->OpenSchemes(schemefile);
 
 // add trees for mas
-   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/BreastA.cel");
-   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/BreastB.cel");
-   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/BreastC.cel");
-   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/ProstateA.cel");
-   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/ProstateB.cel");
-   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/ProstateC.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/BreastA.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/BreastB.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/BreastC.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/ProstateA.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/ProstateB.cel");
+   manager->AddTree("MAS5CallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/ProstateC.cel");
 
 // preprocess call values and store as trees in new file
    manager->Preprocess("MAS5CallSet", "preprocess");
@@ -1101,8 +1101,8 @@ void MAS5CallHuExon(const char *filename   = "HuExon_dc5", Int_t level = 9216,
 //______________________________________________________________________________
 void DABGCallHuExon(const char *filename   = "HuExon_dabg", Int_t level = 9216,
                     const char *calloption = "raw",
-                    const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5",
-                    const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HumanExonScheme_r2.root")
+                    const char *filedir    = "/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1",
+                    const char *schemefile = "/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HumanExonScheme_r2.root")
 {
 // Preprocess DABG call
 
@@ -1123,12 +1123,12 @@ void DABGCallHuExon(const char *filename   = "HuExon_dabg", Int_t level = 9216,
    manager->OpenSchemes(schemefile);
 
 // add trees for mas
-   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/BreastA.cel");
-   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/BreastB.cel");
-   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/BreastC.cel");
-   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/ProstateA.cel");
-   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/ProstateB.cel");
-   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.3.5/HuExonTissues_cel.root/DataSet/ProstateC.cel");
+   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/BreastA.cel");
+   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/BreastB.cel");
+   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/BreastC.cel");
+   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/ProstateA.cel");
+   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/ProstateB.cel");
+   manager->AddTree("DABGCallSet","/Volumes/GigaDrive/ROOT/rootdata/huexon/xps-0.4.1/HuExonTissues_cel.root/DataSet/ProstateC.cel");
 
 // preprocess call values and store as trees in new file
    manager->Preprocess("DABGCallSet", "preprocess");

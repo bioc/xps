@@ -407,6 +407,7 @@ setClass("AnalysisTreeSet",
 # generic methods for class AnalysisTreeSet
 setGeneric("filterTreeset", function(object) standardGeneric("filterTreeset"));
 setGeneric("validFilter",   function(object) standardGeneric("validFilter"));
+setGeneric("volcanoplot",   function(x, ...) standardGeneric("volcanoplot"));
 
 
 #------------------------------------------------------------------------------#

@@ -8,6 +8,7 @@
 \alias{validData,AnalysisTreeSet-method}
 \alias{validFilter,AnalysisTreeSet-method}
 \alias{validFilter}
+\alias{volcanoplot,AnalysisTreeSet-method}
 
 \title{Class AnalysisTreeSet}
 \description{This class provides the link to the \code{\link{ROOT}} analysis file and 
@@ -51,6 +52,7 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
     \item{validData}{\code{signature(object = "AnalysisTreeSet")}: extracts data.frame \code{data}.}
     \item{validFilter}{\code{signature(object = "AnalysisTreeSet")}: extracts data.frame \code{data}
      from \code{fltrset}.}
+    \item{volcanoplot}{\code{signature(x = "AnalysisTreeSet")}: creates a volcano-plot.}
 	 }
 }
 \author{Christian Stratowa}

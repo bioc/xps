@@ -21,12 +21,14 @@
 
   The package handles pre-processing, normalization, filtering
   and analysis of Affymetrix GeneChip expression arrays, including GeneChip
-  exon array systems (Exon 1.0 ST) and gene array systems (Gene 1.0 ST). 
+  exon array systems (Exon 1.0 ST) and gene array systems (Gene 1.0 ST)
+  on computers with 1-2 GB RAM only. It imports Affymetrix .CDF, .CLF, .PGF and .CEL 
+  as well as annotation files, and computes e.g. RMA, MAS5, DABG-calls.
   It is an R wrapper to XPS (eXpression Profiling System), which 
   is based on ROOT, an object-oriented framework developed at CERN. 
   Thus, the prior installation of ROOT is a prerequisite for the 
-  usage of this package, see the README file. ROOT is licensed 
-  under LGPL and can be downloaded from \url{http://root.cern.ch}.
+  usage of this package, see the README file. However, no knowledge of ROOT
+  is required. ROOT is licensed under LGPL and can be downloaded from \url{http://root.cern.ch}.
 }
 \author{
    Christian Stratowa \email{cstrato@aon.at}

@@ -2105,6 +2105,12 @@ Int_t XUnivarSet::ExportUnivarTrees(Int_t n, TString *names, const char *varlist
             || hasPVal || hasNPer || hasPCha || hasPAdj || hasFC);
    hasData  = (hasData > 0) ? ++idx : 0;
 
+///////////
+//PROBLEM: hasAnnot but not hasUnit => crash!!!
+// TO DO: for annotation necessary to init unittree
+// if (hasAnnot & !hasUnit) {hasUnit = ++idx;}
+//////////
+
 // Get logbase: necessary to convert mn1 and mn2 and get correct fc = mn2/mn1
    XFolder    *data = 0;
    XUnivarSet *set  = 0;

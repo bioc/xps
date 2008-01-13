@@ -214,6 +214,7 @@ probeInfo(scheme.test3.na23)
 root.browser(scheme.test3.na23)
 
 
+
 #------------------------------------------------------------------------------#
 # 2. step: import CEL-files into ROOT data files
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -539,6 +540,7 @@ boxplot.dev(data.genome, dev="png", w=600, h=480, outfile="Boxplot_DataMixHuGene
 # to avoid memory comsumption of R remove data:
 data.genome <- removeInten(data.genome)
 data.genome <- removeMask(data.genome)
+
 
 
 #------------------------------------------------------------------------------#
@@ -1008,6 +1010,69 @@ wbg <- matrix(bgrd[,"BGRD"], ncol=ncols(schemeSet(data.mas5)), nrow=nrows(scheme
 # 4. create image
 image(wbg)
 image(log2(wbg))
+
+
+
+#------------------------------------------------------------------------------#
+# 4. step: apply filters to expression levels
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#    Note: ROOT scheme files and ROOT raw data files are usually already stored
+#          in special system directories. When a new R session is created for the
+#          first time, they must fist be loaded using "root.scheme()" and "root.data()".
+#          However, this is not necessary when re-opening a saved R session later.
+#------------------------------------------------------------------------------#
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# example 1: Test3 samples from package xps
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+### new R session: load library xps
+library(xps)
+
+### first, load ROOT scheme file and ROOT data file
+scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
+
+### second, preprocess raw data if not already done
+# e.g. RMA and MAS5 detection call
+data.rma <- rma(data.test3,"Test3RMA",tmpdir="",background="pmonly",normalize=T)
+call.mas5 <- mas5.call(data.test3,"Test3Call",tmpdir="")
+
+
+### apply non-specific filters
+# create PreFilter
+prefltr <- PreFilter(mad=c(0.5,0.01), prescall=c(0.002, 6,"samples"),
+                     lothreshold=c(6.0,0.02,"mean"), hithreshold=c(10.5,80.0,"percent"))
+# apply prefilter to data.rma
+rma.pfr <- prefilter(data.rma,"Test3Prefilter",getwd(),prefltr,2,"log2","PreFilter",call.mas5)
+
+### apply univariate filters
+# create UniFilter
+unifltr <- UniFilter(unitest=c("t.test","two.sided","none",0,0.0,FALSE,0.95,TRUE),
+                     foldchange=c(1.3,"both"), unifilter=c(0.1,"pval"))
+# apply unifilter to pre-filtered data
+rma.ufr <- unifilter(data.rma,"Test3Unifilter",getwd(),unifltr,group=c("GrpA","GrpA","GrpB","GrpB"),
+                     xps.fltr=rma.pfr)
+
+### get data.frame of result
+# get results only for genes satisfying unifltr (default):
+ds.ufr <- validData(rma.ufr)
+dim(ds.ufr)
+head(ds.ufr)
+
+# get results for all genes
+ds.all <- validData(rma.ufr,which="UnitName")
+dim(ds.all)
+head(ds.all)
+
+# alternatively use export.filter to export selected variables only
+ds.ufr <- export.filter(rma.ufr,treetype="stt",varlist="fUnitName:fName:fSymbol:mn1:mn2:fc:pval:mask",as.dataframe=T)
+dim(ds.ufr)
+head(ds.ufr)
+
+ds.all <- export.filter(rma.ufr,treetype="stt",varlist="fUnitName:fName:fSymbol:mn1:mn2:fc:pval:flag",as.dataframe=T)
+dim(ds.all)
+head(ds.all)
 
 
 

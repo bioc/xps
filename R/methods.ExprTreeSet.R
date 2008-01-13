@@ -683,6 +683,13 @@ function(object,
    ## root file /filedir/filename.root
    rootfile <- rootDirFile(filename, filedir);
 
+   ## update: need to set filename to rootfile
+   if (!is.logical(update)) {
+      stop(paste(sQuote("update"), "must be TRUE or FALSE"));
+   } else if (update == TRUE) {
+      filename <- rootfile;
+   }#if
+
    ## check for unifilter
    if (is.null(filter) || !is(filter, "UniFilter")) {
       stop(paste("missing filter of class", sQuote("UniFilter")));
@@ -895,14 +902,14 @@ function(object,
                   filter    = filter,
                   exprset   = object);
 
-   ## add callset
+   ## add callset to class FilterTreeSet
    if (!is.null(xps.call) && is(xps.call, "CallTreeSet")) {
       fltrset@callset <- xps.call;
    }#if
 
    ## varlist for export
 #ev depending on uniparams, unioption
-   varlist <- "fUnitName:df:mn1:mn2:fc:pval:padj:se:stat";
+   varlist <- "fUnitName:df:mn1:mn2:fc:pval:padj:pcha:se:stat";
 
    ## define setname and settype for new treeset
    setname <- "UniFilterSet";

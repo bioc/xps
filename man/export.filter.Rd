@@ -11,7 +11,7 @@ export.filter(xps.fltr, treename = "*", treetype = character(0), varlist = "*", 
   \item{xps.fltr}{an object of type \code{\link{FilterTreeSet}} or \code{\link{AnalysisTreeSet}}.}
   \item{treename}{tree name to export.}
   \item{treetype}{type of tree(s) to export, 'pfr', 'ufr' or 'stt'.}
-  \item{varlist}{names of tree leaves to export}
+  \item{varlist}{names of tree leaves to export.}
   \item{outfile}{name of output file.}
   \item{sep}{column separator}
   \item{as.dataframe}{if \code{TRUE} a data.frame will be returned.}

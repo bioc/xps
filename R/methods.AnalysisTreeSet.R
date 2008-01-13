@@ -4,6 +4,7 @@
 # initialize:
 # setValidity:
 # filterTreeset:
+# volcanoplot:
 #==============================================================================#
 
 
@@ -104,5 +105,84 @@ function(object,
 }#dataAnalysisTreeSet
 
 setMethod("validData", "AnalysisTreeSet", dataAnalysisTreeSet);
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("volcanoplot", signature(x="AnalysisTreeSet"),
+   function(x,
+            labels      = "",
+            p.value     = "pval",
+            mask        = FALSE,
+            show.cutoff = TRUE,
+            cex.text    = 0.7,
+            col.text    = "blue",
+            col.cutoff  = "grey",
+            xlim        = NULL,
+            xlab        = "Log2(Fold-Change)",
+            ylab        = "-Log10(P-Value)",
+            pch         = '.',
+            ...) 
+   {
+      if (debug.xps()) print("------volcanoplot.AnalysisTreeSet------")
+
+      PTYPE <- c("P.Value", "P.Adjusted", "P.Chance");
+      ptype <- c("pval", "padj", "pcha");
+      if (is.na(match(p.value, ptype))) {
+         stop(paste(sQuote("p.value"), "must be <pval,padj,pcha>"));
+      }#if
+
+      show.labels <- !(is.null(labels) || labels == "");
+      if (show.labels) {
+         varlist <- paste("fUnitName", labels, p.value, "fc:flag", sep=":");
+         if (mask) varlist <- paste(varlist, "mask", sep=":");
+         ds <- export.filter(x, treetype="stt", varlist=varlist, as.dataframe=T);
+      } else {
+         if (mask) {
+            ds <- validData(x);
+         } else {
+            ds <- validData(x, "UnitName");
+         }#if
+      }#if
+   
+      pv <- -log10(ds[,PTYPE[match(p.value, ptype)]]);
+      fc <- log2(ds[,"FoldChange"]);
+
+      if (is.null(xlim)) {
+         xmax <- max(abs(fc));
+         xlim <- c(-xmax, xmax);
+      }#if
+
+      ## plot 
+      plot(x    = fc,
+           y    = pv,
+           xlim = xlim,
+           xlab = xlab,
+           ylab = ylab,
+           pch  = pch,
+           ...);
+
+      ## plot labels
+      if (show.labels) {
+         LABEL <- c("fUnitName", "fName", "fSymbol", "fChromosome", "fCytoband");
+         ANNOT <- c("UnitName", "GeneName", "GeneSymbol", "Chromosome", "Cytoband");
+         label <- ANNOT[match(labels, LABEL)];
+         text(fc, pv, labels=ds[,label], cex=cex.text, col=col.text);
+      }#if
+
+      unifltr   <- filterTreeset(x);
+      cutoff.fc <- fcFilter(unifltr@filter)$cutoff;
+      cutoff.pv <- unitestFilter(unifltr@filter)$cutoff;
+#      cutoff.fc <- fcFilter(theFilter(unifltr))$cutoff;
+#      cutoff.pv <- unitestFilter(theFilter(unifltr))$cutoff;
+
+      if (show.cutoff & !is.null(cutoff.fc)) {
+         abline(v = log2(cutoff.fc), col=col.cutoff);
+         abline(v = -log2(cutoff.fc), col=col.cutoff);
+      }#if
+      if (show.cutoff & !is.null(cutoff.pv)) {
+         abline(h = -log(cutoff.pv), col=col.cutoff);
+      }#if
+   }
+)#volcanoplot
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

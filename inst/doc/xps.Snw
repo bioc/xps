@@ -75,6 +75,10 @@ Raw probe intensities, i.e. CEL-files for each project are stored as \ROOT\ Tree
 \Rclass{data} files, accessible from \Robject{R} as \Rclass{data} objects. All analysis is done 
 independent of \Robject{R} such avoiding inherent memory limitations. 
 
+{\bf Note:} Absolutely no knowledge of \ROOT\ is required to use package \xps. However,
+the interested user could use package \xps\ independent of \Robject{R} by writing \ROOT\ macros,
+examples of which can be found in file "macro4XPS.C", located in subdirectory examples.
+
 
 \section{Getting Started}
 
@@ -157,7 +161,7 @@ the \ROOT\ \Rclass{data} file \Rclass{DataTest3\_cel.root}. \\
 further project--relevant data for the experiment, see S4 class \Rclass{ProjectInfo}.
 
 {\bf Note 2:} Since \ROOT\ \Rclass{data} files contain the raw data, it is proposed
-to create them in a common system directory, which may be accessible to others, too.
+to create them in a common system directory, which may be accessible to other users, too.
 
 {\bf Note 3:} Usually, \ROOT\ \Rclass{data} files are kept permanently. Thus it is not
 possible to accidently overwrite a \ROOT\ \Rclass{data} file with another file of the
@@ -429,39 +433,6 @@ image(log2(wbg))
 \end{center}
 
 
-\subsection{Using Biobase class ExpressionSet}
-
-Some users may prefer to use S4 class \Rclass{ExpressionSet}, defined in the \Rpackage{Biobase} 
-package of Bioconductor, for further analysis of expression measures. 
-
-Package \Rpackage{Biobase} contains a vignette "ExpressionSetIntroduction.pdf", which
-describes how to build an \Rclass{ExpressionSet} from scratch. Here we create a minimal
-\Rclass{ExpressionSet} containing the expression measures determined using RMA:
-
-First, we need to load library \Rpackage{Biobase}, then extract the expression levels
-from instance \Robject{data.rma} of class \Rclass{ExprTreeSet}, convert the data.frame
-to a matrix, and finally create an instance of class \Rclass{ExpressionSet}:
-
-<<eval=FALSE>>=
-library(Biobase)
-expr.rma <- validData(data.rma)
-minimalSet <- new("ExpressionSet", exprs = as.matrix(expr.rma))
-@
-
-As described in vignette "ExpressionSetIntroduction.pdf", we can now access the data 
-elements. For this example we create a new \Rclass{ExpressionSet} consisting of the 5 
-features and the first 3 samples:
-
-<<eval=FALSE>>=
-vv <- minimalSet[1:5,1:3]
-featureNames(vv)
-sampleNames(vv)
-exprs(vv)
-@
-
-This class \Rclass{ExpressionSet} can now be used from within other Bioconductor packages.
-
-
 \section{Filtering expression measures}
 
 The \xps\ package can also be used to filter (select) genes according to a variety of 
@@ -542,7 +513,7 @@ filters:
 \item \Rcode{unitestFilter}: A `unitest' filter to select genes where the p--value of
  the applied unitest, i.e. the \Rcode{t.test} is less than 0.1 (\Rcode{pval <= 0.1}).
 \end{enumerate}
-Only genes satisfying both filters are considered to be differentially expressed.
+Only genes satisfying both filters are considered to be differentially expressed. \\
 
 {\bf Note:} If you want to change the default settings for \Rcode{t.test} and/or
 compute and adjusted p--value for multiple comparisons you need to initialize 
@@ -574,19 +545,36 @@ tmp
 @
 
 The data show that only 9 genes of the pre--selected 181 genes are considered to be 
-differentially expressed.
+differentially expressed. 
 
 {\bf Note:} If you want to extract all data as \Robject{data.frame} as well as the 
 resulting filter mask you can do:
-<<>>=
+<<results=hide>>=
 msk <- validFilter(rma.ufr)
 tmp <- validData(rma.ufr, which="UnitName")
 tmp <- cbind(tmp, msk)
-dim(tmp)
+@
+
+However, the recommended way to extract all data together with the filter mask as well
+as the gene annotation is:
+<<>>=
+tmp <- export.filter(rma.ufr, treetype="stt", varlist="fUnitName:fName:fSymbol:fc:pval:flag",
+                    as.dataframe=T, verbose=FALSE)
+head(tmp)
 @
 
 Now all pre--selected 181 genes are extracted as \Robject{data.frame} together with 
-the corresponding filter mask.
+the corresponding annotation and filter mask. \\
+
+It is also possible to create a fold-change vs p-value plot, called \Rcode{volcanoplot}.
+Setting the parameter \Rcode{labels="fSymbol"} allows us to draw the corresponding gene 
+symbols, if known:
+
+\begin{center}
+<<volcanoplot, fig=TRUE>>=
+volcanoplot(rma.ufr, labels="fSymbol")
+@
+\end{center}
 
 
 \pagebreak
@@ -667,8 +655,42 @@ and \Rfunction{?import.genome.scheme} for more information.
 %\label{appA2}
 
 Additional examples how to use package \xps\ can be found in file "script4xps.R", located
-in subdirectory examples. This file uses the  Affymetrix Human Tisse Datasets for
-arrays HG-U133\_Plus\_2, HuEx-1\_0-st-v2 and HuGene-1\_0-st-v1.
+in subdirectory examples. Most of these examples are easily adaptable to users need and can 
+be copied with no or only minor modifications. This file uses the  Affymetrix Human Tisse 
+Datasets for arrays HG-U133\_Plus\_2, HuEx-1\_0-st-v2 and HuGene-1\_0-st-v1.
+
+
+\subsection{Using Biobase class ExpressionSet}
+
+Some users may prefer to use S4 class \Rclass{ExpressionSet}, defined in the \Rpackage{Biobase} 
+package of Bioconductor, for further analysis of expression measures. 
+
+Package \Rpackage{Biobase} contains a vignette "ExpressionSetIntroduction.pdf", which
+describes how to build an \Rclass{ExpressionSet} from scratch. Here we create a minimal
+\Rclass{ExpressionSet} containing the expression measures determined using RMA:
+
+First, we need to load library \Rpackage{Biobase}, then extract the expression levels
+from instance \Robject{data.rma} of class \Rclass{ExprTreeSet}, convert the data.frame
+to a matrix, and finally create an instance of class \Rclass{ExpressionSet}:
+
+<<eval=FALSE>>=
+library(Biobase)
+expr.rma <- validData(data.rma)
+minimalSet <- new("ExpressionSet", exprs = as.matrix(expr.rma))
+@
+
+As described in vignette "ExpressionSetIntroduction.pdf", we can now access the data 
+elements. For this example we create a new \Rclass{ExpressionSet} consisting of the 5 
+features and the first 3 samples:
+
+<<eval=FALSE>>=
+vv <- minimalSet[1:5,1:3]
+featureNames(vv)
+sampleNames(vv)
+exprs(vv)
+@
+
+This class \Rclass{ExpressionSet} can now be used from within other Bioconductor packages.
 
 
 \bibliographystyle{plainnat}

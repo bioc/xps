@@ -169,7 +169,8 @@ exportMethods("callTreeset",
 
 ## class AnalysisTreeSet
 exportMethods("filterTreeset",
-              "validFilter")
+              "validFilter",
+              "volcanoplot")
 
 ## functions
 export(import.expr.scheme, import.exon.scheme, import.genome.scheme, import.data)
