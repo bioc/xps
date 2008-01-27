@@ -1,9 +1,9 @@
 \name{normalize}
-\alias{normalize}
 \alias{normalize.constant}
 \alias{normalize.lowess}
 \alias{normalize.quantiles}
 \alias{normalize.supsmu}
+\alias{normalize}
 \alias{xpsNormalize-methods}
 \alias{xpsNormalize}
 \title{Normalization on Affymetrix Probe Level Data or on Expression Levels}

@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 11/21/2007
+// File created: 08/05/2002                          last modified: 01/26/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2007 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -58,6 +58,7 @@
 *            XGenomeChipMetrics, XGenomeChipPivot.
 * Nov 2007 - XDataManager now inherits from XManager and XProjectHandler
 *          - database methods ProjectInfo() etc are moved to XProjectHandler
+* Jan 2008 - Support to read Calvin (AGCC) *.CEL files.
 *
 ******************************************************************************/
 
@@ -168,11 +169,13 @@ ClassImp(XGenePixPlot);
 const Int_t  kBrchBuf  = 128000;  //bufsize for tree branch
 const Int_t  kLargeBuf = 16635;   //to read lines from PivotData
 
-const Int_t kMagicNumber = 64;
+const Int_t kMagicXDANumber    = 64;
+const Int_t kMagicCalvinNumber = 59;
 
 //debug: print function names
 const Bool_t kCS  = 0; 
 const Bool_t kCSa = 0; //debug: print function names in loops
+
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
@@ -1210,6 +1213,28 @@ Int_t XGeneChipHyb::ExportTreeXML(const char *exten, Int_t n, TString *names,
 }//ExportTreeXML
 
 //______________________________________________________________________________
+Int_t XGeneChipHyb::Import(ifstream &input, Option_t *option, const char *sep,
+                    char delim, Int_t split)
+{
+   // Import data from input. Option is tree extension. 
+   if(kCS) cout << "------XGeneChipHyb::Import------" << endl;
+
+   Int_t err = errNoErr;
+
+   if (IsXDAFile(input)) {
+      if (!err) err = ReadXDAHeader(input, sep, delim);
+      if (!err) err = ReadXDAData(input, option, sep, delim, split);
+   } else if (IsCalvinFile(input)) {
+      if (!err) err = ReadCalvinGenericFile(input, option, split);
+   } else {
+      if (!err) err = ReadHeader(input, sep, delim);
+      if (!err) err = ReadData(input, option, sep, delim, split);
+   }//if
+
+   return err;
+}//Import
+
+//______________________________________________________________________________
 void XGeneChipHyb::PrintInfo()
 {
    // Print GeneChip hybridization information
@@ -1464,9 +1489,9 @@ Int_t XGeneChipHyb::ExportMaskTree(TString *name, ofstream &output, const char *
 }//ExportMaskTree
 
 //______________________________________________________________________________
-Int_t XGeneChipHyb::IsBinaryFile(ifstream &input)
+Int_t XGeneChipHyb::IsXDAFile(ifstream &input)
 {
-   if(kCS) cout << "------XGeneChipHyb::IsBinaryFile------" << endl;
+   if(kCS) cout << "------XGeneChipHyb::IsXDAFile------" << endl;
 
    // read magic number from input.
    Int_t magic = 0;
@@ -1475,8 +1500,23 @@ Int_t XGeneChipHyb::IsBinaryFile(ifstream &input)
    // need to rewind input to start
    input.seekg(ios::beg);
 
-   return (magic == kMagicNumber);
-}//IsBinaryFile
+   return (magic == kMagicXDANumber);
+}//IsXDAFile
+
+//______________________________________________________________________________
+Int_t XGeneChipHyb::IsCalvinFile(ifstream &input)
+{
+   if(kCS) cout << "------XGeneChipHyb::IsCalvinFile------" << endl;
+
+   // read magic number from input.
+	unsigned char  magic = 0;
+	READ_UCHAR(input, magic);
+
+   // need to rewind input to start
+   input.seekg(ios::beg);
+
+   return (magic == kMagicCalvinNumber);
+}//IsCalvinFile
 
 //______________________________________________________________________________
 TString XGeneChipHyb::ChipType(const char *header, Int_t toupper)
@@ -1485,7 +1525,12 @@ TString XGeneChipHyb::ChipType(const char *header, Int_t toupper)
    // For toupper = 1 convert first letter to uppercase
    if(kCS) cout << "------XGeneChipHyb::ChipType------" << endl;
 
-   TString name = strstr(header, "DatHeader");
+   TString name = 0;
+   if (strstr(header, "DatHeader")) {
+      name = strstr(header, "DatHeader");
+   } else {
+      name = TString(header);
+   }//if
 
    Int_t i;
    for(Int_t j=0;j<2;j++){
@@ -1689,17 +1734,17 @@ Int_t XGeneChipHyb::ReadData(ifstream &input, Option_t *option, const char */*se
 }//ReadData
 
 //______________________________________________________________________________
-Int_t XGeneChipHyb::ReadBinaryHeader(ifstream &input, const char */*sep*/, char /*delim*/)
+Int_t XGeneChipHyb::ReadXDAHeader(ifstream &input, const char */*sep*/, char /*delim*/)
 {
-   // Read header from binary input. 
-   if(kCS) cout << "------XGeneChipHyb::ReadBinaryHeader------" << endl;
+   // Read header from XDA binary input. 
+   if(kCS) cout << "------XGeneChipHyb::ReadXDAHeader------" << endl;
 
    Int_t err = errNoErr;
 
 // Read magic number
    Int_t magic;
    READ_INT(input, magic);
-   if (magic != kMagicNumber) {
+   if (magic != kMagicXDANumber) {
       TString str = ""; str += magic;
       return fManager->HandleError(errCELVersion, str);
    }//if
@@ -1762,14 +1807,14 @@ Int_t XGeneChipHyb::ReadBinaryHeader(ifstream &input, const char */*sep*/, char 
    }//if
 
    return err;
-}//ReadBinaryHeader
+}//ReadXDAHeader
 
 //______________________________________________________________________________
-Int_t XGeneChipHyb::ReadBinaryData(ifstream &input, Option_t *option, const char */*sep*/,
+Int_t XGeneChipHyb::ReadXDAData(ifstream &input, Option_t *option, const char */*sep*/,
                     char /*delim*/, Int_t split)
 {
-   // Read data from binary input and store in data tree. 
-   if(kCS) cout << "------XGeneChipHyb::ReadBinaryData------" << endl;
+   // Read data from XDA binary input and store in data tree. 
+   if(kCS) cout << "------XGeneChipHyb::ReadXDAData------" << endl;
 
    Int_t    x, y;
    Short_t  numpix;
@@ -1872,7 +1917,428 @@ Int_t XGeneChipHyb::ReadBinaryData(ifstream &input, Option_t *option, const char
    delete cell;
 
    return err;
-}//ReadBinaryData
+}//ReadXDAData
+
+//______________________________________________________________________________
+Int_t XGeneChipHyb::ReadFileHeader(ifstream &input, Int_t &numgroups, UInt_t &filepos)
+{
+   // Read Calvin file header 
+   if(kCS) cout << "------XGeneChipHyb::ReadFileHeader------" << endl;
+
+// Read magic number
+   unsigned char magic;
+   READ_UCHAR(input, magic);
+   if (magic != kMagicCalvinNumber) {
+      TString str = ""; str += magic;
+      return fManager->HandleError(errCELVersion, str);
+   }//if
+
+// Read version
+   unsigned char version;
+   READ_UCHAR(input, version);
+   if (version != 1) {
+      TString str = ""; str += version;
+      return fManager->HandleError(errCELVersion, str);
+   }//if
+
+// Read number of data groups
+   READ_INT(input, numgroups, kTRUE);
+   if (numgroups != 1) {
+      cerr << "Error: Number of data groups is not 1!" << endl;
+      return errCELVersion;
+   }//if
+
+// Read file position of the first data group
+   READ_UINT(input, filepos, kTRUE);
+
+   return errNoErr;
+}//ReadFileHeader
+
+//______________________________________________________________________________
+Int_t XGeneChipHyb::ReadGenericDataHeader(ifstream &input, Bool_t isParent)
+{
+   // Read Calvin generic data header 
+   if(kCS) cout << "------XGeneChipHyb::ReadGenericDataHeader------" << endl;
+
+   Int_t    err  = errNoErr;
+   char    *str  = 0;
+   wchar_t *wstr = 0;
+
+   // data type identifier.
+   READ_STRING(input, str, kTRUE);
+   delete[] str; str = 0;
+
+   // unique file identifier
+   READ_STRING(input, str, kTRUE);
+   delete[] str; str = 0;
+
+   // date and time of file creation
+   READ_WSTRING(input, wstr, kTRUE);
+   delete[] wstr; wstr = 0;
+
+   // locale
+   READ_WSTRING(input, str, kTRUE);
+   delete[] str; str = 0;
+
+   // number of name/value/type triplets
+   Int_t numtriplets;
+   READ_INT(input, numtriplets, kTRUE);
+
+   // name/value/type triplets
+   AWSTRING aname;
+   ASTRING  avalue;
+   AWSTRING atype;
+   for (Int_t i=0; i<numtriplets; i++) {
+      READ_WSTRING(input, aname, kTRUE);
+      str = new char[aname.len+1];
+      wcstombs(str, aname.value, aname.len);
+      delete[] str; str = 0;
+
+      READ_STRING(input, avalue, kTRUE);
+
+      // get chip name
+      if (wcscmp(aname.value, L"affymetrix-array-type") == 0) {
+         str  = new char[avalue.len+1];
+         wstr = DecodeTEXT(avalue);
+         wcstombs(str, wstr, avalue.len);
+         if (!isParent) fSchemeName = TString(str);
+         delete[] wstr; wstr = 0;
+         delete[] str;  str  = 0;
+      }//if
+
+      // get chip name from dat-header
+      if (wcscmp(aname.value, L"affymetrix-dat-header") == 0) {
+         str  = new char[avalue.len+1];
+         wstr = DecodeTEXT(avalue);
+         wcstombs(str, wstr, avalue.len);
+         TString chipname = ChipType(str, 1);
+
+         if (strcmp(chipname.Data(), fSchemeName.Data()) != 0) {
+            cerr << "Error: dat-header chipname <" << chipname 
+                 << "> is not equal to array-type <" << fSchemeName << ">!"
+                 << endl;
+            return errGeneral;
+         }//if
+         delete[] wstr; wstr = 0;
+         delete[] str;  str  = 0;
+      }//if
+
+      // get number of columns
+      if (wcscmp(aname.value, L"affymetrix-cel-cols") == 0) {
+         fNCols = DecodeINT(avalue);
+      }//if
+
+      // get number of rows
+      if (wcscmp(aname.value, L"affymetrix-cel-rows") == 0) {
+         fNRows = DecodeINT(avalue);
+      }//if
+
+      READ_WSTRING(input, atype, kTRUE);
+      str = new char[atype.len+1];
+      wcstombs(str, atype.value, atype.len);
+      delete[] str; str = 0;
+   }//for_i
+
+// Read number of parents
+   Int_t numparents;
+   READ_INT(input, numparents, kTRUE);
+
+// Read Generic Data Header recursively
+   for (Int_t i=0; i<numparents; i++) {
+      err = ReadGenericDataHeader(input, kTRUE);
+      if (err != errNoErr) return err;
+   }//for_i
+
+// Check if optional scmname is identical to name of imported scheme
+   TString scmname = ((XDataSetting*)fSetting)->GetSchemeName();
+   if ((strcmp(scmname.Data(), "") != 0) && 
+       (strcmp(scmname.Data(), fSchemeName.Data()) != 0)) {
+      return fManager->HandleError(errChipType, scmname, fSchemeName);
+   }//if
+
+   return err;
+}//ReadGenericDataHeader
+
+//______________________________________________________________________________
+Int_t XGeneChipHyb::ReadDataGroup(ifstream &input, UInt_t &filepos,
+                    Option_t *option, Int_t split)
+{
+   // Read Calvin data group. 
+   if(kCS) cout << "------XGeneChipHyb::ReadDataGroup------" << endl;
+
+   Int_t    x, y;
+//   Short_t  numpix;
+//   Double_t inten, stdev;
+   Int_t    err    = 0;
+   Int_t    numcel = 0;
+   Double_t min    = DBL_MAX;  //defined in float.h
+   Double_t max    = 0;
+   Int_t    nummin = 0;
+   Int_t    nummax = 0;
+   Short_t  maxpix = 0;
+   char    *str    = 0;
+
+// Create data tree
+   TString exten = Path2Name(option,".","");
+   fDataTreeName = fTreeName + "." + exten;
+   TTree *datatree = new TTree(fDataTreeName, fSchemeName);
+   if (datatree == 0) return errCreateTree;
+
+   XGCCell *cell = 0;
+   cell = new XGCCell();
+   datatree->Branch("DataBranch", "XGCCell", &cell, 64000, split);
+
+// Data group
+   // file position of next data group
+   UInt_t nextpos;
+   READ_UINT(input, nextpos, kTRUE);
+
+   // file position of first data element in data set
+   READ_UINT(input, filepos, kTRUE);
+
+   // number of datasets
+   Int_t numdatasets;
+   READ_INT(input, numdatasets, kTRUE);
+
+   // data group name
+   READ_WSTRING(input, str, kTRUE);
+   delete[] str; str = 0;
+
+// File position of first data set within group
+   input.clear(); input.seekg(filepos, ios::beg);
+   filepos = nextpos;  //pass parameter filepos for next data group
+
+// Data set: ------------ Intensity ------------
+   UInt_t datapos;
+   // file position of first data element in data set
+   READ_UINT(input, datapos, kTRUE);
+
+   // file position of next data set within the data group
+   READ_UINT(input, datapos, kTRUE);
+
+   // data set name
+   READ_WSTRING(input, str, kTRUE);
+   delete[] str; str = 0;
+
+   // number of name/value/type parameters
+   Int_t numtriplets;
+   READ_INT(input, numtriplets, kTRUE);
+
+   // number of columns in the data set.
+   UInt_t numcols;
+   READ_UINT(input, numcols, kTRUE);
+
+   // column names, column value types and column type sizes triplets
+   char  coltype;
+   Int_t colsize;
+   for (UInt_t i=0; i<numcols; i++) {
+      READ_WSTRING(input, str, kTRUE);
+      delete[] str; str = 0;
+
+      READ_CHAR(input, coltype);
+      READ_INT(input, colsize, kTRUE);
+   }//for_i
+
+   // number of rows in the data set: fNCells
+   UInt_t numrows;
+   READ_UINT(input, numrows, kTRUE);
+   fNCells = (Int_t)numrows;
+
+// Create local arrays to store data from input
+   Float_t *inten  = 0;
+   Float_t *stdev  = 0;
+   Short_t *numpix = 0;
+
+   // initialize memory for local arrays
+   if (!(inten  = new (nothrow) Float_t[fNCells])) {err = errInitMemory; goto cleanup;}
+   if (!(stdev  = new (nothrow) Float_t[fNCells])) {err = errInitMemory; goto cleanup;}
+   if (!(numpix = new (nothrow) Short_t[fNCells])) {err = errInitMemory; goto cleanup;}
+
+   // read intensities
+   for (UInt_t i=0; i<numrows; i++) {
+      READ_FLOAT(input, inten[i], kTRUE);
+   }//for_i
+
+// Data set: ------------ StdDev ------------
+   // jump to data set StdDev
+   input.clear(); input.seekg(datapos, ios::beg);
+
+   // file position of first data element in data set
+   READ_UINT(input, datapos, kTRUE);
+
+   // file position of next data set within the data group
+   READ_UINT(input, datapos, kTRUE);
+
+   // data set name
+   READ_WSTRING(input, str, kTRUE);
+   delete[] str; str = 0;
+
+   // number of name/value/type parameters
+   READ_INT(input, numtriplets, kTRUE);
+
+   // number of columns in the data set.
+   READ_UINT(input, numcols, kTRUE);
+
+   // column names, column value types and column type sizes triplets
+   for (UInt_t i=0; i<numcols; i++) {
+      READ_WSTRING(input, str, kTRUE);
+      delete[] str; str = 0;
+
+      READ_CHAR(input, coltype);
+      READ_INT(input, colsize, kTRUE);
+   }//for_i
+
+   // number of rows in the data set
+   READ_UINT(input, numrows, kTRUE);
+   if (numrows != (UInt_t)fNCells) {
+      fDataTreeName = "NA";
+      err = errReadingInput;
+      cerr << "Error: number of stdev rows <" << numrows 
+           << "> is not equal to to number of cells <" << fNCells << ">"
+           << endl;
+      goto cleanup;
+   }//if
+
+   // read stdev
+   for (UInt_t i=0; i<numrows; i++) {
+      READ_FLOAT(input, stdev[i], kTRUE);
+   }//for_i
+
+// Data set: ------------ Pixel ------------
+   // jump to data set Pixel
+   input.clear(); input.seekg(datapos, ios::beg);
+
+   // file position of first data element in data set
+   READ_UINT(input, datapos, kTRUE);
+
+   // file position of next data set within the data group
+   READ_UINT(input, datapos, kTRUE);
+
+   // data set name
+   READ_WSTRING(input, str, kTRUE);
+   delete[] str; str = 0;
+
+   // number of name/value/type parameters
+   READ_INT(input, numtriplets, kTRUE);
+
+   // number of columns in the data set.
+   READ_UINT(input, numcols, kTRUE);
+
+   // column names, column value types and column type sizes triplets
+   for (UInt_t i=0; i<numcols; i++) {
+      READ_WSTRING(input, str, kTRUE);
+      delete[] str; str = 0;
+
+      READ_CHAR(input, coltype);
+      READ_INT(input, colsize, kTRUE);
+   }//for_i
+
+   // number of rows in the data set
+   READ_UINT(input, numrows, kTRUE);
+   if (numrows != (UInt_t)fNCells) {
+      fDataTreeName = "NA";
+      err = errReadingInput;
+      cerr << "Error: number of stdev rows <" << numrows 
+           << "> is not equal to to number of cells <" << fNCells << ">"
+           << endl;
+      goto cleanup;
+   }//if
+
+   // numpix
+   for (UInt_t i=0; i<numrows; i++) {
+      READ_SHORT(input, numpix[i], kTRUE);
+   }//for_i
+
+// Data set: ------------ Outlier ------------
+   // not used
+
+// Data set: ------------ Mask ---------------
+   // not used
+
+// Fill data tree
+   for (UInt_t i=0; i<numrows; i++) {
+      x      = Index2X(i);
+      y      = Index2Y(i);
+
+      // number of cells with minimal intensity
+      if      (inten[i] <  min) {min = inten[i]; nummin = 1;}
+      else if (inten[i] == min) {nummin++;}
+
+      // number of cells with maximal intensity
+      if      (inten[i] >  max) {max = inten[i]; nummax = 1;}
+      else if (inten[i] == max) {nummax++;}
+
+      // fill data tree
+      cell->SetX(x);
+      cell->SetY(y);
+      cell->SetIntensity((Double32_t)inten[i]);
+      cell->SetStdev((Double32_t)stdev[i]);
+      cell->SetNumPixels(numpix[i]);
+      datatree->Fill();
+   }//for_i
+
+   fMinInten   = min;
+   fNMinInten  = nummin;
+   fMaxInten   = max;
+   fNMaxInten  = nummax;
+   fMaxNPixels = maxpix;
+
+   if (XManager::fgVerbose) {
+      cout << "   hybridization statistics: " << endl;
+      cout << "      " << nummin << " cells with minimal intensity " << min << endl;
+      cout << "      " << nummax << " cells with maximal intensity " << max << endl;
+   }//if
+
+// Write data tree to file
+   // add tree info to tree
+   AddDataTreeInfo(datatree, fDataTreeName);
+//??   AddDataTreeInfo(datatree, datatree->GetName(), "", nummin,min,nummax,max,maxpix);
+
+   // write data tree to file 
+   if ((err = WriteTree(datatree, TObject::kOverwrite)) == errNoErr) {
+      // add tree header to list
+      AddTreeHeader(datatree->GetName(), 0);
+   }//if
+
+cleanup:
+   if (numpix) {delete [] numpix; numpix = 0;}
+   if (stdev)  {delete [] stdev;  stdev  = 0;}
+   if (inten)  {delete [] inten;  inten  = 0;}
+
+   // delete data tree from RAM
+   datatree->Delete("");
+   datatree = 0;
+   delete cell;
+
+   return err;
+}//ReadDataGroup
+
+//______________________________________________________________________________
+Int_t XGeneChipHyb::ReadCalvinGenericFile(ifstream &input, Option_t *option, Int_t split)
+{
+   // Read Calvin genreric data file 
+   if(kCS) cout << "------XGeneChipHyb::ReadCalvinGenericFile------" << endl;
+
+   Int_t  err       = errNoErr;
+   Int_t  numgroups = 0;   //number of data groups
+   UInt_t filepos   = 0;   //file position of (first) data group
+
+// File Header
+   err = ReadFileHeader(input, numgroups, filepos);
+   if (err != errNoErr) return err;
+
+// Generic Data Header 
+   err = ReadGenericDataHeader(input, kFALSE);
+   if (err != errNoErr) return err;
+
+// Data Groups
+   for (Int_t i=0; i<numgroups; i++) {
+      err = ReadDataGroup(input, filepos, option, split);
+      if (err != errNoErr) return err;
+   }//for_i
+
+   return err;
+}//ReadCalvinGenericFile
 
 //______________________________________________________________________________
 Int_t XGeneChipHyb::ReadXMLHeader(ifstream &input, const char */*sep*/, char delim)

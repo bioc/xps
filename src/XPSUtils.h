@@ -1,4 +1,4 @@
-// File created: 11/02/2002                          last modified: 10/12/2007
+// File created: 11/02/2002                          last modified: 01/26/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2007 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -76,6 +76,20 @@ enum EPlotErrors {
    perrNoMsg         = -999,
 };
 
+// an affy generic STRING
+typedef struct
+{
+   Int_t len;
+   char *value;
+} ASTRING;
+
+// an affy generic WSTRING
+typedef struct
+{
+   Int_t    len;
+   wchar_t *value;
+} AWSTRING;
+
 // String functions
 extern Int_t   CheckHeader(const char *header, const char **kHeader,
                   const Int_t ncols, Int_t *index, const char *sep);
@@ -110,17 +124,25 @@ extern TString Type2Extension(const char *type, const char **types,
                   const char **extens);
 
 // Functions for file parsing
-extern void SwapBytes(char *src, char *dest, int size);
-extern void READ_INT(std::ifstream &input, int &value);
-extern void READ_UINT(std::ifstream &input, unsigned int &value);
-extern void READ_SHORT(std::ifstream &input, short &value);
-extern void READ_USHORT(std::ifstream &input, unsigned short &value);
+extern void SwapBytes(char *src, char *dest, Int_t size);
+extern void READ_INT(std::ifstream &input, Int_t &value, Bool_t isBE = kFALSE);
+extern void READ_UINT(std::ifstream &input, UInt_t &value, Bool_t isBE = kFALSE);
+extern void READ_SHORT(std::ifstream &input, Short_t &value, Bool_t isBE = kFALSE);
+extern void READ_USHORT(std::ifstream &input, UShort_t &value, Bool_t isBE = kFALSE);
 extern void READ_CHAR(std::ifstream &input, char &value);
 extern void READ_UCHAR(std::ifstream &input, unsigned char &value);
 extern void READ_BOOL(std::ifstream &input, char &value);
-extern void READ_FLOAT(std::ifstream &input, float &value);
-extern void READ_STRING(std::ifstream &input, char * &value);
-extern void READ_FIXED_STRING(std::ifstream &input, char *value, int len);
+extern void READ_FLOAT(std::ifstream &input, Float_t &value, Bool_t isBE = kFALSE);
+extern void READ_STRING(std::ifstream &input, char * &value, Bool_t isBE = kFALSE);
+extern void READ_STRING(std::ifstream &input, ASTRING &value, Bool_t isBE = kFALSE);
+extern void READ_WSTRING(std::ifstream &input, char * &value, Bool_t isBE = kFALSE);
+extern void READ_WSTRING(std::ifstream &input, wchar_t * &value, Bool_t isBE = kFALSE);
+extern void READ_WSTRING(std::ifstream &input, AWSTRING &value, Bool_t isBE = kFALSE);
+extern void READ_FIXED_STRING(std::ifstream &input, char *value, Int_t len);
+
+// Functions to decode Affymetrix MIME types
+extern wchar_t *DecodeTEXT(ASTRING value);
+extern Int_t    DecodeINT(ASTRING value);
 
 
 //////////////////////////////////////////////////////////////////////////

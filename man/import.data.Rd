@@ -32,6 +32,9 @@ import.data(xps.scheme,
  To import CEL-files from different directories, vector \code{celfiles} must contain the
  full path for each CEL-file and \code{celdir} must be \code{celdir=NULL}. 
 
+ Currently, the following types of Affymetrix CEL-files can be imported: 
+ text, xml, binary (xda), generic (calvin)
+
  An S4 class \code{\link{DataTreeSet}} will be created, serving as R wrapper to the 
  \code{\link{ROOT}} data file \code{filename}.
 

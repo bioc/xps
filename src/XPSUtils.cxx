@@ -1,4 +1,4 @@
-// File created: 11/02/2002                          last modified: 10/23/2007
+// File created: 11/02/2002                          last modified: 01/26/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2007 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -44,7 +44,8 @@
 * May 2005 - Fuse libraries libXPSUtils and libXPSBase => library libXPSBase.
 * Dec 2005 - Replace TTree::AddFriend() with TList fTrees.
 *          - Get trees from XTreeSet in separate TDirectory.
-*
+* Jan 2008 - Add/update functions for file parsing.
+*          - Add functions to decode Affymetrix MIME types*
 ******************************************************************************/
 
 // IMPORTANT: must be defined for PowerPC and undefined for Intel PCs
@@ -74,13 +75,13 @@
 
 #include "XPSUtils.h"
 
-#define INT_SIZE sizeof(int)
-#define UINT_SIZE sizeof(unsigned int)
-#define SHORT_SIZE sizeof(short)
-#define USHORT_SIZE sizeof(unsigned short)
+#define INT_SIZE sizeof(Int_t)
+#define UINT_SIZE sizeof(UInt_t)
+#define SHORT_SIZE sizeof(Short_t)
+#define USHORT_SIZE sizeof(UShort_t)
 #define CHAR_SIZE sizeof(char)
 #define UCHAR_SIZE sizeof(unsigned char)
-#define FLOAT_SIZE sizeof(float)
+#define FLOAT_SIZE sizeof(Float_t)
 
 //debug: print class method names
 const Bool_t kCS  = 0;
@@ -4282,62 +4283,89 @@ TString Type2Extension(const char *type, const char **types, const char **extens
 //////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-void SwapBytes(char *src, char *dest, int size)
+void SwapBytes(char *src, char *dest, Int_t size)
 {
-   int i;
-   for (i=0; i<size; i++)
-      dest[size - i - 1] = src[i];
+	for (Int_t i=0; i<size; i++)
+		dest[size - i - 1] = src[i];
 }//SwapBytes
 
 //______________________________________________________________________________
-void READ_INT(std::ifstream &input, int &value)
+void READ_INT(std::ifstream &input, Int_t &value, Bool_t isBE)
 {
    char str[INT_SIZE];
-   input.read(str, INT_SIZE);
+   Bool_t swap = kFALSE;
+	input.read(str, INT_SIZE);
 #ifdef IS_BIG_ENDIAN
-   char str2[INT_SIZE];
-   SwapBytes(str, str2, INT_SIZE);
-   memcpy(str, str2, INT_SIZE);
+   swap = kTRUE;
+   if (isBE == kTRUE) swap = kFALSE;
+#else
+   if (isBE == kTRUE) swap = kTRUE;
 #endif
-   memcpy(&value, str, INT_SIZE);
+   if (swap) {
+      char str2[INT_SIZE];
+      SwapBytes(str, str2, INT_SIZE);
+      memcpy(str, str2, INT_SIZE);
+   }//if
+	memcpy(&value, str, INT_SIZE);
 }//READ_INT
 
 //______________________________________________________________________________
-void READ_UINT(std::ifstream &input, unsigned int &value)
+void READ_UINT(std::ifstream &input, UInt_t &value, Bool_t isBE)
 {
    char str[UINT_SIZE];
-   input.read(str, UINT_SIZE);
+   Bool_t swap = kFALSE;
+	input.read(str, UINT_SIZE);
 #ifdef IS_BIG_ENDIAN
-   char str2[UINT_SIZE];
-   SwapBytes(str, str2, UINT_SIZE);
-   memcpy(str, str2, UINT_SIZE);
+   swap = kTRUE;
+   if (isBE == kTRUE) swap = kFALSE;
+#else
+   if (isBE == kTRUE) swap = kTRUE;
 #endif
-   memcpy(&value, str, UINT_SIZE);
+   if (swap) {
+      char str2[UINT_SIZE];
+      SwapBytes(str, str2, UINT_SIZE);
+      memcpy(str, str2, UINT_SIZE);
+   }//if
+	memcpy(&value, str, UINT_SIZE);
 }//READ_UINT
 
 //______________________________________________________________________________
-void READ_SHORT(std::ifstream &input, short &value)
+void READ_SHORT(std::ifstream &input, Short_t &value, Bool_t isBE)
 {
    char str[SHORT_SIZE];
-   input.read(str, SHORT_SIZE);
+   Bool_t swap = kFALSE;
+	input.read(str, SHORT_SIZE);
 #ifdef IS_BIG_ENDIAN
-   char str2[SHORT_SIZE];
-   SwapBytes(str, str2, SHORT_SIZE);
-   memcpy(str, str2, SHORT_SIZE);
+   swap = kTRUE;
+   if (isBE == kTRUE) swap = kFALSE;
+#else
+   if (isBE == kTRUE) swap = kTRUE;
 #endif
-   memcpy(&value, str, SHORT_SIZE);
+   if (swap) {
+	   char str2[SHORT_SIZE];
+	   SwapBytes(str, str2, SHORT_SIZE);
+	   memcpy(str, str2, SHORT_SIZE);
+   }//if
+	memcpy(&value, str, SHORT_SIZE);
 }//READ_SHORT
 
 //______________________________________________________________________________
-void READ_USHORT(std::ifstream &input, unsigned short &value)
+void READ_USHORT(std::ifstream &input, UShort_t &value, Bool_t isBE)
 {
    char str[USHORT_SIZE];
+   Bool_t swap = kFALSE;
    input.read(str, USHORT_SIZE);
 #ifdef IS_BIG_ENDIAN
-   char str2[USHORT_SIZE];
-   SwapBytes(str, str2, USHORT_SIZE);
-   memcpy(str, str2, USHORT_SIZE);
+   swap = kTRUE;
+   if (isBE == kTRUE) swap = kFALSE;
+#else
+   if (isBE == kTRUE) swap = kTRUE;
 #endif
+   if (swap) {
+      char str2[USHORT_SIZE];
+      SwapBytes(str, str2, USHORT_SIZE);
+      memcpy(str, str2, USHORT_SIZE);
+   }//if
    memcpy(&value, str, USHORT_SIZE);
 }//READ_USHORT
 
@@ -4360,23 +4388,31 @@ void READ_BOOL(std::ifstream &input, char &value)
 }//READ_BOOL
 
 //______________________________________________________________________________
-void READ_FLOAT(std::ifstream &input, float &value)
+void READ_FLOAT(std::ifstream &input, Float_t &value, Bool_t isBE)
 {
    char str[FLOAT_SIZE];
+   Bool_t swap = kFALSE;
    input.read(str, FLOAT_SIZE);
 #ifdef IS_BIG_ENDIAN
-   char str2[FLOAT_SIZE];
-   SwapBytes(str, str2, FLOAT_SIZE);
-   memcpy(str, str2, FLOAT_SIZE);
+   swap = kTRUE;
+   if (isBE == kTRUE) swap = kFALSE;
+#else
+   if (isBE == kTRUE) swap = kTRUE;
 #endif
+   if (swap) {
+      char str2[4];
+//      char str2[FLOAT_SIZE];
+      SwapBytes(str, str2, FLOAT_SIZE);
+      memcpy(str, str2, FLOAT_SIZE);
+   }//if
    memcpy(&value, str, FLOAT_SIZE);
 }//READ_FLOAT
 
 //______________________________________________________________________________
-void READ_STRING(std::ifstream &input, char * &value)
+void READ_STRING(std::ifstream &input, char * &value, Bool_t isBE)
 {
-   int len;
-   READ_INT(input, len);
+   Int_t len;
+   READ_INT(input, len, isBE);
    value = new char[len+1];
    if (len > 0)
       input.read(value, len);
@@ -4384,10 +4420,133 @@ void READ_STRING(std::ifstream &input, char * &value)
 }//READ_STRING
 
 //______________________________________________________________________________
-void READ_FIXED_STRING(std::ifstream &input, char *value, int len)
+void READ_STRING(std::ifstream &input, ASTRING &value, Bool_t isBE)
+{
+   Int_t len;
+   READ_INT(input, len, isBE);
+   char *str = new char[len+1];
+   if (len > 0)
+      input.read(str, len);
+   str[len] = '\0';
+
+   value.len   = len;
+   value.value = str;
+}//READ_STRING
+
+//______________________________________________________________________________
+void READ_WSTRING(std::ifstream &input, char * &value, Bool_t isBE)
+{
+   Int_t len;
+   UShort_t tmp;
+   READ_INT(input, len, isBE);
+   value = new char[len+1];
+   wchar_t *wstr = new wchar_t[len+1];
+   if (len > 0) {
+      for (Int_t i=0; i<len; i++){
+         READ_USHORT(input, tmp, isBE);
+         wstr[i] = (wchar_t)tmp;
+      }//for_i
+   }//if
+   wstr[len] = '\00';
+   wcstombs(value, wstr, len);
+   delete[] wstr; wstr = 0;
+}//READ_WSTRING
+
+//______________________________________________________________________________
+void READ_WSTRING(std::ifstream &input, wchar_t * &value, Bool_t isBE)
+{
+   int len;
+   UShort_t tmp;
+   READ_INT(input, len, isBE);
+//   wchar_t *value = new wchar_t[len+1];
+   value = new wchar_t[len+1];
+   if (len > 0) {
+      for (Int_t i=0; i<len; i++){
+         READ_USHORT(input, tmp, isBE);
+         value[i] = (wchar_t)tmp;
+      }//for_i
+   }//if
+   value[len] = '\00';
+}//READ_WSTRING
+
+//______________________________________________________________________________
+void READ_WSTRING(std::ifstream &input, AWSTRING &value, Bool_t isBE)
+{
+   Int_t len;
+   UShort_t tmp;
+   READ_INT(input, len, isBE);
+   wchar_t *wstr = new wchar_t[len+1];
+   if (len > 0) {
+      for (Int_t i=0; i<len; i++){
+         READ_USHORT(input, tmp, isBE);
+         wstr[i] = (wchar_t)tmp;
+      }//for_i
+   }//if
+   wstr[len] = '\00';
+
+   value.len   = len;
+   value.value = wstr;
+}//READ_WSTRING
+
+//______________________________________________________________________________
+void READ_FIXED_STRING(std::ifstream &input, char *value, Int_t len)
 {
    input.read(value, len);
 }//READ_FIXED_STRING
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// Functions to decode Affymetrix MIME types                            //
+// Adapted from Ben Bolstad: package "affyio"                           //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+wchar_t *DecodeTEXT(ASTRING value)
+{
+// The value is MIME text/plain which means wchar (16bit) string 
+// Note: Adapted from Ben Bolstad: package "affyio", function "decode_TEXT"
+
+   Int_t    len    = value.len / sizeof(Short_t);
+   wchar_t* result = new wchar_t[len+1];
+
+   ASTRING str;
+   str.len   = value.len;
+   str.value = new char[value.len+1];
+   memcpy(str.value, value.value, value.len);
+  
+   Short_t *content = (Short_t*)str.value;
+   for (Int_t i=0; i<len; i++) {
+#ifndef IS_BIG_ENDIAN 
+      content[i]=(((content[i]>>8)&0xff) | ((content[i]&0xff)<<8));
+#endif
+      result[i] = content[i];
+   }//for_i
+   result[len] = '\00';
+
+   delete[] str.value; str.value = 0;
+
+   return result;
+}//DecodeTEXT
+
+//______________________________________________________________________________
+Int_t DecodeINT(ASTRING value)
+{
+// The value is MIME text/x-calvin-integer-32
+// Note: Adapted from Ben Bolstad: package "affyio", function "decode_INT32_t"
+
+   Int_t result;
+   memcpy(&result, value.value, sizeof(Int_t));
+
+//#ifndef WORD_BIGENDIAN 
+#ifndef IS_BIG_ENDIAN 
+  result = (((result>>24)&0xff)  | ((result&0xff)<<24) |
+		      ((result>>8)&0xff00) | ((result&0xff00)<<8));  
+#endif 
+
+   return result;
+}//DecodeINT
 
 
 

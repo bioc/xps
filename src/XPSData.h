@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 11/21/2007
+// File created: 08/05/2002                          last modified: 01/26/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2007 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -72,6 +72,7 @@ enum EErrorData {
 class XHybridization;
 class XPosition;
 class XPlot;
+
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
@@ -304,14 +305,20 @@ class XGeneChipHyb: public XHybridization {
       virtual Int_t   ExportMaskTrees(Int_t n, TString *names, const char *varlist,
                          ofstream &output, const char *sep);
       virtual Int_t   ExportMaskTree(TString *name, ofstream &output, const char *sep);
-      virtual Int_t   IsBinaryFile(ifstream &input);
+      virtual Int_t   IsXDAFile(ifstream &input);
+      virtual Int_t   IsCalvinFile(ifstream &input);
       virtual TString ChipType(const char *header, Int_t toupper = 0);
       virtual Int_t   ReadHeader(ifstream &input, const char *sep, char delim);
       virtual Int_t   ReadData(ifstream &input, Option_t *option, const char *sep,
                          char delim, Int_t split);
-      virtual Int_t   ReadBinaryHeader(ifstream &input, const char *sep, char delim);
-      virtual Int_t   ReadBinaryData(ifstream &input, Option_t *option,
+      virtual Int_t   ReadXDAHeader(ifstream &input, const char *sep, char delim);
+      virtual Int_t   ReadXDAData(ifstream &input, Option_t *option,
                          const char *sep, char delim, Int_t split);
+      virtual Int_t   ReadFileHeader(ifstream &input, Int_t &numgroups, UInt_t &filepos);
+      virtual Int_t   ReadGenericDataHeader(ifstream &input, Bool_t isParent);
+      virtual Int_t   ReadDataGroup(ifstream &input, UInt_t &filepos, Option_t *option,
+                         Int_t split);
+      virtual Int_t   ReadCalvinGenericFile(ifstream &input, Option_t *option, Int_t split);
       virtual Int_t   ReadXMLHeader(ifstream &input, const char *sep, char delim);
       virtual Int_t   ReadXMLData(ifstream &input, Option_t *option,
                          const char *sep, char delim, Int_t split);
@@ -325,6 +332,8 @@ class XGeneChipHyb: public XHybridization {
                        const char *varlist, ofstream &output, const char *sep);
       virtual Int_t ExportTreeXML(const char *exten, Int_t n, TString *names,  
                        const char *varlist, ofstream &output, const char *sep);
+      virtual Int_t Import(ifstream &input, Option_t *option,
+                       const char *sep, char delim, Int_t split);
       virtual void  PrintInfo();
 
       Double_t GetMinIntensity()    const {return fMinInten;}

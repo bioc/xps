@@ -135,7 +135,7 @@ setMethod("volcanoplot", signature(x="AnalysisTreeSet"),
       if (show.labels) {
          varlist <- paste("fUnitName", labels, p.value, "fc:flag", sep=":");
          if (mask) varlist <- paste(varlist, "mask", sep=":");
-         ds <- export.filter(x, treetype="stt", varlist=varlist, as.dataframe=T);
+         ds <- export.filter(x, treetype="stt", varlist=varlist, as.dataframe=TRUE, verbose=FALSE);
       } else {
          if (mask) {
             ds <- validData(x);
