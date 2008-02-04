@@ -1778,6 +1778,32 @@ void GetTreeNames4Exten(char **filename, char **exten, int *gettitle,
    gSystem->ChangeDirectory(savedir);
 }//GetTreeNames4Exten
 
+/*____________________________________________________________________________*/
+void GetRawCELNames(char **datafile, int *ntrees, char **treename, char **celname)
+{
+// Get path/naem.CEL of imported CEL-files
+
+// create new data manager
+   XDataManager *manager = new XDataManager("DataManager", "", 0);
+
+// open root file
+   manager->Open(datafile[0]);
+
+// get header
+   TString names[*ntrees];
+   XTreeHeader *treeheader = 0;
+   for (int i=0; i<*ntrees; i++) {
+      treeheader = manager->GetTreeHeader(treename[i]);
+      names[i]   = (treeheader) ? treeheader->GetInfile() : "NA";
+      celname[i] = new char[names[i].Length() + 1];
+      strcpy(celname[i], (char*)names[i].Data());
+   }//for_i
+
+// cleanup
+   manager->Close();
+   delete manager;
+}//GetRawCELNames
+
 
 /*////////////////////////////////////////////////////////////////////////////////
 //                                                                              //

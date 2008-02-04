@@ -24,6 +24,7 @@
 \alias{pmplot,DataTreeSet-method}
 \alias{projectInfo,DataTreeSet-method}
 \alias{projectInfo<-,DataTreeSet,ProjectInfo-method}
+\alias{rawCELName,DataTreeSet-method}
 \alias{removeBgrd,DataTreeSet-method}
 \alias{removeInten,DataTreeSet-method}
 \alias{removeMask,DataTreeSet-method}
@@ -105,6 +106,8 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
      mismatch intensities.}
     \item{projectInfo}{\code{signature(object = "DataTreeSet")}: extracts slot \code{projectinfo}.}
     \item{projectInfo<-}{\code{signature(object = "DataTreeSet", value = "ProjectInfo")}: replaces slot \code{projectinfo}.}
+    \item{rawCELName}{\code{signature(object = "DataTreeSet")}: returns the name(s) of the 
+     imported raw CEL-files.}
     \item{removeBgrd}{\code{signature(object = "DataTreeSet")}: replaces data.frame \code{bgrd} 
      with an empty data.frame of dim(0,0).}
     \item{removeInten}{\code{signature(object = "DataTreeSet")}: replaces data.frame \code{data} 

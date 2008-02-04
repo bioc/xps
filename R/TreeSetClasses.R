@@ -209,6 +209,7 @@ setGeneric("validBgrd",     function(object, ...) standardGeneric("validBgrd"));
 setGeneric("addData",       function(object, ...) standardGeneric("addData"));
 setGeneric("pm",            function(object, ...) standardGeneric("pm"));
 setGeneric("mm",            function(object, ...) standardGeneric("mm"));
+setGeneric("rawCELName",    function(object, ...) standardGeneric("rawCELName"));
 setGeneric("xpsRMA",        function(object, ...) standardGeneric("xpsRMA"));
 setGeneric("xpsMAS4",       function(object, ...) standardGeneric("xpsMAS4"));
 setGeneric("xpsMAS5",       function(object, ...) standardGeneric("xpsMAS5"));

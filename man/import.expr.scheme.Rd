@@ -55,6 +55,9 @@ R sessions to avoid creating a new \code{\link{ROOT}} scheme file for every sess
  \code{filename="Scheme.Test3.na21"} but use \code{filename="Scheme_Test3_na21"} or simply
  \code{filename="SchemeTest3na21"} instead. Extension \dQuote{root} is added automatically,
  so that ROOT is able to recognize the file as ROOT file.
+
+ For a few probesets, parsing the Affymetrix annotation files will provide ambiguous results.
+ Setting \code{verbose=11} will list these probesets.
 }
 \seealso{\code{\link{import.exon.scheme}}, \code{\link{import.genome.scheme}},
  \code{\link{root.scheme}}, \code{\link{SchemeTreeSet}}}

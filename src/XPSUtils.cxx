@@ -1,4 +1,4 @@
-// File created: 11/02/2002                          last modified: 01/26/2008
+// File created: 11/02/2002                          last modified: 01/31/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -4197,7 +4197,7 @@ TString SubString(const char *str, char sep1, char sep2, Bool_t source)
 }//SubString
 
 //______________________________________________________________________________
-Int_t TokenizeString(const char *cstr, Int_t n, TString *names,
+Int_t TokenizeString(const char *cstr, Int_t &n, TString *names,
       Int_t len, const char *sep)
 {
    // Tokenize string into n substrings, separated by delimiter sep of length len 
@@ -4229,6 +4229,8 @@ Int_t TokenizeString(const char *cstr, Int_t n, TString *names,
 
       index += 1;
    } while (index > 0);
+
+   n = idx;
 
    return index;
 }//TokenizeString

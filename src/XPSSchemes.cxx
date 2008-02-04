@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 10/06/2007
+// File created: 05/18/2002                          last modified: 02/02/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -271,6 +271,8 @@ const char *kSepSl2 = " // ";
 const char *kSepSl3 = " /// ";
 const Int_t kNumSl2 = 4;
 const Int_t kNumSl3 = 5;
+const Int_t kNumAlg = 3;    //maximum number of alignment substrings separated by kSepSl2
+const Int_t kNumSub = 1000; //maximum number of alignment substrings separated by kSepSl3
 
 //debug: print function names
 const Bool_t kCS  = 0; 
@@ -3775,6 +3777,9 @@ Int_t XGeneChip::ImportTransAnnotation(ifstream &input, Option_t *option,
    Int_t err  = errNoErr;
    Int_t size = 0;
    Int_t idx  = 0;
+   Int_t nsub = kNumSub;
+   Int_t nalg = kNumAlg;
+   Int_t namb = 0;  //number of ambigous annotations
    Int_t unitID;
    Int_t k;
 
@@ -3784,6 +3789,7 @@ Int_t XGeneChip::ImportTransAnnotation(ifstream &input, Option_t *option,
    TString str, dummy;
    TString name, symbol, cytoband, accession, alignment, entrez;
    TString start, stop, strand;
+   TString bestalign, bestcyto;
 
    TString opt   = Path2Name(option,"/",".");
    TString exten = Path2Name(option,".","");
@@ -3817,6 +3823,8 @@ Int_t XGeneChip::ImportTransAnnotation(ifstream &input, Option_t *option,
    THashTable *htable = 0;
 
 // Init local arrays to store data from input columns
+   TString *names    = 0;  //array containing tokenized string
+   TString *align    = 0;  //array containing alignment data
    TString *arrTrans = 0;  //Probe Set ID
    TString *arrName  = 0;  //Gene Title
    TString *arrSymb  = 0;  //Gene Symbol
@@ -3884,6 +3892,8 @@ Int_t XGeneChip::ImportTransAnnotation(ifstream &input, Option_t *option,
    if (!(htable = new THashTable(2*fNUnits))) {err = errInitMemory; goto cleanup;}
 
 // Initialize memory for local arrays
+   if (!(names    = new (nothrow) TString[nsub])) {err = errInitMemory; goto cleanup;}
+   if (!(align    = new (nothrow) TString[nalg])) {err = errInitMemory; goto cleanup;}
    if (!(arrTrans = new (nothrow) TString[size])) {err = errInitMemory; goto cleanup;}
    if (!(arrName  = new (nothrow) TString[size])) {err = errInitMemory; goto cleanup;}
    if (!(arrSymb  = new (nothrow) TString[size])) {err = errInitMemory; goto cleanup;}
@@ -3966,20 +3976,50 @@ Int_t XGeneChip::ImportTransAnnotation(ifstream &input, Option_t *option,
       accession     = strtok(0, tab);
 
       // get chromosome, start, stop, strand 
-      alignment = strtok((char*)alignment.Data(), "/");
+      Double_t maxscore = 0;
       if (strcmp(alignment.Data(),"---") == 0) {
          arrChrom[idx] = "NA";
          arrStart[idx] = -1;
          arrStop[idx]  = -1;
-         arrStran[idx]  = '?';
+         arrStran[idx] = '?';
+         bestcyto      = "NA";
       } else {
-         arrChrom[idx] = strtok((char*)alignment.Data(), ":");
+         Int_t index = 0;
+         if (alignment.Index(kSepSl3, kNumSl3, index, TString::kExact) > 0) {
+            nsub = kNumSub;
+            index = TokenizeString(alignment.Data(), nsub, names, kNumSl3, kSepSl3);
+         } else {
+            nsub = 1;
+            names[0] = alignment;
+         }//if
+
+         // find Alignments entires with best score
+         for(Int_t i=0; i<nsub; i++){
+            nalg  = kNumAlg;
+            index = TokenizeString(names[i].Data(), nalg, align, kNumSl2, kSepSl2);
+            if (nalg < 2) {
+               cerr << "Error: wrong token number for <" << names[i] << ">" << endl;
+               err = errReadingInput; goto cleanup;
+            }//if
+
+            if (align[1].Atof() > maxscore) {;
+               bestalign = align[0];
+               maxscore  = align[1].Atof();
+               bestcyto  = (nalg > 2) ? align[2] : "NA";
+            }//if
+         }//for_i
+
+         arrChrom[idx] = RemoveEnds(strtok((char*)bestalign.Data(), ":"));
          start         = strtok(0, "-");
          stop          = strtok(0, "(");
          strand        = strtok(0, ")");
          arrStart[idx] = start.Atoi();
          arrStop[idx]  = stop.Atoi();
          arrStran[idx] = (strand.Data())[0];
+
+         if (strcmp(bestcyto.Data(),"NA") != 0) {
+            bestcyto = RemoveEnds((arrChrom[idx] + bestcyto));
+         }//if
       }//if
 
       // ceck if name exists
@@ -4003,8 +4043,36 @@ Int_t XGeneChip::ImportTransAnnotation(ifstream &input, Option_t *option,
 
       // ceck if cytoband exists
       if (strcmp(cytoband.Data(),"---") != 0) {
-         cytoband = RemoveEnds(strtok((char*)cytoband.Data(), "/"));
+         Int_t index = 0;
+         if (cytoband.Index(kSepSl3, kNumSl3, index, TString::kExact) > 0) {
+            nsub = kNumSub;
+            index = TokenizeString(cytoband.Data(), nsub, names, kNumSl3, kSepSl3);
+         } else {
+            nsub = 1;
+            names[0] = cytoband;
+         }//if
+
+         // find cytoband equal to chromosome with best score
+         for(Int_t i=0; i<nsub; i++){
+            if (names[i].Contains(arrChrom[idx])) {
+               cytoband = bestcyto;
+            }//if
+         }//for_i
+
+         cytoband     = RemoveEnds(strtok((char*)cytoband.Data(), "/"));
          arrCyto[idx] = cytoband;
+
+         if ((strcmp(bestcyto.Data(),"NA") != 0) &&
+            !(cytoband.Contains(arrChrom[idx]))) {
+//??            !(bestcyto.Contains(cytoband) || cytoband.Contains(bestcyto))) {
+            if (XManager::fgVerbose == 11) {
+               cout << arrTrans[idx] << ": Column 'Alignments' <" << bestcyto << "> with best score <"  
+                    << maxscore << "> is not equal to column 'Chromosomal Location' <" << cytoband
+                    << ">." << endl;
+            }//if
+            namb++;
+//??         arrCyto[idx] = cytoband + "/(" + bestcyto + " ?)";
+         }//if
       } else {
          arrCyto[idx] = "NA";
       }//if
@@ -4035,6 +4103,13 @@ Int_t XGeneChip::ImportTransAnnotation(ifstream &input, Option_t *option,
       } else {
          cout << "Warning: Number of annotated transcripts <" << idx  
               << "> is not equal to number of genes <" << fNGenes << ">" << endl;
+      }//if
+   }//if
+
+   if (XManager::fgVerbose) {
+      if (namb >0) {
+         cout << "Warning: Number of transcripts with ambigous annotation is <"
+              << namb  << ">" << endl;
       }//if
    }//if
 
@@ -4113,6 +4188,8 @@ cleanup:
    if (arrSymb)  {delete [] arrSymb;  arrSymb   = 0;}
    if (arrName)  {delete [] arrName;  arrName   = 0;}
    if (arrTrans) {delete [] arrTrans; arrTrans  = 0;}
+   if (align)    {delete [] align;    align     = 0;}
+   if (names)    {delete [] names;    names     = 0;}
    if (htable)   {htable->Delete(); delete htable; htable = 0;}
 
    return err;

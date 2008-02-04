@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 09/14/2007
+// File created: 05/18/2002                          last modified: 02/03/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2007 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -59,6 +59,7 @@
 * May 2007 - Add fOption to XManager to allow updating root file from "R".
 * Sep 2007 - Change all msk arrays from "Short_t *msk" to "Int_t *msk".
 *          - Add support for  verbose messages in XManager constructor
+* Feb 2008 - Add methods GetTreeHeader() and GetTreeInfo() to XManager.
 *
 ******************************************************************************/
 
@@ -2898,6 +2899,123 @@ Int_t XManager::DrawLeaves(const char *canvasname, const char *leafname,
                               min, max, sort, down);
    return err;
 }//DrawLeaves
+
+//______________________________________________________________________________
+XTreeHeader *XManager::GetTreeHeader(const char *treename)
+{
+   // Get tree header for tree with treename. Argument treename can be:
+   // "setname.treename.exten" - treename from set setname with exten is exported
+   // "filename.root/setname.treename.exten" - as above but including filename
+   if(kCS) cout << "------XManager::GetTreeHeader------" << endl;
+
+   if (fAbort) return 0;
+
+// Extract tree extension
+   TString tname = Path2Name(treename,"/",";");
+   TString exten = Path2Name(tname.Data(),".","");
+   if ((strcmp(exten.Data(),"") == 0) || (strcmp(exten.Data(),"root") == 0)) {
+      cerr << "Error: Tree name is missing." << endl;
+      fAbort = kTRUE;
+      return 0;
+   }//if
+
+// Extract set name and tree name
+   TString setname = "";
+   TString trename = "";
+   Int_t   numsep  = NumSeparators(tname.Data(), ".");
+   if (numsep == 2) {
+      setname = SubString(tname.Data(),".",0);
+      trename = SubString(tname.Data(),".",1);
+   } else if (numsep == 1) {
+      setname = SubString(tname.Data(),".",0);
+      trename = SubString(tname.Data(),".",0);
+   } else if (numsep == 0) {
+      cerr << "Error: Tree name is missing." << endl;
+      fAbort = kTRUE;
+      return 0;
+   }//if
+   trename += "." + exten;
+
+// Extract root filename
+   TString filename = "";
+   if (strstr(treename,".root")) {
+      filename = GetROOTName(treename) + ".root";
+      this->Open(filename.Data());
+   }//if
+   if (!fFile) {fAbort = kTRUE; return 0;}
+   fFile->cd();
+//?   fFile->cd(setname);
+
+   XTreeHeader *header = 0;
+   fTreeSet = (XTreeSet*)fContent->FindObject(setname, "XTreeSet");
+   if (fTreeSet) {
+      header = fTreeSet->GetTreeHeader(trename);
+   } else {
+      cerr << "Error: Tree set <" << setname 
+           << "> could not be found in file content" << endl;
+   }//if
+
+   return header;
+}//GetTreeHeader
+
+//______________________________________________________________________________
+XTreeInfo *XManager::GetTreeInfo(const char *treename)
+{
+   // Get tree info for tree with treename. Argument treename can be:
+   // "setname.treename.exten" - treename from set setname with exten is exported
+   // "filename.root/setname.treename.exten" - as above but including filename
+   if(kCS) cout << "------XManager::GetTreeInfo------" << endl;
+
+   if (fAbort) return 0;
+
+// Extract tree extension
+   TString tname = Path2Name(treename,"/",";");
+   TString exten = Path2Name(tname.Data(),".","");
+   if ((strcmp(exten.Data(),"") == 0) || (strcmp(exten.Data(),"root") == 0)) {
+      cerr << "Error: Tree name is missing." << endl;
+      fAbort = kTRUE;
+      return 0;
+   }//if
+
+// Extract set name and tree name
+   TString setname = "";
+   TString trename = "";
+   Int_t   numsep  = NumSeparators(tname.Data(), ".");
+   if (numsep == 2) {
+      setname = SubString(tname.Data(),".",0);
+      trename = SubString(tname.Data(),".",1);
+   } else if (numsep == 1) {
+      setname = SubString(tname.Data(),".",0);
+      trename = SubString(tname.Data(),".",0);
+   } else if (numsep == 0) {
+      cerr << "Error: Tree name is missing." << endl;
+      fAbort = kTRUE;
+      return 0;
+   }//if
+   trename += "." + exten;
+
+// Extract root filename
+   TString filename = "";
+   if (strstr(treename,".root")) {
+      filename = GetROOTName(treename) + ".root";
+      this->Open(filename.Data());
+   }//if
+   if (!fFile) {fAbort = kTRUE; return 0;}
+   fFile->cd(setname);
+
+   XTreeInfo *info = 0;
+   TTree     *tree = 0;
+   fTreeSet = (XTreeSet*)fContent->FindObject(setname, "XTreeSet");
+   if (fTreeSet) {
+      tree = (TTree*)gDirectory->Get(trename);
+      info = (tree) ? fTreeSet->GetTreeInfo(trename, tree) : 0;
+   } else {
+      cerr << "Error: Tree set <" << setname 
+           << "> could not be found in file content" << endl;
+   }//if
+
+   return info;
+}//GetTreeInfo
 
 //______________________________________________________________________________
 void XManager::PrintContents(const char *setname)

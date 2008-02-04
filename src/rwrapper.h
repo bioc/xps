@@ -133,6 +133,7 @@ void GetTreeNames(char **filename, char **setname, char **exten, int *gettitle,
                   char **treenames);
 void GetTreeNames4Exten(char **filename, char **exten, int *gettitle,
                         char **treenames);
+void GetRawCELNames(char **datafile, int *numtrees, char **treename, char **celname);
 
 void PlotImage(char **filename, char **canvasname, char **treename,
                char **varlist, char **logbase, char **option, int *err);

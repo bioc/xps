@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 01/26/2008
+// File created: 08/05/2002                          last modified: 01/29/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -2007,7 +2007,9 @@ Int_t XGeneChipHyb::ReadGenericDataHeader(ifstream &input, Bool_t isParent)
       }//if
 
       // get chip name from dat-header
-      if (wcscmp(aname.value, L"affymetrix-dat-header") == 0) {
+      // see: https://www.stat.math.ethz.ch/pipermail/bioconductor/2007-October/019665.html
+      if ((wcscmp(aname.value, L"affymetrix-dat-header")         == 0) ||
+          (wcscmp(aname.value, L"affymetrix-partial-dat-header") == 0)) {
          str  = new char[avalue.len+1];
          wstr = DecodeTEXT(avalue);
          wcstombs(str, wstr, avalue.len);

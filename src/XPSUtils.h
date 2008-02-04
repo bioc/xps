@@ -1,4 +1,4 @@
-// File created: 11/02/2002                          last modified: 01/26/2008
+// File created: 11/02/2002                          last modified: 01/31/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -118,7 +118,7 @@ extern Int_t   StringInList(const char *str, const char **kStrList,
                   const Int_t n, Bool_t exact);
 extern TString SubString(const char *str, const char *sep, Int_t n);
 extern TString SubString(const char *str, char sep1, char sep2, Bool_t source);
-extern Int_t   TokenizeString(const char *cstr, Int_t n, TString *names,
+extern Int_t   TokenizeString(const char *cstr, Int_t &n, TString *names,
                   Int_t len, const char *sep);
 extern TString Type2Extension(const char *type, const char **types,
                   const char **extens);

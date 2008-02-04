@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 09/22/2007
+// File created: 05/18/2002                          last modified: 02/03/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2007 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -580,6 +580,9 @@ class XManager: public TNamed {
                         const char *logbase, const char *type, Option_t *opt,
                         Double_t min = -1111, Double_t max = -1111,
                         Int_t sort = 0, Bool_t down = kFALSE);
+
+      virtual XTreeHeader *GetTreeHeader(const char *treename);
+      virtual XTreeInfo   *GetTreeInfo(const char *treename);
 
       void PrintContents(const char *setname);
       void PrintContents();

@@ -572,6 +572,45 @@ setMethod("mm", "DataTreeSet", mm.DataTreeSet);
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+"rawCELName.DataTreeSet" <-
+function(object,
+         treename = "*",
+         fullpath = TRUE) 
+{
+   if (debug.xps()) print("------rawCELName.DataTreeSet------")
+
+   ## get valid tree names
+   treenames <- treeNames(object);
+   if (treename == "*") {
+      treename <- treenames;
+   } else if (is.na(match(treename, treenames))) {
+      stop(paste("invalid tree name", sQuote(treename)));
+   }#if
+
+   ## setname.treename
+   treename <- paste(setName(object), treename, sep=".");
+
+   rawnames <- .C("GetRawCELNames",
+                as.character(rootFile(object)),
+                as.integer(length(treename)),
+                as.character(treename),
+                celnames=character(length(treename)),
+                PACKAGE="xps")$celnames;
+
+   ## names only
+   if (fullpath == FALSE) {
+#      raw <- unlist(strsplit(rawnames, "/"));
+      rawnames <- sapply(strsplit(rawnames, "/"), function(x)x[length(x)]);
+   }#if
+
+#   return(rawnames);
+   return(as.vector(rawnames, mode="character"));
+}#mm.DataTreeSet
+
+setMethod("rawCELName", "DataTreeSet", rawCELName.DataTreeSet);
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 "rma.DataTreeSet" <-
 function(object,
          filename   = character(),
