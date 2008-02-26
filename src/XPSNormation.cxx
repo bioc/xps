@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 10/30/2007
+// File created: 08/05/2002                          last modified: 02/16/2008
 
 // Author: Christian Stratowa 06/18/2000
 
@@ -7,7 +7,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2007 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -35,7 +35,6 @@
  * For the list of contributors to "The ROOT System" see http://root.cern.ch/  *
  *******************************************************************************
  */
-
 
 /******************************************************************************
 * Major Revision History:
@@ -281,7 +280,7 @@ XNormationSetting::~XNormationSetting()
 
 //______________________________________________________________________________
 Int_t XNormationSetting::InitAlgorithm(const char *name, const char *type,
-                         Option_t *options, const char */*filename*/,
+                         Option_t *options, const char * /*filename*/,
                          Int_t npars, Double_t *pars)
 {
    // Initialize algorithm "name" with "type" and "options"
@@ -706,8 +705,8 @@ Int_t XNormedSet::FillMaskArray(const char *name, Int_t n, Int_t *arr)
       }//while
 
    // Initialize mask trees
-      TTree *tree[nummask];
-      XMask *mask[nummask];
+      TTree **tree = new TTree*[nummask];
+      XMask **mask = new XMask*[nummask];
       for (Int_t k=0; k<nummask; k++) {
          tree[k] = 0;
          mask[k] = 0;
@@ -747,6 +746,8 @@ Int_t XNormedSet::FillMaskArray(const char *name, Int_t n, Int_t *arr)
    cleanup:
       delete [] arrFlag;
       delete [] arrName;
+      delete [] mask;
+      delete [] tree;
    } else {
    // Get tree with name.exten
       TString tname = TString(name) + "." + fSelector->GetTitle();
@@ -833,8 +834,8 @@ Int_t XNormedSet::MeanReference(Int_t numexpr, TTree **exprtree,
    // Fill array arr with trimmed mean values from numexpr exprtrees
    if(kCS) cout << "------XNormedSet::MeanReference------" << endl;
 
-   TBranch     *brch[numexpr];
-   XExpression *expr[numexpr];
+   TBranch     **brch = new TBranch*[numexpr];
+   XExpression **expr = new XExpression*[numexpr];
    for (Int_t k=0; k<numexpr; k++) {
       expr[k] = 0;
       brch[k] = exprtree[k]->GetBranch("ExprBranch");
@@ -868,6 +869,9 @@ Int_t XNormedSet::MeanReference(Int_t numexpr, TTree **exprtree,
    }//if
 
    delete [] arrRef;
+   delete [] expr;
+   delete [] brch;
+
    return errNoErr;
 }//MeanReference
 
@@ -878,8 +882,8 @@ Int_t XNormedSet::MedianReference(Int_t numexpr, TTree **exprtree,
    // Fill array arr with median values from numexpr exprtrees
    if(kCS) cout << "------XNormedSet::MedianReference------" << endl;
 
-   TBranch     *brch[numexpr];
-   XExpression *expr[numexpr];
+   TBranch     **brch = new TBranch*[numexpr];
+   XExpression **expr = new XExpression*[numexpr];
    for (Int_t k=0; k<numexpr; k++) {
       expr[k] = 0;
       brch[k] = exprtree[k]->GetBranch("ExprBranch");
@@ -913,6 +917,9 @@ Int_t XNormedSet::MedianReference(Int_t numexpr, TTree **exprtree,
    }//if
 
    delete [] arrRef;
+   delete [] expr;
+   delete [] brch;
+
    return errNoErr;
 }//MedianReference
 
@@ -973,8 +980,8 @@ Int_t XNormedGCSet::Normalize(const char *method)
    Int_t numrefs = fReferences->GetSize();
 
 // Initialize selected trees and reference trees
-   TTree *seltree[numsels];
-   TTree *reftree[numrefs];
+   TTree **seltree = new TTree*[numsels];
+   TTree **reftree = new TTree*[numrefs];
    for (Int_t k=0; k<numsels; k++) seltree[k] = 0;
    for (Int_t j=0; j<numrefs; j++) reftree[j] = 0;
 
@@ -984,7 +991,7 @@ Int_t XNormedGCSet::Normalize(const char *method)
       if (seltree[k] == 0) return errGetTree;
       if (seltree[k]->GetBranch("ExprBranch") != 0) {
 //????
-         treename = Path2Name(seltree[k]->GetName(),"/",".");
+         treename = Path2Name(seltree[k]->GetName(), dSEP, ".");
          seltree[k]->SetName(treename);
       } else {
          cerr << "Error: Tree <" << seltree[k]->GetName() << "> has no ExprBranch."
@@ -999,7 +1006,7 @@ Int_t XNormedGCSet::Normalize(const char *method)
       if (reftree[j] == 0) return errGetTree;
       if (reftree[j]->GetBranch("ExprBranch") != 0) {
 //????
-         treename = Path2Name(reftree[j]->GetName(),"/",".");
+         treename = Path2Name(reftree[j]->GetName(), dSEP, ".");
          reftree[j]->SetName(treename);
       } else {
          cerr << "Error: Tree <" << reftree[j]->GetName() << "> has no ExprBranch."
@@ -1115,7 +1122,7 @@ Int_t XNormedGCSet::Normalize(const char *method)
 
          // informing user
          if (XManager::fgVerbose) {
-            cout << "   normalizing <" << selname << ">..." << endl;
+            cout << "   normalizing <" << selname.Data() << ">..." << endl;
          }//if
 
          // for mean/median the tree used as reference must be normalized, too!
@@ -1185,13 +1192,13 @@ Int_t XNormedGCSet::Normalize(const char *method)
 
          // informing user
          if (XManager::fgVerbose) {
-            cout << "   normalizing <" << selname << ">..." << endl;
+            cout << "   normalizing <" << selname.Data() << ">..." << endl;
          }//if
 
          // if not mean/median fill reference tree only
          if (strcmp(selname.Data(),refstr->GetName()) == 0) {
-            if (!((strcmp(fNormalizer->GetName(),"mean")   == 0) ||
-                  (strcmp(fNormalizer->GetName(),"median") == 0))) {
+            if (!((strcmp(fNormalizer->GetName(), "mean")   == 0) ||
+                  (strcmp(fNormalizer->GetName(), "median") == 0))) {
                if ((err = FillExprTree(treename.Data(), entries, arrIdx, arrX))) break;
                continue;
             }//if
@@ -1208,7 +1215,7 @@ Int_t XNormedGCSet::Normalize(const char *method)
    } else if (strcmp(fSelector->GetName(), "user") == 0) {
    // User-defined mask imported for all pairs [arrX,arrY] to be normalized
       if ((err = fSelector->Calculate(entries, 0, 0, arrMsk))) goto cleanup;
-      treename = Path2Name(fSelector->GetOption(),"/",".") + "." + fSelector->GetTitle();
+      treename = Path2Name(fSelector->GetOption(), dSEP, ".") + "." + fSelector->GetTitle();
       if ((err = FillMaskTree(treename.Data(), entries, arrIdx, arrMsk))) goto cleanup;
 
       // normalize data and store as trees
@@ -1217,13 +1224,13 @@ Int_t XNormedGCSet::Normalize(const char *method)
 
          // informing user
          if (XManager::fgVerbose) {
-            cout << "   normalizing <" << selname << ">..." << endl;
+            cout << "   normalizing <" << selname.Data() << ">..." << endl;
          }//if
 
          // if not mean/median fill reference tree only
          if (strcmp(selname.Data(),refstr->GetName()) == 0) {
-            if (!((strcmp(fNormalizer->GetName(),"mean")   == 0) ||
-                  (strcmp(fNormalizer->GetName(),"median") == 0))) {
+            if (!((strcmp(fNormalizer->GetName(), "mean")   == 0) ||
+                  (strcmp(fNormalizer->GetName(), "median") == 0))) {
 //?? FillExprTree second time->overwrite!! need to delete first entry in fHeaders!!
                if ((err = FillExprTree(treename.Data(), entries, arrIdx, arrX))) break;
                continue;
@@ -1254,6 +1261,9 @@ cleanup:
    delete [] arrIdx;
    delete [] arrY;
    delete [] arrX;
+
+   delete [] reftree;
+   delete [] seltree;
 
    savedir->cd();
 
@@ -1330,8 +1340,8 @@ Int_t XNormedGCSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
             + hasChromo + hasStart + hasStop   + hasStrand + hasCyto);
 
 // Get trees
-   TTree       *tree[n];
-   XExpression *expr[n];
+   TTree       **tree = new TTree*[n];
+   XExpression **expr = new XExpression*[n];
    if (fTrees->GetSize() == 0) {
    // Get trees from names
       for (Int_t k=0; k<n; k++) {
@@ -1356,7 +1366,7 @@ Int_t XNormedGCSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
    if (strcmp(fSchemeName.Data(), "") == 0) {
       fSchemeName = tree[0]->GetTitle();
    } else if (!fSchemeName.Contains(tree[0]->GetTitle())) {
-      cerr << "Error: Scheme <" << fSchemeName << "> is not derived from <"
+      cerr << "Error: Scheme <" << fSchemeName.Data() << "> is not derived from <"
            << tree[0]->GetTitle() << ">." << endl;
       hasUnit  = 0;
       hasAnnot = 0;
@@ -1405,7 +1415,7 @@ Int_t XNormedGCSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
             }//if
          }//if
       } else {
-         cerr << "Error: Could not find scheme <" << fSchemeName << ">." << endl;
+         cerr << "Error: Could not find scheme <" << fSchemeName.Data() << ">." << endl;
          hasUnit  = 0;
          hasAnnot = 0;
       }//if
@@ -1453,7 +1463,7 @@ Int_t XNormedGCSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
             output << sep << "LEVEL";
          } else {
             for (Int_t k=0; k<n; k++) {
-               output << sep << (names[k] + "_LEVEL");
+               output << sep << (names[k] + "_LEVEL").Data();
             }//for_k
          }//if
       }//if
@@ -1506,6 +1516,9 @@ Int_t XNormedGCSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
    if (unittree) {unittree->Delete(""); unittree = 0;}
    SafeDelete(schemes);
 
+   delete [] expr;
+   delete [] tree;
+
    return errNoErr;
 }//ExportExprTrees
 
@@ -1537,8 +1550,8 @@ Int_t XNormedGCSet::ExportMaskTrees(Int_t n, TString *names, const char *varlist
    }//if
 
 // Get trees
-   TTree   *tree[n];
-   XMask   *mask[n];
+   TTree  **tree = new TTree*[n];
+   XMask  **mask = new XMask*[n];
    XUnitID *mskunit = 0;  // get unitID from first tree
    if (fTrees->GetSize() == 0) {
    // Get trees from names
@@ -1572,7 +1585,7 @@ Int_t XNormedGCSet::ExportMaskTrees(Int_t n, TString *names, const char *varlist
    if (strcmp(fSchemeName.Data(), "") == 0) {
       fSchemeName = tree[0]->GetTitle();
    } else if (!fSchemeName.Contains(tree[0]->GetTitle())) {
-      cerr << "Error: Scheme <" << fSchemeName << "> is not derived from <"
+      cerr << "Error: Scheme <" << fSchemeName.Data() << "> is not derived from <"
            << tree[0]->GetTitle() << ">." << endl;
       hasUnit  = kFALSE;
    }//if
@@ -1606,7 +1619,7 @@ Int_t XNormedGCSet::ExportMaskTrees(Int_t n, TString *names, const char *varlist
             unittree->SetBranchAddress("IdxBranch", &unit);
          }//if
       } else {
-         cerr << "Error: Could not find scheme <" << fSchemeName << ">." << endl;
+         cerr << "Error: Could not find scheme <" << fSchemeName.Data() << ">." << endl;
          hasUnit = kFALSE;
       }//if
    } else if (hasUnit) {
@@ -1634,7 +1647,7 @@ Int_t XNormedGCSet::ExportMaskTrees(Int_t n, TString *names, const char *varlist
       if (hasFlag) output << sep << "FLAG";
    } else {
       for (Int_t k=0; k<n; k++) {
-         if (hasFlag)  output << sep << (names[k] + "_FLAG");
+         if (hasFlag)  output << sep << (names[k] + "_FLAG").Data();
       }//for_k
    }//if
    output << endl;
@@ -1665,6 +1678,9 @@ Int_t XNormedGCSet::ExportMaskTrees(Int_t n, TString *names, const char *varlist
    // remove trees from RAM
    if (unittree) {unittree->Delete(""); unittree = 0;}
    SafeDelete(schemes);
+
+   delete [] mask;
+   delete [] tree;
 
    return errNoErr;
 }//ExportMaskTrees
@@ -1777,8 +1793,8 @@ Int_t XNormedGenomeSet::ExportExprTrees(Int_t n, TString *names, const char *var
             + hasChromo + hasStart + hasStop   + hasStrand + hasCyto);
 
 // Get trees
-   TTree       *tree[n];
-   XExpression *expr[n];
+   TTree       **tree = new TTree*[n];
+   XExpression **expr = new XExpression*[n];
 
    if (fTrees->GetSize() == 0) {
    // Get trees from names
@@ -1804,7 +1820,7 @@ Int_t XNormedGenomeSet::ExportExprTrees(Int_t n, TString *names, const char *var
    if (strcmp(fSchemeName.Data(), "") == 0) {
       fSchemeName = tree[0]->GetTitle();
    } else if (!fSchemeName.Contains(tree[0]->GetTitle())) {
-      cerr << "Error: Scheme <" << fSchemeName << "> is not derived from <"
+      cerr << "Error: Scheme <" << fSchemeName.Data() << "> is not derived from <"
            << tree[0]->GetTitle() << ">." << endl;
       return errAbort;
    }//if
@@ -1878,7 +1894,7 @@ Int_t XNormedGenomeSet::ExportExprTrees(Int_t n, TString *names, const char *var
             output << sep << "LEVEL";
          } else {
             for (Int_t k=0; k<n; k++) {
-               output << sep << (names[k] + "_LEVEL");
+               output << sep << (names[k] + "_LEVEL").Data();
             }//for_k
          }//if
       }//if
@@ -1957,6 +1973,9 @@ cleanup:
    if (unittree) {unittree->Delete(""); unittree = 0;}
    if (htable)   {htable->Delete(); delete htable; htable = 0;}
    SafeDelete(schemes);
+
+   delete [] expr;
+   delete [] tree;
 
    return err;
 }//ExportExprTrees
@@ -2074,8 +2093,8 @@ Int_t XNormedExonSet::ExportExprTrees(Int_t n, TString *names, const char *varli
             + hasChromo + hasStart + hasStop   + hasStrand + hasCyto);
 
 // Get trees
-   TTree       *tree[n];
-   XExpression *expr[n];
+   TTree       **tree = new TTree*[n];
+   XExpression **expr = new XExpression*[n];
 
    if (fTrees->GetSize() == 0) {
    // Get trees from names
@@ -2105,7 +2124,7 @@ Int_t XNormedExonSet::ExportExprTrees(Int_t n, TString *names, const char *varli
    if (strcmp(fSchemeName.Data(), "") == 0) {
       fSchemeName = tree[0]->GetTitle();
    } else if (!fSchemeName.Contains(tree[0]->GetTitle())) {
-      cerr << "Error: Scheme <" << fSchemeName << "> is not derived from <"
+      cerr << "Error: Scheme <" << fSchemeName.Data() << "> is not derived from <"
            << tree[0]->GetTitle() << ">." << endl;
       return errAbort;
    }//if
@@ -2204,7 +2223,7 @@ Int_t XNormedExonSet::ExportExprTrees(Int_t n, TString *names, const char *varli
             output << sep << "LEVEL";
          } else {
             for (Int_t k=0; k<n; k++) {
-               output << sep << (names[k] + "_LEVEL");
+               output << sep << (names[k] + "_LEVEL").Data();
             }//for_k
          }//if
       }//if
@@ -2284,6 +2303,9 @@ cleanup:
    if (unittree) {unittree->Delete(""); unittree = 0;}
    if (htable)   {htable->Delete(); delete htable; htable = 0;}
    SafeDelete(schemes);
+
+   delete [] expr;
+   delete [] tree;
 
    return err;
 }//ExportExprTrees

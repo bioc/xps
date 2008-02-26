@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 10/26/2007
+// File created: 08/05/2002                          last modified: 02/16/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2007 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -362,7 +362,7 @@ Int_t XMeanNormalizer::DoNormalize(Int_t nin, const Double_t *xin, const Double_
          sf = TStat::Mean(nout, xout, trim) / TStat::Mean(nout, yout, trim);
       }//if
    } else {
-      cerr << "Error: Normalization option <" << fOption << "> is not known."
+      cerr << "Error: Normalization option <" << fOption.Data() << "> is not known."
            << endl;
       return errAbort;
    }//if
@@ -442,7 +442,7 @@ Int_t XMedianNormalizer::DoNormalize(Int_t nin, const Double_t *xin, const Doubl
          sf = TStat::Median(nout, xout) / TStat::Median(nout, yout);
       }//if
    } else {
-      cerr << "Error: Normalization option <" << fOption << "> is not known."
+      cerr << "Error: Normalization option <" << fOption.Data() << "> is not known."
            << endl;
       return errAbort;
    }//if
@@ -763,8 +763,8 @@ Int_t XQuantileNormalizer::AddArray(Int_t n, Double_t *x, Int_t *msk,
    if (!fTmpFile) {
       // save tmp_rkq.root in same system directory as main file
       TString fname = Path2Name(savedir->GetPath(), "", ".root");
-      fname  = Name2Path(fname.Data(), '/');
-      fname += "/tmp_rkq.root";
+      fname  = Name2Path(fname.Data(), sSEP);
+      fname += TString(dSEP) + "tmp_rkq.root";
 
       fTmpFile = new TFile(fname, "RECREATE");
       if (!fTmpFile || fTmpFile->IsZombie()) {
@@ -946,7 +946,7 @@ Int_t XQuantileNormalizer::AddArray(Int_t n, Double_t *x, Int_t *msk,
       if (mmtree) {mmtree->Delete(""); mmtree = 0;}
       if (pmtree) {pmtree->Delete(""); pmtree = 0;}
    } else { 
-      cerr << "Error: Option <" << fOption
+      cerr << "Error: Option <" << fOption.Data()
            << "> cannot be used with quantile normalizer." << endl;
       err = errGeneral;
    }//if
@@ -1035,7 +1035,7 @@ Double_t *XQuantileNormalizer::GetArray(Int_t n, Double_t *x, Int_t *msk,
       mmtree->Delete(""); mmtree = 0;
       pmtree->Delete(""); pmtree = 0;
    } else {
-      cerr << "Error: Option <" << fOption
+      cerr << "Error: Option <" << fOption.Data()
            << "> cannot be used with quantile normalizer." << endl;
       return 0;
    }//if
@@ -1064,8 +1064,8 @@ Int_t XQuantileNormalizer::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *m
 
 // Calculate trimmed mean
    if (strcmp(fOption.Data(), "together") == 0) {
-      TTree   *treek[fNData];
-      Double_t sortk[fNData];
+      TTree   **treek = new TTree*[fNData];
+      Double_t *sortk = new Double_t[fNData];
       for (Int_t k=0; k<fNData; k++) sortk[k] = 0;
 
    // Init trees
@@ -1107,13 +1107,15 @@ Int_t XQuantileNormalizer::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *m
 
    // Cleanup
       if (arr) {delete [] arr; arr = 0;}
+      delete [] sortk;
       // need to delete tree from RAM
       for (Int_t k=0; k<fNData; k++) {treek[k]->Delete(""); treek[k] = 0;}
+//x??      delete [] treek;
    } else if (strcmp(fOption.Data(),"separate") == 0) {
-      TTree   *pmtreek[fNData];
-      TTree   *mmtreek[fNData];
-      Double_t pmsortk[fNData];
-      Double_t mmsortk[fNData];
+      TTree   **pmtreek = new TTree*[fNData];
+      TTree   **mmtreek = new TTree*[fNData];
+      Double_t *pmsortk = new Double_t[fNData];
+      Double_t *mmsortk = new Double_t[fNData];
       for (Int_t k=0; k<fNData; k++) pmsortk[k] = mmsortk[k] = 0;
 
    // Init trees
@@ -1174,13 +1176,17 @@ Int_t XQuantileNormalizer::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *m
 
    // Cleanup
       if (arr) {delete [] arr; arr = 0;}
+      delete [] mmsortk;
+      delete [] pmsortk;
       // need to delete tree from RAM
       for (Int_t k=0; k<fNData; k++) {
          mmtreek[k]->Delete(""); mmtreek[k] = 0;
          pmtreek[k]->Delete(""); pmtreek[k] = 0;
       }//for_k
+//x??      delete [] mmtreek;
+//x??      delete [] pmtreek;
    } else {
-      cerr << "Error: Option <" << fOption
+      cerr << "Error: Option <" << fOption.Data()
            << "> cannot be used with quantile normalizer." << endl;
       return 0;
    }//if

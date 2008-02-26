@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 01/29/2008
+// File created: 08/05/2002                          last modified: 02/24/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -652,7 +652,7 @@ XTreeSet *XDataManager::NewTreeSet(const char *type)
       } else if (strcmp(inputtype.Data(),"pivotdata") == 0) {
          set = new XGeneChipPivot(datatype.Data(), type);
       } else {
-         cerr << "Error: Input type <" << inputtype << "> not known" << endl;
+         cerr << "Error: Input type <" << inputtype.Data() << "> not known" << endl;
       }//if
    } else if (strcmp(type,"SNPChip") == 0) {
       if (strcmp(inputtype.Data(),"rawdata") == 0) {
@@ -662,7 +662,7 @@ XTreeSet *XDataManager::NewTreeSet(const char *type)
       } else if (strcmp(inputtype.Data(),"pivotdata") == 0) {
          set = new XSNPChipPivot(datatype.Data(), type);
       } else {
-         cerr << "Error: Input type <" << inputtype << "> not known" << endl;
+         cerr << "Error: Input type <" << inputtype.Data() << "> not known" << endl;
       }//if
    } else if (strcmp(type,"GenomeChip") == 0) {
       if (strcmp(inputtype.Data(),"rawdata") == 0) {
@@ -672,7 +672,7 @@ XTreeSet *XDataManager::NewTreeSet(const char *type)
       } else if (strcmp(inputtype.Data(),"pivotdata") == 0) {
          set = new XGenomeChipPivot(datatype.Data(), type);
       } else {
-         cerr << "Error: Input type <" << inputtype << "> not known" << endl;
+         cerr << "Error: Input type <" << inputtype.Data() << "> not known" << endl;
       }//if
    } else if (strcmp(type,"ExonChip") == 0) {
       if (strcmp(inputtype.Data(),"rawdata") == 0) {
@@ -682,7 +682,7 @@ XTreeSet *XDataManager::NewTreeSet(const char *type)
       } else if (strcmp(inputtype.Data(),"pivotdata") == 0) {
          set = new XExonChipPivot(datatype.Data(), type);
       } else {
-         cerr << "Error: Input type <" << inputtype << "> not known" << endl;
+         cerr << "Error: Input type <" << inputtype.Data() << "> not known" << endl;
       }//if
    } else if (strcmp(type,"GenePix") == 0) {
       set = new XGenePixHyb(datatype.Data(), type);
@@ -1252,12 +1252,12 @@ void XGeneChipHyb::PrintInfo()
       fgPrintHeader = kFALSE;
    }//if
 
-   cout << setw(14) << this->GetName() << setw(12) << fDataName
-        << setw(17) << fSchemeName     << setw(17) << fDataTreeName 
-        << setw(17) << fMaskTreeName   << setw(9)  << fNRows 
-        << setw(9)  << fNCols          << setw(12) << fMinInten 
-        << setw(12) << fNMinInten      << setw(12) << fMaxInten
-        << setw(12) << fNMaxInten      << setw(12) << fMaxNPixels << endl;
+   cout << setw(14) << this->GetName()      << setw(12) << fDataName.Data()
+        << setw(17) << fSchemeName.Data()   << setw(17) << fDataTreeName.Data() 
+        << setw(17) << fMaskTreeName.Data() << setw(9)  << fNRows 
+        << setw(9)  << fNCols               << setw(12) << fMinInten 
+        << setw(12) << fNMinInten           << setw(12) << fMaxInten
+        << setw(12) << fNMaxInten           << setw(12) << fMaxNPixels << endl;
    cout << "------------------------------------------------------------------------------" << endl;
 }//PrintInfo
 
@@ -1280,7 +1280,7 @@ Int_t XGeneChipHyb::ExportDataTrees(Int_t n, TString *names, const char *varlist
    } else {
       char *name  = new char[strlen(varlist) + 1];
       char *dname = name;
-      name = strtok(strcpy(name,varlist),":");
+      name = strtok(strcpy(name, varlist), ":");
       while(name) {
          if (strcmp(name,"fInten")   == 0) {hasMean = kTRUE;}
          if (strcmp(name,"fStdev")   == 0) {hasStdv = kTRUE;}
@@ -1292,8 +1292,8 @@ Int_t XGeneChipHyb::ExportDataTrees(Int_t n, TString *names, const char *varlist
    }//if
 
 // Get trees
-   TTree   *tree[n];
-   XGCCell *cell[n];
+   TTree   **tree = new TTree*[n];
+   XGCCell **cell = new XGCCell*[n];
    if (fTrees->GetSize() == 0) {
    // Get trees from names
       for (Int_t k=0; k<n; k++) {
@@ -1318,9 +1318,9 @@ Int_t XGeneChipHyb::ExportDataTrees(Int_t n, TString *names, const char *varlist
    output << "X" << sep << "Y";
    if (n > 1) {
       for (Int_t k=0; k<n; k++) {
-         if (hasMean) output << sep << (names[k] + "_MEAN");
-         if (hasStdv) output << sep << (names[k] + "_STDV");
-         if (hasNPix) output << sep << (names[k] + "_NPIXELS");
+         if (hasMean) output << sep << (names[k] + "_MEAN").Data();
+         if (hasStdv) output << sep << (names[k] + "_STDV").Data();
+         if (hasNPix) output << sep << (names[k] + "_NPIXELS").Data();
       }//for_k
    } else {
       if (hasMean) output << sep << "MEAN";
@@ -1348,6 +1348,9 @@ Int_t XGeneChipHyb::ExportDataTrees(Int_t n, TString *names, const char *varlist
    if (XManager::fgVerbose) {
       cout << "<" << nentries << "> records exported." << endl;
    }//if
+
+   delete [] cell;
+   delete [] tree;
 
    return errNoErr;
 }//ExportDataTrees
@@ -1390,15 +1393,15 @@ Int_t XGeneChipHyb::ExportDataTree(TString *name, ofstream &output, const char *
 }//ExportDataTree
 
 //______________________________________________________________________________
-Int_t XGeneChipHyb::ExportMaskTrees(Int_t n, TString *names, const char */*varlist*/,
+Int_t XGeneChipHyb::ExportMaskTrees(Int_t n, TString *names, const char * /*varlist*/,
                     ofstream &output, const char *sep)
 {
    // Export data stored in tree to file output
    if(kCS) cout << "------XGeneChipHyb::ExportMaskTrees------" << endl;
 
 // Get trees
-   TTree     *tree[n];
-   XCellMask *mask[n];
+   TTree     **tree = new TTree*[n];
+   XCellMask **mask = new XCellMask*[n];
    if (fTrees->GetSize() == 0) {
    // Get trees from names
       for (Int_t k=0; k<n; k++) {
@@ -1423,7 +1426,7 @@ Int_t XGeneChipHyb::ExportMaskTrees(Int_t n, TString *names, const char */*varli
    output << "X" << sep << "Y";
    if (n > 1) {
       for (Int_t k=0; k<n; k++) {
-         output << sep << (names[k] + "_FLAG");
+         output << sep << (names[k] + "_FLAG").Data();
       }//for_k
    } else {
       output << sep << "FLAG";
@@ -1447,6 +1450,9 @@ Int_t XGeneChipHyb::ExportMaskTrees(Int_t n, TString *names, const char */*varli
    if (XManager::fgVerbose) {
       cout << "<" << nentries << "> records exported." << endl;
    }//if
+
+   delete [] mask;
+   delete [] tree;
 
    return errNoErr;
 }//ExportMaskTrees
@@ -1519,10 +1525,10 @@ Int_t XGeneChipHyb::IsCalvinFile(ifstream &input)
 }//IsCalvinFile
 
 //______________________________________________________________________________
-TString XGeneChipHyb::ChipType(const char *header, Int_t toupper)
+TString XGeneChipHyb::ChipType(const char *header, Int_t toUpper)
 {
    // Determine chip type, i.e. scheme name from header
-   // For toupper = 1 convert first letter to uppercase
+   // For toUpper = 1 convert first letter to uppercase
    if(kCS) cout << "------XGeneChipHyb::ChipType------" << endl;
 
    TString name = 0;
@@ -1546,16 +1552,16 @@ TString XGeneChipHyb::ChipType(const char *header, Int_t toupper)
    name.Remove(i);
 
    // convert first letter to uppercase
-   if (toupper == 1) {
+   if (toUpper == 1) {
       char *s = (char*)(name.Data());
-      *s = std::toupper(s[0]);
+      *s = toupper(s[0]);
    }//if
 
    return name;
 }//ChipType
 
 //______________________________________________________________________________
-Int_t XGeneChipHyb::ReadHeader(ifstream &input, const char */*sep*/, char delim)
+Int_t XGeneChipHyb::ReadHeader(ifstream &input, const char * /*sep*/, char delim)
 {
    // Read header from input. 
    if(kCS) cout << "------XGeneChipHyb::ReadHeader------" << endl;
@@ -1627,7 +1633,7 @@ Int_t XGeneChipHyb::ReadHeader(ifstream &input, const char */*sep*/, char delim)
 }//ReadHeader
 
 //______________________________________________________________________________
-Int_t XGeneChipHyb::ReadData(ifstream &input, Option_t *option, const char */*sep*/,
+Int_t XGeneChipHyb::ReadData(ifstream &input, Option_t *option, const char * /*sep*/,
                     char delim, Int_t split)
 {
    // Read data from input and store in data tree. 
@@ -1646,7 +1652,7 @@ Int_t XGeneChipHyb::ReadData(ifstream &input, Option_t *option, const char */*se
    Short_t  maxpix = 0;
 
 // Create data tree
-   TString exten = Path2Name(option,".","");
+   TString exten = Path2Name(option, ".", "");
    fDataTreeName = fTreeName + "." + exten;
    TTree   *datatree = new TTree(fDataTreeName, fSchemeName);
    if (datatree == 0) return errCreateTree;
@@ -1734,7 +1740,7 @@ Int_t XGeneChipHyb::ReadData(ifstream &input, Option_t *option, const char */*se
 }//ReadData
 
 //______________________________________________________________________________
-Int_t XGeneChipHyb::ReadXDAHeader(ifstream &input, const char */*sep*/, char /*delim*/)
+Int_t XGeneChipHyb::ReadXDAHeader(ifstream &input, const char * /*sep*/, char /*delim*/)
 {
    // Read header from XDA binary input. 
    if(kCS) cout << "------XGeneChipHyb::ReadXDAHeader------" << endl;
@@ -1810,7 +1816,7 @@ Int_t XGeneChipHyb::ReadXDAHeader(ifstream &input, const char */*sep*/, char /*d
 }//ReadXDAHeader
 
 //______________________________________________________________________________
-Int_t XGeneChipHyb::ReadXDAData(ifstream &input, Option_t *option, const char */*sep*/,
+Int_t XGeneChipHyb::ReadXDAData(ifstream &input, Option_t *option, const char * /*sep*/,
                     char /*delim*/, Int_t split)
 {
    // Read data from XDA binary input and store in data tree. 
@@ -1828,7 +1834,7 @@ Int_t XGeneChipHyb::ReadXDAData(ifstream &input, Option_t *option, const char */
    Short_t  maxpix = 0;
 
 // Create data tree
-   TString exten = Path2Name(option,".","");
+   TString exten = Path2Name(option, ".", "");
    fDataTreeName = fTreeName + "." + exten;
    TTree *datatree = new TTree(fDataTreeName, fSchemeName);
    if (datatree == 0) return errCreateTree;
@@ -1981,26 +1987,30 @@ Int_t XGeneChipHyb::ReadGenericDataHeader(ifstream &input, Bool_t isParent)
    delete[] str; str = 0;
 
    // number of name/value/type triplets
-   Int_t numtriplets;
+   Int_t numtriplets = 0;
    READ_INT(input, numtriplets, kTRUE);
 
    // name/value/type triplets
-   AWSTRING aname;
-   ASTRING  avalue;
-   AWSTRING atype;
+   AWSTRING *aname  = 0;
+   ASTRING  *avalue = 0;
+   AWSTRING *atype  = 0;
    for (Int_t i=0; i<numtriplets; i++) {
+      aname  = new AWSTRING;
+      avalue = new ASTRING;
+      atype  = new AWSTRING;
+
       READ_WSTRING(input, aname, kTRUE);
-      str = new char[aname.len+1];
-      wcstombs(str, aname.value, aname.len);
-      delete[] str; str = 0;
+//      str = new char[aname->len + 1];
+//      wcstombs(str, aname->value, aname->len + 1);
+//      delete[] str; str = 0;
 
       READ_STRING(input, avalue, kTRUE);
 
       // get chip name
-      if (wcscmp(aname.value, L"affymetrix-array-type") == 0) {
-         str  = new char[avalue.len+1];
+      if (wcscmp(aname->value, L"affymetrix-array-type") == 0) {
+         str  = new char[avalue->len + 1];
          wstr = DecodeTEXT(avalue);
-         wcstombs(str, wstr, avalue.len);
+         wcstombs(str, wstr, avalue->len + 1);
          if (!isParent) fSchemeName = TString(str);
          delete[] wstr; wstr = 0;
          delete[] str;  str  = 0;
@@ -2008,16 +2018,16 @@ Int_t XGeneChipHyb::ReadGenericDataHeader(ifstream &input, Bool_t isParent)
 
       // get chip name from dat-header
       // see: https://www.stat.math.ethz.ch/pipermail/bioconductor/2007-October/019665.html
-      if ((wcscmp(aname.value, L"affymetrix-dat-header")         == 0) ||
-          (wcscmp(aname.value, L"affymetrix-partial-dat-header") == 0)) {
-         str  = new char[avalue.len+1];
+      if ((wcscmp(aname->value, L"affymetrix-dat-header")         == 0) ||
+          (wcscmp(aname->value, L"affymetrix-partial-dat-header") == 0)) {
+         str  = new char[avalue->len + 1];
          wstr = DecodeTEXT(avalue);
-         wcstombs(str, wstr, avalue.len);
+         wcstombs(str, wstr, avalue->len + 1);
          TString chipname = ChipType(str, 1);
 
          if (strcmp(chipname.Data(), fSchemeName.Data()) != 0) {
-            cerr << "Error: dat-header chipname <" << chipname 
-                 << "> is not equal to array-type <" << fSchemeName << ">!"
+            cerr << "Error: dat-header chipname <"   << chipname.Data() 
+                 << "> is not equal to array-type <" << fSchemeName.Data() << ">!"
                  << endl;
             return errGeneral;
          }//if
@@ -2026,23 +2036,27 @@ Int_t XGeneChipHyb::ReadGenericDataHeader(ifstream &input, Bool_t isParent)
       }//if
 
       // get number of columns
-      if (wcscmp(aname.value, L"affymetrix-cel-cols") == 0) {
+      if (wcscmp(aname->value, L"affymetrix-cel-cols") == 0) {
          fNCols = DecodeINT(avalue);
-      }//if
+     }//if
 
       // get number of rows
-      if (wcscmp(aname.value, L"affymetrix-cel-rows") == 0) {
+      if (wcscmp(aname->value, L"affymetrix-cel-rows") == 0) {
          fNRows = DecodeINT(avalue);
       }//if
 
       READ_WSTRING(input, atype, kTRUE);
-      str = new char[atype.len+1];
-      wcstombs(str, atype.value, atype.len);
-      delete[] str; str = 0;
+//      str = new char[atype->len + 1];
+//      wcstombs(str, atype->value, atype->len + 1);
+//      delete[] str; str = 0;
+
+      delete atype;
+      delete avalue;
+      delete aname;
    }//for_i
 
 // Read number of parents
-   Int_t numparents;
+   Int_t numparents = 0;
    READ_INT(input, numparents, kTRUE);
 
 // Read Generic Data Header recursively
@@ -2069,19 +2083,16 @@ Int_t XGeneChipHyb::ReadDataGroup(ifstream &input, UInt_t &filepos,
    if(kCS) cout << "------XGeneChipHyb::ReadDataGroup------" << endl;
 
    Int_t    x, y;
-//   Short_t  numpix;
-//   Double_t inten, stdev;
    Int_t    err    = 0;
-   Int_t    numcel = 0;
    Double_t min    = DBL_MAX;  //defined in float.h
    Double_t max    = 0;
    Int_t    nummin = 0;
    Int_t    nummax = 0;
    Short_t  maxpix = 0;
-   char    *str    = 0;
+   char    *str;
 
 // Create data tree
-   TString exten = Path2Name(option,".","");
+   TString exten = Path2Name(option, ".", "");
    fDataTreeName = fTreeName + "." + exten;
    TTree *datatree = new TTree(fDataTreeName, fSchemeName);
    if (datatree == 0) return errCreateTree;
@@ -2092,14 +2103,14 @@ Int_t XGeneChipHyb::ReadDataGroup(ifstream &input, UInt_t &filepos,
 
 // Data group
    // file position of next data group
-   UInt_t nextpos;
+   UInt_t nextpos = 0;
    READ_UINT(input, nextpos, kTRUE);
 
    // file position of first data element in data set
    READ_UINT(input, filepos, kTRUE);
 
    // number of datasets
-   Int_t numdatasets;
+   Int_t numdatasets = 0;
    READ_INT(input, numdatasets, kTRUE);
 
    // data group name
@@ -2111,7 +2122,7 @@ Int_t XGeneChipHyb::ReadDataGroup(ifstream &input, UInt_t &filepos,
    filepos = nextpos;  //pass parameter filepos for next data group
 
 // Data set: ------------ Intensity ------------
-   UInt_t datapos;
+   UInt_t datapos = 0;
    // file position of first data element in data set
    READ_UINT(input, datapos, kTRUE);
 
@@ -2123,16 +2134,16 @@ Int_t XGeneChipHyb::ReadDataGroup(ifstream &input, UInt_t &filepos,
    delete[] str; str = 0;
 
    // number of name/value/type parameters
-   Int_t numtriplets;
+   Int_t numtriplets = 0;
    READ_INT(input, numtriplets, kTRUE);
 
    // number of columns in the data set.
-   UInt_t numcols;
+   UInt_t numcols = 0;
    READ_UINT(input, numcols, kTRUE);
 
    // column names, column value types and column type sizes triplets
    char  coltype;
-   Int_t colsize;
+   Int_t colsize = 0;
    for (UInt_t i=0; i<numcols; i++) {
       READ_WSTRING(input, str, kTRUE);
       delete[] str; str = 0;
@@ -2142,7 +2153,7 @@ Int_t XGeneChipHyb::ReadDataGroup(ifstream &input, UInt_t &filepos,
    }//for_i
 
    // number of rows in the data set: fNCells
-   UInt_t numrows;
+   UInt_t numrows = 0;
    READ_UINT(input, numrows, kTRUE);
    fNCells = (Int_t)numrows;
 
@@ -2259,8 +2270,8 @@ Int_t XGeneChipHyb::ReadDataGroup(ifstream &input, UInt_t &filepos,
 
 // Fill data tree
    for (UInt_t i=0; i<numrows; i++) {
-      x      = Index2X(i);
-      y      = Index2Y(i);
+      x = Index2X(i);
+      y = Index2Y(i);
 
       // number of cells with minimal intensity
       if      (inten[i] <  min) {min = inten[i]; nummin = 1;}
@@ -2343,7 +2354,7 @@ Int_t XGeneChipHyb::ReadCalvinGenericFile(ifstream &input, Option_t *option, Int
 }//ReadCalvinGenericFile
 
 //______________________________________________________________________________
-Int_t XGeneChipHyb::ReadXMLHeader(ifstream &input, const char */*sep*/, char delim)
+Int_t XGeneChipHyb::ReadXMLHeader(ifstream &input, const char * /*sep*/, char delim)
 {
    // Read header from input in XML-format. 
    if(kCS) cout << "------XGeneChipHyb::ReadXMLHeader------" << endl;
@@ -2482,7 +2493,7 @@ Int_t XGeneChipHyb::ReadXMLHeader(ifstream &input, const char */*sep*/, char del
 }//ReadXMLHeader
 
 //______________________________________________________________________________
-Int_t XGeneChipHyb::ReadXMLData(ifstream &input, Option_t *option, const char */*sep*/,
+Int_t XGeneChipHyb::ReadXMLData(ifstream &input, Option_t *option, const char * /*sep*/,
                     char delim, Int_t split)
 {
    // Read data from input. 
@@ -2511,7 +2522,7 @@ Int_t XGeneChipHyb::ReadXMLData(ifstream &input, Option_t *option, const char */
    name = RemoveEnds(name);
 
 // Prepend directory containing data file
-   name = Name2Path(fInfile, '/') + "/" + name;
+   name = Name2Path(fInfile, sSEP) + TString(dSEP) + name;
 
 // Open externaldata.txt file containing data
    ifstream data(name.Data(), ios::in);
@@ -2924,7 +2935,7 @@ Int_t XGeneChipPivot::ExportExprTrees(Int_t n, TString *names, const char *varli
    } else {
       char *name  = new char[strlen(varlist) + 1];
       char *dname = name;
-      name = strtok(strcpy(name,varlist),":");
+      name = strtok(strcpy(name, varlist), ":");
       while(name) {
          if (strcmp(name,"fUnitName") == 0) {hasUnit   = kTRUE;}
          if (strcmp(name,"fName")     == 0) {hasName   = kTRUE;}
@@ -2939,8 +2950,8 @@ Int_t XGeneChipPivot::ExportExprTrees(Int_t n, TString *names, const char *varli
    hasAnnot = (hasName || hasSymbol || hasCyto);
 
 // Get trees
-   TTree       *tree[n];
-   XExpression *expr[n];
+   TTree       **tree = new TTree*[n];
+   XExpression **expr = new XExpression*[n];
    if (fTrees->GetSize() == 0) {
    // Get trees from names
       for (Int_t k=0; k<n; k++) {
@@ -3014,7 +3025,7 @@ Int_t XGeneChipPivot::ExportExprTrees(Int_t n, TString *names, const char *varli
             }//if
          }//if
       } else {
-         cerr << "Error: Could not find scheme <" << scmname << ">." << endl;
+         cerr << "Error: Could not find scheme <" << scmname.Data() << ">." << endl;
          hasUnit  = kFALSE;
          hasAnnot = kFALSE;
       }//if
@@ -3050,7 +3061,7 @@ Int_t XGeneChipPivot::ExportExprTrees(Int_t n, TString *names, const char *varli
       if (hasLevel)  output << sep << "LEVEL";
    } else {
       for (Int_t i=0; i<n; i++) {
-         if (hasLevel) output << sep << (names[i] + "_LEVEL");
+         if (hasLevel) output << sep << (names[i] + "_LEVEL").Data();
       }//for_i
    }//if
    output << endl;
@@ -3087,6 +3098,9 @@ Int_t XGeneChipPivot::ExportExprTrees(Int_t n, TString *names, const char *varli
    if (unittree) {unittree->Delete(""); unittree = 0;}
    SafeDelete(schemes);
 
+   delete [] expr;
+   delete [] tree;
+
    return errNoErr;
 }//ExportExprTrees
 
@@ -3121,8 +3135,8 @@ Int_t XGeneChipPivot::ExportCallTrees(Int_t n, TString *names, const char *varli
    }//if
 
 // Get trees
-   TTree  *tree[n];
-   XPCall *call[n];
+   TTree  **tree = new TTree*[n];
+   XPCall **call = new XPCall*[n];
    if (fTrees->GetSize() == 0) {
    // Get trees from names
       for (Int_t k=0; k<n; k++) {
@@ -3178,7 +3192,7 @@ Int_t XGeneChipPivot::ExportCallTrees(Int_t n, TString *names, const char *varli
          if (unittree == 0) return errGetTree;
          unittree->SetBranchAddress("IdxBranch", &unit);
       } else {
-         cerr << "Error: Could not find scheme <" << scmname << ">." << endl;
+         cerr << "Error: Could not find scheme <" << scmname.Data() << ">." << endl;
          hasUnit = kFALSE;
       }//if
    } else if (hasUnit) {
@@ -3206,8 +3220,8 @@ Int_t XGeneChipPivot::ExportCallTrees(Int_t n, TString *names, const char *varli
       if (hasPVal) output << sep << "PVALUE";
    } else {
       for (Int_t i=0; i<n; i++) {
-         if (hasCall) output << sep << (names[i] + "_CALL");
-         if (hasPVal) output << sep << (names[i] + "_PVALUE");
+         if (hasCall) output << sep << (names[i] + "_CALL").Data();
+         if (hasPVal) output << sep << (names[i] + "_PVALUE").Data();
       }//for_i
    }//if
    output << endl;
@@ -3242,6 +3256,9 @@ Int_t XGeneChipPivot::ExportCallTrees(Int_t n, TString *names, const char *varli
    if (unittree) {unittree->Delete(""); unittree = 0;}
    SafeDelete(schemes);
 
+   delete [] call;
+   delete [] tree;
+
    return errNoErr;
 }//ExportCallTrees
 
@@ -3251,7 +3268,6 @@ Int_t XGeneChipPivot::ReadHeader(ifstream &input, const char *sep, char delim)
    // Read header from input. 
    if(kCS) cout << "------XGeneChipPivot::ReadHeader------" << endl;
 
-//ccc char memory problem??
    char nextline[kLargeBuf];
 
    input.getline(nextline, kLargeBuf, delim);
@@ -3262,7 +3278,7 @@ Int_t XGeneChipPivot::ReadHeader(ifstream &input, const char *sep, char delim)
    Int_t numtrees = 0;
    char *tmpname  = new char[strlen(nextline) + 1];
    char *delname  = tmpname;
-   tmpname = strtok(strcpy(tmpname,nextline),sep);
+   tmpname = strtok(strcpy(tmpname,nextline), sep);
    while(tmpname) {
       str = TString(tmpname);
       if (str.Contains(vars[0], TString::kIgnoreCase)) {numtrees++;}
@@ -3276,12 +3292,12 @@ Int_t XGeneChipPivot::ReadHeader(ifstream &input, const char *sep, char delim)
    if (!fTreeName) {delete [] delname; return errInitMemory;}
    Int_t idx = 0;
    tmpname = delname;  //reset tmpname
-   tmpname = strtok(strcpy(tmpname,nextline),sep);
+   tmpname = strtok(strcpy(tmpname, nextline), sep);
    while(tmpname) {
       str = TString(tmpname);
       if (str.Contains(vars[0], TString::kIgnoreCase)) {
          str = RemoveSubString(tmpname, (vars[0]).Data(), kFALSE);
-         str = SubString(str.Data(), '(',')', kTRUE); //ev not necessary?
+         str = SubString(str.Data(), '(', ')', kTRUE); //ev not necessary?
          str = ReplaceNonAlpha(str.Data(), "_");
          fTreeName[idx] = RemoveEnds(str.Data());
          idx++;
@@ -3298,7 +3314,7 @@ Int_t XGeneChipPivot::ReadHeader(ifstream &input, const char *sep, char delim)
 }//ReadHeader
 
 //______________________________________________________________________________
-Int_t XGeneChipPivot::ReadData(ifstream &input, Option_t */*option*/, const char *sep,
+Int_t XGeneChipPivot::ReadData(ifstream &input, Option_t * /*option*/, const char *sep,
                       char delim, Int_t split)
 {
    // Read data from input.
@@ -3337,12 +3353,12 @@ Int_t XGeneChipPivot::ReadData(ifstream &input, Option_t */*option*/, const char
 
    TDirectory *savedir  = gDirectory;
 
-   Double_t expr[fNTrees];
-   Double_t pval[fNTrees];
-   Short_t  call[fNTrees];
    Bool_t   hasExpr = kFALSE;
    Bool_t   hasPVal = kFALSE;
    Bool_t   hasCall = kFALSE;
+   Double_t *expr   = new Double_t[fNTrees];
+   Double_t *pval   = new Double_t[fNTrees];
+   Short_t  *call   = new Short_t[fNTrees];
    TBranch *exprBr  = 0;
    TBranch *pvalBr  = 0;
    TBranch *callBr  = 0;
@@ -3417,7 +3433,7 @@ Int_t XGeneChipPivot::ReadData(ifstream &input, Option_t */*option*/, const char
    else if (xten.Contains("rma"))  xten = kPivotExpr[7]; // = "mdp";
 
    // set tree branches
-   tmptree->Branch("strg", strg, "strg[128]/C");
+   tmptree->Branch("strg", (void*)strg, "strg[128]/C");
    for (Int_t i=0; i<nvar; i++) {
       ch = (char*)(typs[i]).Data();
       str = vars[i]; str.ToUpper();
@@ -3481,7 +3497,7 @@ Int_t XGeneChipPivot::ReadData(ifstream &input, Option_t */*option*/, const char
    if (XManager::fgVerbose && idx != numgenes) {
       cout << "Warning: Number of lines read <" << idx  
            << "> is not equal to number of genes <" << numgenes << ">" << endl;
-      cout << "         for selected scheme <" << scmname << ">." << endl;
+      cout << "         for selected scheme <" << scmname.Data() << ">." << endl;
    }//if
 
 // Get branches from temporary tree
@@ -3606,6 +3622,10 @@ cleanup:
    SafeDelete(xpr);
    SafeDelete(calllist);
    SafeDelete(exprlist);
+
+   delete [] call;
+   delete [] pval;
+   delete [] expr;
 
 //wrong:   SafeDelete(idxstr);
    if (htable) {htable->Delete(); delete htable; htable = 0;}
@@ -4029,9 +4049,9 @@ Int_t XGenePixHyb::ExportTreeType(const char *exten, Int_t n, TString *names,
    // Export data stored in tree treename to file output
    if(kCS) cout << "------XGenePixHyb::ExportTreeType------" << endl;
 
-   if (strcmp(exten,"cel") == 0) {
+   if (strcmp(exten, "cel") == 0) {
       return this->ExportDataTrees(n, names, varlist, output, sep);
-   } else if (strcmp(exten,"msk") == 0) {
+   } else if (strcmp(exten, "msk") == 0) {
       return this->ExportMaskTrees(n, names, varlist, output, sep);
    } else {
       return fManager->HandleError(errExtension, exten);
@@ -4509,8 +4529,8 @@ Int_t XGeneChipPlot::DrawUnit(const char *canvasname, const char *treename,
    }//if
 
 // Extract tree name
-   TString tname = Path2Name(treename,"/","");
-   if (strstr(tname.Data(),".root")) {
+   TString tname = Path2Name(treename, dSEP, "");
+   if (strstr(tname.Data(), ".root")) {
       tname = "";
    }//if
    if (strcmp(tname.Data(), "") == 0) {
@@ -4519,15 +4539,15 @@ Int_t XGeneChipPlot::DrawUnit(const char *canvasname, const char *treename,
    }//if
 
 // Test if tree extension is "cel"
-   if (strstr(tname.Data(),".cel") == 0) {
+   if (strstr(tname.Data(), ".cel") == 0) {
       cerr << "Error: Treename must be of form <treename.cel>." << endl;
       return perrTreeName;
    }//if
 
 // Extract root filename and get datafile
    TString filename = "";
-   if (strstr(treename,".root")) {
-      filename = Path2Name(treename,"",".root") + ".root";
+   if (strstr(treename, ".root")) {
+      filename = Path2Name(treename, "", ".root") + ".root";
       this->OpenData(filename);
    } else if (fDataFile) {
 //?? not necessary?
@@ -4539,12 +4559,12 @@ Int_t XGeneChipPlot::DrawUnit(const char *canvasname, const char *treename,
 
 // Get name of treeset and change directory
    TString setname  = "";
-   if (strstr(treename,".root")) {
-      TString substr = SubString(treename,'.','/', kFALSE);
-      if (substr) setname = Path2Name(substr.Data(),"/","");
+   if (strstr(treename, ".root")) {
+      TString substr = SubString(treename, '.', sSEP, kFALSE);
+      if (substr) setname = Path2Name(substr.Data(), dSEP, "");
       if (setname.Contains("root")) setname = "";
-   } else if (strstr(treename,"/")) {
-      setname = Path2Name(treename,"","/");
+   } else if (strstr(treename, dSEP)) {
+      setname = Path2Name(treename, "", dSEP);
    }//if
 
    if (!fDataFile->cd(setname)) return perrGetDir;
@@ -4568,7 +4588,7 @@ Int_t XGeneChipPlot::DrawUnit(const char *canvasname, const char *treename,
    XDNAChip *chip = 0;
    chip = (XDNAChip*)fSchemes->FindObject(scmname, kTRUE);
    if (!chip) {
-      cerr << "Error: Could not find scheme <" << scmname << ">." << endl;
+      cerr << "Error: Could not find scheme <" << scmname.Data() << ">." << endl;
       return perrGeneral;
    }//if
    Int_t numunits = chip->GetNumUnits();
@@ -4592,7 +4612,7 @@ Int_t XGeneChipPlot::DrawUnit(const char *canvasname, const char *treename,
    XGCProbe *probe = 0;
    TTree *prbtree = (TTree*)gDirectory->Get(chip->GetProbeTree()); 
    if (prbtree == 0) {
-      cout << "Warning: Scheme <" << scmname << "> has no probe information."
+      cout << "Warning: Scheme <" << scmname.Data() << "> has no probe information."
            << endl;
       hasProbe = kFALSE;
    } else {
@@ -4604,7 +4624,7 @@ Int_t XGeneChipPlot::DrawUnit(const char *canvasname, const char *treename,
    XAnnotation *annot = 0;
    TTree *anntree = (TTree*)gDirectory->Get(chip->GetAnnotTree()); 
    if (anntree == 0) {
-      cout << "Warning: Scheme <" << scmname << "> has no annotation."
+      cout << "Warning: Scheme <" << scmname.Data() << "> has no annotation."
            << endl;
       hasAnnot = kFALSE;
    } else {
@@ -4615,7 +4635,7 @@ Int_t XGeneChipPlot::DrawUnit(const char *canvasname, const char *treename,
    Int_t numcells = 0;
    for (Int_t id=0; id<numunits; id++) { 
       idxtree->GetEntry(id);
-      if (strcmp(unitname,"") == 0) {
+      if (strcmp(unitname, "") == 0) {
          if (id == (unitID + numctrls)) {
             unitname = unit->GetUnitName();
             numcells = unit->GetNumCells();

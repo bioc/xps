@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2007 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -34,7 +34,6 @@
  * For the list of contributors to "The ROOT System" see http://root.cern.ch/  *
  *******************************************************************************
  */
-
 
 /******************************************************************************
 * Major Revision History:

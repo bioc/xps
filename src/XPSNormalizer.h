@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2007 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -66,19 +66,19 @@ class XNormalizer: public XAlgorithm {
       Bool_t      fInitApprox;  //TRUE if approx is initialized
 
    protected:
-      virtual Int_t DoNormalize(Int_t /*nin*/, const Double_t */*xin*/,
-                       const Double_t */*yin*/, Int_t /*nout*/,
-                       Double_t */*xout*/, Double_t */*yout*/)     {return 0;}
+      virtual Int_t DoNormalize(Int_t /*nin*/, const Double_t * /*xin*/,
+                       const Double_t * /*yin*/, Int_t /*nout*/,
+                       Double_t * /*xout*/, Double_t * /*yout*/)    {return 0;}
 
    public:
       XNormalizer();
       XNormalizer(const char *name, const char *type);
       virtual ~XNormalizer();
 
-      virtual Int_t     AddArray(Int_t /*n*/, Double_t */*x*/, Int_t */*msk*/, 
-                           const char */*name*/ = "")              {return 0;}
-      virtual Double_t *GetArray(Int_t /*n*/, Double_t */*x*/, Int_t */*msk*/, 
-                           const char */*name*/ = "")              {return 0;}
+      virtual Int_t     AddArray(Int_t /*n*/, Double_t * /*x*/, Int_t * /*msk*/, 
+                           const char * /*name*/ = "")              {return 0;}
+      virtual Double_t *GetArray(Int_t /*n*/, Double_t * /*x*/, Int_t * /*msk*/, 
+                           const char * /*name*/ = "")              {return 0;}
 
       virtual void  SetOptions(Option_t *opt);
       virtual Int_t InitApprox(const char *method, const char *ties,

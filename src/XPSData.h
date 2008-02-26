@@ -307,7 +307,7 @@ class XGeneChipHyb: public XHybridization {
       virtual Int_t   ExportMaskTree(TString *name, ofstream &output, const char *sep);
       virtual Int_t   IsXDAFile(ifstream &input);
       virtual Int_t   IsCalvinFile(ifstream &input);
-      virtual TString ChipType(const char *header, Int_t toupper = 0);
+      virtual TString ChipType(const char *header, Int_t toUpper = 0);
       virtual Int_t   ReadHeader(ifstream &input, const char *sep, char delim);
       virtual Int_t   ReadData(ifstream &input, Option_t *option, const char *sep,
                          char delim, Int_t split);
@@ -670,10 +670,10 @@ class XAnalysisPlot: public XPlot {
       XAnalysisPlot(const char *name, const char *title);
       virtual ~XAnalysisPlot();
 
-      virtual Int_t DrawUnit(const char */*canvasname*/, const char */*treename*/,
-                       const char */*schemename*/, const char */*unitname*/, Int_t /*unitID*/,
-                       const char */*varlist*/, const char */*logbase*/, const char */*type*/,
-                       Option_t */*opt*/, Double_t min = -1111, Double_t max = -1111,
+      virtual Int_t DrawUnit(const char * /*canvasname*/, const char * /*treename*/,
+                       const char * /*schemename*/, const char * /*unitname*/, Int_t /*unitID*/,
+                       const char * /*varlist*/, const char * /*logbase*/, const char * /*type*/,
+                       Option_t * /*opt*/, Double_t min = -1111, Double_t max = -1111,
                        const char *var2sort = "", Bool_t down = kFALSE) {return 0;}
 
       Int_t InitData(TFile *datafile, Bool_t isOwner = kFALSE);

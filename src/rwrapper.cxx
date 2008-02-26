@@ -1659,8 +1659,8 @@ void GetTreeNames(char **filename, char **setname, char **exten, int *gettitle,
    }//while
 
 // Get tree names
-   TString names[ntrees];
-//   TString *names = new TString[ntrees];
+//x   TString names[ntrees];
+   TString *names = new TString[ntrees];
    ntrees = 0;
    key    = 0;
    next.Reset();
@@ -1673,9 +1673,9 @@ void GetTreeNames(char **filename, char **setname, char **exten, int *gettitle,
    }//while
 
    for (int i=0; i<ntrees; i++) {
-//      treenames[i] = (char*)(names[i].Data());
-      treenames[i] = new char[names[i].Length() + 1];
-      strcpy(treenames[i], (char*)names[i].Data());
+      treenames[i] = (char*)(names[i].Data());
+//x      treenames[i] = new char[names[i].Length() + 1];
+//x      strcpy(treenames[i], (char*)names[i].Data());
    }//for_i
 
 // Close file
@@ -1737,8 +1737,8 @@ void GetTreeNames4Exten(char **filename, char **exten, int *gettitle,
    }//while
 
 // Get tree names
-   TString names[ntrees];
-//   TString *names = new TString[ntrees];
+//x   TString names[ntrees];
+   TString *names = new TString[ntrees];
    ntrees = 0;
    key    = 0;
    next1.Reset();
@@ -1767,9 +1767,9 @@ void GetTreeNames4Exten(char **filename, char **exten, int *gettitle,
    }//while
 
    for (int i=0; i<ntrees; i++) {
-//      treenames[i] = (char*)(names[i].Data());
-      treenames[i] = new char[names[i].Length() + 1];
-      strcpy(treenames[i], (char*)names[i].Data());
+      treenames[i] = (char*)(names[i].Data());
+//x      treenames[i] = new char[names[i].Length() + 1];
+//x      strcpy(treenames[i], (char*)names[i].Data());
    }//for_i
 
 // Close file
@@ -1790,13 +1790,15 @@ void GetRawCELNames(char **datafile, int *ntrees, char **treename, char **celnam
    manager->Open(datafile[0]);
 
 // get header
-   TString names[*ntrees];
+//x   TString names[*ntrees];
+   TString *names = new TString[*ntrees];
    XTreeHeader *treeheader = 0;
    for (int i=0; i<*ntrees; i++) {
       treeheader = manager->GetTreeHeader(treename[i]);
       names[i]   = (treeheader) ? treeheader->GetInfile() : "NA";
-      celname[i] = new char[names[i].Length() + 1];
-      strcpy(celname[i], (char*)names[i].Data());
+      celname[i] = (char*)(names[i].Data());
+//x      celname[i] = new char[names[i].Length() + 1];
+//x      strcpy(celname[i], (char*)names[i].Data());
    }//for_i
 
 // cleanup

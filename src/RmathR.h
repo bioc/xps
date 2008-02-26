@@ -152,14 +152,14 @@
 #ifndef M_LN_SQRT_PId2
 #define M_LN_SQRT_PId2	0.225791352644727432363097614947	/* log(sqrt(pi/2)) */
 #endif
-
+/*???
 #ifdef WIN32
 # define NA_REAL (*_imp__NA_REAL)
 # define R_NegInf (*_imp__R_NegInf)
 # define R_PosInf (*_imp__R_PosInf)
 # define N01_kind (*_imp__N01_kind)
 #endif
-
+*/
 # define REprintf(a)	fprintf(stderr, a)
 /*
 # define REprintf fprintf(stderr,

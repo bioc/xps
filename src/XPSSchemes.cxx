@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 02/02/2008
+// File created: 05/18/2002                          last modified: 02/16/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2007 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -259,6 +259,7 @@ ClassImp(XProbesetAnnotation);
 const Int_t kCDFMagicNumber   = 67;
 const Int_t kCDFVersionNumber = 1;
 const Int_t kUnitNameLength   = 64; //maximal unit name length
+const Int_t kUnitNameLength1  = 65; //maximal unit name length + 1
 
 //version number of annotation file(s)
 const Int_t kVersionAnnot22 = 22;
@@ -314,16 +315,15 @@ XSchemeManager::~XSchemeManager()
 }//Destructor
 
 //______________________________________________________________________________
-Int_t XSchemeManager::ExportTrees(const char *exten, const char */*varlist*/, 
-                      ofstream &/*output*/, const char */*sep*/)
+Int_t XSchemeManager::ExportTrees(const char *exten, const char * /*varlist*/, 
+                      ofstream &/*output*/, const char * /*sep*/)
 {
    // Export variables from varlist for all trees in current file
    // with extension exten
    // Note: Not applicable for scheme trees
    if(kCS) cout << "------XSchemeManager::ExportTrees------" << endl;
 
-   cout << "Note: The option <*." << exten << "> is not available for schemes"
-        << endl;
+   cout << "Note: The option <*." << exten << "> is not available for schemes" << endl;
    cout << "      since scheme trees have different number of entries." << endl;
 
    return errNoErr;
@@ -346,10 +346,11 @@ Int_t XSchemeManager::NewScheme(const char *name, const char *infile,
 
 // Abort if scheme tree does already exist
    TTree  *stree = 0; 
-   TString sname = Path2Name(name,"/",".") + "." + exten;
+   TString sname = Path2Name(name, dSEP, ".") + "." + exten;
    stree = (TTree*)fFile->Get(sname); 
    if (stree) {
-      cerr << "Error: Scheme tree <" << sname << "> does already exist." << endl;
+      cerr << "Error: Scheme tree <" << sname.Data() << "> does already exist."
+           << endl;
       return errGetTree;
    }//if
 
@@ -407,10 +408,11 @@ Int_t XSchemeManager::NewAnnotation(const char *name, const char *infile,
 
 // Abort if annotation tree does already exist
    TTree  *atree = 0; 
-   TString aname = Path2Name(name,"/",".") + "." + exten;
+   TString aname = Path2Name(name, dSEP, ".") + "." + exten;
    atree = (TTree*)fFile->Get(aname); 
    if (atree) {
-      cerr << "Error: Scheme tree <" << aname << "> does already exist." << endl;
+      cerr << "Error: Scheme tree <" << aname.Data() << "> does already exist."
+           << endl;
       return errGetTree;
    }//if
 
@@ -451,8 +453,7 @@ Int_t XSchemeManager::New(const char *name, const char *dir, const char *type,
 // Close existing file
    if (fFile) {
       if (XManager::fgVerbose) {
-         cout << "Closing existing file <" << fFile->GetName() 
-              << ">..." << endl;
+         cout << "Closing existing file <" << fFile->GetName() << ">..." << endl;
       }//if
       Close();  //??
    }//if
@@ -1204,15 +1205,14 @@ Int_t XDNAChip::ImportXML(ifstream &input, Option_t *option, const char *sep,
 }//ImportXML
 
 //______________________________________________________________________________
-Int_t XDNAChip::ExportTrees(const char *exten, const char */*varlist*/, 
-                ofstream &/*output*/, const char */*sep*/)
+Int_t XDNAChip::ExportTrees(const char *exten, const char * /*varlist*/, 
+                ofstream &/*output*/, const char * /*sep*/)
 {
    // Export variables from varlist for all trees in current set
    // with extension exten
    if(kCS) cout << "------XDNAChip::ExportTrees------" << endl;
 
-   cout << "Note: The option <*." << exten << "> is not available for schemes"
-        << endl;
+   cout << "Note: Option <*." << exten << "> is not available for schemes" << endl;
    cout << "      since scheme trees have different number of entries." << endl;
 
    return errNoErr;
@@ -1410,8 +1410,8 @@ Int_t XDNAChip::ImportTransAnnotation(ifstream &input, Option_t *option,
    Int_t i, k, idx;
    Int_t err = errNoErr;
 
-   TString opt   = Path2Name(option,"/",".");
-   TString exten = Path2Name(option,".","");
+   TString opt   = Path2Name(option, dSEP, ".");
+   TString exten = Path2Name(option, ".", "");
 
 // Get unit tree
    TString unitname = fName + "." + TString(kExtenScheme[2]);
@@ -2226,10 +2226,10 @@ void XGeneChip::PrintInfo()
       fgPrintHeader = kFALSE;
    }//if
 
-   cout << setw(14) << this->GetName() << setw(12) << this->GetTitle()
-        << setw(17) << fScmTreeName << setw(17) << fIdxTreeName 
-        << setw(17) << fPrbTreeName << setw(17) << fAnnTreeName 
-        << setw(9) << fNUnits << setw(9) << fNGenes << endl;
+   cout << setw(14) << this->GetName()     << setw(12) << this->GetTitle()
+        << setw(17) << fScmTreeName.Data() << setw(17) << fIdxTreeName.Data() 
+        << setw(17) << fPrbTreeName.Data() << setw(17) << fAnnTreeName.Data() 
+        << setw(9)  << fNUnits             << setw(9)  << fNGenes << endl;
 
    cout << "------------------------------------------------------------------------------" << endl;
 }//PrintInfo
@@ -2789,8 +2789,8 @@ Int_t XGeneChip::ImportProbeInfo(ifstream &input, Option_t *option,
    Double_t minTm = DBL_MAX;  //defined in float.h
    Double_t maxTm = -1.0;
 
-   TString opt   = Path2Name(option,"/",".");
-   TString exten = Path2Name(option,".","");
+   TString opt   = Path2Name(option, dSEP, ".");
+   TString exten = Path2Name(option, ".", "");
 
 // Get scheme tree
    TString schemename = fName + "." + TString(kExtenScheme[0]);
@@ -2996,7 +2996,7 @@ Int_t XGeneChip::ImportProbeInfoXML(ifstream &input, Option_t *option,
 }//ImportProbeInfoXML
 
 //______________________________________________________________________________
-Int_t XGeneChip::ReadHeader(ifstream &input, const char */*sep*/, char delim)
+Int_t XGeneChip::ReadHeader(ifstream &input, const char * /*sep*/, char delim)
 {
    // Read header from input CDF file. 
    if(kCS) cout << "------XGeneChip::ReadHeader------" << endl;
@@ -3046,7 +3046,7 @@ Int_t XGeneChip::ReadHeader(ifstream &input, const char */*sep*/, char delim)
 
 //______________________________________________________________________________
 Int_t XGeneChip::ReadData(ifstream &input, Option_t *option,
-                 const char */*sep*/, char delim, Int_t split)
+                 const char * /*sep*/, char delim, Int_t split)
 {
    // Import scheme data from input CDF file and store in the following trees:
    // Scheme tree "tree.scm": UnitID, X, Y, PLen, Mask, Atom, PBase, TBase
@@ -3063,8 +3063,8 @@ Int_t XGeneChip::ReadData(ifstream &input, Option_t *option,
    Int_t nummin = 0;
    Int_t nummax = 0;
 
-   TString opt   = Path2Name(option,"/",".");
-   TString exten = Path2Name(option,".","");
+   TString opt   = Path2Name(option, dSEP, ".");
+   TString exten = Path2Name(option, ".", "");
 
 // Create new scheme tree
    fScmTreeName      = TString(fName) + "." + exten;
@@ -3118,7 +3118,6 @@ Int_t XGeneChip::ReadData(ifstream &input, Option_t *option,
          }//while
          unitname = &nextline[1];
          unitname = RemoveEnds(unitname.Data()); // remove "\n"
-//old         unitname = unitname.Remove(unitname.Length()-2);
 
          // get type ID of control
          while (strncmp("Type=", nextline, 5) != 0) {
@@ -3202,7 +3201,6 @@ Int_t XGeneChip::ReadData(ifstream &input, Option_t *option,
             input.getline(nextline, kBufSize, delim);
          }//while
          unitname = &nextline[5];
-//old         unitname = unitname.Remove(unitname.Length()-1); // remove "\n"
          unitname = RemoveEnds(unitname.Data()); // remove "\n"
 
          // get number of atoms
@@ -3343,7 +3341,7 @@ Int_t XGeneChip::ReadData(ifstream &input, Option_t *option,
 }//ReadData
 
 //______________________________________________________________________________
-Int_t XGeneChip::ReadBinaryHeader(ifstream &input, const char */*sep*/, char /*delim*/)
+Int_t XGeneChip::ReadBinaryHeader(ifstream &input, const char * /*sep*/, char /*delim*/)
 {
    // Read header from binary input CDF file. 
    if(kCS) cout << "------XGeneChip::ReadBinaryHeader------" << endl;
@@ -3387,7 +3385,7 @@ Int_t XGeneChip::ReadBinaryHeader(ifstream &input, const char */*sep*/, char /*d
 
 //______________________________________________________________________________
 Int_t XGeneChip::ReadBinaryData(ifstream &input, Option_t *option,
-                 const char */*sep*/, char /*delim*/, Int_t split)
+                 const char * /*sep*/, char /*delim*/, Int_t split)
 {
    // Import scheme data from input CDF file and store in the following trees:
    // Scheme tree "tree.scm": UnitID, X, Y, PLen, Mask, Atom, PBase, TBase
@@ -3399,8 +3397,8 @@ Int_t XGeneChip::ReadBinaryData(ifstream &input, Option_t *option,
    Int_t i, k;
    Int_t err = errNoErr;
 
-   TString opt   = Path2Name(option,"/",".");
-   TString exten = Path2Name(option,".","");
+   TString opt   = Path2Name(option, dSEP, ".");
+   TString exten = Path2Name(option, ".", "");
 
 // Create new scheme tree
    fScmTreeName      = TString(fName) + "." + exten;
@@ -3438,7 +3436,7 @@ Int_t XGeneChip::ReadBinaryData(ifstream &input, Option_t *option,
 
    char pbase = 'N';
    char tbase = 'N';
-   char name[kUnitNameLength + 1];
+   char name[kUnitNameLength1];
    int  qcindex;
    int  geneindex;
 
@@ -3447,10 +3445,10 @@ Int_t XGeneChip::ReadBinaryData(ifstream &input, Option_t *option,
             int   ivalue;
 
 // Create array to store unit name
-   if (!(arrUnit = new (nothrow) TString[fNGenes])) {err = errInitMemory; goto cleanup;}
+   if (!(arrUnit = new (nothrow) TString[fNGenes]))  {err = errInitMemory; goto cleanup;}
 
 // Create table to store flag for (x,y) containing oligo data
-   if (!(arrXY = new (nothrow) Int_t*[fNRows])) {err = errInitMemory; goto cleanup;}
+   if (!(arrXY = new (nothrow) Int_t*[fNRows]))      {err = errInitMemory; goto cleanup;}
    for (i=0; i<fNRows; i++) {
       arrXY[i] = 0;
    }//for_i
@@ -3791,8 +3789,8 @@ Int_t XGeneChip::ImportTransAnnotation(ifstream &input, Option_t *option,
    TString start, stop, strand;
    TString bestalign, bestcyto;
 
-   TString opt   = Path2Name(option,"/",".");
-   TString exten = Path2Name(option,".","");
+   TString opt   = Path2Name(option, dSEP, ".");
+   TString exten = Path2Name(option, ".", "");
 
 // Get unit tree
    TString unitname = fName + "." + TString(kExtenScheme[2]);
@@ -3944,7 +3942,7 @@ Int_t XGeneChip::ImportTransAnnotation(ifstream &input, Option_t *option,
       // check number of separators
       if (numsep != NumSeparators(str, tab)) {
          cout << "Error: Wrong number of separators in line:" << endl;
-         cout << str << endl;
+         cout << str.Data() << endl;
          err = errReadingInput;
          goto cleanup;
       }//if
@@ -3998,7 +3996,7 @@ Int_t XGeneChip::ImportTransAnnotation(ifstream &input, Option_t *option,
             nalg  = kNumAlg;
             index = TokenizeString(names[i].Data(), nalg, align, kNumSl2, kSepSl2);
             if (nalg < 2) {
-               cerr << "Error: wrong token number for <" << names[i] << ">" << endl;
+               cerr << "Error: wrong token number for <" << names[i].Data() << ">" << endl;
                err = errReadingInput; goto cleanup;
             }//if
 
@@ -4066,8 +4064,9 @@ Int_t XGeneChip::ImportTransAnnotation(ifstream &input, Option_t *option,
             !(cytoband.Contains(arrChrom[idx]))) {
 //??            !(bestcyto.Contains(cytoband) || cytoband.Contains(bestcyto))) {
             if (XManager::fgVerbose == 11) {
-               cout << arrTrans[idx] << ": Column 'Alignments' <" << bestcyto << "> with best score <"  
-                    << maxscore << "> is not equal to column 'Chromosomal Location' <" << cytoband
+               cout << arrTrans[idx].Data() << ": Column 'Alignments' <" << bestcyto.Data()
+                    << "> with best score <" << maxscore
+                    << "> is not equal to column 'Chromosomal Location' <" << cytoband.Data()
                     << ">." << endl;
             }//if
             namb++;
@@ -4314,7 +4313,7 @@ Int_t XSNPChip::ImportProbeInfoXML(ifstream &input, Option_t *option,
 
 //______________________________________________________________________________
 Int_t XSNPChip::ReadData(ifstream &input, Option_t *option,
-                const char */*sep*/, char delim, Int_t split)
+                const char * /*sep*/, char delim, Int_t split)
 {
    // Import scheme data from input CDF file and store in the following trees:
    // Scheme tree "tree.scm": UnitID, X, Y, PLen, Mask, Atom, PBase, TBase
@@ -4327,8 +4326,8 @@ Int_t XSNPChip::ReadData(ifstream &input, Option_t *option,
    Int_t i, k, idx;
    Int_t err = errNoErr;
 
-   TString opt   = Path2Name(option,"/",".");
-   TString exten = Path2Name(option,".","");
+   TString opt   = Path2Name(option, dSEP, ".");
+   TString exten = Path2Name(option, ".", "");
 
 // Create new scheme tree
    fScmTreeName      = TString(fName) + "." + exten;
@@ -4419,7 +4418,6 @@ Int_t XSNPChip::ReadData(ifstream &input, Option_t *option,
          }//while
          unitname = &nextline[1];
          unitname = RemoveEnds(unitname.Data()); // remove "\n"
-//old         unitname = unitname.Remove(unitname.Length()-2);
 
          // get type ID of control
          while (strncmp("Type=", nextline, 5) != 0) {
@@ -4493,7 +4491,6 @@ Int_t XSNPChip::ReadData(ifstream &input, Option_t *option,
             input.getline(nextline, kBufSize, delim);
          }//while
          unitname = &nextline[5];
-//old         unitname = unitname.Remove(unitname.Length()-1); // remove "\n"
          unitname = RemoveEnds(unitname.Data()); // remove "\n"
 
          // get direction
@@ -5042,8 +5039,8 @@ Int_t XGenomeChip::ImportLayout(ifstream &input, Option_t *option,
       return errReadingInput;
    }//if
 
-   TString opt   = Path2Name(option,"/",".");
-   TString exten = Path2Name(option,".","");
+   TString opt   = Path2Name(option, dSEP, ".");
+   TString exten = Path2Name(option, ".", "");
 
 // Create new layout tree
    fCxyTreeName = TString(fName) + "." + exten;
@@ -5221,7 +5218,7 @@ Int_t XGenomeChip::ReadData(ifstream &input, Option_t *option,
    XGenomeAnnotation *ann = 0;
    TTree *anntree = (TTree*)gDirectory->Get(treename.Data());
    if (anntree == 0) {
-      cerr << "Error: Missing transcript annotation tree <" << treename << ">."
+      cerr << "Error: Missing transcript annotation tree <" << treename.Data() << ">."
            << endl;
       return errGetTree;
    }//if
@@ -5229,8 +5226,8 @@ Int_t XGenomeChip::ReadData(ifstream &input, Option_t *option,
 
    Int_t nentries = anntree->GetEntries();
 
-   TString opt   = Path2Name(option,"/",".");
-   TString exten = Path2Name(option,".","");
+   TString opt   = Path2Name(option, dSEP, ".");
+   TString exten = Path2Name(option, ".", "");
 
 // Create new scheme tree
    fScmTreeName      = TString(fName) + "." + exten;
@@ -5270,7 +5267,7 @@ Int_t XGenomeChip::ReadData(ifstream &input, Option_t *option,
    TString probe_type, sequence;
    Int_t   x, y;
 
-   Int_t    unitID = 0; //???replace with ??
+   Int_t    unitID = 0;   //???replace with ??
    Int_t    mask   = 0;   //???replace with ??
    Int_t    idx;
    Int_t    numcells, numatoms;
@@ -5725,7 +5722,8 @@ Int_t XGenomeChip::ReadData(ifstream &input, Option_t *option,
       probeset_type = TString(strtok(0, sep));
 
       if (psi[z] != probeset_id) {
-         cerr << "Error: Probeset_id <" << psi[z] << "> is not <" << probeset_id << ">." << endl;
+         cerr << "Error: Probeset_id <" << psi[z] << "> is not <" << probeset_id << ">."
+              << endl;
          err = errReadingInput;
          break; //ev goto cleanup;
       }//if
@@ -6158,8 +6156,8 @@ Int_t XGenomeChip::ImportTransAnnotation(ifstream &input, Option_t *option,
    TString assigngene, assignmrna, category;
    TString str, dummy;
 
-   TString opt   = Path2Name(option,"/",".");
-   TString exten = Path2Name(option,".","");
+   TString opt   = Path2Name(option, dSEP, ".");
+   TString exten = Path2Name(option, ".", "");
 
 // Init variables to tokenize lines
    const char *csv = "\",\""; //necessary to tokenize lines, better?: sep = "\",\"";
@@ -6356,7 +6354,7 @@ Int_t XGenomeChip::ImportTransAnnotation(ifstream &input, Option_t *option,
       // check number of separators
       if (numsep != NumSeparators(str, tab)) {
          cout << "Error: Wrong number of separators in line:" << endl;
-         cout << str << endl;
+         cout << str.Data() << endl;
          err = errReadingInput;
          goto cleanup;
       }//if
@@ -7064,7 +7062,7 @@ Int_t XExonChip::ExportUnitTree(Int_t n, TString *names, const char *varlist,
 // Output header
    output << "UNIT_ID";
    if (hasName) output << sep << "UnitName";
-   if (hasUnit) output << sep << substr;
+   if (hasUnit) output << sep << substr.Data();
    if (hasCell) output << sep << "NumCells";
    if (hasAtom) output << sep << "NumAtoms";
    if (hasSubu) output << sep << "NumSubunits";
@@ -7358,7 +7356,7 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
    XProbesetAnnotation *psann = 0;
    TTree *psanntree = (TTree*)gDirectory->Get(treename.Data());
    if (psanntree == 0) {
-      cerr << "Error: Missing probeset annotation tree <" << treename << ">."
+      cerr << "Error: Missing probeset annotation tree <" << treename.Data() << ">."
            << endl;
       return errGetTree;
    }//if
@@ -7366,8 +7364,8 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
 
    Int_t nentries = psanntree->GetEntries();
 
-   TString opt   = Path2Name(option,"/",".");
-   TString exten = Path2Name(option,".","");
+   TString opt   = Path2Name(option, dSEP, ".");
+   TString exten = Path2Name(option, ".", "");
 
 // Create new scheme tree
    fScmTreeName      = TString(fName) + "." + exten;
@@ -8712,8 +8710,8 @@ Int_t XExonChip::ImportTransAnnotation(ifstream &input, Option_t *option,
    TString assigngene, assignmrna, category;
    TString str, dummy;
 
-   TString opt   = Path2Name(option,"/",".");
-   TString exten = Path2Name(option,".","");
+   TString opt   = Path2Name(option, dSEP, ".");
+   TString exten = Path2Name(option, ".", "");
 
 // Init variables to tokenize lines
    const char *csv = "\",\""; //necessary to tokenize lines, better?: sep = "\",\"";
@@ -8901,7 +8899,7 @@ Int_t XExonChip::ImportTransAnnotation(ifstream &input, Option_t *option,
       // check number of separators
       if (numsep != NumSeparators(str, tab)) {
          cout << "Error: Wrong number of separators in line:" << endl;
-         cout << str << endl;
+         cout << str.Data() << endl;
          err = errReadingInput;
          goto cleanup;
       }//if
@@ -9177,8 +9175,8 @@ Int_t XExonChip::ImportProbesetAnnotation(ifstream &input, Option_t *option,
    Int_t exonstart = 0;
    Int_t exonstop  = 0;
 
-   TString opt   = Path2Name(option,"/",".");
-   TString exten = Path2Name(option,".","");
+   TString opt   = Path2Name(option, dSEP, ".");
+   TString exten = Path2Name(option, ".", "");
 
    //annotation file is at least version 1.8 (human), 1.3 (mouse), 1.3 (rat)?
    Bool_t hasPST = kFALSE;
@@ -9782,7 +9780,7 @@ cleanup:
 }//ImportProbesetAnnotation
 
 //______________________________________________________________________________
-Int_t XExonChip::ImportControlAnnotation(ifstream &input, Option_t */*option*/, 
+Int_t XExonChip::ImportControlAnnotation(ifstream &input, Option_t * /*option*/, 
                  const char *sep, char delim, Int_t /*split*/)
 {
    // Import control->affx annotation from infile and store in list fAffxNames
@@ -9861,7 +9859,7 @@ Int_t XExonChip::ImportControlAnnotation(ifstream &input, Option_t */*option*/,
       // check number of separators
       if (numsep != NumSeparators(str, sep)) {
          cout << "Error: Wrong number of separators in line:" << endl;
-         cout << str << endl;
+         cout << str.Data() << endl;
          err = errReadingInput;
          goto cleanup;
       }//if

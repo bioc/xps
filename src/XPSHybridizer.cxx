@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2007 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -39,7 +39,8 @@
 #include "Varargs.h"
 //#endif
 
-#include <new>  //needed for new (nothrow)
+#include <new>        //needed for new (nothrow)
+#include <algorithm>  //needed for sort (STL vector) for VC++ 
 
 #include "TBranch.h"
 #include "TKey.h"
@@ -1155,7 +1156,7 @@ Int_t XRMABackground::Calculate(Int_t n, Double_t *x, Double_t *y, Double_t *z,
       err = errAbort;
       goto cleanup;
    } else {
-      cerr << "Error: Option <" << fOption << "> is not applicable." << endl;
+      cerr << "Error: Option <" << fOption.Data() << "> is not applicable." << endl;
       err = errAbort;
       goto cleanup;
    }//if

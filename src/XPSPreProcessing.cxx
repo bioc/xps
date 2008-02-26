@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 10/30/2007
+// File created: 08/05/2002                          last modified: 02/16/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2007 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -34,7 +34,6 @@
  * For the list of contributors to "The ROOT System" see http://root.cern.ch/  *
  *******************************************************************************
  */
-
 
 /******************************************************************************
 * Major Revision History:
@@ -1323,9 +1322,9 @@ Int_t XGCProcesSet::Preprocess(const char *method)
    if (!(htable = new THashTable(2*numdata))) return errInitMemory;
 
 // Initialize data trees and background trees
-   TTree *datatree[numdata+1]; //for possible Reference tree for normalization
-   TTree *bgrdtree[numdata];
-   TTree *temptree[numdata];
+   TTree **datatree = new TTree*[numdata+1]; //for possible Reference tree for normalization
+   TTree **bgrdtree = new TTree*[numdata];
+   TTree **temptree = new TTree*[numdata];
    for (Int_t k=0; k<numdata; k++) datatree[k] = bgrdtree[k] = temptree[k] = 0;
 
    numdata = 0;
@@ -1362,7 +1361,7 @@ Int_t XGCProcesSet::Preprocess(const char *method)
 
 // Check again for equal number of bgrd trees and corresponding data trees
    if ((numbgrd > 0) && (numbgrd != numdata)) {
-      cerr << "Error: <" << numdata-numbgrd 
+      cerr << "Error: <" << (numdata - numbgrd) 
            << "> data trees have no corresponding background tree!" << endl;
       err = errAbort; goto cleanup;
    }//if
@@ -1430,6 +1429,10 @@ Int_t XGCProcesSet::Preprocess(const char *method)
 
 // Cleanup
 cleanup:
+   delete [] temptree;
+   delete [] bgrdtree;
+   delete [] datatree;
+
    SafeDelete(fSchemes);
    SafeDelete(fData);
 
@@ -1569,7 +1572,7 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
       else if (!fFile->cd(fName)) return errGetDir;
 
    // Create new tree bgrdtree
-      TString dataname = Path2Name(datatree[k]->GetName(),"/",".");
+      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
       TString bgrdname = dataname + "." + fBackgrounder->GetTitle();
       bgrdtree[k] = new TTree(bgrdname, fSchemeName);
       if (bgrdtree[k] == 0) return errCreateTree;
@@ -1757,7 +1760,7 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
 // Initialize reference trees
    Int_t  numsels = fSelections ? fSelections->GetSize() : 0;
    Int_t  numrefs = fReferences ? fReferences->GetSize() : 0;
-   TTree *reftree[numrefs];
+   TTree **reftree = new TTree*[numrefs];
    for (Int_t j=0; j<numrefs; j++) reftree[j] = 0;
 
 ///////////
@@ -1843,7 +1846,7 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
 
          // informing user
          if (XManager::fgVerbose) {
-            cout << "         filling array <" << treename << ">..." << endl;
+            cout << "         filling array <" << treename.Data() << ">..." << endl;
          }//if
 
          err = this->FillDataArrays(datatree[k], bgrdtree[k], doBg,
@@ -1877,7 +1880,7 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
          cout << "         filling array <" << kReference << ">..." << endl;
       }//if
 
-      TTree *rbgtree[numrefs];
+      TTree **rbgtree = new TTree*[numrefs];
       for (Int_t j=0; j<numrefs; j++) rbgtree[j] = 0;
 
       // find correct bgrdtree for each reftree
@@ -1908,7 +1911,7 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
 
          // check for equal number of bgrd trees and corresponding reference trees
          if ((numrbgs > 0) && (numrbgs != numrefs)) {
-            cerr << "Error: <" << numrefs - numrbgs 
+            cerr << "Error: <" << (numrefs - numrbgs) 
                  << "> reference trees have no corresponding background tree!"
                  << endl;
             err = errAbort;
@@ -1937,6 +1940,9 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
       refstr = ((TObjString*)fSelections->Last())->GetString();
 //PROBLEM?? see XPSNormation.cxx ca line 1030!! need to create NEW refstrg??:
 //??refstr = new TObjString(kReference);
+
+      delete [] rbgtree;
+
       numsels++;
    } else {
          cerr << "Error: No reference tree is selected." << endl;
@@ -1956,7 +1962,8 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
 
          // informing user
          if (XManager::fgVerbose) {
-            cout << "         filling tree <" << (treename + "." + exten) << ">..." << endl;
+            cout << "         filling tree <" << (treename + "." + exten).Data() << ">..."
+                 << endl;
          }//if
 
          arrInty = fNormalizer->GetArray(size, arrInty, arrMask, treename);
@@ -2037,6 +2044,8 @@ cleanup:
    if (arrInty) {delete [] arrInty; arrInty = 0;}
    if (arrIntx) {delete [] arrIntx; arrIntx = 0;}
    if (arrMask) {delete [] arrMask; arrMask = 0;}
+
+   delete [] reftree;
    // delete scheme tree from RAM
 //   if (scmtree) {scmtree->Delete(""); scmtree = 0;}
 
@@ -2131,14 +2140,14 @@ Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
    // Informing user
       TString name = datatree[k]->GetName();
       if (XManager::fgVerbose) {
-         cout << "      calculating present call for <" << name << ">..." << endl;
+         cout << "      calculating present call for <" << name.Data() << ">..." << endl;
       }//if
 
    // Get tree info for datatree name.exten
       XDataTreeInfo *info = 0;
       info = (XDataTreeInfo*)datatree[k]->GetUserInfo()->FindObject(name);
       if (!info) {
-         cerr << "Error: Could not get tree info for <" << name << ">." << endl;
+         cerr << "Error: Could not get tree info for <" << name.Data() << ">." << endl;
          return errGeneral;
       }//if
 
@@ -2258,7 +2267,7 @@ Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
    // Create new tree calltree
       if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
 
-      name = Path2Name(datatree[k]->GetName(),"/",".") + "." + fCaller->GetTitle();
+      name = Path2Name(datatree[k]->GetName(), dSEP, ".") + "." + fCaller->GetTitle();
       calltree = new TTree(name, fSchemeName);
       if (calltree == 0) {err = errCreateTree; goto cleanup;}
       call = new XPCall();
@@ -2480,7 +2489,7 @@ Int_t XGCProcesSet::ExportBgrdTrees(Int_t n, TString *names, const char *varlist
    } else {
       char *name  = new char[strlen(varlist) + 1];
       char *dname = name;
-      name = strtok(strcpy(name,varlist),":");
+      name = strtok(strcpy(name, varlist), ":");
       while(name) {
          if (strcmp(name,"fBg")    == 0) {hasBgrd = kTRUE;}
          if (strcmp(name,"fStdev") == 0) {hasStdv = kTRUE;}
@@ -2491,8 +2500,8 @@ Int_t XGCProcesSet::ExportBgrdTrees(Int_t n, TString *names, const char *varlist
    }//if
 
 // Get trees
-   TTree   *tree[n];
-   XBgCell *cell[n];
+   TTree   **tree = new TTree*[n];
+   XBgCell **cell = new XBgCell*[n];
    if (fTrees->GetSize() == 0) {
    // Get trees from names
       for (Int_t k=0; k<n; k++) {
@@ -2517,8 +2526,8 @@ Int_t XGCProcesSet::ExportBgrdTrees(Int_t n, TString *names, const char *varlist
    output << "X" << sep << "Y";
    if (n > 1) {
       for (Int_t i=0; i<n; i++) {
-         if (hasBgrd) output << sep << (names[i] + "_BGRD");
-         if (hasStdv) output << sep << (names[i] + "_STDV");
+         if (hasBgrd) output << sep << (names[i] + "_BGRD").Data();
+         if (hasStdv) output << sep << (names[i] + "_STDV").Data();
       }//for_i
    } else {
       if (hasBgrd) output << sep << "BGRD";
@@ -2537,6 +2546,9 @@ Int_t XGCProcesSet::ExportBgrdTrees(Int_t n, TString *names, const char *varlist
       }//for_k
       output << endl;
    }//for_i
+
+   delete [] cell;
+   delete [] tree;
 
    return errNoErr;
 }//ExportBgrdTrees
@@ -2572,8 +2584,8 @@ Int_t XGCProcesSet::ExportIntnTrees(Int_t n, TString *names, const char *varlist
    }//if
 
 // Get trees
-   TTree   *tree[n];
-   XGCCell *cell[n];
+   TTree   **tree = new TTree*[n];
+   XGCCell **cell = new XGCCell*[n];
    if (fTrees->GetSize() == 0) {
    // Get trees from names
       for (Int_t k=0; k<n; k++) {
@@ -2598,9 +2610,9 @@ Int_t XGCProcesSet::ExportIntnTrees(Int_t n, TString *names, const char *varlist
    output << "X" << sep << "Y";
    if (n > 1) {
       for (Int_t i=0; i<n; i++) {
-         if (hasMean) output << sep << (names[i] + "_MEAN");
-         if (hasStdv) output << sep << (names[i] + "_STDV");
-         if (hasNPix) output << sep << (names[i] + "_NPIXELS");
+         if (hasMean) output << sep << (names[i] + "_MEAN").Data();
+         if (hasStdv) output << sep << (names[i] + "_STDV").Data();
+         if (hasNPix) output << sep << (names[i] + "_NPIXELS").Data();
       }//for_i
    } else {
       if (hasMean) output << sep << "MEAN";
@@ -2621,6 +2633,9 @@ Int_t XGCProcesSet::ExportIntnTrees(Int_t n, TString *names, const char *varlist
       }//for_k
       output << endl;
    }//for_i
+
+   delete [] cell;
+   delete [] tree;
 
    return errNoErr;
 }//ExportIntnTrees
@@ -2714,8 +2729,8 @@ Int_t XGCProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
            : hasData);
 
 // Get trees
-   TTree       *tree[n];
-   XExpression *expr[n];
+   TTree       **tree = new TTree*[n];
+   XExpression **expr = new XExpression*[n];
 
    if (fTrees->GetSize() == 0) {
    // Get trees from names
@@ -2741,7 +2756,7 @@ Int_t XGCProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
    if (strcmp(fSchemeName.Data(), "") == 0) {
       fSchemeName = tree[0]->GetTitle();
    } else if (!fSchemeName.Contains(tree[0]->GetTitle())) {
-      cerr << "Error: Scheme <" << fSchemeName << "> is not derived from <"
+      cerr << "Error: Scheme <" << fSchemeName.Data() << "> is not derived from <"
            << tree[0]->GetTitle() << ">." << endl;
       hasUnit  = 0;
       hasAnnot = 0;
@@ -2790,7 +2805,7 @@ Int_t XGCProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
             }//if
          }//if
       } else {
-         cerr << "Error: Could not find scheme <" << fSchemeName << ">." << endl;
+         cerr << "Error: Could not find scheme <" << fSchemeName.Data() << ">." << endl;
          hasUnit  = 0;
          hasAnnot = 0;
       }//if
@@ -2840,9 +2855,9 @@ Int_t XGCProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
             if (hasNPairs) output << sep << "NUMBER_PAIRS";
          } else {
             for (Int_t k=0; k<n; k++) {
-               if (hasLevel)  output << sep << (names[k] + "_LEVEL");
-               if (hasStdev)  output << sep << (names[k] + "_STDEV");
-               if (hasNPairs) output << sep << (names[k] + "_NUMBER_PAIRS");
+               if (hasLevel)  output << sep << (names[k] + "_LEVEL").Data();
+               if (hasStdev)  output << sep << (names[k] + "_STDEV").Data();
+               if (hasNPairs) output << sep << (names[k] + "_NUMBER_PAIRS").Data();
             }//for_k
          }//if
       }//if
@@ -2896,6 +2911,9 @@ Int_t XGCProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
    if (anntree)  {anntree->Delete("");  anntree  = 0;}
    if (unittree) {unittree->Delete(""); unittree = 0;}
    SafeDelete(schemes);
+
+   delete [] expr;
+   delete [] tree;
 
    return errNoErr;
 }//ExportExprTrees
@@ -2973,8 +2991,8 @@ Int_t XGCProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varlist
            : hasPVal);
 
 // Get trees
-   TTree  *tree[n];
-   XPCall *call[n];
+   TTree  **tree = new TTree*[n];
+   XPCall **call = new XPCall*[n];
    if (fTrees->GetSize() == 0) {
    // Get trees from names
       for (Int_t k=0; k<n; k++) {
@@ -2999,7 +3017,7 @@ Int_t XGCProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varlist
    if (strcmp(fSchemeName.Data(), "") == 0) {
       fSchemeName = tree[0]->GetTitle();
    } else if (!fSchemeName.Contains(tree[0]->GetTitle())) {
-      cerr << "Error: Scheme <" << fSchemeName << "> is not derived from <"
+      cerr << "Error: Scheme <" << fSchemeName.Data() << "> is not derived from <"
            << tree[0]->GetTitle() << ">." << endl;
       hasUnit  = 0;
       hasAnnot = 0;
@@ -3048,7 +3066,7 @@ Int_t XGCProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varlist
             }//if
          }//if
       } else {
-         cerr << "Error: Could not find scheme <" << fSchemeName << ">." << endl;
+         cerr << "Error: Could not find scheme <" << fSchemeName.Data() << ">." << endl;
          hasUnit  = 0;
          hasAnnot = 0;
       }//if
@@ -3097,8 +3115,8 @@ Int_t XGCProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varlist
             if (hasPVal)  output << sep << "PVALUE";
          } else {
             for (Int_t k=0; k<n; k++) {
-               if (hasCall)  output << sep << (names[k] + "_CALL");
-               if (hasPVal)  output << sep << (names[k] + "_PVALUE");
+               if (hasCall)  output << sep << (names[k] + "_CALL").Data();
+               if (hasPVal)  output << sep << (names[k] + "_PVALUE").Data();
             }//for_k
          }//if
       }//if
@@ -3162,6 +3180,9 @@ Int_t XGCProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varlist
    if (anntree)  {anntree->Delete("");  anntree  = 0;}
    if (unittree) {unittree->Delete(""); unittree = 0;}
    SafeDelete(schemes);
+
+   delete [] call;
+   delete [] tree;
 
    return errNoErr;
 }//ExportCallTrees
@@ -3672,8 +3693,8 @@ Int_t XGCProcesSet::MeanReference(Int_t numdata, TTree **datatree, Int_t numbgrd
    if(kCS) cout << "------XGCProcesSet::MeanReference------" << endl;
 
 // Init branch addresses
-   XBgCell *bgcell[numdata];
-   XGCCell *gccell[numdata];
+   XBgCell **bgcell = new XBgCell*[numdata];
+   XGCCell **gccell = new XGCCell*[numdata];
    for (Int_t k=0; k<numdata; k++) {
       bgcell[k] = 0;
       gccell[k] = 0;
@@ -3731,7 +3752,10 @@ Int_t XGCProcesSet::MeanReference(Int_t numdata, TTree **datatree, Int_t numbgrd
       }//for_i
    }//if
 
+   delete [] gccell;
+   delete [] bgcell;
    delete [] arrRef;
+
    return errNoErr;
 }//MeanReference
 
@@ -3801,7 +3825,7 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
       XDataTreeInfo *info = 0;
       info = (XDataTreeInfo*)datatree[k]->GetUserInfo()->FindObject(name);
       if (!info) {
-         cerr << "Error: Could not get tree info for <" << name << ">." << endl;
+         cerr << "Error: Could not get tree info for <" << name.Data() << ">." << endl;
          err = errGeneral;
          break;
       }//if
@@ -3853,7 +3877,7 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
    // Create new tree exprtree
       if (!fFile->cd(fName)) {err = errGetDir; break;}
 
-      TString dataname = Path2Name(datatree[k]->GetName(),"/",".");
+      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
       TString exprname = dataname + "." + fExpressor->GetTitle();
       TTree  *exprtree = new TTree(exprname, fSchemeName);
       if (exprtree == 0) {err = errCreateTree; break;}
@@ -4112,8 +4136,8 @@ Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    }//if
 
 // Init branch addresses
-   XBgCell *bgcell[numdata];
-   XGCCell *gccell[numdata];
+   XBgCell **bgcell = new XBgCell*[numdata];
+   XGCCell **gccell = new XGCCell*[numdata];
    for (Int_t k=0; k<numdata; k++) {
       bgcell[k] = 0;
       gccell[k] = 0;
@@ -4123,8 +4147,8 @@ Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 
 // Init expression trees
    Int_t  split = 99;
-   TTree *exprtree[numdata];
-   XGCExpression *expr[numdata];
+   TTree     **exprtree = new TTree*[numdata];
+   XGCExpression **expr = new XGCExpression*[numdata];
 
 // Init min/max expression levels
    Double_t min = DBL_MAX;  //defined in float.h
@@ -4225,7 +4249,7 @@ Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
 
    for (Int_t k=0; k<numdata; k++) {
-      TString dataname = Path2Name(datatree[k]->GetName(),"/",".");
+      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
       TString exprname = dataname + "." + fExpressor->GetTitle();
       exprtree[k] = new TTree(exprname, fSchemeName);
       if (exprtree[k] == 0) {err = errCreateTree; goto cleanup;}
@@ -4369,6 +4393,11 @@ cleanup:
    // delete scheme tree from RAM
 //?   if (scmtree)  {scmtree->Delete(""); scmtree = 0;}
 
+   delete [] expr;
+   delete [] exprtree;
+   delete [] gccell;
+   delete [] bgcell;
+
    return err;
 }//DoMedianPolish
 
@@ -4463,8 +4492,8 @@ Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    }//if
 
 // Init branch addresses
-   XBgCell *bgcell[numdata];
-   XGCCell *gccell[numdata];
+   XBgCell **bgcell = new XBgCell*[numdata];
+   XGCCell **gccell = new XGCCell*[numdata];
    for (Int_t k=0; k<numdata; k++) {
       bgcell[k] = 0;
       gccell[k] = 0;
@@ -4475,9 +4504,9 @@ Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 // Init temporary trees and expression trees
    Int_t    split = 99;
    Double_t sort  = 0.0;
-   TTree *tmptree[numdata];
-   TTree *exprtree[numdata];
-   XGCExpression *expr[numdata];
+   TTree     **tmptree  = new TTree*[numdata];
+   TTree     **exprtree = new TTree*[numdata];
+   XGCExpression **expr = new XGCExpression*[numdata];
 
 // Init min/max expression levels
    Double_t min = DBL_MAX;  //defined in float.h
@@ -4600,7 +4629,7 @@ Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 
 // Create new trees exprtree
    for (Int_t k=0; k<numdata; k++) {
-      TString dataname = Path2Name(datatree[k]->GetName(),"/",".");
+      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
       TString exprname = dataname + "." + fExpressor->GetTitle();
       exprtree[k] = new TTree(exprname, fSchemeName);
       if (exprtree[k] == 0) {err = errCreateTree; goto cleanup;}
@@ -4747,6 +4776,12 @@ cleanup:
    // delete scheme tree from RAM
 //?   if (scmtree)  {scmtree->Delete(""); scmtree = 0;}
 
+   delete [] expr;
+   delete [] exprtree;
+   delete [] tmptree;
+   delete [] gccell;
+   delete [] bgcell;
+
    return err;
 }//DoMedianPolish
 
@@ -4833,14 +4868,14 @@ Int_t XGenomeProcesSet::DetectCall(Int_t numdata, TTree **datatree,
    // Informing user
       TString name = datatree[k]->GetName();
       if (XManager::fgVerbose) {
-         cout << "      calculating present call for <" << name << ">..." << endl;
+         cout << "      calculating present call for <" << name.Data() << ">..." << endl;
       }//if
 
    // Get tree info for datatree
       XDataTreeInfo *info = 0;
       info = (XDataTreeInfo*)datatree[k]->GetUserInfo()->FindObject(name);
       if (!info) {
-         cerr << "Error: Could not get tree info for <" << name << ">." << endl;
+         cerr << "Error: Could not get tree info for <" << name.Data() << ">." << endl;
          return errGeneral;
       }//if
 
@@ -4993,7 +5028,7 @@ Int_t XGenomeProcesSet::DetectCall(Int_t numdata, TTree **datatree,
    // Create new tree calltree
       if (!fFile->cd(fName)) return errGetDir;
 
-      name = Path2Name(datatree[k]->GetName(),"/",".") + "." + fCaller->GetTitle();
+      name = Path2Name(datatree[k]->GetName(), dSEP, ".") + "." + fCaller->GetTitle();
       calltree = new TTree(name, fSchemeName);
       if (calltree == 0) return errCreateTree;
       call = new XPCall();
@@ -5207,7 +5242,7 @@ Int_t XGenomeProcesSet::DoExpress(Int_t numdata, TTree **datatree,
    // Informing user
       TString name = datatree[k]->GetName();
       if (XManager::fgVerbose) {
-         cout << "      summarizing <" << name << "> using <" << fExpressor->GetName()
+         cout << "      summarizing <" << name.Data() << "> using <" << fExpressor->GetName()
               << ">..." << endl;
       }//if
 
@@ -5217,7 +5252,7 @@ Int_t XGenomeProcesSet::DoExpress(Int_t numdata, TTree **datatree,
       XDataTreeInfo *info = 0;
       info = (XDataTreeInfo*)datatree[k]->GetUserInfo()->FindObject(name);
       if (!info) {
-         cerr << "Error: Could not get tree info for <" << name << ">." << endl;
+         cerr << "Error: Could not get tree info for <" << name.Data() << ">." << endl;
          return errGeneral;
       }//if
 
@@ -5270,7 +5305,7 @@ Int_t XGenomeProcesSet::DoExpress(Int_t numdata, TTree **datatree,
    // Create new tree exprtree
       if (!fFile->cd(fName)) return errGetDir;
 
-      TString dataname = Path2Name(datatree[k]->GetName(),"/",".");
+      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
       TString exprname = dataname + "." + fExpressor->GetTitle();
       TTree  *exprtree = new TTree(exprname, fSchemeName);
       if (exprtree == 0) return errCreateTree;
@@ -5578,8 +5613,8 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    }//if
 
 // Init branch addresses
-   XBgCell *bgcell[numdata];
-   XGCCell *gccell[numdata];
+   XBgCell **bgcell = new XBgCell*[numdata];
+   XGCCell **gccell = new XGCCell*[numdata];
    for (Int_t k=0; k<numdata; k++) {
       bgcell[k] = 0;
       gccell[k] = 0;
@@ -5589,8 +5624,10 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 
 // Init expression trees
    Int_t  split = 99;
-   TTree *exprtree[numdata];
-   XGCExpression *expr[numdata];
+//x   TTree *exprtree[numdata];
+//x   XGCExpression *expr[numdata];
+   TTree     **exprtree = new TTree*[numdata];
+   XGCExpression **expr = new XGCExpression*[numdata];
 
 // Init min/max expression levels
    Double_t min = DBL_MAX;  //defined in float.h
@@ -5717,7 +5754,7 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
 
    for (Int_t k=0; k<numdata; k++) {
-      TString dataname = Path2Name(datatree[k]->GetName(),"/",".");
+      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
       TString exprname = dataname + "." + fExpressor->GetTitle();
       exprtree[k] = new TTree(exprname, fSchemeName);
       if (exprtree[k] == 0) {err = errCreateTree; goto cleanup;}
@@ -5864,6 +5901,11 @@ cleanup:
    if (arrIndx) {delete [] arrIndx; arrIndx = 0;}
    if (arrMask) {delete [] arrMask; arrMask = 0;}
 
+   delete [] expr;
+   delete [] exprtree;
+   delete [] gccell;
+   delete [] bgcell;
+
    return err;
 }//DoMedianPolish
 
@@ -5961,8 +6003,8 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    }//if
 
 // Init branch addresses
-   XBgCell *bgcell[numdata];
-   XGCCell *gccell[numdata];
+   XBgCell **bgcell = new XBgCell*[numdata];
+   XGCCell **gccell = new XGCCell*[numdata];
    for (Int_t k=0; k<numdata; k++) {
       bgcell[k] = 0;
       gccell[k] = 0;
@@ -5973,9 +6015,9 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 // Init temporary trees and expression trees
    Int_t    split = 99;
    Double_t sort  = 0.0;
-   TTree *tmptree[numdata];
-   TTree *exprtree[numdata];
-   XGCExpression *expr[numdata];
+   TTree     **tmptree  = new TTree*[numdata];
+   TTree     **exprtree = new TTree*[numdata];
+   XGCExpression **expr = new XGCExpression*[numdata];
 
 // Init min/max expression levels
    Double_t min = DBL_MAX;  //defined in float.h
@@ -6123,7 +6165,7 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 
 // Create new trees exprtree
    for (Int_t k=0; k<numdata; k++) {
-      TString dataname = Path2Name(datatree[k]->GetName(),"/",".");
+      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
       TString exprname = dataname + "." + fExpressor->GetTitle();
       exprtree[k] = new TTree(exprname, fSchemeName);
       if (exprtree[k] == 0) {err = errCreateTree; goto cleanup;}
@@ -6270,6 +6312,12 @@ cleanup:
    if (arrIndx) {delete [] arrIndx; arrIndx = 0;}
    if (arrMask) {delete [] arrMask; arrMask = 0;}
 
+   delete [] expr;
+   delete [] exprtree;
+   delete [] tmptree;
+   delete [] gccell;
+   delete [] bgcell;
+
    return err;
 }//DoMedianPolish
 
@@ -6354,8 +6402,8 @@ Int_t XGenomeProcesSet::ExportExprTrees(Int_t n, TString *names, const char *var
            : hasData);
 
 // Get trees
-   TTree       *tree[n];
-   XExpression *expr[n];
+   TTree       **tree = new TTree*[n];
+   XExpression **expr = new XExpression*[n];
 
    if (fTrees->GetSize() == 0) {
    // Get trees from names
@@ -6381,7 +6429,7 @@ Int_t XGenomeProcesSet::ExportExprTrees(Int_t n, TString *names, const char *var
    if (strcmp(fSchemeName.Data(), "") == 0) {
       fSchemeName = tree[0]->GetTitle();
    } else if (!fSchemeName.Contains(tree[0]->GetTitle())) {
-      cerr << "Error: Scheme <" << fSchemeName << "> is not derived from <"
+      cerr << "Error: Scheme <" << fSchemeName.Data() << "> is not derived from <"
            << tree[0]->GetTitle() << ">." << endl;
       return errAbort;
    }//if
@@ -6457,9 +6505,9 @@ Int_t XGenomeProcesSet::ExportExprTrees(Int_t n, TString *names, const char *var
             if (hasNPairs) output << sep << "NUMBER_PAIRS";
          } else {
             for (Int_t k=0; k<n; k++) {
-               if (hasLevel)  output << sep << (names[k] + "_LEVEL");
-               if (hasStdev)  output << sep << (names[k] + "_STDEV");
-               if (hasNPairs) output << sep << (names[k] + "_NUMBER_PAIRS");
+               if (hasLevel)  output << sep << (names[k] + "_LEVEL").Data();
+               if (hasStdev)  output << sep << (names[k] + "_STDEV").Data();
+               if (hasNPairs) output << sep << (names[k] + "_NUMBER_PAIRS").Data();
             }//for_k
          }//if
       }//if
@@ -6541,6 +6589,9 @@ cleanup:
    if (htable)   {htable->Delete(); delete htable; htable = 0;}
    SafeDelete(schemes);
 
+   delete [] expr;
+   delete [] tree;
+
    return err;
 }//ExportExprTrees
 
@@ -6619,8 +6670,8 @@ Int_t XGenomeProcesSet::ExportCallTrees(Int_t n, TString *names, const char *var
            : hasPVal);
 
 // Get trees
-   TTree  *tree[n];
-   XPCall *call[n];
+   TTree  **tree = new TTree*[n];
+   XPCall **call = new XPCall*[n];
 
    if (fTrees->GetSize() == 0) {
    // Get trees from names
@@ -6646,7 +6697,7 @@ Int_t XGenomeProcesSet::ExportCallTrees(Int_t n, TString *names, const char *var
    if (strcmp(fSchemeName.Data(), "") == 0) {
       fSchemeName = tree[0]->GetTitle();
    } else if (!fSchemeName.Contains(tree[0]->GetTitle())) {
-      cerr << "Error: Scheme <" << fSchemeName << "> is not derived from <"
+      cerr << "Error: Scheme <" << fSchemeName.Data() << "> is not derived from <"
            << tree[0]->GetTitle() << ">." << endl;
       return errAbort;
    }//if
@@ -6721,8 +6772,8 @@ Int_t XGenomeProcesSet::ExportCallTrees(Int_t n, TString *names, const char *var
             if (hasPVal) output << sep << "PVALUE";
          } else {
             for (Int_t k=0; k<n; k++) {
-               if (hasCall) output << sep << (names[k] + "_CALL");
-               if (hasPVal) output << sep << (names[k] + "_PVALUE");
+               if (hasCall) output << sep << (names[k] + "_CALL").Data();
+               if (hasPVal) output << sep << (names[k] + "_PVALUE").Data();
             }//for_k
          }//if
       }//if
@@ -6813,6 +6864,9 @@ cleanup:
    if (unittree) {unittree->Delete(""); unittree = 0;}
    if (htable)   {htable->Delete(); delete htable; htable = 0;}
    SafeDelete(schemes);
+
+   delete [] call;
+   delete [] tree;
 
    return err;
 }//ExportCallTrees
@@ -6976,14 +7030,14 @@ Int_t XExonProcesSet::DetectCall(Int_t numdata, TTree **datatree,
    // Informing user
       TString name = datatree[k]->GetName();
       if (XManager::fgVerbose) {
-         cout << "      calculating present call for <" << name << ">..." << endl;
+         cout << "      calculating present call for <" << name.Data() << ">..." << endl;
       }//if
 
    // Get tree info for datatree
       XDataTreeInfo *info = 0;
       info = (XDataTreeInfo*)datatree[k]->GetUserInfo()->FindObject(name);
       if (!info) {
-         cerr << "Error: Could not get tree info for <" << name << ">." << endl;
+         cerr << "Error: Could not get tree info for <" << name.Data() << ">." << endl;
          return errGeneral;
       }//if
 
@@ -7156,7 +7210,7 @@ Int_t XExonProcesSet::DetectCall(Int_t numdata, TTree **datatree,
    // Create new tree calltree
       if (!fFile->cd(fName)) return errGetDir;
 
-      name = Path2Name(datatree[k]->GetName(),"/",".") + "." + fCaller->GetTitle();
+      name = Path2Name(datatree[k]->GetName(), dSEP, ".") + "." + fCaller->GetTitle();
       calltree = new TTree(name, fSchemeName);
       if (calltree == 0) return errCreateTree;
       call = new XPCall();
@@ -7370,7 +7424,7 @@ Int_t XExonProcesSet::DoExpress(Int_t numdata, TTree **datatree,
    // Informing user
       TString name = datatree[k]->GetName();
       if (XManager::fgVerbose) {
-         cout << "      summarizing <" << name << "> using <" << fExpressor->GetName()
+         cout << "      summarizing <" << name.Data() << "> using <" << fExpressor->GetName()
               << ">..." << endl;
       }//if
 
@@ -7380,7 +7434,7 @@ Int_t XExonProcesSet::DoExpress(Int_t numdata, TTree **datatree,
       XDataTreeInfo *info = 0;
       info = (XDataTreeInfo*)datatree[k]->GetUserInfo()->FindObject(name);
       if (!info) {
-         cerr << "Error: Could not get tree info for <" << name << ">." << endl;
+         cerr << "Error: Could not get tree info for <" << name.Data() << ">." << endl;
          return errGeneral;
       }//if
 
@@ -7450,7 +7504,7 @@ Int_t XExonProcesSet::DoExpress(Int_t numdata, TTree **datatree,
    // Create new tree exprtree
       if (!fFile->cd(fName)) return errGetDir;
 
-      TString dataname = Path2Name(datatree[k]->GetName(),"/",".");
+      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
       TString exprname = dataname + "." + fExpressor->GetTitle();
       TTree  *exprtree = new TTree(exprname, fSchemeName);
       if (exprtree == 0) return errCreateTree;
@@ -7776,8 +7830,8 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    }//if
 
 // Init branch addresses
-   XBgCell *bgcell[numdata];
-   XGCCell *gccell[numdata];
+   XBgCell **bgcell = new XBgCell*[numdata];
+   XGCCell **gccell = new XGCCell*[numdata];
    for (Int_t k=0; k<numdata; k++) {
       bgcell[k] = 0;
       gccell[k] = 0;
@@ -7787,8 +7841,8 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 
 // Init expression trees
    Int_t  split = 99;
-   TTree *exprtree[numdata];
-   XGCExpression *expr[numdata];
+   TTree     **exprtree = new TTree*[numdata];
+   XGCExpression **expr = new XGCExpression*[numdata];
 
 // Init min/max expression levels
    Double_t min = DBL_MAX;  //defined in float.h
@@ -7914,7 +7968,7 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
 
    for (Int_t k=0; k<numdata; k++) {
-      TString dataname = Path2Name(datatree[k]->GetName(),"/",".");
+      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
       TString exprname = dataname + "." + fExpressor->GetTitle();
       exprtree[k] = new TTree(exprname, fSchemeName);
       if (exprtree[k] == 0) {err = errCreateTree; goto cleanup;}
@@ -8056,6 +8110,11 @@ cleanup:
    if (arrMask) {delete [] arrMask; arrMask = 0;}
    if (arrIndx) {delete [] arrIndx; arrIndx = 0;}
 
+   delete [] expr;
+   delete [] exprtree;
+   delete [] gccell;
+   delete [] bgcell;
+
    return err;
 }//DoMedianPolish
 
@@ -8171,8 +8230,8 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    }//if
 
 // Init branch addresses
-   XBgCell *bgcell[numdata];
-   XGCCell *gccell[numdata];
+   XBgCell **bgcell = new XBgCell*[numdata];
+   XGCCell **gccell = new XGCCell*[numdata];
    for (Int_t k=0; k<numdata; k++) {
       bgcell[k] = 0;
       gccell[k] = 0;
@@ -8183,9 +8242,9 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 // Init temporary trees and expression trees
    Int_t    split = 99;
    Double_t sort  = 0.0;
-   TTree *tmptree[numdata];
-   TTree *exprtree[numdata];
-   XGCExpression *expr[numdata];
+   TTree     **tmptree  = new TTree*[numdata];
+   TTree     **exprtree = new TTree*[numdata];
+   XGCExpression **expr = new XGCExpression*[numdata];
 
 // Init min/max expression levels
    Double_t min = DBL_MAX;  //defined in float.h
@@ -8333,7 +8392,7 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 
 // Create new trees exprtree
    for (Int_t k=0; k<numdata; k++) {
-      TString dataname = Path2Name(datatree[k]->GetName(),"/",".");
+      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
       TString exprname = dataname + "." + fExpressor->GetTitle();
       exprtree[k] = new TTree(exprname, fSchemeName);
       if (exprtree[k] == 0) {err = errCreateTree; goto cleanup;}
@@ -8478,6 +8537,12 @@ cleanup:
    if (arrIndx) {delete [] arrIndx; arrIndx = 0;}
    if (arrMask) {delete [] arrMask; arrMask = 0;}
 
+   delete [] expr;
+   delete [] exprtree;
+   delete [] tmptree;
+   delete [] gccell;
+   delete [] bgcell;
+
    return err;
 }//DoMedianPolish
 
@@ -8562,8 +8627,8 @@ Int_t XExonProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varli
            : hasData);
 
 // Get trees
-   TTree       *tree[n];
-   XExpression *expr[n];
+   TTree       **tree = new TTree*[n];
+   XExpression **expr = new XExpression*[n];
 
    if (fTrees->GetSize() == 0) {
    // Get trees from names
@@ -8593,7 +8658,7 @@ Int_t XExonProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varli
    if (strcmp(fSchemeName.Data(), "") == 0) {
       fSchemeName = tree[0]->GetTitle();
    } else if (!fSchemeName.Contains(tree[0]->GetTitle())) {
-      cerr << "Error: Scheme <" << fSchemeName << "> is not derived from <"
+      cerr << "Error: Scheme <" << fSchemeName.Data() << "> is not derived from <"
            << tree[0]->GetTitle() << ">." << endl;
       return errAbort;
    }//if
@@ -8694,9 +8759,9 @@ Int_t XExonProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varli
             if (hasNAtoms) output << sep << "NUMBER_ATOMS";
          } else {
             for (Int_t k=0; k<n; k++) {
-               if (hasLevel)  output << sep << (names[k] + "_LEVEL");
-               if (hasStdev)  output << sep << (names[k] + "_STDEV");
-               if (hasNAtoms) output << sep << (names[k] + "_NUMBER_ATOMS");
+               if (hasLevel)  output << sep << (names[k] + "_LEVEL").Data();
+               if (hasStdev)  output << sep << (names[k] + "_STDEV").Data();
+               if (hasNAtoms) output << sep << (names[k] + "_NUMBER_ATOMS").Data();
             }//for_k
          }//if
       }//if
@@ -8779,6 +8844,9 @@ cleanup:
    if (htable)   {htable->Delete(); delete htable; htable = 0;}
    SafeDelete(schemes);
 
+   delete [] expr;
+   delete [] tree;
+
    return err;
 }//ExportExprTrees
 
@@ -8857,8 +8925,8 @@ Int_t XExonProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varli
            : hasPVal);
 
 // Get trees
-   TTree  *tree[n];
-   XPCall *call[n];
+   TTree  **tree = new TTree*[n];
+   XPCall **call = new XPCall*[n];
 
    if (fTrees->GetSize() == 0) {
    // Get trees from names
@@ -8888,7 +8956,7 @@ Int_t XExonProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varli
    if (strcmp(fSchemeName.Data(), "") == 0) {
       fSchemeName = tree[0]->GetTitle();
    } else if (!fSchemeName.Contains(tree[0]->GetTitle())) {
-      cerr << "Error: Scheme <" << fSchemeName << "> is not derived from <"
+      cerr << "Error: Scheme <" << fSchemeName.Data() << "> is not derived from <"
            << tree[0]->GetTitle() << ">." << endl;
       return errAbort;
    }//if
@@ -8988,8 +9056,8 @@ Int_t XExonProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varli
             if (hasPVal) output << sep << "PVALUE";
          } else {
             for (Int_t k=0; k<n; k++) {
-               if (hasCall) output << sep << (names[k] + "_CALL");
-               if (hasPVal) output << sep << (names[k] + "_PVALUE");
+               if (hasCall) output << sep << (names[k] + "_CALL").Data();
+               if (hasPVal) output << sep << (names[k] + "_PVALUE").Data();
             }//for_k
          }//if
       }//if
@@ -9081,6 +9149,9 @@ cleanup:
    if (unittree) {unittree->Delete(""); unittree = 0;}
    if (htable)   {htable->Delete(); delete htable; htable = 0;}
    SafeDelete(schemes);
+
+   delete [] call;
+   delete [] tree;
 
    return err;
 }//ExportCallTrees

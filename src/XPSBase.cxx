@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 02/03/2008
+// File created: 05/18/2002                          last modified: 02/16/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -35,7 +35,6 @@
  *******************************************************************************
  */
 
-
 /******************************************************************************
 * Major Revision History:
 * May 2002 - Initial versions finished
@@ -60,6 +59,7 @@
 * Sep 2007 - Change all msk arrays from "Short_t *msk" to "Int_t *msk".
 *          - Add support for  verbose messages in XManager constructor
 * Feb 2008 - Add methods GetTreeHeader() and GetTreeInfo() to XManager.
+*          - Adapt source code to compile with MS VC++ on WinXP
 *
 ******************************************************************************/
 
@@ -155,12 +155,12 @@ XFolder *XFolder::AddFolder(const char *name, const char *title, const char *typ
    if(kCS) cout << "------XFolder::AddFolder------" << endl;
 
    // adapted from TFolder::AddFolder
-   if (strchr(name,'/')) {
+   if (strchr(name, '/')) {
       ::Error("XFolder::XFolder","folder name cannot contain a slash", name);
       return 0;
    }
    if (strlen(GetName()) == 0) {
-      ::Error("XFolder::XFolder","folder name cannot be \"\"");
+      ::Error("XFolder::XFolder", "folder name cannot be \"\"");
       return 0;
    }
    XFolder *folder = new XFolder();
@@ -624,7 +624,7 @@ XSetting::~XSetting()
 }//Destructor
 
 //______________________________________________________________________________
-void XSetting::ResetAlgorithm(const char */*name*/, const char */*type*/)
+void XSetting::ResetAlgorithm(const char * /*name*/, const char * /*type*/)
 {
    // Reset algorithm with name and optional with type
    if(kCS) cout << "------XSetting::ResetAlgorithm------" << endl;
@@ -901,7 +901,8 @@ Int_t XTreeSet::ExportTrees(const char *exten, const char *varlist,
    }//while
 
    if (n == 0) {
-      cerr << "Error: Could not get tree(s) with extension <" << exten << ">." << endl;
+      cerr << "Error: Could not get tree(s) with extension <" << exten << ">."
+           << endl;
       return errGetTree;
    }//if
 
@@ -1013,12 +1014,13 @@ Int_t XTreeSet::WriteTree(TTree *tree, Int_t option, Int_t bufsize)
       TIter next(fHeaders);
       XTreeHeader *header = 0;
       while ((header = (XTreeHeader*)next())) {
-         TString oldtree = Path2Name(header->GetString(),"/",";");
+         TString oldtree = Path2Name(header->GetString(), dSEP, ";");
 
          if (strcmp(tree->GetName(), oldtree.Data()) == 0) {
             this->RemoveTreeHeader(header);
             if (XManager::fgVerbose) {
-               cout << "Tree name <" << oldtree << "> is removed from header." << endl;
+               cout << "Tree name <" << oldtree.Data() << "> is removed from header."
+                    << endl;
             }//if
          }//if
       }//while
@@ -1054,17 +1056,17 @@ Int_t XTreeSet::DeleteTree(const char *name, const char *exten, const char *cycl
    XTreeHeader *header;
    while ((header = (XTreeHeader*)next())) {
       TString treename = header->GetString();
-      TString namepart = Path2Name(treename,"/",".");
-      TString xtenpart = Path2Name(treename,".",";");
+      TString namepart = Path2Name(treename, dSEP, ".");
+      TString xtenpart = Path2Name(treename, ".", ";");
 
       if (((strcmp(name,  namepart.Data())  == 0) || (strcmp(name, "*") == 0)) &&
           ((strcmp(exten, xtenpart.Data()) == 0) || (strcmp(exten, "*") == 0))) {
          if (strcmp(cycle, "") != 0) {
             this->RemoveTreeHeader(header);
             treename = treename + ";" + TString(cycle);
-            cout << "Tree <" << treename << "> is deleted from file." << endl;
+            cout << "Tree <" << treename.Data() << "> is deleted from file." << endl;
          } else {
-            cout << "Tree <" << treename << "> is deleted from memory." << endl;
+            cout << "Tree <" << treename.Data() << "> is deleted from memory." << endl;
          }//if
 
          gDirectory->Delete(treename);
@@ -1229,27 +1231,27 @@ TFile *XAlgorithm::NewFile(const char *name, const char *exten)
    TString filename = gSystem->BaseName(name);
    TString dirname  = gSystem->DirName(name);
 
-   filename = Path2Name(filename,"",".");
-   filename = dirname + "/" + filename;
+   filename = Path2Name(filename, "", ".");
+   filename = dirname + dSEP + filename;
    filename = filename + "_" + TString(exten) + ".root";
    if (strcmp(dirname.Data(), "") == 0) {
       dirname = gSystem->WorkingDirectory();
    }//if
 
 // For "tmp.root" create temporary file (can be overwritten)
-   TString tmp = Path2Name(name,"/",".root");
-   tmp = Path2Name(tmp.Data(),"/","_"); // if e.g. "tmp_abc.root"
+   TString tmp = Path2Name(name, dSEP, ".root");
+   tmp = Path2Name(tmp.Data(), dSEP, "_"); // if e.g. "tmp_abc.root"
    tmp.ToLower();
    if (strcmp(tmp.Data(), "tmp") == 0) {
       fFile = new TFile(filename, "RECREATE", dirname);
 
       if (!fFile || fFile->IsZombie()) {
-         cerr << "Error: Could not create file <" << filename << ">" << endl;
+         cerr << "Error: Could not create file <" << filename.Data() << ">" << endl;
          SafeDelete(fFile);
          return 0;
       } else if (fFile->IsOpen()) {
          if (XManager::fgVerbose) {
-            cout << "Creating new temporary file <" << filename << "> for <"
+            cout << "Creating new temporary file <" << filename.Data() << "> for <"
                  << GetName() << ">..." << endl;
          }//if
          fIsFileOwner = kTRUE;
@@ -1262,7 +1264,7 @@ TFile *XAlgorithm::NewFile(const char *name, const char *exten)
    if ((fname = gSystem->ExpandPathName(filename.Data()))) {
       fFile = gROOT->GetFile(fname);
       if (fFile) {
-         cerr << "Error: File <" << filename << "> does already exist" << endl;
+         cerr << "Error: File <" << filename.Data() << "> does already exist" << endl;
          delete [] (char*)fname;
          return 0;
       }//if
@@ -1270,7 +1272,7 @@ TFile *XAlgorithm::NewFile(const char *name, const char *exten)
       if (gSystem->AccessPathName(filename.Data())) {
          fFile = new TFile(filename, "CREATE", dirname);
       } else {
-         cerr << "Error: File <" << filename << "> does already exist" << endl;
+         cerr << "Error: File <" << filename.Data() << "> does already exist" << endl;
          delete [] (char*)fname;
          return 0;
       }//if
@@ -1279,7 +1281,7 @@ TFile *XAlgorithm::NewFile(const char *name, const char *exten)
          /*fail*/;
       } else if (fFile->IsOpen()) {
          if (XManager::fgVerbose) {
-            cout << "Creating new file <" << filename << "> for <"
+            cout << "Creating new file <" << filename.Data() << "> for <"
                  << GetName() << ">..." << endl;
          }//if
          delete [] (char*)fname;
@@ -1290,7 +1292,7 @@ TFile *XAlgorithm::NewFile(const char *name, const char *exten)
       delete [] (char*)fname;
    }//if
 
-   cerr << "Error: Could not create file <" << filename << ">" << endl;
+   cerr << "Error: Could not create file <" << filename.Data() << ">" << endl;
    SafeDelete(fFile);
 
    return 0;
@@ -1333,8 +1335,8 @@ Int_t XAlgorithm::TestNumParameters(Int_t npar)
 
    if (fNPar < npar) {
       cerr << "Error: At least <" << npar 
-           << ">parameters are neeeded for algorithm of type <" << fTitle << ">."
-           << endl;
+           << ">parameters are neeeded for algorithm of type <" << fTitle.Data()
+           << ">." << endl;
       return errInitParameters;
    }//if
 
@@ -1590,14 +1592,14 @@ Int_t XManager::New(const char *name, const char *dir, const char *type,
    if (strcmp(dir, "") == 0) {
       dir = gSystem->WorkingDirectory();
       if (XManager::fgVerbose) {
-         cout << "Warning: No directory given to store root file:"  << endl;
-         cout << "         Using working directory <" << dir << ">" << endl;
+         cout << "Note: No directory given to store root file:"  << endl;
+         cout << "      Using working directory <" << dir << ">" << endl;
       }//if
    }//if
 
 // New file
-   TString fullname = FullName(dir, name, "/") + ".root";
-   TString dirname  = Name2Path(fullname, '/');
+   TString fullname = FullName(dir, name, dSEP) + ".root";
+   TString dirname  = Name2Path(fullname, sSEP);
    fFile = this->NewFile(fullname.Data(), dirname.Data());
    if (!fFile) return errCreateFile;
    fIsFileOwner = kTRUE;
@@ -1658,12 +1660,11 @@ Int_t XManager::Update(const char *fullname, const char *data, Option_t *option,
 
    if (fAbort) return errAbort;
 
-//   fDataType = TString(data);
    fDataType = (strcmp(fDataType.Data(),"") == 0) ? TString(data) : fDataType;
    fOption   = (strcmp(fOption.Data(),  "") == 0) ? TString(option) : fOption;
 
    // convert fileopt toupper
-   TString opt = Path2Name(fileopt,"/",".");
+   TString opt = Path2Name(fileopt, dSEP, ".");
    opt.ToUpper();
 
 // Check userID and password
@@ -1823,8 +1824,8 @@ Int_t XManager::AddTree(const char *setname, const char *intree,
 ///////////////////////////////
 
 // Extract tree name from intree
-   TString inname = Path2Name(intree,"/","");
-   if (strstr(inname.Data(),".root")) {
+   TString inname = Path2Name(intree, dSEP, "");
+   if (strstr(inname.Data(), ".root")) {
       inname = "";
    }//if
    if (strcmp(inname.Data(), "") == 0) {
@@ -1837,7 +1838,7 @@ Int_t XManager::AddTree(const char *setname, const char *intree,
    TFile * file = 0;
    TString filename = "";
    Bool_t  isOwner  = kFALSE;
-   if (strstr(intree,".root")) {
+   if (strstr(intree, ".root")) {
       filename = GetROOTName(intree) + ".root";
       file = this->OpenFile(filename.Data(), "READ", isOwner);
       if (!file) return perrOpenFile;
@@ -1852,29 +1853,29 @@ Int_t XManager::AddTree(const char *setname, const char *intree,
 // Get name of treeset and change directory
    TString sname  = "";
    if (strstr(intree,".root")) {
-      TString substr = SubString(intree,'.','/', kFALSE);
-      if (substr) sname = Path2Name(substr.Data(),"/","");
+      TString substr = SubString(intree,'.',sSEP, kFALSE);
+      if (substr) sname = Path2Name(substr.Data(), dSEP, "");
       if (sname.Contains("root")) sname = "";
-   } else if (strstr(intree,"/")) {
-      sname = Path2Name(intree,"","/");
+   } else if (strstr(intree, dSEP)) {
+      sname = Path2Name(intree,"", dSEP);
    }//if
 
    if (!gDirectory->cd(sname)) return this->HandleError(errGetDir, sname);
 
 // Add trees to treeset
-   TString name  = Path2Name(intree,"/",".");
-   TString exten = Path2Name(intree,".","");
-   if (strcmp(name.Data(),"*") == 0) {
+   TString name  = Path2Name(intree, dSEP, ".");
+   TString exten = Path2Name(intree, ".", "");
+   if (strcmp(name.Data(), "*") == 0) {
    // Loop over all trees with extension exten
       TKey *key = 0;
       TIter next(gDirectory->GetListOfKeys());
       while ((key = (TKey*)next())) {
-         TString xten  = Path2Name(key->GetName(),".",";");
-         TString kname = Path2Name(key->GetName(),"",".");
+         TString xten  = Path2Name(key->GetName(), ".", ";");
+         TString kname = Path2Name(key->GetName(), "", ".");
          if (strcmp(xten.Data(), exten) == 0) {
             TTree* tree = (TTree*)gDirectory->Get(key->GetName());
             if (!tree) {
-               cerr << "Error: Could not get tree <" << inname << ">." << endl;
+               cerr << "Error: Could not get tree <" << inname.Data() << ">." << endl;
                fAbort = kTRUE;
                return errGetTree;
             }//if
@@ -1894,7 +1895,7 @@ Int_t XManager::AddTree(const char *setname, const char *intree,
    // Add intree with name inname
       TTree* tree = (TTree*)gDirectory->Get(inname);
       if (!tree) {
-         cerr << "Error: Could not get tree <" << inname << ">." << endl;
+         cerr << "Error: Could not get tree <" << inname.Data() << ">." << endl;
          fAbort = kTRUE;
          return errGetTree;
       }//if
@@ -1963,7 +1964,7 @@ Int_t XManager::ExportSet(const char *setname, const char *exten,
    }//if
 
    // test outfile for exten: if no exten then add .txt or .csv.  
-   TString basename = gSystem->BaseName(outfile);
+   TString basename = (strcmp(outfile, "") == 0) ? "" : gSystem->BaseName(outfile);
    if (strstr(basename.Data(),".") == 0) {
       if ((strcmp(sep, ",") == 0) ||
           (strcmp(sep, ";") == 0)) outname += ".csv";
@@ -1978,13 +1979,13 @@ Int_t XManager::ExportSet(const char *setname, const char *exten,
 
       ofstream output(outname, ios::out);
       if (!output) {
-         cerr << "Error: Could not create output <" << outname << ">" << endl;
+         cerr << "Error: Could not create output <" << outname.Data() << ">" << endl;
          return errOpenOutput;
       }//if
 
       if (XManager::fgVerbose) {
          cout << "Exporting data from treeset <" << setname
-              << "> to file <" << outname << ">..." << endl;
+              << "> to file <" << outname.Data() << ">..." << endl;
       }//if
 
       if (!err) err = fTreeSet->Initialize(fFile, fSetting, "", "");
@@ -2016,9 +2017,9 @@ Int_t XManager::Export(const char *treename, const char *varlist,
    Int_t err = errNoErr;
 
 // Extract tree extension
-   TString tname = Path2Name(treename,"/",";");
-   TString exten = Path2Name(tname.Data(),".","");
-   if ((strcmp(exten.Data(),"") == 0) || (strcmp(exten.Data(),"root") == 0)) {
+   TString tname = Path2Name(treename, dSEP, ";");
+   TString exten = Path2Name(tname.Data(), ".", "");
+   if ((strcmp(exten.Data(), "") == 0) || (strcmp(exten.Data(), "root") == 0)) {
       cerr << "Error: Tree name is missing." << endl;
       fAbort = kTRUE;
       return errAbort;
@@ -2029,11 +2030,11 @@ Int_t XManager::Export(const char *treename, const char *varlist,
    TString trename = "";
    Int_t   numsep  = NumSeparators(tname.Data(), ".");
    if (numsep == 2) {
-      setname = SubString(tname.Data(),".",0);
-      trename = SubString(tname.Data(),".",1);
+      setname = SubString(tname.Data(), ".", 0);
+      trename = SubString(tname.Data(), ".", 1);
    } else if (numsep == 1) {
-      setname = SubString(tname.Data(),".",0);
-      trename = SubString(tname.Data(),".",0);
+      setname = SubString(tname.Data(), ".", 0);
+      trename = SubString(tname.Data(), ".", 0);
    } else if (numsep == 0) {
       cerr << "Error: Tree name is missing." << endl;
       fAbort = kTRUE;
@@ -2042,7 +2043,7 @@ Int_t XManager::Export(const char *treename, const char *varlist,
 
 // Extract root filename
    TString filename = "";
-   if (strstr(treename,".root")) {
+   if (strstr(treename, ".root")) {
       filename = GetROOTName(treename) + ".root";
       this->Open(filename.Data());
    }//if
@@ -2058,7 +2059,7 @@ Int_t XManager::Export(const char *treename, const char *varlist,
    }//if
 
 // Test if outfile is of type "XML"
-   TString xml = Path2Name(outfile,".","");
+   TString xml = Path2Name(outfile, ".", "");
    xml.ToUpper();
    Bool_t asXML = (strcmp(xml.Data(), "XML") == 0);
 
@@ -2078,7 +2079,7 @@ Int_t XManager::Export(const char *treename, const char *varlist,
    }//if
 
    // test outfile for exten: if no exten then add .txt or .csv.  
-   TString basename = gSystem->BaseName(outfile);
+   TString basename = (strcmp(outfile, "") == 0) ? "" : gSystem->BaseName(outfile);
    if (strstr(basename.Data(),".") == 0) {
       if ((strcmp(sep, ",") == 0) ||
           (strcmp(sep, ";") == 0)) outname += ".csv";
@@ -2096,13 +2097,13 @@ Int_t XManager::Export(const char *treename, const char *varlist,
 
       ofstream output(outname, ios::out);
       if (!output) {
-         cerr << "Error: Could not create output <" << outname << ">" << endl;
+         cerr << "Error: Could not create output <" << outname.Data() << ">" << endl;
          return errOpenOutput;
       }//if
 
       if (XManager::fgVerbose) {
          cout << "Exporting data from all trees with extension <" << exten
-              << "> to file <" << outname << ">..." << endl;
+              << "> to file <" << outname.Data() << ">..." << endl;
       }//if
       err = this->ExportTrees(exten.Data(), varlist, output, asXML, sep);
 
@@ -2119,7 +2120,7 @@ Int_t XManager::Export(const char *treename, const char *varlist,
       fTreeSet = (XTreeSet*)fContent->FindObject(trename, "XTreeSet");
    }//if
    if (!fTreeSet) {
-      cerr << "Error: Tree set <" << setname 
+      cerr << "Error: Tree set <" << setname.Data() 
            << "> could not be found in file content" << endl;
       return errGetTreeSet;
    }//if
@@ -2135,13 +2136,13 @@ Int_t XManager::Export(const char *treename, const char *varlist,
 
    ofstream output(outname, ios::out);
    if (!output) {
-      cerr << "Error: Could not create output <" << outname << ">" << endl;
+      cerr << "Error: Could not create output <" << outname.Data() << ">" << endl;
       return errOpenOutput;
    }//if
 
    if (XManager::fgVerbose) {
-      cout << "Exporting data from tree <" << trename
-           << "> to file <" << outname << ">..." << endl;
+      cout << "Exporting data from tree <" << trename.Data()
+           << "> to file <" << outname.Data() << ">..." << endl;
    }//if
    if (strcmp(trename.Data(), "*") == 0) {
       // if treename is "*.exten", export all trees with exten
@@ -2180,22 +2181,22 @@ Int_t XManager::Import(const char *setname, const char *infile, const char *tree
    fFile->cd();
 
 // Disect infile
-   TString name = Path2Name(infile,"/",".");
-   TString xten = Path2Name(infile,".","");
+   TString name = Path2Name(infile, dSEP, ".");
+   TString xten = Path2Name(infile, ".", "");
 
 // Append directory to infile
    TString iname = TString(infile);
-   if (!iname.Contains("/")) {
-      iname  = TString(gSystem->WorkingDirectory()) + "/" + iname;
+   if (!iname.Contains(dSEP)) {
+      iname  = TString(gSystem->WorkingDirectory()) + TString(dSEP) + iname;
    }//if
 
    const char *fullname = gSystem->ExpandPathName(iname.Data());
-   TString path = Name2Path(fullname,'/');
+   TString path = Name2Path(fullname, sSEP);
 
 // Change system directory to path
    TString savedir = gSystem->WorkingDirectory();
    if (!gSystem->ChangeDirectory(path.Data())) {
-      cerr << "Error: Path <" << path << "> is not known." << endl;
+      cerr << "Error: Path <" << path.Data() << "> is not known." << endl;
       return errGeneral;
    }//if
 
@@ -2212,8 +2213,8 @@ Int_t XManager::Import(const char *setname, const char *infile, const char *tree
       const char *entry;
       while ((entry = gSystem->GetDirEntry(dirp)) != 0) {
          if (strcmp(entry, ".") && strcmp(entry, "..") &&
-             (strcmp(Path2Name(entry,".","").Data(),xten.Data()) == 0)) {
-            iname = path + "/" + TString(entry);
+             (strcmp(Path2Name(entry, ".", "").Data(), xten.Data()) == 0)) {
+            iname = path + TString(dSEP) + TString(entry);
             objstr = new TObjString(iname);
             infiles->Add(objstr);
          }//if
@@ -2239,8 +2240,8 @@ Int_t XManager::Import(const char *setname, const char *infile, const char *tree
    }//if
 
 // Append extension to option
-   TString opt   = Path2Name(option,"",".");
-   TString exten = Path2Name(option,".","");
+   TString opt   = Path2Name(option, "", ".");
+   TString exten = Path2Name(option, ".", "");
    opt.ToUpper();
    if (strcmp(exten.Data(), "") == 0) {
       cout << "Warning: No extension given for option, using default .def."
@@ -2258,7 +2259,7 @@ Int_t XManager::Import(const char *setname, const char *infile, const char *tree
 // Import infile(s)
    TIter next(infiles);
    while ((objstr = (TObjString*)next())) {
-      TString objname = Path2Name(objstr->GetName(),"/",".");
+      TString objname = Path2Name(objstr->GetName(), dSEP, ".");
 
    // Set objname to treename if infile is not "*"
       if ((strcmp(treename, "") != 0) && (infiles->GetSize() == 1)) {
@@ -2277,7 +2278,7 @@ Int_t XManager::Import(const char *setname, const char *infile, const char *tree
    // Import data for existing or newly created tree set
       if (XManager::fgVerbose) {
          cout << "Importing <" << objstr->GetName() << "> as <"
-              << (objname + "." + exten) << ">..." << endl;
+              << (objname + "." + exten).Data() << ">..." << endl;
       }//if
 
       fTreeSet = (XTreeSet*)fContent->FindObject(setname, "XTreeSet");
@@ -2296,7 +2297,7 @@ Int_t XManager::Import(const char *setname, const char *infile, const char *tree
             err = fTreeSet->DeleteTree(objname, exten, "*");
             if (err != errNoErr) {
                cerr << "Error: Could not delete <" << err
-                    << "> number of trees with name <" << tname << ">."
+                    << "> number of trees with name <" << tname.Data() << ">."
                     << endl;
                fInterrupt = kTRUE;
                input.close();
@@ -2322,7 +2323,7 @@ Int_t XManager::Import(const char *setname, const char *infile, const char *tree
             TString tname = fTreeSet->FindTree(objname + "." + exten);
             if (strcmp(tname.Data(), "") != 0) {
                // Interrupt if tree for infile does already exist
-               cerr << "Error: Data for <" << tname << "> exist already." << endl;
+               cerr << "Error: Data for <" << tname.Data() << "> exist already." << endl;
                fInterrupt = kTRUE;
                input.close();
                return errGeneral;
@@ -2399,9 +2400,9 @@ void XManager::Delete(const char *name)
 
    if (fAbort) {fInterrupt = kTRUE; return;}
 
-   TString sname = Path2Name(name,"","/");
-   TString exten = Path2Name(name,".",";");
-   TString cycle = Path2Name(name,";","");
+   TString sname = Path2Name(name, "", dSEP);
+   TString exten = Path2Name(name, ".", ";");
+   TString cycle = Path2Name(name, ";", "");
    if (sname.Contains("."))    sname = "";
    if (strstr(name, ".") == 0) exten = "";
    if (strstr(name, ";") == 0) cycle = "";
@@ -2420,7 +2421,7 @@ void XManager::Delete(const char *name)
                 (strcmp(sname.Data(), "*") == 0)) {
                this->DeleteTreeSet(setname);
                if (XManager::fgVerbose) {
-                  cout << "Treeset <" << setname << "> has been deleted." << endl;
+                  cout << "Treeset <" << setname.Data() << "> has been deleted." << endl;
                }//if
             }//if
          }//if
@@ -2441,10 +2442,10 @@ Int_t XManager::DeleteTree(const char *namecycle)
 
    Int_t err = errNoErr;
 
-   TString sname = Path2Name(namecycle,"","/");
-   TString tname = Path2Name(namecycle,"/",".");
-   TString exten = Path2Name(namecycle,".",";");
-   TString cycle = Path2Name(namecycle,";","");
+   TString sname = Path2Name(namecycle, "", dSEP);
+   TString tname = Path2Name(namecycle, dSEP, ".");
+   TString exten = Path2Name(namecycle, ".", ";");
+   TString cycle = Path2Name(namecycle, ";", "");
    if (strstr(namecycle, ".") == 0) exten = "";
    if (strstr(namecycle, ";") == 0) cycle = "";
 
@@ -2457,7 +2458,7 @@ Int_t XManager::DeleteTree(const char *namecycle)
       err = fTreeSet->DeleteTree(tname, exten, cycle);
       if (err > 0) {
          cerr << "Warning: Did not delete <"  << err
-              << "> trees of set <" << sname << ">."
+              << "> trees of set <" << sname.Data() << ">."
               << endl;
          fInterrupt = kTRUE;
          return errGeneral;
@@ -2476,7 +2477,7 @@ Int_t XManager::DeleteTree(const char *namecycle)
          this->DeleteDirectory(sname, "*");
       }//if
    } else {
-      cerr << "Error: Tree set <" << sname 
+      cerr << "Error: Tree set <" << sname.Data() 
            << "> could not be found in file content" << endl;
       err = errGetTreeSet;
    }//if
@@ -2911,9 +2912,9 @@ XTreeHeader *XManager::GetTreeHeader(const char *treename)
    if (fAbort) return 0;
 
 // Extract tree extension
-   TString tname = Path2Name(treename,"/",";");
-   TString exten = Path2Name(tname.Data(),".","");
-   if ((strcmp(exten.Data(),"") == 0) || (strcmp(exten.Data(),"root") == 0)) {
+   TString tname = Path2Name(treename, dSEP, ";");
+   TString exten = Path2Name(tname.Data(), ".", "");
+   if ((strcmp(exten.Data(), "") == 0) || (strcmp(exten.Data(), "root") == 0)) {
       cerr << "Error: Tree name is missing." << endl;
       fAbort = kTRUE;
       return 0;
@@ -2924,11 +2925,11 @@ XTreeHeader *XManager::GetTreeHeader(const char *treename)
    TString trename = "";
    Int_t   numsep  = NumSeparators(tname.Data(), ".");
    if (numsep == 2) {
-      setname = SubString(tname.Data(),".",0);
-      trename = SubString(tname.Data(),".",1);
+      setname = SubString(tname.Data(), ".", 0);
+      trename = SubString(tname.Data(), ".", 1);
    } else if (numsep == 1) {
-      setname = SubString(tname.Data(),".",0);
-      trename = SubString(tname.Data(),".",0);
+      setname = SubString(tname.Data(), ".", 0);
+      trename = SubString(tname.Data(), ".", 0);
    } else if (numsep == 0) {
       cerr << "Error: Tree name is missing." << endl;
       fAbort = kTRUE;
@@ -2938,7 +2939,7 @@ XTreeHeader *XManager::GetTreeHeader(const char *treename)
 
 // Extract root filename
    TString filename = "";
-   if (strstr(treename,".root")) {
+   if (strstr(treename, ".root")) {
       filename = GetROOTName(treename) + ".root";
       this->Open(filename.Data());
    }//if
@@ -2951,7 +2952,7 @@ XTreeHeader *XManager::GetTreeHeader(const char *treename)
    if (fTreeSet) {
       header = fTreeSet->GetTreeHeader(trename);
    } else {
-      cerr << "Error: Tree set <" << setname 
+      cerr << "Error: Tree set <" << setname.Data() 
            << "> could not be found in file content" << endl;
    }//if
 
@@ -2969,9 +2970,9 @@ XTreeInfo *XManager::GetTreeInfo(const char *treename)
    if (fAbort) return 0;
 
 // Extract tree extension
-   TString tname = Path2Name(treename,"/",";");
-   TString exten = Path2Name(tname.Data(),".","");
-   if ((strcmp(exten.Data(),"") == 0) || (strcmp(exten.Data(),"root") == 0)) {
+   TString tname = Path2Name(treename, dSEP, ";");
+   TString exten = Path2Name(tname.Data(), ".", "");
+   if ((strcmp(exten.Data(), "") == 0) || (strcmp(exten.Data(), "root") == 0)) {
       cerr << "Error: Tree name is missing." << endl;
       fAbort = kTRUE;
       return 0;
@@ -2982,11 +2983,11 @@ XTreeInfo *XManager::GetTreeInfo(const char *treename)
    TString trename = "";
    Int_t   numsep  = NumSeparators(tname.Data(), ".");
    if (numsep == 2) {
-      setname = SubString(tname.Data(),".",0);
-      trename = SubString(tname.Data(),".",1);
+      setname = SubString(tname.Data(), ".", 0);
+      trename = SubString(tname.Data(), ".", 1);
    } else if (numsep == 1) {
-      setname = SubString(tname.Data(),".",0);
-      trename = SubString(tname.Data(),".",0);
+      setname = SubString(tname.Data(), ".", 0);
+      trename = SubString(tname.Data(), ".", 0);
    } else if (numsep == 0) {
       cerr << "Error: Tree name is missing." << endl;
       fAbort = kTRUE;
@@ -3010,7 +3011,7 @@ XTreeInfo *XManager::GetTreeInfo(const char *treename)
       tree = (TTree*)gDirectory->Get(trename);
       info = (tree) ? fTreeSet->GetTreeInfo(trename, tree) : 0;
    } else {
-      cerr << "Error: Tree set <" << setname 
+      cerr << "Error: Tree set <" << setname.Data() 
            << "> could not be found in file content" << endl;
    }//if
 
@@ -3027,7 +3028,7 @@ void XManager::PrintContents(const char *setname)
    fFile->cd();
 //??   fFile->cd(setname);
 
-   fTreeSet = (XTreeSet*)fContent->FindObject(Path2Name(setname,"/","."), "XTreeSet");
+   fTreeSet = (XTreeSet*)fContent->FindObject(Path2Name(setname, dSEP, "."), "XTreeSet");
    if (fTreeSet) {
       XTreeSet::SetPrintHeader(kTRUE);
       fTreeSet->PrintInfo();
@@ -3068,7 +3069,7 @@ Bool_t XManager::IsOpen(TFile *file, const char *filename)
 
    if (file) {
       TString oldname = file->GetName();
-      TString newname = Path2Name(filename,"/",".") + ".root";
+      TString newname = Path2Name(filename, dSEP, ".") + ".root";
 
       TString xpaname;
 //ccc char memory problem??
@@ -3080,7 +3081,7 @@ Bool_t XManager::IsOpen(TFile *file, const char *filename)
 
       if ((strcmp(oldname.Data(), newname.Data()) == 0) ||
           (strcmp(oldname.Data(), xpaname.Data()) == 0)) {
-         cout << "Warning: File <" << oldname << "> is already open." << endl;
+         cout << "Warning: File <" << oldname.Data() << "> is already open." << endl;
          return kFALSE;
       }//if
 
@@ -3200,8 +3201,8 @@ TFile *XManager::NewFile(const char *name, const char *title)
 //to do: check name for TNetFile!!
 
 // For "tmp.root" create temporary file (can be overwritten)
-   TString tmp = Path2Name(name,"/",".");
-   tmp = Path2Name(tmp.Data(),"/","_"); // if e.g. "tmp_abc.root"
+   TString tmp = Path2Name(name, dSEP, ".");
+   tmp = Path2Name(tmp.Data(), dSEP, "_"); // if e.g. "tmp_abc.root"
    tmp.ToLower();
    if (strcmp(tmp.Data(), "tmp") == 0) {
       file = new TFile(name, "RECREATE", title);

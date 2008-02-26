@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 10/03/2007
+// File created: 08/05/2002                          last modified: 02/16/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2007 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -121,7 +121,7 @@ XSelector::~XSelector()
 }//Destructor
 
 //______________________________________________________________________________
-Int_t XSelector::Calculate(Int_t n, Double_t */*x*/, Double_t */*y*/, Int_t *msk)
+Int_t XSelector::Calculate(Int_t n, Double_t * /*x*/, Double_t * /*y*/, Int_t *msk)
 {
    // Leave array msk unchanged (none) or set mask to one (all)
    if(kCS) cout << "------XSelector::Calculate------" << endl;
@@ -132,7 +132,7 @@ Int_t XSelector::Calculate(Int_t n, Double_t */*x*/, Double_t */*y*/, Int_t *msk
       // set all entries of mask array to 1
       for (Int_t i=0; i<n; i++) msk[i] = 1;
    } else {
-      cerr << "Error: Default selector does not have option <" << fOption
+      cerr << "Error: Default selector does not have option <" << fOption.Data()
            << ">! Aborting execution." << endl;
       return errAbort;
    }//if
@@ -450,7 +450,7 @@ XProbeSelector::~XProbeSelector()
 }//Destructor
 
 //______________________________________________________________________________
-Int_t XProbeSelector::Calculate(Int_t n, Double_t */*x*/, Double_t */*y*/, Int_t *msk)
+Int_t XProbeSelector::Calculate(Int_t n, Double_t * /*x*/, Double_t * /*y*/, Int_t *msk)
 {
    // Fill msk with mask to select probes
    if(kCS) cout << "------XProbeSelector::Calculate------" << endl;
@@ -476,7 +476,7 @@ Int_t XProbeSelector::Calculate(Int_t n, Double_t */*x*/, Double_t */*y*/, Int_t
       msk = this->SetExonMask(n, msk);
       if (msk == 0) return errInitParameters;
    } else {
-      cerr << "Error: Probe selector does not have option <" << fOption
+      cerr << "Error: Probe selector does not have option <" << fOption.Data()
            << ">! Aborting execution." << endl;
       return errAbort;
    }//if
@@ -594,7 +594,7 @@ XUnitSelector::~XUnitSelector()
 }//Destructor
 
 //______________________________________________________________________________
-Int_t XUnitSelector::Calculate(Int_t n, Int_t */*x*/, Int_t *msk)
+Int_t XUnitSelector::Calculate(Int_t n, Int_t * /*x*/, Int_t *msk)
 {
    // Fill msk with mask to select units
    if(kCS) cout << "------XUnitSelector::Calculate------" << endl;
@@ -611,7 +611,7 @@ Int_t XUnitSelector::Calculate(Int_t n, Int_t */*x*/, Int_t *msk)
       msk = SetExonMask(n, msk);
       if (msk == 0) return errInitParameters;
    } else {
-      cerr << "Error: Unit selector does not have option <" << fOption
+      cerr << "Error: Unit selector does not have option <" << fOption.Data()
            << ">! Aborting execution." << endl;
       return errAbort;
    }//if
@@ -675,7 +675,8 @@ void XUserSelector::SetOptions(Option_t *opt)
 }//SetOptions
 
 //______________________________________________________________________________
-Int_t XUserSelector::Calculate(Int_t n, Double_t */*x*/, Double_t */*y*/, Int_t *msk)
+Int_t XUserSelector::Calculate(Int_t n, Double_t * /*x*/, Double_t * /*y*/,
+      Int_t *msk)
 {
    // Fill msk with user-defined mask to select non-varying genes
    if(kCS) cout << "------XUserSelector::Calculate------" << endl;

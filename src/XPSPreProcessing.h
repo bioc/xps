@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2007 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -191,14 +191,14 @@ class XPreProcesSet: public XProcesSet {
 //      XRatioAlgorithm *fRatio;        //! ratio algorithm
 
    protected:
-      virtual Int_t AdjustBackground(Int_t /*numdata*/, TTree **/*datatree*/,
-                       Int_t &/*numbgrd*/, TTree **/*bgrdtree*/) {return 0;}
-      virtual Int_t Normalize(Int_t /*numdata*/, TTree **/*datatree*/,
-                       Int_t &/*numbgrd*/, TTree **/*bgrdtree*/) {return 0;}
-      virtual Int_t Express(Int_t /*numdata*/, TTree **/*datatree*/,
-                       Int_t &/*numbgrd*/, TTree **/*bgrdtree*/) {return 0;}
-      virtual Int_t DetectCall(Int_t /*numdata*/, TTree **/*datatree*/,
-                       Int_t &/*numbgrd*/, TTree **/*bgrdtree*/) {return 0;}
+      virtual Int_t AdjustBackground(Int_t /*numdata*/, TTree ** /*datatree*/,
+                       Int_t &/*numbgrd*/, TTree ** /*bgrdtree*/) {return 0;}
+      virtual Int_t Normalize(Int_t /*numdata*/, TTree ** /*datatree*/,
+                       Int_t &/*numbgrd*/, TTree ** /*bgrdtree*/) {return 0;}
+      virtual Int_t Express(Int_t /*numdata*/, TTree ** /*datatree*/,
+                       Int_t &/*numbgrd*/, TTree ** /*bgrdtree*/) {return 0;}
+      virtual Int_t DetectCall(Int_t /*numdata*/, TTree ** /*datatree*/,
+                       Int_t &/*numbgrd*/, TTree ** /*bgrdtree*/) {return 0;}
 
       virtual void  AddDataTreeInfo(TTree *tree, const char *name, Option_t *option,
                        Int_t nrows, Int_t ncols, Int_t nmin, Double_t min, Int_t nmax,
@@ -220,7 +220,7 @@ class XPreProcesSet: public XProcesSet {
 
       virtual Int_t Initialize(TFile *file, XSetting *setting,
                        const char *infile = "", const char *treename = "");
-      virtual Int_t Preprocess(const char */*method*/)          {return 0;}
+      virtual Int_t Preprocess(const char * /*method*/)          {return 0;}
 
       ClassDef(XPreProcesSet,2) //PreProcesSet
 };

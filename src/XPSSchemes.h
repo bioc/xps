@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2007 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -339,38 +339,38 @@ class XDNAChip: public XTreeSet {
    protected:
       virtual Int_t ExportTrees(const char *exten, const char *varlist, 
                        ofstream &output, const char *sep);
-      virtual Int_t ExportLayoutTree(Int_t /*n*/, TString */*names*/, const char */*varlist*/,
-                       ofstream &/*output*/, const char */*sep*/) {return errNoErr;}
-      virtual Int_t ExportProbeTree(Int_t /*n*/, TString */*names*/, const char */*varlist*/,
-                       ofstream &/*output*/, const char */*sep*/) {return errNoErr;}
+      virtual Int_t ExportLayoutTree(Int_t /*n*/, TString * /*names*/, const char * /*varlist*/,
+                       ofstream &/*output*/, const char * /*sep*/) {return errNoErr;}
+      virtual Int_t ExportProbeTree(Int_t /*n*/, TString * /*names*/, const char * /*varlist*/,
+                       ofstream &/*output*/, const char * /*sep*/) {return errNoErr;}
       virtual Int_t ExportSchemeTree(Int_t n, TString *names, const char *varlist,
                        ofstream &output, const char *sep);
-      virtual Int_t ExportUnitTree(Int_t /*n*/, TString */*names*/, const char */*varlist*/,
-                       ofstream &/*output*/, const char */*sep*/) {return errNoErr;}
+      virtual Int_t ExportUnitTree(Int_t /*n*/, TString * /*names*/, const char * /*varlist*/,
+                       ofstream &/*output*/, const char * /*sep*/) {return errNoErr;}
       virtual Int_t ExportTransAnnotTree(Int_t n, TString *names, const char *varlist,
                        ofstream &output, const char *sep);
-      virtual Int_t ExportExonAnnotTree(Int_t /*n*/, TString */*names*/, const char */*varlist*/,
-                       ofstream &/*output*/, const char */*sep*/) {return errNoErr;}
-      virtual Int_t ExportProbesetAnnotTree(Int_t /*n*/, TString */*names*/, const char */*varlist*/,
-                       ofstream &/*output*/, const char */*sep*/) {return errNoErr;}
-      virtual Int_t ExportControlAnnotTree(Int_t /*n*/, TString */*names*/, const char */*varlist*/,
-                       ofstream &/*output*/, const char */*sep*/) {return errNoErr;}
-      virtual Int_t ExportLayoutXML(Int_t /*n*/, TString */*names*/, const char */*varlist*/,
-                       ofstream &/*output*/, const char */*sep*/) {return errNoErr;}
-      virtual Int_t ExportProbeXML(Int_t /*n*/, TString */*names*/, const char */*varlist*/,
-                       ofstream &/*output*/, const char */*sep*/) {return errNoErr;}
-      virtual Int_t ExportSchemeXML(Int_t /*n*/, TString */*names*/, const char */*varlist*/,
-                       ofstream &/*output*/, const char */*sep*/) {return errNoErr;}
-      virtual Int_t ExportUnitXML(Int_t /*n*/, TString */*names*/, const char */*varlist*/,
-                       ofstream &/*output*/, const char */*sep*/) {return errNoErr;}
+      virtual Int_t ExportExonAnnotTree(Int_t /*n*/, TString * /*names*/, const char * /*varlist*/,
+                       ofstream &/*output*/, const char * /*sep*/) {return errNoErr;}
+      virtual Int_t ExportProbesetAnnotTree(Int_t /*n*/, TString * /*names*/, const char * /*varlist*/,
+                       ofstream &/*output*/, const char * /*sep*/) {return errNoErr;}
+      virtual Int_t ExportControlAnnotTree(Int_t /*n*/, TString * /*names*/, const char * /*varlist*/,
+                       ofstream &/*output*/, const char * /*sep*/) {return errNoErr;}
+      virtual Int_t ExportLayoutXML(Int_t /*n*/, TString * /*names*/, const char * /*varlist*/,
+                       ofstream &/*output*/, const char * /*sep*/) {return errNoErr;}
+      virtual Int_t ExportProbeXML(Int_t /*n*/, TString * /*names*/, const char * /*varlist*/,
+                       ofstream &/*output*/, const char * /*sep*/) {return errNoErr;}
+      virtual Int_t ExportSchemeXML(Int_t /*n*/, TString * /*names*/, const char * /*varlist*/,
+                       ofstream &/*output*/, const char * /*sep*/) {return errNoErr;}
+      virtual Int_t ExportUnitXML(Int_t /*n*/, TString * /*names*/, const char * /*varlist*/,
+                       ofstream &/*output*/, const char * /*sep*/) {return errNoErr;}
       virtual Int_t ExportTransAnnotXML(Int_t n, TString *names, const char *varlist,
                        ofstream &output, const char *sep);
-      virtual Int_t ExportExonAnnotXML(Int_t /*n*/, TString */*names*/, const char */*varlist*/,
-                       ofstream &/*output*/, const char */*sep*/) {return errNoErr;}
-      virtual Int_t ExportProbesetAnnotXML(Int_t /*n*/, TString */*names*/, const char */*varlist*/,
-                       ofstream &/*output*/, const char */*sep*/) {return errNoErr;}
-      virtual Int_t ExportControlAnnotXML(Int_t /*n*/, TString */*names*/, const char */*varlist*/,
-                       ofstream &/*output*/, const char */*sep*/) {return errNoErr;}
+      virtual Int_t ExportExonAnnotXML(Int_t /*n*/, TString * /*names*/, const char * /*varlist*/,
+                       ofstream &/*output*/, const char * /*sep*/) {return errNoErr;}
+      virtual Int_t ExportProbesetAnnotXML(Int_t /*n*/, TString * /*names*/, const char * /*varlist*/,
+                       ofstream &/*output*/, const char * /*sep*/) {return errNoErr;}
+      virtual Int_t ExportControlAnnotXML(Int_t /*n*/, TString * /*names*/, const char * /*varlist*/,
+                       ofstream &/*output*/, const char * /*sep*/) {return errNoErr;}
       virtual Int_t ImportLayout(ifstream &input, Option_t *option,
                        const char *sep, char delim, Int_t split)        = 0;
       virtual Int_t ImportLayoutXML(ifstream &input, Option_t *option,

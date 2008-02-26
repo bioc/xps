@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2007 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -34,7 +34,6 @@
  * For the list of contributors to "The ROOT System" see http://root.cern.ch/  *
  *******************************************************************************
  */
-
 
 /******************************************************************************
 * Major Revision History:
@@ -394,8 +393,8 @@ Int_t XProcessManager::SetBaseLine(const char *intree, Option_t *option,
    }//if
 
 // Extract tree name from intree
-   TString inname = Path2Name(intree,"/","");
-   if (strstr(inname.Data(),".root")) {
+   TString inname = Path2Name(intree, dSEP, "");
+   if (strstr(inname.Data(), ".root")) {
       inname = "";
    }//if
 
@@ -403,8 +402,8 @@ Int_t XProcessManager::SetBaseLine(const char *intree, Option_t *option,
    TFile * file = 0;
    TString filename = "";
    Bool_t  isOwner  = kFALSE;
-   if (strstr(intree,".root")) {
-      filename = Path2Name(intree,"",".") + ".root";
+   if (strstr(intree, ".root")) {
+      filename = Path2Name(intree, "", ".") + ".root";
       if (strcmp(filename.Data(),gDirectory->GetName()) != 0) {
          // open file
          file = this->OpenFile(filename.Data(), "READ", isOwner);
@@ -419,26 +418,26 @@ Int_t XProcessManager::SetBaseLine(const char *intree, Option_t *option,
 
 // Get name of treeset and change directory
    TString sname  = "";
-   if (strstr(intree,".root")) {
-      TString substr = SubString(intree,'.','/',kFALSE);
-      if (substr) sname = Path2Name(substr.Data(),"/","");
+   if (strstr(intree, ".root")) {
+      TString substr = SubString(intree, '.', sSEP, kFALSE);
+      if (substr) sname = Path2Name(substr.Data(), dSEP, "");
       if (sname.Contains("root")) sname = "";
-   } else if (strstr(intree,"/")) {
-      sname = Path2Name(intree,"","/");
+   } else if (strstr(intree, dSEP)) {
+      sname = Path2Name(intree, "", dSEP);
    }//if
    if (!gDirectory->cd(sname)) return HandleError(errGetDir, sname);
 
 // Add trees to treeset
-   TString name  = Path2Name(intree,"/",".");
-   TString exten = Path2Name(intree,".","");
-   if (strcmp(name.Data(),"*") == 0) {
+   TString name  = Path2Name(intree, dSEP, ".");
+   TString exten = Path2Name(intree, ".", "");
+   if (strcmp(name.Data(), "*") == 0) {
    // Loop over all trees with extension exten
       Int_t numtrees = 0;
       TKey *key = 0;
       TIter next(gDirectory->GetListOfKeys());
       while ((key = (TKey*)next())) {
-         TString xten  = Path2Name(key->GetName(),".",";");
-         TString kname = Path2Name(key->GetName(),"",".");
+         TString xten  = Path2Name(key->GetName(), ".", ";");
+         TString kname = Path2Name(key->GetName(), "", ".");
          if (strcmp(xten.Data(), exten) == 0) {
             TTree* tree = (TTree*)gDirectory->Get(key->GetName());
             err = ((XProcesSet*)fTreeSet)->SetBaseLine(tree, option, trim);
@@ -480,8 +479,8 @@ Int_t XProcessManager::SetReference(const char *intree, Option_t *option,
    }//if
 
 // Extract tree name from intree
-   TString inname = Path2Name(intree,"/","");
-   if (strstr(inname.Data(),".root")) {
+   TString inname = Path2Name(intree, dSEP, "");
+   if (strstr(inname.Data(), ".root")) {
       inname = "";
    }//if
 
@@ -489,8 +488,8 @@ Int_t XProcessManager::SetReference(const char *intree, Option_t *option,
    TFile * file = 0;
    TString filename = "";
    Bool_t  isOwner  = kFALSE;
-   if (strstr(intree,".root")) {
-      filename = Path2Name(intree,"",".") + ".root";
+   if (strstr(intree, ".root")) {
+      filename = Path2Name(intree, "", ".") + ".root";
       if (strcmp(filename.Data(),gDirectory->GetName()) != 0) {
          // open file
          file = this->OpenFile(filename.Data(), "READ", isOwner);
@@ -505,26 +504,26 @@ Int_t XProcessManager::SetReference(const char *intree, Option_t *option,
 
 // Get name of treeset and change directory
    TString sname  = "";
-   if (strstr(intree,".root")) {
-      TString substr = SubString(intree,'.','/',kFALSE);
-      if (substr) sname = Path2Name(substr.Data(),"/","");
+   if (strstr(intree, ".root")) {
+      TString substr = SubString(intree, '.', sSEP, kFALSE);
+      if (substr) sname = Path2Name(substr.Data(), dSEP, "");
       if (sname.Contains("root")) sname = "";
-   } else if (strstr(intree,"/")) {
-      sname = Path2Name(intree,"","/");
+   } else if (strstr(intree, dSEP)) {
+      sname = Path2Name(intree, "", dSEP);
    }//if
    if (!gDirectory->cd(sname)) return HandleError(errGetDir, sname);
 
 // Add trees to treeset
-   TString name  = Path2Name(intree,"/",".");
-   TString exten = Path2Name(intree,".","");
-   if (strcmp(name.Data(),"*") == 0) {
+   TString name  = Path2Name(intree, dSEP, ".");
+   TString exten = Path2Name(intree, ".", "");
+   if (strcmp(name.Data(), "*") == 0) {
    // Loop over all trees with extension exten
       Int_t numtrees = 0;
       TKey *key = 0;
       TIter next(gDirectory->GetListOfKeys());
       while ((key = (TKey*)next())) {
-         TString xten  = Path2Name(key->GetName(),".",";");
-         TString kname = Path2Name(key->GetName(),"",".");
+         TString xten  = Path2Name(key->GetName(), ".", ";");
+         TString kname = Path2Name(key->GetName(), "", ".");
          if (strcmp(xten.Data(), exten) == 0) {
             TTree* tree = (TTree*)gDirectory->Get(key->GetName());
             err = ((XProcesSet*)fTreeSet)->SetReference(tree, option, trim);
@@ -774,7 +773,8 @@ Int_t XProcessManager::CommitTransaction()
                TString newname = ((XDatasetInfo*)info)->GetDatasetName();
                if (strcmp(oldname.Data(), newname.Data()) != 0) {
                   cout << "Warning: Currently it is not possible to change dataset name <"
-                       << oldname << "> to dataset name <" << newname <<">." << endl;
+                       << oldname.Data() << "> to dataset name <" << newname.Data() <<">."
+                       << endl;
                   ((XDatasetInfo*)info)->SetDatasetName(oldname);
                }//if
 

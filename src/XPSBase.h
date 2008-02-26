@@ -205,10 +205,10 @@ class XTreeInfo: public TNamed {
       XTreeInfo(const char *name, const char *title);
       virtual ~XTreeInfo();
 
-      virtual Option_t *GetOption()              const {return fOption;}
-      virtual void     AddUserInfo(XTreeSet */*set*/)  {}
-      virtual Double_t GetValue(const char */*name*/)  {return 0;}
-      virtual TString  GetString(const char */*name*/) {return "";}
+      virtual Option_t *GetOption()               const {return fOption;}
+      virtual void     AddUserInfo(XTreeSet * /*set*/)  {}
+      virtual Double_t GetValue(const char * /*name*/)  {return 0;}
+      virtual TString  GetString(const char * /*name*/) {return "";}
 
       void    SetTreeSetName(const char *name)  {fSetName  = name;}
       void    SetTreeSetClass(const char *name) {fSetClass = name;}
@@ -276,10 +276,10 @@ class XSetting: public TNamed {
       XSetting(const char *type, const char *infile);
       virtual ~XSetting();
 
-      virtual Int_t InitAlgorithm(const char */*name*/, const char */*type*/,
-                       Option_t */*options*/, const char */*filename*/,
-                       Int_t /*npars*/, Double_t */*pars*/) {return 0;}
-      virtual void  ResetAlgorithm(const char */*name*/, const char */*type*/);
+      virtual Int_t InitAlgorithm(const char * /*name*/, const char * /*type*/,
+                       Option_t * /*options*/, const char * /*filename*/,
+                       Int_t /*npars*/, Double_t * /*pars*/) {return 0;}
+      virtual void  ResetAlgorithm(const char * /*name*/, const char * /*type*/);
 
       void   InitNA(Double_t na)        {fNA = na; fHasNA = kTRUE;}
 
@@ -311,18 +311,18 @@ class XTreeSet: public TNamed {
 
    protected:
       virtual Int_t IsBinaryFile(ifstream &/*input*/)            {return 0;}
-      virtual Int_t ReadHeader(ifstream &/*input*/, const char */*sep*/, char /*delim*/)
+      virtual Int_t ReadHeader(ifstream &/*input*/, const char * /*sep*/, char /*delim*/)
                                                                  {return 0;}
-      virtual Int_t ReadData(ifstream &/*input*/, Option_t */*option*/, const char */*sep*/,
+      virtual Int_t ReadData(ifstream &/*input*/, Option_t * /*option*/, const char * /*sep*/,
                        char /*delim*/, Int_t /*split*/)          {return 0;}
-      virtual Int_t ReadBinaryHeader(ifstream &/*input*/, const char */*sep*/, char /*delim*/)
+      virtual Int_t ReadBinaryHeader(ifstream &/*input*/, const char * /*sep*/, char /*delim*/)
                                                                  {return 0;}
-      virtual Int_t ReadBinaryData(ifstream &/*input*/, Option_t */*option*/, const char */*sep*/,
+      virtual Int_t ReadBinaryData(ifstream &/*input*/, Option_t * /*option*/, const char * /*sep*/,
                        char /*delim*/, Int_t /*split*/)          {return 0;}
-      virtual Int_t ReadXMLHeader(ifstream &/*input*/, const char */*sep*/, char /*delim*/)
+      virtual Int_t ReadXMLHeader(ifstream &/*input*/, const char * /*sep*/, char /*delim*/)
                                                                  {return 0;}
-      virtual Int_t ReadXMLData(ifstream &/*input*/, Option_t */*option*/,
-                       const char */*sep*/, char /*delim*/, Int_t /*split*/)
+      virtual Int_t ReadXMLData(ifstream &/*input*/, Option_t * /*option*/,
+                       const char * /*sep*/, char /*delim*/, Int_t /*split*/)
                                                                  {return 0;}
       
    public :
@@ -346,14 +346,14 @@ class XTreeSet: public TNamed {
                        ofstream &output, const char *sep);
       virtual Int_t ExportTree(const char *exten, Int_t n, TString *names,  
                        const char *varlist, ofstream &output, const char *sep);
-      virtual Int_t ExportTreeType(const char */*exten*/, Int_t /*n*/, TString */*names*/,  
-                       const char */*varlist*/, ofstream &/*output*/, const char */*sep*/)
-                                                                          {return 0;}
-      virtual Int_t ExportTreeXML(const char */*exten*/, Int_t /*n*/, TString */*names*/,  
-                       const char */*varlist*/, ofstream &/*output*/, const char */*sep*/)
-                                                                          {return 0;}
-      virtual Int_t HandleOption(const char */*name*/, Option_t */*opt*/) {return 0;}
-      virtual Int_t HandleOption(TTree */*tree*/, Option_t */*opt*/)      {return 0;}
+      virtual Int_t ExportTreeType(const char * /*exten*/, Int_t /*n*/, TString * /*names*/,  
+                       const char * /*varlist*/, ofstream &/*output*/, const char * /*sep*/)
+                                                                            {return 0;}
+      virtual Int_t ExportTreeXML(const char * /*exten*/, Int_t /*n*/, TString * /*names*/,  
+                       const char * /*varlist*/, ofstream &/*output*/, const char * /*sep*/)
+                                                                            {return 0;}
+      virtual Int_t HandleOption(const char * /*name*/, Option_t * /*opt*/) {return 0;}
+      virtual Int_t HandleOption(TTree * /*tree*/, Option_t * /*opt*/)      {return 0;}
       virtual Int_t Import(ifstream &input, Option_t *option,
                        const char *sep, char delim, Int_t split);
       virtual Int_t ImportXML(ifstream &input, Option_t *option,
@@ -419,20 +419,20 @@ class XAlgorithm: public TNamed {
       XAlgorithm& operator=(const XAlgorithm& rhs);
       virtual ~XAlgorithm();
 
-      virtual Int_t InitType(const char */*type*/, Option_t */*options*/,
-                       Int_t /*npars*/, Double_t */*pars*/) {return 0;}
+      virtual Int_t InitType(const char * /*type*/, Option_t * /*options*/,
+                       Int_t /*npars*/, Double_t * /*pars*/) {return 0;}
       virtual Int_t Calculate(Double_t &/*value1*/, Double_t &/*value2*/, Int_t &/*num*/)
-                                                            {return 0;}
-      virtual Int_t Calculate(Int_t /*n*/, Int_t */*x*/, Int_t */*msk*/)
-                                                            {return 0;}
-      virtual Int_t Calculate(Int_t /*n*/, Double_t */*x*/, Int_t */*msk*/)
-                                                            {return 0;}
-      virtual Int_t Calculate(Int_t /*n*/, Double_t */*x*/, Double_t */*y*/, Int_t */*msk*/)
-                                                            {return 0;}
-      virtual Int_t Calculate(Int_t /*n*/, Double_t */*x*/, Double_t */*y*/, Double_t */*z*/,
-                       Int_t */*msk*/)                      {return 0;}
-      virtual Int_t Calculate(Int_t /*nrow*/, Int_t /*ncol*/, Double_t **/*table*/)
-                                                            {return 0;}
+                                                             {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Int_t * /*x*/, Int_t * /*msk*/)
+                                                             {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Int_t * /*msk*/)
+                                                             {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Int_t * /*msk*/)
+                                                             {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Double_t * /*z*/,
+                       Int_t * /*msk*/)                      {return 0;}
+      virtual Int_t Calculate(Int_t /*nrow*/, Int_t /*ncol*/, Double_t ** /*table*/)
+                                                             {return 0;}
       virtual void  SetOptions(Option_t *opt) {fOption = opt; fOption.ToLower();}
 
       TFile    *NewFile(const char *name, const char *exten);
@@ -479,15 +479,15 @@ class XManager: public TNamed {
       static Int_t fgVerbose;    //! print information if verbose=kTRUE
 
    protected:
-      virtual Int_t     ImportDefaults(const char */*infile*/)  {return 0;}
-      virtual Int_t     InitDefaults()                          {return 0;}
+      virtual Int_t     ImportDefaults(const char * /*infile*/)  {return 0;}
+      virtual Int_t     InitDefaults()                           {return 0;}
       virtual Bool_t    IsOpen(TFile *file, const char *filename);
       virtual XSetting *NewSetting(const char *type, const char *infile);
-      virtual XTreeSet *NewTreeSet(const char */*type*/)        {return 0;}
+      virtual XTreeSet *NewTreeSet(const char * /*type*/)        {return 0;}
       virtual XPlot    *NewPlotter(const char *name, const char *title = "");
       virtual Int_t     ExportTrees(const char *exten, const char *varlist, 
                            ofstream &output, Bool_t asXML, const char *sep);
-      virtual Int_t     DeleteTreeSetInfo(const char */*name*/) {return 0;}
+      virtual Int_t     DeleteTreeSetInfo(const char * /*name*/) {return 0;}
       virtual Int_t     HandleOption(const char *setname, const char *treename,
                            Option_t *option);
 

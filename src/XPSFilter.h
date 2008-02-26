@@ -1,20 +1,39 @@
 // File created: 12/16/2002                          last modified: 11/11/2007
 // Author: Christian Stratowa 06/18/2000
 
-/******************************************************************************
-* Copyright(c) 2000-2007, Dr. Christian Stratowa, Vienna, Austria.            *
-* All rights reserved.                                                        *
-* Author: Christian Stratowa.                                                 *
-*                                                                             *
-*******************************************************************************
-*********************  XPS - eXpression Profiling System  *********************
-*******************************************************************************
-*                                                                             *
-* Based on: "The ROOT System", All rights reserved.                           *
-* Authors: Rene Brun and Fons Rademakers.                                     *
-* For the licensing terms of "The ROOT System" see $ROOTSYS/AA_LICENSE.       *
-* For the list of contributors to "The ROOT System" see $ROOTSYS/AA_CREDITS.  *
-******************************************************************************/
+/*
+ *******************************************************************************
+ *********************  XPS - eXpression Profiling System  *********************
+ *******************************************************************************
+ *
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *
+ *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, a copy of the GNU General Public
+ *  License is available at http://www.gnu.org/copyleft/gpl.html. You
+ *  can also obtain it by writing to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA.
+ *
+ *******************************************************************************
+ * Based on: "The ROOT System", http://root.cern.ch/                           *
+ * ROOT:     An Object-Oriented Data Analysis Framework                        *
+ * Authors:  Rene Brun and Fons Rademakers.                                    *
+ * For the licensing terms of "The ROOT System" see $ROOTSYS/LICENSE.          *
+ * For the list of contributors to "The ROOT System" see http://root.cern.ch/  *
+ *******************************************************************************
+ */
 
 #ifndef __XPSFilter__
 #define __XPSFilter__
@@ -91,18 +110,18 @@ class XFilter: public XAlgorithm {
       virtual Int_t Initialize(Int_t min, Bool_t reset = kFALSE);
 
       using XAlgorithm::Calculate;
-      virtual Int_t Calculate(const char */*infile*/, const char */*outfile*/, 
-                       const char */*varlist*/, Int_t /*nrows*/,
-                       const char */*sepi*/, const char */*sepo*/,
-                       char /*delim*/, Int_t /*linebuf*/)           {return 0;}
-      virtual Int_t Calculate(TTree */*intree*/, const char */*leafname*/,
-                       TTree */*outtree*/, const char */*varlist*/) {return 0;}
-      virtual Int_t Calculate(Int_t /*n*/, TTree **/*intree*/, const char */*leafname*/,
-                       TTree */*outtree*/, const char */*varlist*/) {return 0;}
-      virtual Int_t CallFlag(Int_t /*n*/, TTree **/*intree*/, const char */*varlist*/,
-                       TTree */*outtree*/)                          {return 0;}
-      virtual Int_t CallFlag(Int_t /*n*/, Int_t */*gid*/, TTree **/*intree*/,
-                       const char */*varlist*/, TTree */*outtree*/) {return 0;}
+      virtual Int_t Calculate(const char * /*infile*/, const char * /*outfile*/, 
+                       const char * /*varlist*/, Int_t /*nrows*/,
+                       const char * /*sepi*/, const char * /*sepo*/,
+                       char /*delim*/)                                {return 0;}
+      virtual Int_t Calculate(TTree * /*intree*/, const char * /*leafname*/,
+                       TTree * /*outtree*/, const char * /*varlist*/) {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, TTree ** /*intree*/, const char * /*leafname*/,
+                       TTree * /*outtree*/, const char * /*varlist*/) {return 0;}
+      virtual Int_t CallFlag(Int_t /*n*/, TTree ** /*intree*/, const char * /*varlist*/,
+                       TTree * /*outtree*/)                           {return 0;}
+      virtual Int_t CallFlag(Int_t /*n*/, Int_t * /*gid*/, TTree ** /*intree*/,
+                       const char * /*varlist*/, TTree * /*outtree*/) {return 0;}
 
       Int_t  GetMask(Int_t i) const {return fMask ? fMask[i] : -1;}
       Int_t *GetMask()        const {return fMask;}
@@ -195,7 +214,7 @@ class XPreFilter: public XFilter {
       using XAlgorithm::Calculate;
       virtual Int_t Calculate(const char *infile, const char *outfile, 
                        const char *varlist, Int_t nrows, const char *sepi,
-                       const char *sepo, char delim, Int_t linebuf);
+                       const char *sepo, char delim);
       virtual Int_t Calculate(Int_t n, TTree **intree, const char *leafname,
                        TTree *outtree, const char *varlist);
 
@@ -340,7 +359,7 @@ class XUniFilter: public XFilter {
       using XAlgorithm::Calculate;
       virtual Int_t Calculate(const char *infile, const char *outfile, 
                        const char *varlist, Int_t nrows, const char *sepi,
-                       const char *sepo, char delim, Int_t linebuf);
+                       const char *sepo, char delim);
       virtual Int_t Calculate(TTree *intree, const char *leafname,
                        TTree *outtree, const char *varlist, Int_t base = 0);
 

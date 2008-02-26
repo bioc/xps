@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2007 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -109,7 +109,7 @@ class XBackgrounder: public XHybridizer {
       virtual Double_t *AdjustIntensity(Int_t n, Double_t *inten, Double_t *bgrd,
                            Double_t *stdv);
       virtual Double_t *AdjustError(Int_t n, Double_t *sd1, Double_t *sd2);
-      virtual void      Smooth(const Double_t */*arrIn*/, Double_t */*arrOut*/, 
+      virtual void      Smooth(const Double_t * /*arrIn*/, Double_t * /*arrOut*/, 
                            Int_t /*numrows*/, Int_t /*numcols*/)  {}
 
       void  SetNumRows(Int_t numrows) {fNRows = numrows;}
@@ -393,13 +393,13 @@ class XDABGCall: public XCallDetector {
 
       virtual Int_t Calculate(Int_t n, Double_t *x, Int_t *msk);
       virtual Int_t Calculate(Double_t &value1, Double_t &value2, Int_t &num);
-      virtual Int_t Calculate(Int_t /*n*/, Int_t */*x*/, Int_t */*msk*/)
+      virtual Int_t Calculate(Int_t /*n*/, Int_t * /*x*/, Int_t * /*msk*/)
                                                             {return 0;}
-      virtual Int_t Calculate(Int_t /*n*/, Double_t */*x*/, Double_t */*y*/, Int_t */*msk*/)
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Int_t * /*msk*/)
                                                             {return 0;}
-      virtual Int_t Calculate(Int_t /*n*/, Double_t */*x*/, Double_t */*y*/, Double_t */*z*/,
-                       Int_t */*msk*/)                      {return 0;}
-      virtual Int_t Calculate(Int_t /*nrow*/, Int_t /*ncol*/, Double_t **/*table*/)
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Double_t * /*z*/,
+                       Int_t * /*msk*/)                     {return 0;}
+      virtual Int_t Calculate(Int_t /*nrow*/, Int_t /*ncol*/, Double_t ** /*table*/)
                                                             {return 0;}
 
       ClassDef(XDABGCall,1) //DABGCall

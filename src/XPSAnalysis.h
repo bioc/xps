@@ -1,20 +1,39 @@
 // File created: 12/16/2002                          last modified: 12/18/2007
 // Author: Christian Stratowa 06/18/2000
 
-/******************************************************************************
-* Copyright(c) 2000-2007, Dr. Christian Stratowa, Vienna, Austria.            *
-* All rights reserved.                                                        *
-* Author: Christian Stratowa.                                                 *
-*                                                                             *
-*******************************************************************************
-*********************  XPS - eXpression Profiling System  *********************
-*******************************************************************************
-*                                                                             *
-* Based on: "The ROOT System", All rights reserved.                           *
-* Authors: Rene Brun and Fons Rademakers.                                     *
-* For the licensing terms of "The ROOT System" see $ROOTSYS/AA_LICENSE.       *
-* For the list of contributors to "The ROOT System" see $ROOTSYS/AA_CREDITS.  *
-******************************************************************************/
+/*
+ *******************************************************************************
+ *********************  XPS - eXpression Profiling System  *********************
+ *******************************************************************************
+ *
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *
+ *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, a copy of the GNU General Public
+ *  License is available at http://www.gnu.org/copyleft/gpl.html. You
+ *  can also obtain it by writing to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA.
+ *
+ *******************************************************************************
+ * Based on: "The ROOT System", http://root.cern.ch/                           *
+ * ROOT:     An Object-Oriented Data Analysis Framework                        *
+ * Authors:  Rene Brun and Fons Rademakers.                                    *
+ * For the licensing terms of "The ROOT System" see $ROOTSYS/LICENSE.          *
+ * For the list of contributors to "The ROOT System" see http://root.cern.ch/  *
+ *******************************************************************************
+ */
 
 #ifndef __XPSAnalysis__
 #define __XPSAnalysis__
@@ -65,7 +84,7 @@ class XAnalysisManager: public XProcessManager {
                const char *varlist = "*");
       Int_t Analyse(const char *infile, const char *outfile, const char *varlist,
                Int_t nrows, const char *sepi = "\t", const char *sepo = "\t",
-               char delim = '\n', Int_t linebuf = 16635);
+               char delim = '\n');
 
       ClassDef(XAnalysisManager,1) //AnalysisManager
 };
@@ -476,11 +495,11 @@ class XAnalySet: public XProcesSet {
       XAnalySet(const char *name, const char *type);
       virtual ~XAnalySet();
 
-      virtual Int_t Analyse(const char */*leafname*/, const char */*outtree*/,
-                       const char */*varlist*/)  {return 0;}
-      virtual Int_t Analyse(const char */*infile*/, const char */*outfile*/, 
-                       const char */*varlist*/, Int_t /*nrows*/, const char */*sepi*/,
-                       const char */*sepo*/, char /*delim*/, Int_t /*linebuf*/)
+      virtual Int_t Analyse(const char * /*leafname*/, const char * /*outtree*/,
+                       const char * /*varlist*/) {return 0;}
+      virtual Int_t Analyse(const char * /*infile*/, const char * /*outfile*/, 
+                       const char * /*varlist*/, Int_t /*nrows*/, const char * /*sepi*/,
+                       const char * /*sepo*/, char /*delim*/)
                                                  {return 0;}
 //?? in XProcesSet??
 //      virtual TTree *CopyExprTrees(TTree *tree, Int_t n, Short_t *msk, Int_t base = 0);
@@ -529,7 +548,7 @@ class XPreFilterSet: public XAnalySet {
                        const char *varlist);
       virtual Int_t Analyse(const char *infile, const char *outfile, 
                        const char *varlist, Int_t nrows, const char *sepi,
-                       const char *sepo, char delim, Int_t linebuf);
+                       const char *sepo, char delim);
       virtual Int_t ExportTreeType(const char *exten, Int_t n, TString *names,  
                        const char *varlist, ofstream &output, const char *sep);
       virtual Int_t ExportTreeXML(const char *exten, Int_t n, TString *names,  
@@ -579,7 +598,7 @@ class XUnivarSet: public XAnalySet {
 
       virtual Int_t Analyse(const char *infile, const char *outfile, 
                        const char *varlist, Int_t nrows, const char *sepi,
-                       const char *sepo, char delim, Int_t linebuf);
+                       const char *sepo, char delim);
       virtual Int_t Analyse(const char *leafname, const char *outtree,
                        const char *varlist);
       virtual Int_t ExportTreeType(const char *exten, Int_t n, TString *names,  
@@ -619,7 +638,7 @@ class XMultivarSet: public XAnalySet {
 
       virtual Int_t Analyse(const char *infile, const char *outfile, 
                        const char *varlist, Int_t nrows, const char *sepi,
-                       const char *sepo, char delim, Int_t linebuf);
+                       const char *sepo, char delim);
       virtual Int_t Analyse(const char *leafname, const char *outtree,
                        const char *varlist);
       virtual Int_t ExportTreeType(const char *exten, Int_t n, TString *names,  
@@ -658,7 +677,7 @@ class XClusterSet: public XAnalySet {
 
       virtual Int_t Analyse(const char *infile, const char *outfile, 
                        const char *varlist, Int_t nrows, const char *sepi,
-                       const char *sepo, char delim, Int_t linebuf);
+                       const char *sepo, char delim);
       virtual Int_t Analyse(const char *leafname, const char *outtree,
                        const char *varlist);
       virtual Int_t ExportTreeType(const char *exten, Int_t n, TString *names,  
@@ -697,7 +716,7 @@ class XRegressionSet: public XAnalySet {
 
       virtual Int_t Analyse(const char *infile, const char *outfile, 
                        const char *varlist, Int_t nrows, const char *sepi,
-                       const char *sepo, char delim, Int_t linebuf);
+                       const char *sepo, char delim);
       virtual Int_t Analyse(const char *leafname, const char *outtree,
                        const char *varlist);
       virtual Int_t ExportTreeType(const char *exten, Int_t n, TString *names,  

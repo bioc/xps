@@ -1,4 +1,4 @@
-// File created: 11/02/2002                          last modified: 01/31/2008
+// File created: 11/02/2002                          last modified: 02/24/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -1571,13 +1571,17 @@ Int_t XPlot::DrawLeaves(const char *canvasname, const char *leafname,
 
    Int_t numtrees = fTrees->GetSize();
    Int_t entries  = (Int_t)(tree->GetEntries());
-   if (!(index = new (nothrow) Double_t[entries])) {fAbort = kTRUE; perr = perrInitMemory; goto cleanup;} 
+   if (!(index = new (nothrow) Double_t[entries])) {
+      fAbort = kTRUE; perr = perrInitMemory; goto cleanup;
+   }//if 
 
 // Draw leaf(s)
    if (numtrees == 1) {
    // Draw leaf for one tree
       // init array
-      if (!(arr = new (nothrow) Double_t[entries])) {fAbort = kTRUE; perr = perrInitMemory; goto cleanup;}  
+      if (!(arr = new (nothrow) Double_t[entries])) {
+         fAbort = kTRUE; perr = perrInitMemory; goto cleanup;
+      }//if  
 
       // get leaf and branch
       if (!(leaf = tree->FindLeaf(leafname))) {
@@ -2715,7 +2719,7 @@ Bool_t XPlot::IsOpen(TFile *file, const char *filename)
 
    if (file) {
       TString oldname = file->GetName();
-      TString newname = Path2Name(filename,"/",".") + ".root";
+      TString newname = Path2Name(filename, dSEP, ".") + ".root";
 
       TString xpaname;
 //ccc char memory problem??
@@ -2727,7 +2731,7 @@ Bool_t XPlot::IsOpen(TFile *file, const char *filename)
 
       if ((strcmp(oldname.Data(), newname.Data()) == 0) ||
           (strcmp(oldname.Data(), xpaname.Data()) == 0)) {
-         cout << "Warning: File <" << oldname << "> is already open." << endl;
+         cout << "Warning: File <" << oldname.Data() << "> is already open." << endl;
          return kFALSE;
       }//if
 
@@ -2745,7 +2749,7 @@ TTree *XPlot::GetTree(const char *fullname)
    if(kCS) cout << "------XPlot::GetTree------" << endl;
 
 // Extract tree name
-   TString treename = Path2Name(fullname,"/","");
+   TString treename = Path2Name(fullname, dSEP, "");
    if (strstr(treename.Data(),".root")) {
       treename = "";
    }//if
@@ -2773,11 +2777,11 @@ TTree *XPlot::GetTree(const char *fullname)
 // Get name of treeset and change directory
    TString setname  = "";
    if (strstr(fullname,".root")) {
-      TString substr = SubString(fullname,'.','/', kFALSE);
-      if (substr) setname = Path2Name(substr.Data(),"/","");
+      TString substr = SubString(fullname,'.', sSEP, kFALSE);
+      if (substr) setname = Path2Name(substr.Data(), dSEP, "");
       if (setname.Contains("root")) setname = "";
-   } else if (strstr(fullname,"/")) {
-      setname = Path2Name(fullname,"","/");
+   } else if (strstr(fullname, dSEP)) {
+      setname = Path2Name(fullname, "", dSEP);
    }//if
 
    if (!fFile->cd(setname)) return 0;
@@ -2830,7 +2834,7 @@ Int_t XPlot::AddTree(const char *treename)
    }//if
 
 // Extract tree name
-   TString tname = Path2Name(treename,"/","");
+   TString tname = Path2Name(treename, dSEP, "");
    if (strstr(tname.Data(),".root")) {
       tname = "";
    }//if
@@ -2842,8 +2846,8 @@ Int_t XPlot::AddTree(const char *treename)
 // Extract root filename and get file
    TString filename = "";
    Bool_t isOwner = kFALSE;
-   if (strstr(treename,".root")) {
-      filename = Path2Name(treename,"",".root") + ".root";
+   if (strstr(treename, ".root")) {
+      filename = Path2Name(treename, "", ".root") + ".root";
       fFile = this->OpenFile(filename, "READ", isOwner);
       if (!fFile) return perrOpenFile;
       fFile->cd();
@@ -2858,19 +2862,20 @@ Int_t XPlot::AddTree(const char *treename)
 // Get name of treeset and change directory
    TString setname  = "";
    if (strstr(treename,".root")) {
-      TString substr = SubString(treename,'.','/', kFALSE);
-      if (substr) setname = Path2Name(substr.Data(),"/","");
+//old      TString substr = SubString(treename, '.', '/', kFALSE);
+      TString substr = SubString(treename, '.', sSEP, kFALSE);
+      if (substr) setname = Path2Name(substr.Data(), dSEP, "");
       if (setname.Contains("root")) setname = "";
-   } else if (strstr(treename,"/")) {
-      setname = Path2Name(treename,"","/");
+   } else if (strstr(treename, dSEP)) {
+      setname = Path2Name(treename, "", dSEP);
    }//if
 
    if (!fFile->cd(setname)) return perrGetDir;
 
 // Add trees to fTrees
    TTree  *tree  = 0;
-   TString name  = Path2Name(treename,"/",".");
-   TString exten = Path2Name(treename,".","");
+   TString name  = Path2Name(treename, dSEP, ".");
+   TString exten = Path2Name(treename, ".", "");
    if (strcmp(name.Data(),"*") == 0) {
    // Loop over all trees with extension exten
       TKey *key = 0;
@@ -3702,7 +3707,7 @@ Int_t CheckHeader(const char *header, const char **kHeader, const Int_t ncols,
    Int_t size = 0;
    char *str1;
 
-   char str[strlen(header) + 1];
+   char *str = new char[strlen(header) + 1];
    strcpy(str, header);
 
    index[0] = 1;
@@ -3718,6 +3723,8 @@ Int_t CheckHeader(const char *header, const char **kHeader, const Int_t ncols,
          }//if
       }//for_k
    }//for_i
+
+   delete [] str;
 
    return size;
 }//CheckHeader
@@ -3735,7 +3742,7 @@ Int_t CheckHeaderOrder(const char *header, const char **kHeader, const Int_t nco
    Int_t size = ncols;
    char *str1;
 
-   char str[strlen(header) + 1];
+   char *str = new char[strlen(header) + 1];
    strcpy(str, header);
 
 // Inititialize index
@@ -3756,6 +3763,8 @@ Int_t CheckHeaderOrder(const char *header, const char **kHeader, const Int_t nco
          }//if
       }//for_k
    }//for_i
+
+   delete [] str;
 
    return size;
 }//CheckHeaderOrder
@@ -3787,9 +3796,9 @@ char *FirstPath(const char *name)
    Int_t i = 0;
    Int_t k = 0;
    if (name == 0) return 0;
-   if (name[0] == '/') {
-      k = (name[1] == '/') ? 2 : 1;
-      if (!(i = strcspn(name + k,"/"))) return 0;
+   if (name[0] == sSEP) {
+      k = (name[1] == sSEP) ? 2 : 1;
+      if (!(i = strcspn(name + k, dSEP))) return 0;
    }//if
 
    char *path = "";
@@ -3821,7 +3830,7 @@ TString FullName(const char *dir, const char *name, const char *sep)
    if (fullname.EndsWith(sep)) {
       fullname = TString(dir) + Path2Name(name, sep, ".");
    } else {
-      fullname = TString(dir) + "/" + Path2Name(name, sep, ".");
+      fullname = TString(dir) + TString(dSEP) + Path2Name(name, sep, ".");
    }//if
 
 //ccc char memory problem??
@@ -3940,7 +3949,7 @@ Int_t NumSeparators(const char *name, const char sep)
    // Return number of separators in name
 
    Int_t idx = 0;
-   char *pos = strchr(name,sep);
+   char *pos = strchr((char*)name,sep);
 
    while(pos) {
       pos = strchr(pos+1,sep);
@@ -3956,7 +3965,7 @@ TString Path2Name(const char *name, const char *sep, const char *exten)
    // Extract name from full path
    // sep is path separator and exten is name extension
 
-   TString outname = TString(name);
+   TString outname(name);
    char   *tmpname = new char[strlen(name) + 1];
    char   *delname = tmpname;
 
@@ -4083,7 +4092,7 @@ TString RemoveSubString(const char *name, const char *substr, Bool_t exact = kTR
       TString upname = TString(name);   upname.ToUpper();
       TString upsubs = TString(substr); upsubs.ToUpper();
 
-      pos = strstr(upname.Data(),upsubs.Data());
+      pos = strstr((char*)(upname.Data()),upsubs.Data());
       len = upname.Data() - pos;
    }//if
 
@@ -4120,7 +4129,7 @@ TString ReplaceNonAlpha(const char *name, const char *sep)
 // Test if name exists
    if (!name || (len <= 1)) return name;
 
-   TString outname = TString(name);
+   TString outname(name);
 // Replace non-alpha chars with sep
    if (strcmp(sep, "") != 0) {
       for (Int_t i=0; i<len; i++) {
@@ -4141,7 +4150,7 @@ Int_t StringInList(const char *str, const char **kStrList, const Int_t n,
 
    if (str == 0) return 0;
 
-   TString name = TString(str);
+   TString name(str);
    if (exact) {
       for (Int_t i=0; i<n; i++)
          if (name.CompareTo(kStrList[i],TString::kExact) == 0) return 1;
@@ -4158,7 +4167,7 @@ TString SubString(const char *str, const char *sep, Int_t n)
 {
    // Extract substring from str at separator number n
 
-   TString outname = TString(str);
+   TString outname(str);
    char   *tmpname = new char[strlen(str) + 1];
    char   *delname = tmpname;
 
@@ -4285,6 +4294,11 @@ TString Type2Extension(const char *type, const char **types, const char **extens
 //////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
+inline UShort_t Swap16Bit(UShort_t x) {
+  return ((((x) >> 8) & 0xff) | (((x) & 0xff) << 8));
+}
+
+//______________________________________________________________________________
 void SwapBytes(char *src, char *dest, Int_t size)
 {
 	for (Int_t i=0; i<size; i++)
@@ -4294,9 +4308,10 @@ void SwapBytes(char *src, char *dest, Int_t size)
 //______________________________________________________________________________
 void READ_INT(std::ifstream &input, Int_t &value, Bool_t isBE)
 {
-   char str[INT_SIZE];
+   Int_t val = 0;
+   input.read((char*)&val, sizeof(val));
+
    Bool_t swap = kFALSE;
-	input.read(str, INT_SIZE);
 #ifdef IS_BIG_ENDIAN
    swap = kTRUE;
    if (isBE == kTRUE) swap = kFALSE;
@@ -4305,18 +4320,19 @@ void READ_INT(std::ifstream &input, Int_t &value, Bool_t isBE)
 #endif
    if (swap) {
       char str2[INT_SIZE];
-      SwapBytes(str, str2, INT_SIZE);
-      memcpy(str, str2, INT_SIZE);
+      SwapBytes((char*)&val, str2, INT_SIZE);
+      memcpy((char*)&val, str2, INT_SIZE);
    }//if
-	memcpy(&value, str, INT_SIZE);
+	memcpy(&value, (char*)&val, INT_SIZE);
 }//READ_INT
 
 //______________________________________________________________________________
 void READ_UINT(std::ifstream &input, UInt_t &value, Bool_t isBE)
 {
-   char str[UINT_SIZE];
+   UInt_t val = 0;
+   input.read((char*)&val, sizeof(val));
+
    Bool_t swap = kFALSE;
-	input.read(str, UINT_SIZE);
 #ifdef IS_BIG_ENDIAN
    swap = kTRUE;
    if (isBE == kTRUE) swap = kFALSE;
@@ -4325,18 +4341,19 @@ void READ_UINT(std::ifstream &input, UInt_t &value, Bool_t isBE)
 #endif
    if (swap) {
       char str2[UINT_SIZE];
-      SwapBytes(str, str2, UINT_SIZE);
-      memcpy(str, str2, UINT_SIZE);
+      SwapBytes((char*)&val, str2, UINT_SIZE);
+      memcpy((char*)&val, str2, UINT_SIZE);
    }//if
-	memcpy(&value, str, UINT_SIZE);
+	memcpy(&value, (char*)&val, UINT_SIZE);
 }//READ_UINT
 
 //______________________________________________________________________________
 void READ_SHORT(std::ifstream &input, Short_t &value, Bool_t isBE)
 {
-   char str[SHORT_SIZE];
+   Short_t val = 0;
+   input.read((char*)&val, sizeof(val));
+
    Bool_t swap = kFALSE;
-	input.read(str, SHORT_SIZE);
 #ifdef IS_BIG_ENDIAN
    swap = kTRUE;
    if (isBE == kTRUE) swap = kFALSE;
@@ -4345,18 +4362,19 @@ void READ_SHORT(std::ifstream &input, Short_t &value, Bool_t isBE)
 #endif
    if (swap) {
 	   char str2[SHORT_SIZE];
-	   SwapBytes(str, str2, SHORT_SIZE);
-	   memcpy(str, str2, SHORT_SIZE);
+      SwapBytes((char*)&val, str2, SHORT_SIZE);
+      memcpy((char*)&val, str2, SHORT_SIZE);
    }//if
-	memcpy(&value, str, SHORT_SIZE);
+	memcpy(&value, (char*)&val, SHORT_SIZE);
 }//READ_SHORT
 
 //______________________________________________________________________________
 void READ_USHORT(std::ifstream &input, UShort_t &value, Bool_t isBE)
 {
-   char str[USHORT_SIZE];
+   UShort_t val = 0;
+   input.read((char*)&val, sizeof(val));
+
    Bool_t swap = kFALSE;
-   input.read(str, USHORT_SIZE);
 #ifdef IS_BIG_ENDIAN
    swap = kTRUE;
    if (isBE == kTRUE) swap = kFALSE;
@@ -4365,10 +4383,10 @@ void READ_USHORT(std::ifstream &input, UShort_t &value, Bool_t isBE)
 #endif
    if (swap) {
       char str2[USHORT_SIZE];
-      SwapBytes(str, str2, USHORT_SIZE);
-      memcpy(str, str2, USHORT_SIZE);
+      SwapBytes((char*)&val, str2, USHORT_SIZE);
+      memcpy((char*)&val, str2, USHORT_SIZE);
    }//if
-   memcpy(&value, str, USHORT_SIZE);
+   memcpy(&value, (char*)&val, USHORT_SIZE);
 }//READ_USHORT
 
 //______________________________________________________________________________
@@ -4392,9 +4410,10 @@ void READ_BOOL(std::ifstream &input, char &value)
 //______________________________________________________________________________
 void READ_FLOAT(std::ifstream &input, Float_t &value, Bool_t isBE)
 {
-   char str[FLOAT_SIZE];
+   Float_t val = 0.0;
+   input.read((char*)&val, FLOAT_SIZE);
+
    Bool_t swap = kFALSE;
-   input.read(str, FLOAT_SIZE);
 #ifdef IS_BIG_ENDIAN
    swap = kTRUE;
    if (isBE == kTRUE) swap = kFALSE;
@@ -4402,12 +4421,11 @@ void READ_FLOAT(std::ifstream &input, Float_t &value, Bool_t isBE)
    if (isBE == kTRUE) swap = kTRUE;
 #endif
    if (swap) {
-      char str2[4];
-//      char str2[FLOAT_SIZE];
-      SwapBytes(str, str2, FLOAT_SIZE);
-      memcpy(str, str2, FLOAT_SIZE);
+      char str2[FLOAT_SIZE];
+      SwapBytes((char*)&val, str2, FLOAT_SIZE);
+      memcpy((char*)&val, str2, FLOAT_SIZE);
    }//if
-   memcpy(&value, str, FLOAT_SIZE);
+   memcpy(&value, (char*)&val, FLOAT_SIZE);
 }//READ_FLOAT
 
 //______________________________________________________________________________
@@ -4422,72 +4440,65 @@ void READ_STRING(std::ifstream &input, char * &value, Bool_t isBE)
 }//READ_STRING
 
 //______________________________________________________________________________
-void READ_STRING(std::ifstream &input, ASTRING &value, Bool_t isBE)
+void READ_STRING(std::ifstream &input, ASTRING *value, Bool_t isBE)
 {
-   Int_t len;
-   READ_INT(input, len, isBE);
-   char *str = new char[len+1];
-   if (len > 0)
-      input.read(str, len);
-   str[len] = '\0';
-
-   value.len   = len;
-   value.value = str;
+   READ_INT(input, value->len, isBE);
+   value->value = new char[value->len + 1];
+   if (value->len > 0)
+      input.read(value->value, value->len);
+   value->value[value->len] = '\0';
 }//READ_STRING
 
 //______________________________________________________________________________
 void READ_WSTRING(std::ifstream &input, char * &value, Bool_t isBE)
 {
-   Int_t len;
-   UShort_t tmp;
+   Int_t    len = 0;
+   UShort_t val = 0;
    READ_INT(input, len, isBE);
    value = new char[len+1];
    wchar_t *wstr = new wchar_t[len+1];
    if (len > 0) {
       for (Int_t i=0; i<len; i++){
-         READ_USHORT(input, tmp, isBE);
-         wstr[i] = (wchar_t)tmp;
+         READ_USHORT(input, val, isBE);
+         wstr[i] = (wchar_t)val;
       }//for_i
    }//if
    wstr[len] = '\00';
-   wcstombs(value, wstr, len);
+   wcstombs(value, wstr, len+1);
    delete[] wstr; wstr = 0;
 }//READ_WSTRING
 
 //______________________________________________________________________________
 void READ_WSTRING(std::ifstream &input, wchar_t * &value, Bool_t isBE)
 {
-   int len;
-   UShort_t tmp;
+   Int_t    len = 0;
+   UShort_t val = 0;
    READ_INT(input, len, isBE);
-//   wchar_t *value = new wchar_t[len+1];
    value = new wchar_t[len+1];
    if (len > 0) {
       for (Int_t i=0; i<len; i++){
-         READ_USHORT(input, tmp, isBE);
-         value[i] = (wchar_t)tmp;
+         READ_USHORT(input, val, isBE);
+         value[i] = (wchar_t)val;
       }//for_i
    }//if
    value[len] = '\00';
 }//READ_WSTRING
 
 //______________________________________________________________________________
-void READ_WSTRING(std::ifstream &input, AWSTRING &value, Bool_t isBE)
+void READ_WSTRING(std::ifstream &input, AWSTRING *value, Bool_t isBE)
 {
-   Int_t len;
-   UShort_t tmp;
-   READ_INT(input, len, isBE);
-   wchar_t *wstr = new wchar_t[len+1];
-   if (len > 0) {
-      for (Int_t i=0; i<len; i++){
-         READ_USHORT(input, tmp, isBE);
-         wstr[i] = (wchar_t)tmp;
+   UShort_t val = 0;
+   READ_INT(input, value->len, isBE);
+   value->value = new wchar_t[value->len + 1];
+   if (value->len > 0) {
+      for (Int_t i=0; i<value->len; i++){
+         input.read((char *)&val, sizeof(UShort_t));
+         value->value[i] = Swap16Bit(val);
       }//for_i
+   } else {
+      value->value = 0;
    }//if
-   wstr[len] = '\00';
-
-   value.len   = len;
-   value.value = wstr;
+   value->value[value->len] = '\00';
 }//READ_WSTRING
 
 //______________________________________________________________________________
@@ -4505,18 +4516,15 @@ void READ_FIXED_STRING(std::ifstream &input, char *value, Int_t len)
 //////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-wchar_t *DecodeTEXT(ASTRING value)
+wchar_t *DecodeTEXT(ASTRING *value)
 {
-// The value is MIME text/plain which means wchar (16bit) string 
-// Note: Adapted from Ben Bolstad: package "affyio", function "decode_TEXT"
-
-   Int_t    len    = value.len / sizeof(Short_t);
+   Int_t    len    = value->len / sizeof(Short_t);
    wchar_t* result = new wchar_t[len+1];
 
    ASTRING str;
-   str.len   = value.len;
-   str.value = new char[value.len+1];
-   memcpy(str.value, value.value, value.len);
+   str.len   = value->len;
+   str.value = new char[value->len+1];
+   memcpy(str.value, value->value, value->len);
   
    Short_t *content = (Short_t*)str.value;
    for (Int_t i=0; i<len; i++) {
@@ -4533,15 +4541,11 @@ wchar_t *DecodeTEXT(ASTRING value)
 }//DecodeTEXT
 
 //______________________________________________________________________________
-Int_t DecodeINT(ASTRING value)
+Int_t DecodeINT(ASTRING *value)
 {
-// The value is MIME text/x-calvin-integer-32
-// Note: Adapted from Ben Bolstad: package "affyio", function "decode_INT32_t"
+   Int_t result = 0;
+   memcpy(&result, value->value, sizeof(Int_t));
 
-   Int_t result;
-   memcpy(&result, value.value, sizeof(Int_t));
-
-//#ifndef WORD_BIGENDIAN 
 #ifndef IS_BIG_ENDIAN 
   result = (((result>>24)&0xff)  | ((result&0xff)<<24) |
 		      ((result>>8)&0xff00) | ((result&0xff00)<<8));  

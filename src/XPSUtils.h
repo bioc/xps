@@ -1,4 +1,4 @@
-// File created: 11/02/2002                          last modified: 01/31/2008
+// File created: 11/02/2002                          last modified: 02/24/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -49,6 +49,20 @@
 #include "TTree.h"
 #include "TStyle.h"
 #include "TArrayI.h"
+
+// define path separators for e.g. Path2Name() and Name2Path()
+#define dSEP "/"
+#define sSEP '/'
+// Note: both ROOT and R allow "/" also on Windows XP and Vista
+//       thus "\\" is not necessary but could be activated here:
+//#ifdef WIN32
+//#   define dSEP "\\"
+//#   define sSEP '\\'
+//#else
+//#   define dSEP "/"
+//#   define sSEP '/'
+//#endif
+
 
 // Error messages: plotNoErr must be zero!!
 enum EPlotErrors {
@@ -134,15 +148,15 @@ extern void READ_UCHAR(std::ifstream &input, unsigned char &value);
 extern void READ_BOOL(std::ifstream &input, char &value);
 extern void READ_FLOAT(std::ifstream &input, Float_t &value, Bool_t isBE = kFALSE);
 extern void READ_STRING(std::ifstream &input, char * &value, Bool_t isBE = kFALSE);
-extern void READ_STRING(std::ifstream &input, ASTRING &value, Bool_t isBE = kFALSE);
+extern void READ_STRING(std::ifstream &input, ASTRING *value, Bool_t isBE = kFALSE);
 extern void READ_WSTRING(std::ifstream &input, char * &value, Bool_t isBE = kFALSE);
 extern void READ_WSTRING(std::ifstream &input, wchar_t * &value, Bool_t isBE = kFALSE);
-extern void READ_WSTRING(std::ifstream &input, AWSTRING &value, Bool_t isBE = kFALSE);
+extern void READ_WSTRING(std::ifstream &input, AWSTRING *value, Bool_t isBE = kFALSE);
 extern void READ_FIXED_STRING(std::ifstream &input, char *value, Int_t len);
 
 // Functions to decode Affymetrix MIME types
-extern wchar_t *DecodeTEXT(ASTRING value);
-extern Int_t    DecodeINT(ASTRING value);
+extern wchar_t *DecodeTEXT(ASTRING *value);
+extern Int_t    DecodeINT(ASTRING *value);
 
 
 //////////////////////////////////////////////////////////////////////////

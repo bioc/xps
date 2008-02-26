@@ -1,20 +1,39 @@
 // File created: 12/16/2002                          last modified: 11/12/2007
 // Author: Christian Stratowa 06/18/2000
 
-/******************************************************************************
-* Copyright(c) 2000-2008, Dr. Christian Stratowa, Vienna, Austria.            *
-* All rights reserved.                                                        *
-* Author: Christian Stratowa.                                                 *
-*                                                                             *
-*******************************************************************************
-*********************  XPS - eXpression Profiling System  *********************
-*******************************************************************************
-*                                                                             *
-* Based on: "The ROOT System", All rights reserved.                           *
-* Authors: Rene Brun and Fons Rademakers.                                     *
-* For the licensing terms of "The ROOT System" see $ROOTSYS/AA_LICENSE.       *
-* For the list of contributors to "The ROOT System" see $ROOTSYS/AA_CREDITS.  *
-******************************************************************************/
+/*
+ *******************************************************************************
+ *********************  XPS - eXpression Profiling System  *********************
+ *******************************************************************************
+ *
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *
+ *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, a copy of the GNU General Public
+ *  License is available at http://www.gnu.org/copyleft/gpl.html. You
+ *  can also obtain it by writing to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA.
+ *
+ *******************************************************************************
+ * Based on: "The ROOT System", http://root.cern.ch/                           *
+ * ROOT:     An Object-Oriented Data Analysis Framework                        *
+ * Authors:  Rene Brun and Fons Rademakers.                                    *
+ * For the licensing terms of "The ROOT System" see $ROOTSYS/LICENSE.          *
+ * For the list of contributors to "The ROOT System" see http://root.cern.ch/  *
+ *******************************************************************************
+ */
 
 //#ifndef ROOT_Varargs
 #include "Varargs.h"
@@ -130,13 +149,13 @@ Int_t XUniTester::InitType(const char *type, Option_t *options, Int_t npars,
 //______________________________________________________________________________
 Int_t XUniTester::Analyse(const char *infile, const char *outfile, 
                   const char *varlist, Int_t nrows, Int_t nperm, Double_t mu,
-                  const char *sepi, const char *sepo, char delim, Int_t linebuf)
+                  const char *sepi, const char *sepo, char delim)
 {
    // Analyse data
    if(kCS) cout << "------XUniTester::Analyse------" << endl;
 
    return fUniTest->Test(infile, outfile, varlist, nrows, nperm, mu,
-                    sepi, sepo, delim, linebuf);
+                    sepi, sepo, delim);
 }//Analyse
 
 //______________________________________________________________________________
@@ -212,6 +231,7 @@ Int_t XMultiTester::Analyse(const char *infile, const char *outfile,
 
 //   return fMultiTest->Test(infile, outfile, varlist, nrows, nperm, mu,
 //                      sepi, sepo, delim, linebuf);
+   return errNoErr;
 }//Analyse
 
 //______________________________________________________________________________
@@ -222,6 +242,7 @@ Int_t XMultiTester::Analyse(Int_t n, Int_t *gid, TTree **intree, const char *lea
    if(kCS) cout << "------XMultiTester::Analyse------" << endl;
 
 //   return fMultiTest->Test(n, gid, intree, leafname, outtree, varlist, nperm, mu);
+   return errNoErr;
 }//Analyse
 
 

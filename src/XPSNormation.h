@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2007 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -126,10 +126,10 @@ class XNormedSet: public XProcesSet {
    protected:
       virtual void  AddMaskTreeInfo(TTree *tree, const char *name, Option_t *option,
                        Int_t nunits, Int_t nflags);
-      virtual Int_t ExportExprTrees(Int_t /*n*/, TString */*names*/, const char */*varlist*/,
-                       ofstream &/*output*/, const char */*sep*/) {return 0;}
-      virtual Int_t ExportMaskTrees(Int_t /*n*/, TString */*names*/, const char */*varlist*/,
-                       ofstream &/*output*/, const char */*sep*/) {return 0;}
+      virtual Int_t ExportExprTrees(Int_t /*n*/, TString * /*names*/, const char * /*varlist*/,
+                       ofstream &/*output*/, const char * /*sep*/) {return 0;}
+      virtual Int_t ExportMaskTrees(Int_t /*n*/, TString * /*names*/, const char * /*varlist*/,
+                       ofstream &/*output*/, const char * /*sep*/) {return 0;}
       virtual Int_t ExportTreeType(const char *exten, Int_t n, TString *names,  
                        const char *varlist, ofstream &output, const char *sep);
       virtual Int_t ExportTreeXML(const char *exten, Int_t n, TString *names,  

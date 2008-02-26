@@ -1,20 +1,39 @@
 // File created: 12/16/2002                          last modified: 11/11/2007
 // Author: Christian Stratowa 06/18/2000
 
-/******************************************************************************
-* Copyright(c) 2000-2008, Dr. Christian Stratowa, Vienna, Austria.            *
-* All rights reserved.                                                        *
-* Author: Christian Stratowa.                                                 *
-*                                                                             *
-*******************************************************************************
-*********************  XPS - eXpression Profiling System  *********************
-*******************************************************************************
-*                                                                             *
-* Based on: "The ROOT System", All rights reserved.                           *
-* Authors: Rene Brun and Fons Rademakers.                                     *
-* For the licensing terms of "The ROOT System" see $ROOTSYS/AA_LICENSE.       *
-* For the list of contributors to "The ROOT System" see $ROOTSYS/AA_CREDITS.  *
-******************************************************************************/
+/*
+ *******************************************************************************
+ *********************  XPS - eXpression Profiling System  *********************
+ *******************************************************************************
+ *
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *
+ *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, a copy of the GNU General Public
+ *  License is available at http://www.gnu.org/copyleft/gpl.html. You
+ *  can also obtain it by writing to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA.
+ *
+ *******************************************************************************
+ * Based on: "The ROOT System", http://root.cern.ch/                           *
+ * ROOT:     An Object-Oriented Data Analysis Framework                        *
+ * Authors:  Rene Brun and Fons Rademakers.                                    *
+ * For the licensing terms of "The ROOT System" see $ROOTSYS/LICENSE.          *
+ * For the list of contributors to "The ROOT System" see http://root.cern.ch/  *
+ *******************************************************************************
+ */
 
 //#ifndef ROOT_Varargs
 #include "Varargs.h"
@@ -31,6 +50,7 @@
 #include "TTree.h"
 //#include "TList.h"
 
+const Int_t kLineBuf = 16635;   //to read lines
 
 //debug: print function names
 const Bool_t  kCS  = 0; 
@@ -596,7 +616,7 @@ void XPreFilter::InitCallConditions()
 //______________________________________________________________________________
 Int_t XPreFilter::Calculate(const char *infile, const char *outfile, 
                   const char *varlist, Int_t nrows, const char *sepi,
-                  const char *sepo, char delim, Int_t linebuf)
+                  const char *sepo, char delim)
 {
    // Calculate filter
    // varlist is varlist of infile, e.g. "expr:call:pval"
@@ -654,7 +674,7 @@ Int_t XPreFilter::Calculate(const char *infile, const char *outfile,
 
    char *ch;
    char  name[kBufSize];
-   char  nextline[linebuf];
+   char  nextline[kLineBuf];
 
 // Open input file and output file
    ifstream input(infile, ios::in);
@@ -676,7 +696,7 @@ Int_t XPreFilter::Calculate(const char *infile, const char *outfile,
    Double_t *arrPVal = 0;  //detection p-value
 
 // Read header to get number of data columns
-   input.getline(nextline, linebuf, delim);
+   input.getline(nextline, kLineBuf, delim);
    if (!input.good()) {err = errReadingInput; goto cleanup;}
 
    fNData = (Int_t)(NumSeparators(nextline, sepi)/nvar); //numdata = numcolumns/numvariables
@@ -707,7 +727,7 @@ Int_t XPreFilter::Calculate(const char *infile, const char *outfile,
 
 // Read data and compute mask
    while (input.good()) {
-      input.getline(nextline, linebuf, delim);
+      input.getline(nextline, kLineBuf, delim);
       if (input.fail() || (idx == nrows)) break;
 
       // read row name
@@ -765,13 +785,13 @@ Int_t XPreFilter::Calculate(const char *infile, const char *outfile,
    input.open(infile, ios::in);
 
    // read header
-   input.getline(nextline, linebuf, delim);
+   input.getline(nextline, kLineBuf, delim);
    output << nextline << delim;
 
    // read data and write filtered data
    idx = 0;
    while (input.good()) {
-      input.getline(nextline, linebuf, delim);
+      input.getline(nextline, kLineBuf, delim);
       if (input.fail() || (idx == nrows)) break;
 
       if (fMask[idx] >= fMinFilters) {output << nextline << delim; okay++;}
@@ -896,8 +916,8 @@ Int_t XPreFilter::Calculate(Int_t n, TTree **intree, const char *leafname,
    TLeaf   *leafUnit = intree[0]->FindLeaf("fUnitID");
    TBranch *brchUnit = leafUnit->GetBranch();
 
-   TBranch *brchj[fNData];
-   TLeaf   *leafj[fNData];
+   TBranch **brchj = new TBranch*[fNData];
+   TLeaf   **leafj = new TLeaf*[fNData];
    for (Int_t j=0; j<fNData; j++) {
       leafj[j] = intree[j]->FindLeaf(leafname);      
       brchj[j] = leafj[j]->GetBranch();
@@ -977,6 +997,9 @@ Int_t XPreFilter::Calculate(Int_t n, TTree **intree, const char *leafname,
 // Cleanup
 cleanup:
    if (arrExpr) {delete [] arrExpr; arrExpr = 0;}
+
+   delete [] leafj;
+   delete [] brchj;
 
    return err;
 }//Calculate
@@ -1059,7 +1082,7 @@ Int_t XPreFilter::CallFlag(Int_t n, TTree **intree, const char *varlist,
    Int_t nentries = (Int_t)(intree[0]->GetEntries());
    fNCall = n;
 
-   XPCall *callj[fNCall];
+   XPCall **callj = new XPCall*[fNCall];
    for (Int_t j=0; j<fNCall; j++) callj[j] = 0;
 
    for (Int_t j=0; j<fNCall; j++) {
@@ -1124,6 +1147,8 @@ Int_t XPreFilter::CallFlag(Int_t n, TTree **intree, const char *varlist,
 cleanup:
    if (arrPVal) {delete [] arrPVal; arrPVal = 0;}
    if (arrCall) {delete [] arrCall; arrCall = 0;}
+
+   delete [] callj;
 
    return err;
 }//CallFlag
@@ -1598,7 +1623,7 @@ void XUniFilter::InitCallConditions()
 //______________________________________________________________________________
 Int_t XUniFilter::Calculate(const char *infile, const char *outfile, 
                   const char *varlist, Int_t nrows, const char *sepi,
-                  const char *sepo, char delim, Int_t linebuf)
+                  const char *sepo, char delim)
 {
    // Calculate filter
 //???   // varlist is varlist of infile, e.g. "expr:call:pval"
@@ -1866,7 +1891,7 @@ Int_t XUniFilter::CallFlag(Int_t n, Int_t *gid, TTree **intree,
    leafUnit = intree[0]->FindLeaf("fUnitID");
    brchUnit = leafUnit->GetBranch();
 
-   XPCall *call[n];
+   XPCall **call = new XPCall*[n];
    for (Int_t j=0; j<n; j++) {
       call[j] = 0;
       intree[j]->SetBranchAddress("CallBranch", &call[j]);
@@ -1885,6 +1910,7 @@ Int_t XUniFilter::CallFlag(Int_t n, Int_t *gid, TTree **intree,
 
    if (n1 == 0 || n2 == 0) {
       cerr << "Error: Two groups are needed for call filter." << endl;
+      delete [] call;
       return errAbort;
    }//if
 
@@ -1938,6 +1964,8 @@ Int_t XUniFilter::CallFlag(Int_t n, Int_t *gid, TTree **intree,
 cleanup:
    if (grp2) {delete [] grp2; grp2 = 0;}
    if (grp1) {delete [] grp1; grp1 = 0;}
+
+   delete [] call;
 
    return err;
 }//CallFlag

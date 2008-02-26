@@ -1,11 +1,11 @@
-// Author: Christian Stratowa 11/25/2002             last modified: 08/02/2005
+// Author: Christian Stratowa 11/25/2002             last modified: 02/10/2008
 
 /*
  *******************************************************************************
  ***********************  Statistics Package for ROOT  *************************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2007 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -116,8 +116,7 @@ class TUnivariateTest: public TNamed {
                   Int_t nperm = -1, Double_t mu = 0);
       Int_t    Test(const char *infile, const char *outfile, const char *varlist,
                   Int_t nrows, Int_t nperm = -1, Double_t mu = 0,
-                  const char *sepi = "\t", const char *sepo = "\t",
-                  char delim = '\n', Int_t linebuf = 16635);
+                  const char *sepi = "\t", const char *sepo = "\t", char delim = '\n');
       Int_t    Test(Int_t n, Int_t *gid, TTree *intree, const char *leafname,
                   TTree *outtree, const char *varlist = "*", Int_t nperm = -1,
                   Double_t mu = 0);

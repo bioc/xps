@@ -1,21 +1,39 @@
-// File created: 12/16/2002                          last modified: 12/18/2007
+// File created: 12/16/2002                          last modified: 02/17/2008
 // Author: Christian Stratowa 06/18/2000
 
-/******************************************************************************
-* Copyright(c) 2000-2008, Dr. Christian Stratowa, Vienna, Austria.            *
-* All rights reserved.                                                        *
-* Author: Christian Stratowa.                                                 *
-*                                                                             *
-*******************************************************************************
-*********************  XPS - eXpression Profiling System  *********************
-*******************************************************************************
-*                                                                             *
-* Based on: "The ROOT System", All rights reserved.                           *
-* Authors: Rene Brun and Fons Rademakers.                                     *
-* For the licensing terms of "The ROOT System" see $ROOTSYS/AA_LICENSE.       *
-* For the list of contributors to "The ROOT System" see $ROOTSYS/AA_CREDITS.  *
-******************************************************************************/
-
+/*
+ *******************************************************************************
+ *********************  XPS - eXpression Profiling System  *********************
+ *******************************************************************************
+ *
+ *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *
+ *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, a copy of the GNU General Public
+ *  License is available at http://www.gnu.org/copyleft/gpl.html. You
+ *  can also obtain it by writing to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA.
+ *
+ *******************************************************************************
+ * Based on: "The ROOT System", http://root.cern.ch/                           *
+ * ROOT:     An Object-Oriented Data Analysis Framework                        *
+ * Authors:  Rene Brun and Fons Rademakers.                                    *
+ * For the licensing terms of "The ROOT System" see $ROOTSYS/LICENSE.          *
+ * For the list of contributors to "The ROOT System" see http://root.cern.ch/  *
+ *******************************************************************************
+ */
 
 /******************************************************************************
 * Major Revision History:
@@ -191,7 +209,7 @@ Int_t XAnalysisManager::Analyse(const char *setname, const char *leafname,
 //______________________________________________________________________________
 Int_t XAnalysisManager::Analyse(const char *infile, const char *outfile,
                         const char *varlist, Int_t nrows, const char *sepi,
-                        const char *sepo, char delim, Int_t linebuf)
+                        const char *sepo, char delim)
 {
    // 1. Prefiltering:
    // xxxx
@@ -218,7 +236,6 @@ Int_t XAnalysisManager::Analyse(const char *infile, const char *outfile,
    //    e.g. for usual test, varlist = "stat:mn1:mn2:se:df:pval"
    //    "*" is equal to "stat:mn1:mn2:se:df:pval:nper:pcha:padj"
    // nrows is number of data rows (minus header and group)
-   // linebuf gives the maximal number of characters per line (default=16635)
    // Note: No need to create root file and to open data/scheme files
    if(kCS) cout << "------XAnalysisManager::Analyse(table)------" << endl;
 
@@ -235,7 +252,7 @@ Int_t XAnalysisManager::Analyse(const char *infile, const char *outfile,
    Int_t err = errNoErr;
    if (!err) err = set->Initialize(fFile, fSetting, infile);
    if (!err) err = set->Analyse(infile, outfile, vars.Data(), nrows, sepi,
-                        sepo, delim, linebuf);
+                        sepo, delim);
    else      HandleError(err, "in XAnalysisManager::Analyse");
 
 //not allowed, deleted in XManager::Close
@@ -397,7 +414,7 @@ XAnalySetting::~XAnalySetting()
 
 //______________________________________________________________________________
 Int_t XAnalySetting::InitAlgorithm(const char *name, const char *type,
-                     Option_t *options, const char */*filename*/,
+                     Option_t *options, const char * /*filename*/,
                      Int_t npars, Double_t *pars)
 {
    // Initialize algorithm "name" with "type" and "options"
@@ -960,8 +977,8 @@ Int_t XAnalySet::GetFilterMask(Int_t ntree, TTree **tree, Int_t n, Int_t *msk)
    }//if
 
 // Get tree branches for leaves "fFlag"
-   TBranch *brch[ntree];
-   TLeaf   *leaf[ntree];
+   TBranch **brch = new TBranch*[ntree];
+   TLeaf   **leaf = new TLeaf*[ntree];
    for (Int_t k=0; k<ntree; k++) {
       leaf[k] = tree[k]->FindLeaf("fFlag");
       if (leaf[k] == 0) break;
@@ -991,6 +1008,9 @@ Int_t XAnalySet::GetFilterMask(Int_t ntree, TTree **tree, Int_t n, Int_t *msk)
 
       msk[i] = (Int_t)(flag >= minftrs);
    }//for_i
+
+   delete [] leaf;
+   delete [] brch;
 
    return errNoErr;
 }//GetFilterMask
@@ -1271,8 +1291,8 @@ Int_t XAnalySet::ExportFilterTrees(Int_t n, TString *names, const char *varlist,
    }//if
 
 // Get trees
-   TTree   *tree[n];
-   XMask   *mask[n];
+   TTree  **tree = new TTree*[n];
+   XMask  **mask = new XMask*[n];
    XUnitID *mskunit = 0;  // get unitID from first tree
    if (fTrees->GetSize() == 0) {
    // Get trees from names
@@ -1351,7 +1371,7 @@ Int_t XAnalySet::ExportFilterTrees(Int_t n, TString *names, const char *varlist,
       if (hasFlag) output << sep << "FLAG";
    } else {
       for (Int_t k=0; k<n; k++) {
-         if (hasFlag)  output << sep << (names[k] + "_FLAG");
+         if (hasFlag)  output << sep << (names[k] + "_FLAG").Data();
       }//for_k
    }//if
    output << endl;
@@ -1393,6 +1413,9 @@ cleanup:
    // remove trees from RAM
    if (unittree) {unittree->Delete(""); unittree = 0;}
    SafeDelete(schemes);
+
+   delete [] mask;
+   delete [] tree;
 
    return err;
 }//ExportFilterTrees
@@ -1489,13 +1512,12 @@ void XPreFilterSet::AddTreeHeader(const char *treename, Int_t treeid)
 //______________________________________________________________________________
 Int_t XPreFilterSet::Analyse(const char *infile, const char *outfile, 
                      const char *varlist, Int_t nrows, const char *sepi,
-                     const char *sepo, char delim, Int_t linebuf)
+                     const char *sepo, char delim)
 {
    // Analyse data
    if(kCS) cout << "------XPreFilterSet::Analyse------" << endl;
 
-   return fFilter->Calculate(infile, outfile, varlist, nrows, sepi, sepo,
-                   delim, linebuf);
+   return fFilter->Calculate(infile, outfile, varlist, nrows, sepi, sepo, delim);
 }//Analyse
 
 //______________________________________________________________________________
@@ -1540,12 +1562,9 @@ Int_t XPreFilterSet::Analyse(const char *leafname, const char *outtree,
    }//for_k
 
 // Initialize calltrees and leaftrees
-   TTree *calltree[numcall];
-   TTree *fltrtree[numfltr];
-   TTree *leaftree[numleaf];
-   calltree[0] = 0;
-   fltrtree[0] = 0;
-   leaftree[0] = 0;
+   TTree **calltree = new TTree*[numcall];
+   TTree **fltrtree = new TTree*[numfltr];
+   TTree **leaftree = new TTree*[numleaf];
    for (Int_t k=0; k<numcall; k++) calltree[k] = 0;
    for (Int_t k=0; k<numfltr; k++) fltrtree[k] = 0;
    for (Int_t k=0; k<numleaf; k++) leaftree[k] = 0;
@@ -1633,6 +1652,10 @@ Int_t XPreFilterSet::Analyse(const char *leafname, const char *outtree,
 // Delete created filter tree from RAM
    atree->Delete("");
    atree = 0;
+
+   delete [] leaftree;
+   delete [] fltrtree;
+   delete [] calltree;
 
    return err;
 }//Analyse
@@ -1753,7 +1776,7 @@ void XUnivarSet::AddTreeHeader(const char *treename, Int_t treeid)
 //______________________________________________________________________________
 Int_t XUnivarSet::Analyse(const char *infile, const char *outfile, 
                   const char *varlist, Int_t nrows, const char *sepi,
-                  const char *sepo, char delim, Int_t linebuf)
+                  const char *sepo, char delim)
 {
    // Analyse data
    if(kCS) cout << "------XUnivarSet::Analyse------" << endl;
@@ -1762,15 +1785,13 @@ Int_t XUnivarSet::Analyse(const char *infile, const char *outfile,
 
 // Calculate univariate test
    if (fAnalyser) {
-      err = fAnalyser->Analyse(infile, outfile, varlist, nrows, -1, 0,
-                       sepi, sepo, delim, linebuf);
+      err = fAnalyser->Analyse(infile, outfile, varlist, nrows, -1, 0, sepi, sepo, delim);
       if (err != errNoErr) return err;
    }//if
 
 // Calculate filter to apply for univariate test
    if (fFilter) {
-      err = fFilter->Calculate(infile, outfile, varlist, nrows,
-                     sepi, sepo, delim, linebuf);
+      err = fFilter->Calculate(infile, outfile, varlist, nrows, sepi, sepo, delim);
    }//if
 
    return err;
@@ -1846,12 +1867,9 @@ Int_t XUnivarSet::Analyse(const char *leafname, const char *outtree,
    }//for_k
 
 // Initialize calltrees and leaftrees
-   TTree *calltree[numcall];
-   TTree *fltrtree[numfltr];
-   TTree *leaftree[numleaf];
-   calltree[0] = 0;
-   fltrtree[0] = 0;
-   leaftree[0] = 0;
+   TTree **calltree = new TTree*[numcall];
+   TTree **fltrtree = new TTree*[numfltr];
+   TTree **leaftree = new TTree*[numleaf];
    for (Int_t k=0; k<numcall; k++) calltree[k] = 0;
    for (Int_t k=0; k<numfltr; k++) fltrtree[k] = 0;
    for (Int_t k=0; k<numleaf; k++) leaftree[k] = 0;
@@ -1923,6 +1941,10 @@ Int_t XUnivarSet::Analyse(const char *leafname, const char *outtree,
 
 // Delete fTree from RAM
    if (fTree) {fTree->Delete(""); fTree = 0;}
+
+   delete [] leaftree;
+   delete [] fltrtree;
+   delete [] calltree;
 
    return err;
 }//Analyse
@@ -2122,7 +2144,7 @@ Int_t XUnivarSet::ExportUnivarTrees(Int_t n, TString *names, const char *varlist
    Int_t base = LogBase(); 
 
 // Get trees
-   TTree *tree[n];
+   TTree **tree = new TTree*[n];
    if (fTree) {
       tree[0] = fTree;
    } else if (fTrees->GetSize() == 0) {
@@ -2175,7 +2197,7 @@ Int_t XUnivarSet::ExportUnivarTrees(Int_t n, TString *names, const char *varlist
          }//for_i
          delete mask;
       } else {
-         cout << "Warning: tree <" << ufrname << "> does not exist or has not <"
+         cout << "Warning: tree <" << ufrname.Data() << "> does not exist or has not <"
               << nentries << "> entries.";
       }//if
    }//if
@@ -2303,17 +2325,17 @@ Int_t XUnivarSet::ExportUnivarTrees(Int_t n, TString *names, const char *varlist
       if (hasData == j) {
          if (n > 1) {
             for (Int_t k=0; k<n; k++) {
-               if (hasStat) output << sep << (names[k] + "_Statistics");
-               if (hasMn1)  output << sep << (names[k] + "_Mean1");
-               if (hasMn2)  output << sep << (names[k] + "_Mean2");
-               if (hasSE)   output << sep << (names[k] + "_StandardError");
-               if (hasDF)   output << sep << (names[k] + "_DegreeOfFreedom");
-               if (hasPVal) output << sep << (names[k] + "_P-Value");
-               if (hasNPer) output << sep << (names[k] + "_NumberPermutations");
-               if (hasPCha) output << sep << (names[k] + "_P-Chance");
-               if (hasPAdj) output << sep << (names[k] + "_P-Adjusted");
-               if (hasFC)   output << sep << (names[k] + "_FoldChange");
-               if (hasFlag) output << sep << (names[k] + "_Flag");
+               if (hasStat) output << sep << (names[k] + "_Statistics").Data();
+               if (hasMn1)  output << sep << (names[k] + "_Mean1").Data();
+               if (hasMn2)  output << sep << (names[k] + "_Mean2").Data();
+               if (hasSE)   output << sep << (names[k] + "_StandardError").Data();
+               if (hasDF)   output << sep << (names[k] + "_DegreeOfFreedom").Data();
+               if (hasPVal) output << sep << (names[k] + "_P-Value").Data();
+               if (hasNPer) output << sep << (names[k] + "_NumberPermutations").Data();
+               if (hasPCha) output << sep << (names[k] + "_P-Chance").Data();
+               if (hasPAdj) output << sep << (names[k] + "_P-Adjusted").Data();
+               if (hasFC)   output << sep << (names[k] + "_FoldChange").Data();
+               if (hasFlag) output << sep << (names[k] + "_Flag").Data();
             }//for_i
          } else {
             if (hasStat) output << sep << "Statistics";
@@ -2486,6 +2508,8 @@ cleanup:
    if (unittree) {unittree->Delete(""); unittree = 0;}
    if (htable)   {htable->Delete(); delete htable; htable = 0;}
    SafeDelete(schemes);
+
+   delete [] tree;
 
    return err;
 }//ExportUnivarTrees
@@ -2753,7 +2777,7 @@ XMultivarSet::~XMultivarSet()
 //______________________________________________________________________________
 Int_t XMultivarSet::Analyse(const char *infile, const char *outfile, 
                     const char *varlist, Int_t nrows, const char *sepi,
-                    const char *sepo, char delim, Int_t linebuf)
+                    const char *sepo, char delim)
 {
    // Analyse data
    if(kCS) cout << "------XMultivarSet::Analyse------" << endl;
@@ -2762,15 +2786,13 @@ Int_t XMultivarSet::Analyse(const char *infile, const char *outfile,
 
 // Calculate multivariate test
    if (fAnalyser) {
-      err = fAnalyser->Analyse(infile, outfile, varlist, nrows, -1, 0,
-                       sepi, sepo, delim, linebuf);
+      err = fAnalyser->Analyse(infile, outfile, varlist, nrows, -1, 0, sepi, sepo, delim);
       if (err != errNoErr) return err;
    }//if
 
 // Calculate filter to apply for multivariate test
    if (fFilter) {
-      err = fFilter->Calculate(infile, outfile, varlist, nrows,
-                     sepi, sepo, delim, linebuf);
+      err = fFilter->Calculate(infile, outfile, varlist, nrows, sepi, sepo, delim);
    }//if
 
    return err;
@@ -2905,7 +2927,7 @@ XClusterSet::~XClusterSet()
 //______________________________________________________________________________
 Int_t XClusterSet::Analyse(const char *infile, const char *outfile, 
                    const char *varlist, Int_t nrows, const char *sepi,
-                   const char *sepo, char delim, Int_t linebuf)
+                   const char *sepo, char delim)
 {
    // Analyse data
    if(kCS) cout << "------XClusterSet::Analyse------" << endl;
@@ -2914,8 +2936,7 @@ Int_t XClusterSet::Analyse(const char *infile, const char *outfile,
 
 // Calculate cluster analysis
    if (fAnalyser) {
-      err = fAnalyser->Analyse(infile, outfile, varlist, nrows, -1, 0,
-                       sepi, sepo, delim, linebuf);
+      err = fAnalyser->Analyse(infile, outfile, varlist, nrows, -1, 0, sepi, sepo, delim);
       if (err != errNoErr) return err;
    }//if
 
@@ -3045,7 +3066,7 @@ XRegressionSet::~XRegressionSet()
 //______________________________________________________________________________
 Int_t XRegressionSet::Analyse(const char *infile, const char *outfile, 
                       const char *varlist, Int_t nrows, const char *sepi,
-                      const char *sepo, char delim, Int_t linebuf)
+                      const char *sepo, char delim)
 {
    // Analyse data
    if(kCS) cout << "------XRegressionSet::Analyse------" << endl;
@@ -3054,8 +3075,7 @@ Int_t XRegressionSet::Analyse(const char *infile, const char *outfile,
 
 // Calculate cluster analysis
    if (fAnalyser) {
-      err = fAnalyser->Analyse(infile, outfile, varlist, nrows, -1, 0,
-                       sepi, sepo, delim, linebuf);
+      err = fAnalyser->Analyse(infile, outfile, varlist, nrows, -1, 0, sepi, sepo, delim);
       if (err != errNoErr) return err;
    }//if
 
