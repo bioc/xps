@@ -5,6 +5,7 @@
 # isChipType:
 # isFilterCondition:
 # isROOTFile:
+# existsROOTFile:
 # rootDirFile:
 # validLogbase:
 # validMsg:
@@ -111,6 +112,32 @@ isROOTFile <- function(filename) {
 }#isROOTFile
 
 #------------------------------------------------------------------------------#
+# existsROOTFile: check if ROOT file exists already
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+existsROOTFile <- function(filename, tmp.rm = TRUE) {
+   if (debug.xps()) print("------existsROOTFile------")
+
+   if (!isROOTFile(filename)) {
+      return(FALSE);
+   }#if
+
+   rtf <- unlist(strsplit(filename, "/"));
+   rtf <- rtf[length(rtf)];
+   rtf <- unlist(strsplit(rtf, "_"));
+   tmp <- substr(rtf[1], 1, 3);
+
+   if (length(rtf) == 1 && tmp != "tmp") {
+      return(TRUE);
+   }#if
+
+   if (tmp.rm && tmp == "tmp") {
+      return(FALSE);
+   }#if
+
+   return(TRUE);
+}#existsROOTFile
+
+#------------------------------------------------------------------------------#
 # rootDirFile: return root file as /filedir/filename.root
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 rootDirFile <- function(filename=character(0), filedir=character(0)) {
@@ -189,20 +216,24 @@ validOutfile <- function(outname, outfile=character(0)) {
          filepath <- substr(outfile, 1, nsep);
       }#if
 
-      if (!(filepath != "" && file.exists(filepath))) {
+      if (debug.xps()) print(paste("filepath = ",filepath));
+
+#      if (!(filepath != "" && file.exists(filepath))) {
+      if (!(filepath != "" && file.access(filepath) == 0)) {
          stop(paste("path of", sQuote("outfile"), "is not a valid path"));
       }#if
 
       filename <- substring(outfile, nsep+1);
    }#if
 
-   if (debug.xps()) print(paste("filepath = ",filepath));
    if (debug.xps()) print(paste("filename = ",filename));
 
    if (filename == "") {
       filename <- paste(outname, "txt", sep=".");
       outfile  <- paste(filepath, filename, sep="");
    }#if
+
+   if (debug.xps()) print(paste("outfile = ",outfile));
 
    return(outfile);
 }#validOutfile

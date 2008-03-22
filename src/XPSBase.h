@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 02/03/2008
+// File created: 05/18/2002                          last modified: 03/13/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -592,6 +592,7 @@ class XManager: public TNamed {
 
       Bool_t   GetFileOwner() const {return fIsFileOwner;}
       TString  GetDataType()  const {return fDataType;}
+      TString  GetFileName()  const {return fFile->GetName();}
       TFile   *GetFile()      const {return fFile;}
       XFolder *GetContent()   const {return fContent;}
       XPlot   *GetPlotter()   const {return fPlotter;}

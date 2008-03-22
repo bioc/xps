@@ -7,7 +7,7 @@ oriented framework developed at CERN. Thus, the prior installation of
 ROOT is a prerequisite for the usage of this package. ROOT can be
 downloaded from http://root.cern.ch. 
 
-Copyright (C) 2000-2007 Christian Stratowa, Vienna, Austria
+Copyright (C) 2000-2008 Christian Stratowa, Vienna, Austria
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -31,14 +31,21 @@ can also obtain it by writing to the Free Software Foundation, Inc.,
 Content:
 
 I.   Install ROOT:
-II.  Install package 'xps' from source
+ Ia.  Install ROOT from source
+ Ib.  Install ROOT for Windows
+ Ic.  Notes on  ROOT
+II.  Install package 'xps':
+ IIa.  Install 'xps' from source
+ IIb.  Install 'xps' for Windows
 III. Learning how to use package 'xps'
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 I. Install ROOT:
 
-   Installation is explained extensively on the ROOT website, see:
+ Ia.  Install ROOT from source:
+
+   Installation from source is explained extensively on the ROOT website, see:
    http://root.cern.ch/root/Install.html
 
    1. get the sources of the latest ROOT from:
@@ -80,6 +87,23 @@ I. Install ROOT:
 
             all shells:
               root
+
+
+ Ib.  Install ROOT for Windows
+
+   For Windows users it is important to install the recommended binary version
+   of ROOT, currently: root_v5.19.02.win32.msi
+   WindowsXP/NT/w2000 with VC++ 7.1 (runs with VC++6 and VC++8.0), version 5.19/02
+   from: http://root.cern.ch/root/Version519.html
+
+   It is recommended to install ROOT in the default directory C:\root.
+   Furthermore, it is necessary to set the environment variable ROOTSYS:
+   under Windows 2000/XP/2003 you can use `System' in the control panel or the
+   properties of `My Computer' (under the `Advanced' tab).
+   Simply add: ROOTSYS=C:\root
+
+
+ Ic.  Notes on  ROOT:
 
    Note 1: Alternative ROOT installation
    If you want to install ROOT in a fixed location, not depending on ROOTSYS,
@@ -176,30 +200,53 @@ I. Install ROOT:
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-II. Install package 'xps' from source
+II.  Install package 'xps':
 
-   Currently, xps can be downloaded as gezipped source file "xps_0.4.1.tar.gz"
+ IIa.  Install 'xps' from source
+
+   Currently, xps can be downloaded as gezipped source file "xps_0.6.0.tar.gz"
    for MacOS X (Intel and PPC) and for Linux
 
    It can be installed with:
-      R CMD INSTALL xps_0.4.1.tar.gz
+      R CMD INSTALL xps_0.6.0.tar.gz
    or e.g. on a Mac in the User library:
-      R CMD INSTALL -l ~/Library/R/library xps_0.4.1.tar.gz
+      R CMD INSTALL -l ~/Library/R/library xps_0.6.0.tar.gz
 
    However, the recommended way to install packages from source is:
       source("http://bioconductor.org/biocLite.R")
       biocLite("xps", type="source")
 
-   Tested architectues:
+   Tested architectures:
    Currently, package 'xps' has been built (with R CMD INSTALL) and
    passed R CMD check with no errors and no warnings on the following computers:
    1. MacBook Pro Core 2 Duo 2GHz with 2 GB RAM running MacOS X 10.4.8
-      R versions tested: R-2.5.0, R-2.6.0
+      R versions tested: R-2.5.0, R-2.6.0, R-2.6.1
    2. PowerBook Titanium G4 550MHz with 1 GB RAM running MacOS X 10.4.9
       R versions tested: R-2.5.0, R-2.6.0
    3. HP Compaq nx6110 Intel Centrino 1.4 GHz with 512 MB RAM with Fedora Core 4
       R versions tested: R-2.4.1, R-2.6.0
+   4. HP Compaq nx6110 Intel Centrino 1.4 GHz with 512 MB RAM with Windows XP
+      R versions tested: R-2.6.2
 
+
+ IIb.  Install 'xps' for Windows
+
+   Hopefully, the Windows binary of xps can be downloaded from the Bioconductor
+   web site, and installed using: biocLite("xps")
+
+   If you want to install xps from source, then you need to do the following:
+   You can still install the binaries for ROOT and R but in addition you need 
+   to install the following:
+   - Rtools.exe from: http://www.murdoch-sutherland.com/Rtools/
+   - Visual C++: you can download the image "VS2008ExpressENUX1397868.iso" for the
+     current version "Visual Studio 2008 Express" from the Microsoft web site.
+
+   Before building xps from source you need to start the VC++ batch file provided
+   by Microsoft:
+      C:\Program Files (x86)\Microsoft Visual Studio 9\VC\vcvarsall.bat (or a similar path).
+   Then you can install xps from source as usual:
+      R CMD INSTALL xps_0.6.0.tar.gz
+      
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 

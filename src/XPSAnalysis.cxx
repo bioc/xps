@@ -56,6 +56,7 @@
 #include "THashTable.h"
 #include "TLeaf.h"
 #include "TFriendElement.h"
+#include "TROOT.h"
 
 #include "StatUtils.h"
 
@@ -950,6 +951,13 @@ XAnalySet::~XAnalySet()
 
    if(fFilters) {fFilters->Delete(); delete fFilters; fFilters = 0;}
    if(fCalls)   {fCalls->Delete();   delete fCalls;   fCalls   = 0;}
+
+   // delete temporary trees
+   TFile *file = 0;
+   file = (TFile*)gROOT->FindObject("tmp_exprtrees.root");
+   if (file) {file->Close(); delete file; file = 0;}
+   file = (TFile*)gROOT->FindObject("tmp_calltrees.root");
+   if (file) {file->Close(); delete file; file = 0;}
 }//Destructor
 
 //______________________________________________________________________________

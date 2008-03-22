@@ -22,6 +22,7 @@
 # pm:
 # mm:
 # xpsRMA:
+# xpsMAS4:
 # xpsMAS5:
 # xpsMAS5Call:
 # xpsDABGCall:
@@ -497,10 +498,14 @@ function(object,
            as.integer(replace),
            as.integer(1),
            as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
+           result=character(2),
+           PACKAGE="xps")$result;
 
-   if (r != 0) {
+   ## returned result: saved rootfile and error
+   rootfile <- r[1];
+   error    <- as.integer(r[2]);
+
+   if (error != 0) {
       stop(paste("error in function", sQuote("ImportData")));
       return(NULL);
    }#if
@@ -645,6 +650,11 @@ function(object,
    ## root file /filedir/filename.root
    rootfile <- rootDirFile(filename, filedir);
 
+   ## check if root file exists (necessary for WinXP to test already here)
+   if (existsROOTFile(rootfile)) {
+      stop(paste("ROOT file", sQuote(rootfile), "does already exist."));
+   }#if
+
    ## check for presence of temporary directory
    tmpdir <- validTempDir(tmpdir);
 
@@ -695,10 +705,14 @@ function(object,
            as.integer(normalize),
            as.integer(exlevel),
            as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
+           result=character(2),
+           PACKAGE="xps")$result;
 
-   if (r != 0) {
+   ## returned result: saved rootfile and error
+   rootfile <- r[1];
+   error    <- as.integer(r[2]);
+
+   if (error != 0) {
       stop(paste("error in function", sQuote("PreprocessRMA")));
       return(NULL);
    }#if
@@ -794,6 +808,11 @@ function(object,
    ## root file /filedir/filename.root
    rootfile <- rootDirFile(filename, filedir);
 
+   ## check if root file exists (necessary for WinXP to test already here)
+   if (existsROOTFile(rootfile)) {
+      stop(paste("ROOT file", sQuote(rootfile), "does already exist."));
+   }#if
+
    ## check for presence of temporary directory
    tmpdir <- validTempDir(tmpdir);
 
@@ -828,10 +847,14 @@ function(object,
            as.integer(numtrees),
            as.integer(exlevel),
            as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
+           result=character(2),
+           PACKAGE="xps")$result;
 
-   if (r != 0) {
+   ## returned result: saved rootfile and error
+   rootfile <- r[1];
+   error    <- as.integer(r[2]);
+
+   if (error != 0) {
       stop(paste("error in function", sQuote("PreprocessMAS4")));
       return(NULL);
    }#if
@@ -927,6 +950,11 @@ function(object,
    ## root file /filedir/filename.root
    rootfile <- rootDirFile(filename, filedir);
 
+   ## check if root file exists (necessary for WinXP to test already here)
+   if (existsROOTFile(rootfile)) {
+      stop(paste("ROOT file", sQuote(rootfile), "does already exist."));
+   }#if
+
    ## check for presence of temporary directory
    tmpdir <- validTempDir(tmpdir);
 
@@ -961,10 +989,14 @@ function(object,
            as.integer(numtrees),
            as.integer(exlevel),
            as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
+           result=character(2),
+           PACKAGE="xps")$result;
 
-   if (r != 0) {
+   ## returned result: saved rootfile and error
+   rootfile <- r[1];
+   error    <- as.integer(r[2]);
+
+   if (error != 0) {
       stop(paste("error in function", sQuote("PreprocessMAS5")));
       return(NULL);
    }#if
@@ -1064,6 +1096,11 @@ function(object,
    ## root file /filedir/filename.root
    rootfile <- rootDirFile(filename, filedir);
 
+   ## check if root file exists (necessary for WinXP to test already here)
+   if (existsROOTFile(rootfile)) {
+      stop(paste("ROOT file", sQuote(rootfile), "does already exist."));
+   }#if
+
    ## check for presence of temporary directory
    tmpdir <- validTempDir(tmpdir);
 
@@ -1116,10 +1153,14 @@ function(object,
            as.integer(ignore.saturated),
            as.integer(exlevel),
            as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
+           result=character(2),
+           PACKAGE="xps")$result;
 
-   if (r != 0) {
+   ## returned result: saved rootfile and error
+   rootfile <- r[1];
+   error    <- as.integer(r[2]);
+
+   if (error != 0) {
       stop(paste("error in function", sQuote("PreprocessMAS5Call")));
       return(NULL);
    }#if
@@ -1253,6 +1294,11 @@ function(object,
    ## root file /filedir/filename.root
    rootfile <- rootDirFile(filename, filedir);
 
+   ## check if root file exists (necessary for WinXP to test already here)
+   if (existsROOTFile(rootfile)) {
+      stop(paste("ROOT file", sQuote(rootfile), "does already exist."));
+   }#if
+
    ## check for valid alpha1, alpha2
    if (!(is.numeric(alpha1) && alpha1 > 0 && alpha1 < 1)) {
       stop(paste(sQuote("alpha1"), "must be numeric and in range (0,1)"));
@@ -1293,10 +1339,14 @@ function(object,
            as.double(alpha2),
            as.integer(exlevel),
            as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
+           result=character(2),
+           PACKAGE="xps")$result;
 
-   if (r != 0) {
+   ## returned result: saved rootfile and error
+   rootfile <- r[1];
+   error    <- as.integer(r[2]);
+
+   if (error != 0) {
       stop(paste("error in function", sQuote("PreprocessDABGCall")));
       return(NULL);
    }#if
@@ -1458,6 +1508,9 @@ function(object,
       stop(paste(sQuote("update"), "must be TRUE or FALSE"));
    } else if (update == TRUE) {
       filename <- rootfile;
+   } else if (update == FALSE && existsROOTFile(rootfile)) {
+      ## check if root file exists (necessary for WinXP to test already here)
+      stop(paste("ROOT file", sQuote(rootfile), "does already exist."));
    }#if
 
    ## bgcorrect method
@@ -1605,10 +1658,14 @@ function(object,
            as.integer(numtrees),
            as.integer(exlevel),
            as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
+           result=character(2),
+           PACKAGE="xps")$result;
 
-   if (r != 0) {
+   ## returned result: saved rootfile and error
+   rootfile <- r[1];
+   error    <- as.integer(r[2]);
+
+   if (error != 0) {
       stop(paste("error in function", sQuote("Preprocess")));
       return(NULL);
    }#if
@@ -1746,6 +1803,9 @@ function(object,
       stop(paste(sQuote("update"), "must be TRUE or FALSE"));
    } else if (update == TRUE) {
       filename <- rootfile;
+   } else if (update == FALSE && existsROOTFile(rootfile)) {
+      ## check if root file exists (necessary for WinXP to test already here)
+      stop(paste("ROOT file", sQuote(rootfile), "does already exist."));
    }#if
 
    ## check for presence of valid selector option
@@ -1805,10 +1865,14 @@ function(object,
            as.integer(update),
            as.integer(exlevel),
            as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
+           result=character(2),
+           PACKAGE="xps")$result;
 
-   if (r != 0) {
+   ## returned result: saved rootfile and error
+   rootfile <- r[1];
+   error    <- as.integer(r[2]);
+
+   if (error != 0) {
       stop(paste("error in function", sQuote("BgCorrect")));
       return(NULL);
    }#if
@@ -1879,6 +1943,9 @@ function(object,
       stop(paste(sQuote("update"), "must be TRUE or FALSE"));
    } else if (update == TRUE) {
       filename <- rootfile;
+   } else if (update == FALSE && existsROOTFile(rootfile)) {
+      ## check if root file exists (necessary for WinXP to test already here)
+      stop(paste("ROOT file", sQuote(rootfile), "does already exist."));
    }#if
 
    ## check for presence of valid selector option
@@ -1958,10 +2025,14 @@ function(object,
            as.character(refmethod),
            as.integer(update),
            as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
+           result=character(2),
+           PACKAGE="xps")$result;
 
-   if (r != 0) {
+   ## returned result: saved rootfile and error
+   rootfile <- r[1];
+   error    <- as.integer(r[2]);
+
+   if (error != 0) {
       stop(paste("error in function", sQuote("Normalize")));
       return(NULL);
    }#if
@@ -2033,6 +2104,9 @@ function(object,
       stop(paste(sQuote("update"), "must be TRUE or FALSE"));
    } else if (update == TRUE) {
       filename <- rootfile;
+   } else if (update == FALSE && existsROOTFile(rootfile)) {
+      ## check if root file exists (necessary for WinXP to test already here)
+      stop(paste("ROOT file", sQuote(rootfile), "does already exist."));
    }#if
 
    ## check for presence of valid selector option
@@ -2091,10 +2165,14 @@ function(object,
            as.integer(numtrees),
            as.integer(update),
            as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
+           result=character(2),
+           PACKAGE="xps")$result;
 
-   if (r != 0) {
+   ## returned result: saved rootfile and error
+   rootfile <- r[1];
+   error    <- as.integer(r[2]);
+
+   if (error != 0) {
       stop(paste("error in function", sQuote("Summarize")));
       return(NULL);
    }#if

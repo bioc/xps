@@ -5,7 +5,7 @@
  *
  * Implementation by: Christian Stratowa
  *
- * Copyright (C) Christian Stratowa 2002-2007
+ * Copyright (C) Christian Stratowa 2002-2008
  *
  * A wrapper for the XPS libraries
  *
@@ -38,7 +38,7 @@ void ImportData(char **filename, char **dirname, char **chiptype,
                 char **pcell, int *npcell, char **tissue, int *ntissue,
                 char **biopsy, int *nbiopsy, char **array, int *narray,
                 char **hyb, int *nhyb, char **treat, int *ntreat, 
-                int *replace, int *update, int *verbose, int *err);
+                int *replace, int *update, int *verbose, char **result);
 void ExportData(char **filename, char **schemefile, char **chiptype,
                 char **datatype, char **treenames, int *ntrees, char **exten,
                 char **varlist, char **outfile, char **sep,
@@ -48,26 +48,26 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
                    char **chiptype, char **schemefile, char **tmpdir,
                    char **bgrdoption, char **exproption, char **treeset,
                    char **treenames, int *ntrees, int *normalize,
-                   int *level, int *verbose, int *err);
+                   int *level, int *verbose, char **result);
 void PreprocessMAS4(char **filename, char **dirname, char **chipname,
                     char **chiptype, char **schemefile, char **tmpdir,
                     char **exproption, char **treeset, char **treenames,
-                    int *ntrees, int *level, int *verbose, int *err);
+                    int *ntrees, int *level, int *verbose, char **result);
 void PreprocessMAS5(char **filename, char **dirname, char **chipname,
                     char **chiptype, char **schemefile, char **tmpdir,
                     char **exproption, char **treeset, char **treenames,
-                    int *ntrees, int *level, int *verbose, int *err);
+                    int *ntrees, int *level, int *verbose, char **result);
 
 void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
                         char **chiptype, char **schemefile, char **tmpdir,
                         char **calloption, char **treeset, char **treenames,
                         int *ntrees, double *tau, double *alpha1, double *alpha2,
-                        int *ignore, int *level, int *verbose, int *err);
+                        int *ignore, int *level, int *verbose, char **result);
 void PreprocessDABGCall(char **filename, char **dirname, char **chipname,
                         char **chiptype, char **schemefile, char **calloption,
                         char **treeset, char **treenames, int *ntrees,
                         double *alpha1, double *alpha2, int *level,
-                        int *verbose, int *err);
+                        int *verbose, char **result);
 
 void Preprocess(char **filename, char **dirname, char **chipname, char **chiptype,
                 char **schemefile, char **tmpdir, int *update,
@@ -79,30 +79,30 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
                 int *nexprpar, double *exprpars,
                 char **reftree, char **refmethod, double *refparam,
                 char **treeset, char **treenames, int *ntrees,
-                int *level, int *verbose, int *err);
+                int *level, int *verbose, char **result);
 void BgCorrect(char **filename, char **dirname, char **chiptype,
                char **schemefile, char **tmpdir, char **seloption,
                char **bgrdtype, char **bgrdoption, int *npars, double *pars,
                char **treeset, char **treenames, int *ntrees,
-               int *update, int *level, int *verbose, int *err);
+               int *update, int *level, int *verbose, char **result);
 void Normalize(char **filename, char **dirname, char **chiptype,
                char **schemefile, char **tmpdir, char **seloption,
                char **type, char **option, int *npar, double *pars,
                int *level, char **treeset, char **treenames, int *ntrees,
                char **reftree, char **refmethod, int *update,
-               int *verbose, int *err);
+               int *verbose, char **result);
 void Summarize(char **filename, char **dirname, char **chipname, char **chiptype,
                char **schemefile, char **tmpdir, char **seloption, char **type,
                char **option, int *npar, double *pars, int *level,
                char **treeset, char **treenames, int *ntrees,
-               int *update, int *verbose, int *err);
+               int *update, int *verbose, char **result);
 
 void Normxpress(char **filename, char **dirname, char **chiptype,
                 char **schemefile, char **tmpdir, char **seloption, double *pc,
                 char **type, char **option, int *npar, double *pars,
                 int *level, char **treeset, char **treenames, int *ntrees,
                 char **reftree, char **refmethod, int *update,
-                int *verbose, int *err);
+                int *verbose, char **result);
 
 void PreFilter(char **filename, char **dirname, char **chiptype, char **chipname,
                char **schemefile, char **treeset, char **treename,
@@ -113,7 +113,7 @@ void PreFilter(char **filename, char **dirname, char **chiptype, char **chipname
                int *nquanpar, double *quanpars, char **quanoption,
                int *ncallpar, double *callpars, char **calloption,
                char **exprtrees, int *nexpr, char **calltrees, int *ncall,
-               int *verbose, int *err);
+               int *verbose, char **result);
 void UniFilter(char **filename, char **dirname, char **chiptype, char **chipname,
                char **schemefile, char **treeset, char **treename,
                int *min, char **logbase,
@@ -123,7 +123,7 @@ void UniFilter(char **filename, char **dirname, char **chiptype, char **chipname
                int *ncallpar, double *callpars, char **calloption,
                char **exprtrees, int *nexpr, char **calltrees, int *ncall,
                char **group, int *grpidx, char **fltrtree, int *nfltr,
-               char **varlist, int *update, int *verbose, int *err);
+               char **varlist, int *update, int *verbose, char **result);
 
 void ChipNameType(char **filename, char **nametype);
 void GeneChipProbeInfo(char **filename, int *value);

@@ -26,7 +26,7 @@
 \begin{document}
 
 \title{Introduction to the xps Package: Overview}
-\date{January, 2008}
+\date{March, 2008}
 \author{Christian Stratowa}
 \maketitle
 
@@ -130,7 +130,7 @@ scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root
 Now we can import the {\it CEL} files, in our case a subset first:
 <<>>=
 celfiles <- c("TestA1.CEL","TestA2.CEL")
-data.test3 <- import.data(scheme.test3, "tmp_DataTest3", celdir=celdir, celfiles=celfiles, verbose=FALSE)
+data.test3 <- import.data(scheme.test3, "tmpdt_DataTest3", celdir=celdir, celfiles=celfiles, verbose=FALSE)
 @ 
 
 To see, which {\it CEL} files were imported as \ROOT\ \Rclass{Trees}, we can do:
@@ -297,17 +297,17 @@ computations are done independently from \Robject{R}.
 \subsection{Calculating expression levels}
 
 Let us first preprocess the raw data using method `RMA' to compute expression levels, and
-store the results as \ROOT\ \Rclass{Trees} in \ROOT\ file \Rclass{tmp\_Test3RMA.root}:
+store the results as \ROOT\ \Rclass{Trees} in \ROOT\ file \Rclass{tmpdt\_Test3RMA.root}:
 <<results=hide>>=
-data.rma <- rma(data.test3, "tmp_Test3RMA", verbose=FALSE)
+data.rma <- rma(data.test3, "tmpdt_Test3RMA", verbose=FALSE)
 @
 {\bf Note:} In this example and the following examples we suppress the usual output. \\
 
 
 Then we preprocess the raw data using method `MAS5' to compute expression levels, and
-store the results in \ROOT\ file \Rclass{tmp\_Test3MAS5.root}:
+store the results in \ROOT\ file \Rclass{tmpdt\_Test3MAS5.root}:
 <<results=hide>>=
-data.mas5 <- mas5(data.test3, "tmp_Test3MAS5", normalize=TRUE, sc=500, update=TRUE, verbose=FALSE)
+data.mas5 <- mas5(data.test3, "tmpdt_Test3MAS5", normalize=TRUE, sc=500, update=TRUE, verbose=FALSE)
 @
 
 Now we want to compare the results by plotting the expression levels for the first sample.
@@ -332,12 +332,12 @@ which is in contrast to other packages which extract the log2 values for `RMA'.
 
 Let us now compute the MAS5 detection calls:
 <<results=hide>>=
-call.mas5 <- mas5.call(data.test3,"tmp_Test3Call", verbose=FALSE)
+call.mas5 <- mas5.call(data.test3,"tmpdt_Test3Call", verbose=FALSE)
 @
 
 Alternatively, let us compute the DABG (detection above background) calls:
 <<results=hide>>=
-call.dabg <- dabg.call(data.test3,"tmp_Test3DABG", verbose=FALSE)
+call.dabg <- dabg.call(data.test3,"tmpdt_Test3DABG", verbose=FALSE)
 @
 {\bf Note:} YES, in principle it is indeed possible to compute the DABG call not only 
 for exon arrays but for expression arrays, too. However, computation may take a long
@@ -483,7 +483,8 @@ data.rma@filedir  <- paste(.path.package("xps"),"rootdata",sep="/")
 @
 
 <<results=hide>>=
-rma.pfr <- prefilter(data.rma, "tmp_Test3Prefilter", getwd(), filter=prefltr, minfilters=2, verbose=FALSE)
+rma.pfr <- prefilter(data.rma, "tmpdt_Test3Prefilter", getwd(),
+                     filter=prefltr, minfilters=2, verbose=FALSE)
 @
 
 The resulting filter mask can be extracted as \Robject{data.frame}:
@@ -535,7 +536,9 @@ data.rma@filedir  <- paste(.path.package("xps"),"rootdata",sep="/")
 @
 
 <<results=hide>>=
-rma.ufr <- unifilter(data.rma, "tmp_Test3Unifilter", getwd(), unifltr, group=c("GrpA","GrpA","GrpB","GrpB"), xps.fltr=rma.pfr, verbose=FALSE)
+rma.ufr <- unifilter(data.rma, "tmpdt_Test3Unifilter", getwd(),
+                     unifltr, group=c("GrpA","GrpA","GrpB","GrpB"),
+                     xps.fltr=rma.pfr, verbose=FALSE)
 @
 
 The resulting data can be extracted as \Robject{data.frame}:
@@ -558,8 +561,9 @@ tmp <- cbind(tmp, msk)
 However, the recommended way to extract all data together with the filter mask as well
 as the gene annotation is:
 <<>>=
-tmp <- export.filter(rma.ufr, treetype="stt", varlist="fUnitName:fName:fSymbol:fc:pval:flag",
-                    as.dataframe=T, verbose=FALSE)
+tmp <- export.filter(rma.ufr, treetype="stt",
+                     varlist="fUnitName:fName:fSymbol:fc:pval:flag",
+                     as.dataframe=T, verbose=FALSE)
 head(tmp)
 @
 

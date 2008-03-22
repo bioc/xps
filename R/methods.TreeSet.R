@@ -3,12 +3,14 @@
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # initialize:
 # setValidity:
+# rootFile:
+# rootFile<-:
+# fileDir:
+# fileDir<-:
 # setName:
 # setName<-:
 # setType:
 # setType<-:
-# rootFile:
-# rootFile<-:
 # treeNames:
 # export:
 # root.browser: 

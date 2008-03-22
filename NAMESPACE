@@ -200,7 +200,7 @@ export(xpsOptions, debug.xps)
 export(getDatatype, validTreetype)
 export(getChipName, getChipType, getNameType, getProbeInfo)
 export(getNumberTrees, getTreeNames)
-export(isROOTFile)
+export(isROOTFile, existsROOTFile)
 export(type2Exten)
 
 

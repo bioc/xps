@@ -33,6 +33,11 @@ function(xps.scheme,
    rootdata <- paste(filename, "_cel.root", sep="");
    rootfile <- rootDirFile(rootdata, filedir);
 
+   ## check if root file exists (necessary for WinXP to test already here)
+   if (existsROOTFile(rootfile)) {
+      stop(paste("ROOT file", sQuote(rootfile), "does already exist."));
+   }#if
+
    ## check for presence of cel-file directory
    if (!is.null(celdir)) {
       if (celdir == "") {
@@ -192,10 +197,14 @@ function(xps.scheme,
            as.integer(0),
            as.integer(0),
            as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
+           result=character(2),
+           PACKAGE="xps")$result;
 
-   if (r != 0) {
+   ## returned result: saved rootfile and error
+   rootfile <- r[1];
+   error    <- as.integer(r[2]);
+
+   if (error != 0) {
       stop(paste("error in function", sQuote("ImportData")));
       return(NULL);
    }#if

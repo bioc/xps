@@ -156,7 +156,7 @@ void ImportData(char **filename, char **dirname, char **chiptype,
                 char **pcell, int *npcell, char **tissue, int *ntissue,
                 char **biopsy, int *nbiopsy, char **array, int *narray,
                 char **hyb, int *nhyb, char **treat, int *ntreat, 
-                int *replace, int *update, int *verbose, int *err)
+                int *replace, int *update, int *verbose, char **result)
 {
 // Import Affymetrix *.CEL files into XPS
 
@@ -262,7 +262,16 @@ void ImportData(char **filename, char **dirname, char **chiptype,
          r += manager->Import(treeset[0], celfiles[i], celnames[i]);
       }//if
    }//for_i
-   *err = (int)r;
+
+// result[0]: file name
+   TString file = manager->GetFileName();
+   result[0] = new char[file.Length() + 1];
+   strcpy(result[0], (char*)file.Data());
+
+// result[1]: return error
+   TString err = ""; err += (int)r;
+   result[1] = new char[err.Length() + 1];
+   strcpy(result[1], (char*)err.Data());
 
 // cleanup
    manager->Close();
@@ -344,7 +353,7 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
                    char **chiptype, char **schemefile, char **tmpdir,
                    char **bgrdoption, char **exproption, char **treeset,
                    char **treenames, int *ntrees, int *normalize,
-                   int *level, int *verbose, int *err)
+                   int *level, int *verbose, char **result)
 {
 // Preprocess trees using RMA
 
@@ -441,7 +450,16 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
 
 // preprocess expression values and store as trees in new file
    r += manager->Preprocess(treeset[0], "preprocess");
-   *err = (int)r;
+
+// result[0]: file name
+   TString file = manager->GetFileName();
+   result[0] = new char[file.Length() + 1];
+   strcpy(result[0], (char*)file.Data());
+
+// result[1]: return error
+   TString err = ""; err += (int)r;
+   result[1] = new char[err.Length() + 1];
+   strcpy(result[1], (char*)err.Data());
 
 // cleanup
    delete [] expropt;
@@ -460,7 +478,7 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
 void PreprocessMAS4(char **filename, char **dirname, char **chipname,
                     char **chiptype, char **schemefile, char **tmpdir,
                     char **exproption, char **treeset, char **treenames,
-                    int *ntrees, int *level, int *verbose, int *err)
+                    int *ntrees, int *level, int *verbose, char **result)
 {
 // Preprocess trees using MAS4
 
@@ -517,7 +535,16 @@ void PreprocessMAS4(char **filename, char **dirname, char **chipname,
 
 // preprocess expression values and store as trees in new file
    r += manager->Preprocess(treeset[0], "preprocess");
-   *err = (int)r;
+
+// result[0]: file name
+   TString file = manager->GetFileName();
+   result[0] = new char[file.Length() + 1];
+   strcpy(result[0], (char*)file.Data());
+
+// result[1]: return error
+   TString err = ""; err += (int)r;
+   result[1] = new char[err.Length() + 1];
+   strcpy(result[1], (char*)err.Data());
 
 // cleanup
    if (expropt) delete [] expropt;
@@ -531,7 +558,7 @@ void PreprocessMAS4(char **filename, char **dirname, char **chipname,
 void PreprocessMAS5(char **filename, char **dirname, char **chipname,
                     char **chiptype, char **schemefile, char **tmpdir,
                     char **exproption, char **treeset, char **treenames,
-                    int *ntrees, int *level, int *verbose, int *err)
+                    int *ntrees, int *level, int *verbose, char **result)
 {
 // Preprocess trees using MAS5
 
@@ -588,7 +615,16 @@ void PreprocessMAS5(char **filename, char **dirname, char **chipname,
 
 // preprocess expression values and store as trees in new file
    r += manager->Preprocess(treeset[0], "preprocess");
-   *err = (int)r;
+
+// result[0]: file name
+   TString file = manager->GetFileName();
+   result[0] = new char[file.Length() + 1];
+   strcpy(result[0], (char*)file.Data());
+
+// result[1]: return error
+   TString err = ""; err += (int)r;
+   result[1] = new char[err.Length() + 1];
+   strcpy(result[1], (char*)err.Data());
 
 // cleanup
    if (expropt) delete [] expropt;
@@ -603,7 +639,7 @@ void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
                         char **chiptype, char **schemefile, char **tmpdir,
                         char **calloption, char **treeset, char **treenames,
                         int *ntrees, double *tau, double *alpha1, double *alpha2,
-                        int *ignore, int *level, int *verbose, int *err)
+                        int *ignore, int *level, int *verbose, char **result)
 {
 // Preprocess trees using MAS5 call
 
@@ -669,7 +705,16 @@ void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
 
 // preprocess expression values and store as trees in new file
    r += manager->Preprocess(treeset[0], "preprocess");
-   *err = (int)r;
+
+// result[0]: file name
+   TString file = manager->GetFileName();
+   result[0] = new char[file.Length() + 1];
+   strcpy(result[0], (char*)file.Data());
+
+// result[1]: return error
+   TString err = ""; err += (int)r;
+   result[1] = new char[err.Length() + 1];
+   strcpy(result[1], (char*)err.Data());
 
 // cleanup
    if (callopt  && strcmp(callopt,  "") != 0) delete [] callopt;
@@ -684,7 +729,7 @@ void PreprocessDABGCall(char **filename, char **dirname, char **chipname,
                         char **chiptype, char **schemefile, char **calloption,
                         char **treeset, char **treenames, int *ntrees,
                         double *alpha1, double *alpha2, int *level,
-                        int *verbose, int *err)
+                        int *verbose, char **result)
 {
 // Preprocess trees using DABG call
 
@@ -723,7 +768,16 @@ void PreprocessDABGCall(char **filename, char **dirname, char **chipname,
 
 // preprocess expression values and store as trees in new file
    r += manager->Preprocess(treeset[0], "DetectCall");
-   *err = (int)r;
+
+// result[0]: file name
+   TString file = manager->GetFileName();
+   result[0] = new char[file.Length() + 1];
+   strcpy(result[0], (char*)file.Data());
+
+// result[1]: return error
+   TString err = ""; err += (int)r;
+   result[1] = new char[err.Length() + 1];
+   strcpy(result[1], (char*)err.Data());
 
 // cleanup
    if (callopt) delete [] callopt;
@@ -743,7 +797,7 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
                 int *nexprpar, double *exprpars,
                 char **reftree, char **refmethod, double *refparam,
                 char **treeset, char **treenames, int *ntrees,
-                int *level, int *verbose, int *err)
+                int *level, int *verbose, char **result)
 {
 // Preprocess trees
    int    r = 0;
@@ -883,7 +937,16 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
 
 // preprocess expression values and store as trees in new file
    r += manager->Preprocess(treeset[0], "preprocess");
-   *err = (int)r;
+
+// result[0]: file name
+   TString file = manager->GetFileName();
+   result[0] = new char[file.Length() + 1];
+   strcpy(result[0], (char*)file.Data());
+
+// result[1]: return error
+   TString err = ""; err += (int)r;
+   result[1] = new char[err.Length() + 1];
+   strcpy(result[1], (char*)err.Data());
 
 // cleanup
    if (strcmp(tmpdir[0], "") != 0) {
@@ -901,7 +964,7 @@ void BgCorrect(char **filename, char **dirname, char **chiptype,
                char **schemefile, char **tmpdir, char **seloption,
                char **bgrdtype, char **bgrdoption, int *npar, double *pars,
                char **treeset, char **treenames, int *ntrees,
-               int *update, int *level, int *verbose, int *err)
+               int *update, int *level, int *verbose, char **result)
 {
 // Correct for background
 
@@ -997,7 +1060,16 @@ void BgCorrect(char **filename, char **dirname, char **chiptype,
 
 // preprocess expression values and store as trees in new file
    r += manager->Preprocess(treeset[0], "AdjustBgrd");
-   *err = (int)r;
+
+// result[0]: file name
+   TString file = manager->GetFileName();
+   result[0] = new char[file.Length() + 1];
+   strcpy(result[0], (char*)file.Data());
+
+// result[1]: return error
+   TString err = ""; err += (int)r;
+   result[1] = new char[err.Length() + 1];
+   strcpy(result[1], (char*)err.Data());
 
 // cleanup
    if (strcmp(tmpdir[0], "") != 0) {
@@ -1014,7 +1086,7 @@ void Normalize(char **filename, char **dirname, char **chiptype,
                char **type, char **option, int *npar, double *pars,
                int *level, char **treeset, char **treenames, int *ntrees,
                char **reftree, char **refmethod, int *update,
-               int *verbose, int *err)
+               int *verbose, char **result)
 {
 // Normalize trees
 
@@ -1077,7 +1149,16 @@ void Normalize(char **filename, char **dirname, char **chiptype,
 
 // preprocess expression values and store as trees in new file
    r += manager->Preprocess(treeset[0], "preprocess");
-   *err = (int)r;
+
+// result[0]: file name
+   TString file = manager->GetFileName();
+   result[0] = new char[file.Length() + 1];
+   strcpy(result[0], (char*)file.Data());
+
+// result[1]: return error
+   TString err = ""; err += (int)r;
+   result[1] = new char[err.Length() + 1];
+   strcpy(result[1], (char*)err.Data());
 
 // cleanup
    if (strcmp(tmpdir[0], "") != 0) {
@@ -1093,7 +1174,7 @@ void Summarize(char **filename, char **dirname, char **chipname, char **chiptype
                char **schemefile, char **tmpdir, char **seloption, char **type,
                char **option, int *npar, double *pars, int *level,
                char **treeset, char **treenames, int *ntrees,
-               int *update, int *verbose, int *err)
+               int *update, int *verbose, char **result)
 {
 // Summarize trees
 
@@ -1155,7 +1236,16 @@ void Summarize(char **filename, char **dirname, char **chipname, char **chiptype
 
 // preprocess expression values and store as trees in new file
    r += manager->Preprocess(treeset[0], "preprocess");
-   *err = (int)r;
+
+// result[0]: file name
+   TString file = manager->GetFileName();
+   result[0] = new char[file.Length() + 1];
+   strcpy(result[0], (char*)file.Data());
+
+// result[1]: return error
+   TString err = ""; err += (int)r;
+   result[1] = new char[err.Length() + 1];
+   strcpy(result[1], (char*)err.Data());
 
 // cleanup
    if (strcmp(tmpdir[0], "") != 0) {
@@ -1179,7 +1269,7 @@ void Normxpress(char **filename, char **dirname, char **chiptype,
                 char **type, char **option, int *npar, double *pars,
                 int *level, char **treeset, char **treenames, int *ntrees,
                 char **reftree, char **refmethod, int *update,
-                int *verbose, int *err)
+                int *verbose, char **result)
 {
 // Normalize trees using method: mean, median, lowess, supsmu
 
@@ -1235,7 +1325,16 @@ void Normxpress(char **filename, char **dirname, char **chiptype,
 
 // preprocess expression values and store as trees in new file
    r += manager->Normalize(treeset[0]);
-   *err = (int)r;
+
+// result[0]: file name
+   TString file = manager->GetFileName();
+   result[0] = new char[file.Length() + 1];
+   strcpy(result[0], (char*)file.Data());
+
+// result[1]: return error
+   TString err = ""; err += (int)r;
+   result[1] = new char[err.Length() + 1];
+   strcpy(result[1], (char*)err.Data());
 
 // cleanup
    if (strcmp(tmpdir[0], "") != 0) {
@@ -1264,7 +1363,7 @@ void PreFilter(char **filename, char **dirname, char **chiptype, char **chipname
                int *nquanpar, double *quanpars, char **quanoption,
                int *ncallpar, double *callpars, char **calloption,
                char **exprtrees, int *nexpr, char **calltrees, int *ncall,
-               int *verbose, int *err)
+               int *verbose, char **result)
 {
 // Apply different pre-filter methods
 
@@ -1334,7 +1433,16 @@ void PreFilter(char **filename, char **dirname, char **chiptype, char **chipname
 
 // do pre-filter
    r += manager->Analyse(treeset[0], "fLevel", treename[0]);
-   *err = (int)r;
+
+// result[0]: file name
+   TString file = manager->GetFileName();
+   result[0] = new char[file.Length() + 1];
+   strcpy(result[0], (char*)file.Data());
+
+// result[1]: return error
+   TString err = ""; err += (int)r;
+   result[1] = new char[err.Length() + 1];
+   strcpy(result[1], (char*)err.Data());
 
 // cleanup
    manager->Close();
@@ -1352,7 +1460,7 @@ void UniFilter(char **filename, char **dirname, char **chiptype, char **chipname
                int *ncallpar, double *callpars, char **calloption,
                char **exprtrees, int *nexpr, char **calltrees, int *ncall,
                char **group, int *grpidx, char **fltrtree, int *nfltr,
-               char **varlist, int *update, int *verbose, int *err)
+               char **varlist, int *update, int *verbose, char **result)
 {
 // Apply different uni-filter methods
 
@@ -1416,7 +1524,16 @@ void UniFilter(char **filename, char **dirname, char **chiptype, char **chipname
 
 // do pre-filter
    r += manager->Analyse(treeset[0], "fLevel", treename[0], varlist[0]);
-   *err = (int)r;
+
+// result[0]: file name
+   TString file = manager->GetFileName();
+   result[0] = new char[file.Length() + 1];
+   strcpy(result[0], (char*)file.Data());
+
+// result[1]: return error
+   TString err = ""; err += (int)r;
+   result[1] = new char[err.Length() + 1];
+   strcpy(result[1], (char*)err.Data());
 
 // cleanup
    manager->Close();

@@ -57,8 +57,8 @@ scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root
 data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
 
 ## second, create an ExprTreeSet
-data.rma <- rma(data.test3,"tmp_Test3RMA",tmpdir="",background="pmonly",normalize=TRUE,verbose=FALSE)
-## note: do not copy/paste this code, it is necessary only because R CMD check fails since it does not find tmp_Test3RMA.root:
+data.rma <- rma(data.test3,"tmp_TestRMA",tmpdir="",background="pmonly",normalize=TRUE,verbose=FALSE)
+## note: do not copy/paste this code, it is necessary only because R CMD check fails since it does not find tmp_TestRMA.root:
 data.rma@rootfile <- paste(.path.package("xps"),"rootdata/tmp_Test3RMA.root",sep="/")
 data.rma@filedir  <- paste(.path.package("xps"),"rootdata",sep="/")
 

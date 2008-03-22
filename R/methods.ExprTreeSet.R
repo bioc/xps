@@ -180,6 +180,9 @@ function(object,
       stop(paste(sQuote("update"), "must be TRUE or FALSE"));
    } else if (update == TRUE) {
       filename <- rootfile;
+   } else if (update == FALSE && existsROOTFile(rootfile)) {
+      ## check if root file exists (necessary for WinXP to test already here)
+      stop(paste("ROOT file", sQuote(rootfile), "does already exist."));
    }#if
 
    ## check for presence of valid selector option
@@ -321,10 +324,14 @@ function(object,
            as.character(refmethod),
            as.integer(update),
            as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
+           result=character(2),
+           PACKAGE="xps")$result;
 
-   if (r != 0) {
+   ## returned result: saved rootfile and error
+   rootfile <- r[1];
+   error    <- as.integer(r[2]);
+
+   if (error != 0) {
       stop(paste("error in function", sQuote("Normxpress")));
       return(NULL);
    }#if
@@ -408,6 +415,11 @@ function(object,
 
    ## root file /filedir/filename.root
    rootfile <- rootDirFile(filename, filedir);
+
+   ## check if root file exists (necessary for WinXP to test already here)
+   if (existsROOTFile(rootfile)) {
+      stop(paste("ROOT file", sQuote(rootfile), "does already exist."));
+   }#if
 
    ## check for prefilter
    if (is.null(filter) || !is(filter, "PreFilter")) {
@@ -587,10 +599,14 @@ function(object,
            as.character(callnames),
            as.integer(numcalls),
            as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
+           result=character(2),
+           PACKAGE="xps")$result;
 
-   if (r != 0) {
+   ## returned result: saved rootfile and error
+   rootfile <- r[1];
+   error    <- as.integer(r[2]);
+
+   if (error != 0) {
       stop(paste("error in function", sQuote("PreFilter")));
       return(NULL);
    }#if
@@ -688,6 +704,9 @@ function(object,
       stop(paste(sQuote("update"), "must be TRUE or FALSE"));
    } else if (update == TRUE) {
       filename <- rootfile;
+   } else if (update == FALSE && existsROOTFile(rootfile)) {
+      ## check if root file exists (necessary for WinXP to test already here)
+      stop(paste("ROOT file", sQuote(rootfile), "does already exist."));
    }#if
 
    ## check for unifilter
@@ -840,10 +859,14 @@ function(object,
            as.character("*"),
            as.integer(update),
            as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
+           result=character(2),
+           PACKAGE="xps")$result;
 
-   if (r != 0) {
+   ## returned result: saved rootfile and error
+   rootfile <- r[1];
+   error    <- as.integer(r[2]);
+
+   if (error != 0) {
       stop(paste("error in function", sQuote("UniFilter")));
       return(NULL);
    }#if

@@ -13,6 +13,7 @@ isROOTFile(filename)
 \value{
  Return \code{TRUE} if file \code{filename} is a valid \code{\link{ROOT}} file.
 }
+\seealso{\code{\link{existsROOTFile}}}
 \author{Christian Stratowa}
 \examples{
 isROOTFile(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))

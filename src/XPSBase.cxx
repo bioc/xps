@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 02/16/2008
+// File created: 05/18/2002                          last modified: 03/15/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -69,6 +69,7 @@
 
 #include <new>  //needed for new (nothrow)
 
+#include "TDatime.h"
 #include "TError.h"
 #include "TFriendElement.h"
 #include "TKey.h"
@@ -1660,6 +1661,7 @@ Int_t XManager::Update(const char *fullname, const char *data, Option_t *option,
 
    if (fAbort) return errAbort;
 
+//   fDataType = TString(data);
    fDataType = (strcmp(fDataType.Data(),"") == 0) ? TString(data) : fDataType;
    fOption   = (strcmp(fOption.Data(),  "") == 0) ? TString(option) : fOption;
 
@@ -3185,7 +3187,7 @@ Int_t XManager::HandleOption(const char *setname, const char *treename,
 
    return errAbort;
 }//HandleOption
-
+/*
 //______________________________________________________________________________
 TFile *XManager::NewFile(const char *name, const char *title)
 {
@@ -3200,10 +3202,18 @@ TFile *XManager::NewFile(const char *name, const char *title)
    TFile *file = 0;
 //to do: check name for TNetFile!!
 
+//cout << "name= " << TString(name) << endl;
+printf("name = %s \n", name);
+
 // For "tmp.root" create temporary file (can be overwritten)
    TString tmp = Path2Name(name, dSEP, ".");
+//cout << "tmp = " << TString(tmp) << endl;
+printf("tmp = %s \n", tmp.Data());
    tmp = Path2Name(tmp.Data(), dSEP, "_"); // if e.g. "tmp_abc.root"
+printf("tmp = %s \n", tmp.Data());
    tmp.ToLower();
+//cout << "tmp = " << tmp << endl;
+printf("tmp = %s \n", tmp.Data());
    if (strcmp(tmp.Data(), "tmp") == 0) {
       file = new TFile(name, "RECREATE", title);
 
@@ -3244,6 +3254,121 @@ TFile *XManager::NewFile(const char *name, const char *title)
       } else if (file->IsOpen()) {
          if (XManager::fgVerbose) {
             cout << "Creating new file <" << name << ">..." << endl;
+         }//if
+         fAbort = kFALSE;
+         delete [] (char*)fname;
+         return file;
+      }//if
+
+      delete [] (char*)fname;
+   }//if
+
+   cerr << "Error: Could not create file <" << name << ">" << endl;
+   SafeDelete(file);
+
+   return 0;
+}//NewFile
+*/
+//______________________________________________________________________________
+TFile *XManager::NewFile(const char *name, const char *title)
+{
+   // Create new root file and return pointer to TFile
+   // If name is "tmp" or "tmp_abc", i.e. "tmp.root" or "tmp_abc.root"
+   // a temporary file will be created using RECREATE
+   // For "tmpdt" or "tmpd" or "tmpt" a temporary file containing
+   // date (d) and/or time (t) will be created
+   // If name starts with "td_" or "d_" or "t_" a permanent file containing
+   // date (d) and/or time (t) will be created, i.e. "name_date_time.root"
+   if(kCS) cout << "------XManager::NewFile------" << endl;
+
+//?? better?? fInterrupt = kTRUE;
+   fAbort = kTRUE;
+
+   TFile *file = 0;
+//to do: check name for TNetFile!!
+
+// Get date and time
+   TDatime *datime = new TDatime();
+   Int_t    date   = datime->GetDate();
+   Int_t    time   = datime->GetTime();
+   delete datime;
+
+// Dissect name
+   TString filename = SubString(name, '_', '.', kTRUE);
+   TString pathname = SubString(name, '\"', sSEP, kTRUE);
+   TString tmp      = Path2Name(name, dSEP, ".");
+   tmp = Path2Name(tmp.Data(), dSEP, "_"); // if e.g. "tmp_abc.root"
+   tmp.ToLower();
+
+// For "tmp.root" create temporary file (can be overwritten)
+   if ((strcmp(tmp.Data(), "tmp")   == 0) ||
+       (strcmp(tmp.Data(), "tmpd")  == 0) ||
+       (strcmp(tmp.Data(), "tmpt")  == 0) ||
+       (strcmp(tmp.Data(), "tmpdt") == 0)) {
+
+      filename = pathname + dSEP + "tmp_" + filename;
+      if (strcmp(tmp.Data(), "tmpd")  == 0) {
+         filename += "_"; filename += date;
+      } else if (strcmp(tmp.Data(), "tmpt") == 0) {
+         filename += "_"; filename += time;
+      } else if (strcmp(tmp.Data(), "tmpdt") == 0) {
+         filename += "_"; filename += date;
+         filename += "_"; filename += time;
+      }//if
+      filename += ".root";
+
+      file = new TFile(filename, "RECREATE", title);
+
+      if (!file || file->IsZombie()) {
+         cerr << "Error: Could not create file <" << name << ">" << endl;
+         SafeDelete(file);
+         fAbort = kTRUE;
+         return 0;
+      } else if (file->IsOpen()) {
+         if (XManager::fgVerbose) {
+            cout << "Creating new temporary file <" << filename.Data() << ">..." << endl;
+         }//if
+         fAbort = kFALSE;
+         return file;
+      }//if
+   }//if
+
+// Create new root file
+   const char *fname;
+   if ((fname = gSystem->ExpandPathName(name))) {
+      file = gROOT->GetFile(fname);
+      if (file) {
+         cerr << "Error: File <" << name << "> does already exist" << endl;
+         delete [] (char*)fname;
+         return 0;
+      }//if
+
+      if (gSystem->AccessPathName(fname)) {
+//old      if (gSystem->AccessPathName(name)) {
+         filename = pathname + dSEP + filename;
+         if (strcmp(tmp.Data(), "d")  == 0) {
+            filename += "_"; filename += date; filename += ".root";
+         } else if (strcmp(tmp.Data(), "t") == 0) {
+            filename += "_"; filename += time; filename += ".root";
+         } else if  (strcmp(tmp.Data(), "dt") == 0) {
+            filename += "_"; filename += date;
+            filename += "_"; filename += time;
+            filename += ".root";
+         } else {
+            filename = name;
+         }//if
+         file = new TFile(filename, "CREATE", title);
+      } else {
+         cerr << "Error: File <" << name << "> does already exist" << endl;
+         delete [] (char*)fname;
+         return 0;
+      }//if
+
+      if (!file || file->IsZombie()) {
+         fAbort = kTRUE;
+      } else if (file->IsOpen()) {
+         if (XManager::fgVerbose) {
+            cout << "Creating new file <" << filename.Data() << ">..." << endl;
          }//if
          fAbort = kFALSE;
          delete [] (char*)fname;
