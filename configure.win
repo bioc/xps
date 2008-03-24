@@ -57,7 +57,7 @@ else
 fi
 
 # set path for MS Visual Studio
-PATH="${MSVSPATH}"\\bin:"${PATH}"
+PATH="${MSVSPATH}":"${PATH}"
 #PATH="${VCCLEXE}"\\bin:"${PATH}"
 
 # set environment variables for VC++ (does not work)
