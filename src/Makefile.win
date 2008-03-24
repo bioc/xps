@@ -9,6 +9,9 @@
 #ROOTSYS       = C:\\root
 #ROOTSYS       = ${ROOTSYS}
 
+CL            = "${MSVSPATH}/cl"
+LINK          = "${MSVSPATH}/link"
+
 #LDOPT         = -opt:ref
 LDOPT         = -opt:noref
 LDFLAGS       = $(LDOPT) $(conlflags) -nologo -include:_G__cpp_setupG__Hist \
@@ -56,75 +59,75 @@ MYOBJ       = TMLMath.obj TStat.obj StatUtils.obj \
 
 xps.dll:  $(MYOBJ)
 #xps.dll:  $(MYOBJ) $(RLIB)
-#	link /dll /def:xps.def /out:xps.dll fp10.obj *.obj $(R_HOME)\\bin\\Rdll.lib 
-	link /dll /def:xps.def /out:xps.dll fp10.obj $(SOFLAGS) $(LDFLAGS) $(GLIBS) *.obj 
-#	link /dll /def:xps.def /out:xps.dll fp10.obj $(GLIBS) *.obj 
+#	$(LINK) /dll /def:xps.def /out:xps.dll fp10.obj *.obj $(R_HOME)\\bin\\Rdll.lib 
+	$(LINK) /dll /def:xps.def /out:xps.dll fp10.obj $(SOFLAGS) $(LDFLAGS) $(GLIBS) *.obj 
+#	$(LINK) /dll /def:xps.def /out:xps.dll fp10.obj $(GLIBS) *.obj 
 	
 TMLMath.obj: TMLMath.h TMLMath.cxx
-	cl /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c TMLMath.cxx
+	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c TMLMath.cxx
 
 TStat.obj: TStat.h TStat.cxx
-	cl /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c TStat.cxx
+	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c TStat.cxx
 	
 StatUtils.obj: StatUtils.h StatUtils.cxx
-	cl /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c StatUtils.cxx
+	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c StatUtils.cxx
 	
 XPSBase.obj: XPSBase.h XPSBase.cxx
-	cl /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSBase.cxx
+	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSBase.cxx
 
 XPSUtils.obj: XPSUtils.h XPSUtils.cxx
-	cl /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSUtils.cxx
+	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSUtils.cxx
 	
 XPSSchemes.obj: XPSSchemes.h XPSSchemes.cxx
-	cl /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSSchemes.cxx
+	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSSchemes.cxx
 	
 XPSDataTypes.obj: XPSDataTypes.h XPSDataTypes.cxx
-	cl /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSDataTypes.cxx
+	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSDataTypes.cxx
 
 XPSProjectHandler.obj: XPSProjectHandler.h XPSProjectHandler.cxx
-	cl /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSProjectHandler.cxx
+	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSProjectHandler.cxx
 	
 XPSData.obj: XPSData.h XPSData.cxx
-	cl /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSData.cxx
+	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSData.cxx
 	
 XPSProcessing.obj: XPSProcessing.h XPSProcessing.cxx
-	cl /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSProcessing.cxx
+	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSProcessing.cxx
 
 XPSHybridizer.obj: XPSHybridizer.h XPSHybridizer.cxx
-	cl /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSHybridizer.cxx
+	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSHybridizer.cxx
 	
 XPSSelector.obj: XPSSelector.h XPSSelector.cxx
-	cl /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSSelector.cxx
+	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSSelector.cxx
 	
 XPSNormalizer.obj: XPSNormalizer.h XPSNormalizer.cxx
-	cl /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSNormalizer.cxx
+	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSNormalizer.cxx
 
 XPSPreProcessing.obj: XPSPreProcessing.h XPSPreProcessing.cxx
-	cl /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSPreProcessing.cxx
+	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSPreProcessing.cxx
 	
 XPSNormation.obj: XPSNormation.h XPSNormation.cxx
-	cl /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSNormation.cxx
+	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSNormation.cxx
 	
 XPSFilter.obj: XPSFilter.h XPSFilter.cxx
-	cl /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSFilter.cxx
+	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSFilter.cxx
 
 XPSAnalyzer.obj: XPSAnalyzer.h XPSAnalyzer.cxx
-	cl /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSAnalyzer.cxx
+	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSAnalyzer.cxx
 	
 XPSAnalysis.obj: XPSAnalysis.h XPSAnalysis.cxx
-	cl /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSAnalysis.cxx
+	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSAnalysis.cxx
 
 rwrapper.obj: rwrapper.h rwrapper.cxx
-	cl /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c rwrapper.cxx
+	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c rwrapper.cxx
 	
 xpsDict.cxx: $(MYHDR) xpsLinkDef.h
 	@echo "Generating dictionary $@..."
 #	@rootcint -f $@ -c-I"${ROOTSYS}/include" $(MYHDR) xpsLinkDef.h
 	@rootcint -f $@ -c $(MYHDR) xpsLinkDef.h
-#	@cl /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c xpsDict.cxx
+#	@$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c xpsDict.cxx
 	
 xpsDict.obj: xpsDict.cxx xpsDict.h
-	cl /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c xpsDict.cxx
+	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c xpsDict.cxx
 
 clean:
 	rm -f $(MYOBJ) *.a *.d *.rc 
