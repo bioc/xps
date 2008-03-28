@@ -1,14 +1,5 @@
 #------------------------------------------------------------------------------
 
-# Paths must not have spaces
-#R_HOME   = C:\\PROGRA~1\\R\\R-2.6.2
-#RLIB     = $(R_HOME)\\bin\\Rdll.lib
-
-#------------------------------------------------------------------------------
-
-#ROOTSYS       = C:\\root
-#ROOTSYS       = ${ROOTSYS}
-
 CL            = "${MSVSPATH}/cl"
 LINK          = "${MSVSPATH}/link"
 
@@ -58,10 +49,7 @@ MYOBJ       = TMLMath.obj TStat.obj StatUtils.obj \
 
 
 xps.dll:  $(MYOBJ)
-#xps.dll:  $(MYOBJ) $(RLIB)
-#	$(LINK) /dll /def:xps.def /out:xps.dll fp10.obj *.obj $(R_HOME)\\bin\\Rdll.lib 
 	$(LINK) /dll /def:xps.def /out:xps.dll fp10.obj $(SOFLAGS) $(LDFLAGS) $(GLIBS) *.obj 
-#	$(LINK) /dll /def:xps.def /out:xps.dll fp10.obj $(GLIBS) *.obj 
 	
 TMLMath.obj: TMLMath.h TMLMath.cxx
 	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c TMLMath.cxx
@@ -122,9 +110,7 @@ rwrapper.obj: rwrapper.h rwrapper.cxx
 	
 xpsDict.cxx: $(MYHDR) xpsLinkDef.h
 	@echo "Generating dictionary $@..."
-#	@rootcint -f $@ -c-I"${ROOTSYS}/include" $(MYHDR) xpsLinkDef.h
 	@rootcint -f $@ -c $(MYHDR) xpsLinkDef.h
-#	@$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c xpsDict.cxx
 	
 xpsDict.obj: xpsDict.cxx xpsDict.h
 	$(CL) /I"${ROOTSYS}/include" /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c xpsDict.cxx

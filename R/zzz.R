@@ -4,7 +4,7 @@
 
 .onLoad <- function(libname, pkgname) {
   require(methods);
-  cat(paste("\nWelcome to", pkgname, "version 0.1.0", "\n"));
+  cat(paste("\nWelcome to", pkgname, "version 1.0.0", "\n"));
   cat("    an R wrapper for XPS - eXpression Profiling System\n");
   cat("    (c) Copyright 2001-2008 by Christian Stratowa\n");
   cat("    \n");

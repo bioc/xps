@@ -617,10 +617,10 @@ scmdir <- "/path/to/CRAN/Workspaces/Schemes"
 
 Now we can create a \ROOT\ \Rclass{scheme} file:
 <<eval=FALSE>>=
-scheme.test3 <- import.expr.scheme("Scheme\_Test3\_na22", 
+scheme.test3 <- import.expr.scheme("Scheme_Test3_na22", 
                        filedir=scmdir,  
                        paste(libdir,"Test3.CDF",sep="/"), 
-                       paste(libdir,"Test3\_probe.tab",sep="/"), 
+                       paste(libdir,"Test3_probe.tab",sep="/"), 
                        paste(anndir,"Test3.na22.annot.csv",sep="/"))
 @
 
@@ -645,7 +645,7 @@ of \Rclass{SchemeTreeSet}, which contain this information already, by setting pa
 \Rcode{add.mask} of function \Rfunction{import.expr.scheme} to \Rcode{add.mask=TRUE}, 
 e.g.:
 <<eval=FALSE>>=
-scheme.test3 <- import.expr.scheme("Scheme\_Test3\_na22",..., add.mask=TRUE)
+scheme.test3 <- import.expr.scheme("Scheme_Test3_na22",..., add.mask=TRUE)
 @
 
 {\bf Note:} Please note that for the new GeneChip exon array systems and gene array systems

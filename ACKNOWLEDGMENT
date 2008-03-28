@@ -22,8 +22,9 @@ understand S4 classes, and Simon Urbanek for his help regarding diverse Intel-Ma
 related problems. Last but not least I want to thank Robert Gentleman for 
 reviewing my package and making helpful suggestions.
 
-Furthermore I want to thank Prof. Brian Ripley (R Core Development), Philippe Canal,
-and especially Bertrand Bellenot for their help when porting my package to Windows.
+Furthermore I want to thank Prof. Brian Ripley (R Core Development), Patrick 
+Aboyoun (Bioconductor), Philippe Canal, and especially Bertrand Bellenot for 
+their help when porting my package to Windows.
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 

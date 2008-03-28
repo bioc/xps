@@ -64,8 +64,4 @@ PATH="${MSVSPATH}":"${PATH}"
 #echo "\"${VCCLEXE}\\vcvarsall.bat\""
 #exec "${VCCLEXE}\\vcvarsall.bat"
 
-#cd src
-#make ROOTSYS=${ROOTSYS} -f Makefile.win
-#cd ..
-
 exit 0
