@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 03/15/2008
+// File created: 05/18/2002                          last modified: 04/01/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -61,6 +61,24 @@
 * Feb 2008 - Add methods GetTreeHeader() and GetTreeInfo() to XManager.
 *          - Adapt source code to compile with MS VC++ on WinXP
 *
+******************************************************************************/
+
+/******************************************************************************
+* Note on memory management:
+* Since ROOT does not use exception handling I have decided also not to use it.
+* However, to be able to control memory management, especially when defining a
+* series of large arrays, I decided to use the following memory initialization
+* throughout my program: 
+*    if (!(arr  = new (nothrow) Float_t[size])) {err = errInitMemory; goto cleanup;}
+*  cleanup:
+*    if (arr) {delete [] arr; arr = 0;}
+*    etc
+* 1. "new (nothrow)" is necessary otherwise a memory error will not return zero.
+* 2. Yes, I decided to use "goto cleanup", since doing cleanup at the end of a
+*    method turned out to be the most effective way to cleanup before exiting
+*    a method, and doing cleanup before exiting the program.
+* 3. "if (arr)" ensures that only already initialized arrays (objects) will be
+*   deleted.
 ******************************************************************************/
 
 //#ifndef ROOT_Varargs
@@ -948,6 +966,10 @@ Int_t XTreeSet::Import(ifstream &input, Option_t *option, const char *sep,
       if (err == errNoErr) err = this->ReadBinaryHeader(input, sep, delim);
       if (err == errNoErr) err = this->ReadBinaryData(input, option, sep, delim, split);
    } else {
+      input.close();
+      input.open(fInfile.Data(), ios::in);  // reopen as text file
+      if (!input) return errOpenFile;
+
       if (err == errNoErr) err = this->ReadHeader(input, sep, delim);
       if (err == errNoErr) err = this->ReadData(input, option, sep, delim, split);
    }//if
@@ -2269,7 +2291,8 @@ Int_t XManager::Import(const char *setname, const char *infile, const char *tree
       }//if
 
    // Open infile containing data
-      ifstream input(objstr->GetName(), ios::in);
+      // MS VC++ requires mode "ios::binary" for binary files
+      ifstream input(objstr->GetName(), ios::in | ios::binary);
       if (!input) {
          cerr << "Error: File <" << objstr->GetName() << "> does not exist."
               << endl;

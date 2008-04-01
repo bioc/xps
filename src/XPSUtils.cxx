@@ -1,4 +1,4 @@
-// File created: 11/02/2002                          last modified: 02/24/2008
+// File created: 11/02/2002                          last modified: 04/01/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -4296,7 +4296,13 @@ TString Type2Extension(const char *type, const char **types, const char **extens
 //______________________________________________________________________________
 inline UShort_t Swap16Bit(UShort_t x) {
   return ((((x) >> 8) & 0xff) | (((x) & 0xff) << 8));
-}
+}//Swap16Bit
+
+//______________________________________________________________________________
+inline UInt_t Swap32Bit(UInt_t x) {
+   return ((((x) & 0xff000000) >> 24) | (((x) & 0x00ff0000) >>  8) |
+           (((x) & 0x0000ff00) <<  8) | (((x) & 0x000000ff) << 24));
+}//Swap32Bit
 
 //______________________________________________________________________________
 void SwapBytes(char *src, char *dest, Int_t size)
@@ -4308,22 +4314,7 @@ void SwapBytes(char *src, char *dest, Int_t size)
 //______________________________________________________________________________
 void READ_INT(std::ifstream &input, Int_t &value, Bool_t isBE)
 {
-   Int_t val = 0;
-   input.read((char*)&val, sizeof(val));
-
-   Bool_t swap = kFALSE;
-#ifdef IS_BIG_ENDIAN
-   swap = kTRUE;
-   if (isBE == kTRUE) swap = kFALSE;
-#else
-   if (isBE == kTRUE) swap = kTRUE;
-#endif
-   if (swap) {
-      char str2[INT_SIZE];
-      SwapBytes((char*)&val, str2, INT_SIZE);
-      memcpy((char*)&val, str2, INT_SIZE);
-   }//if
-	memcpy(&value, (char*)&val, INT_SIZE);
+   READ_UINT(input, (UInt_t&)value, isBE);
 }//READ_INT
 
 //______________________________________________________________________________
@@ -4339,33 +4330,21 @@ void READ_UINT(std::ifstream &input, UInt_t &value, Bool_t isBE)
 #else
    if (isBE == kTRUE) swap = kTRUE;
 #endif
-   if (swap) {
+   if (swap) value = Swap32Bit(val);
+   else      value = val;
+/*   if (swap) {
       char str2[UINT_SIZE];
       SwapBytes((char*)&val, str2, UINT_SIZE);
       memcpy((char*)&val, str2, UINT_SIZE);
    }//if
 	memcpy(&value, (char*)&val, UINT_SIZE);
+*/
 }//READ_UINT
 
 //______________________________________________________________________________
 void READ_SHORT(std::ifstream &input, Short_t &value, Bool_t isBE)
 {
-   Short_t val = 0;
-   input.read((char*)&val, sizeof(val));
-
-   Bool_t swap = kFALSE;
-#ifdef IS_BIG_ENDIAN
-   swap = kTRUE;
-   if (isBE == kTRUE) swap = kFALSE;
-#else
-   if (isBE == kTRUE) swap = kTRUE;
-#endif
-   if (swap) {
-	   char str2[SHORT_SIZE];
-      SwapBytes((char*)&val, str2, SHORT_SIZE);
-      memcpy((char*)&val, str2, SHORT_SIZE);
-   }//if
-	memcpy(&value, (char*)&val, SHORT_SIZE);
+   READ_USHORT(input, (UShort_t&)value, isBE);
 }//READ_SHORT
 
 //______________________________________________________________________________
@@ -4381,12 +4360,8 @@ void READ_USHORT(std::ifstream &input, UShort_t &value, Bool_t isBE)
 #else
    if (isBE == kTRUE) swap = kTRUE;
 #endif
-   if (swap) {
-      char str2[USHORT_SIZE];
-      SwapBytes((char*)&val, str2, USHORT_SIZE);
-      memcpy((char*)&val, str2, USHORT_SIZE);
-   }//if
-   memcpy(&value, (char*)&val, USHORT_SIZE);
+   if (swap) value = Swap16Bit(val);
+   else      value = val;
 }//READ_USHORT
 
 //______________________________________________________________________________
@@ -4410,29 +4385,14 @@ void READ_BOOL(std::ifstream &input, char &value)
 //______________________________________________________________________________
 void READ_FLOAT(std::ifstream &input, Float_t &value, Bool_t isBE)
 {
-   Float_t val = 0.0;
-   input.read((char*)&val, FLOAT_SIZE);
-
-   Bool_t swap = kFALSE;
-#ifdef IS_BIG_ENDIAN
-   swap = kTRUE;
-   if (isBE == kTRUE) swap = kFALSE;
-#else
-   if (isBE == kTRUE) swap = kTRUE;
-#endif
-   if (swap) {
-      char str2[FLOAT_SIZE];
-      SwapBytes((char*)&val, str2, FLOAT_SIZE);
-      memcpy((char*)&val, str2, FLOAT_SIZE);
-   }//if
-   memcpy(&value, (char*)&val, FLOAT_SIZE);
+   READ_UINT(input, (UInt_t&)value, isBE);
 }//READ_FLOAT
 
 //______________________________________________________________________________
 void READ_STRING(std::ifstream &input, char * &value, Bool_t isBE)
 {
-   Int_t len;
-   READ_INT(input, len, isBE);
+   UInt_t len;
+   READ_UINT(input, len, isBE);
    value = new char[len+1];
    if (len > 0)
       input.read(value, len);
@@ -4452,13 +4412,13 @@ void READ_STRING(std::ifstream &input, ASTRING *value, Bool_t isBE)
 //______________________________________________________________________________
 void READ_WSTRING(std::ifstream &input, char * &value, Bool_t isBE)
 {
-   Int_t    len = 0;
+   UInt_t   len = 0;
    UShort_t val = 0;
-   READ_INT(input, len, isBE);
+   READ_UINT(input, len, isBE);
    value = new char[len+1];
    wchar_t *wstr = new wchar_t[len+1];
    if (len > 0) {
-      for (Int_t i=0; i<len; i++){
+      for (UInt_t i=0; i<len; i++){
          READ_USHORT(input, val, isBE);
          wstr[i] = (wchar_t)val;
       }//for_i
@@ -4471,12 +4431,12 @@ void READ_WSTRING(std::ifstream &input, char * &value, Bool_t isBE)
 //______________________________________________________________________________
 void READ_WSTRING(std::ifstream &input, wchar_t * &value, Bool_t isBE)
 {
-   Int_t    len = 0;
+   UInt_t   len = 0;
    UShort_t val = 0;
-   READ_INT(input, len, isBE);
+   READ_UINT(input, len, isBE);
    value = new wchar_t[len+1];
    if (len > 0) {
-      for (Int_t i=0; i<len; i++){
+      for (UInt_t i=0; i<len; i++){
          READ_USHORT(input, val, isBE);
          value[i] = (wchar_t)val;
       }//for_i

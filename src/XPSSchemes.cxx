@@ -3991,7 +3991,7 @@ Int_t XGeneChip::ImportTransAnnotation(ifstream &input, Option_t *option,
             names[0] = alignment;
          }//if
 
-         // find Alignments entires with best score
+         // find Alignments entries with best score
          for(Int_t i=0; i<nsub; i++){
             nalg  = kNumAlg;
             index = TokenizeString(names[i].Data(), nalg, align, kNumSl2, kSepSl2);

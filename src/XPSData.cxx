@@ -1854,8 +1854,8 @@ Int_t XGeneChipHyb::ReadXDAData(ifstream &input, Option_t *option, const char * 
 
       x      = Index2X(i);
       y      = Index2Y(i);
-      inten  = entry->Intensity;
-      stdev  = entry->Stdv;
+      inten  = (Double_t)entry->Intensity;
+      stdev  = (Double_t)entry->Stdv;
       numpix = entry->Pixels;
 
       // number of cells with minimal intensity
