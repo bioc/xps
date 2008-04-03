@@ -142,8 +142,8 @@ XProjectHandler::~XProjectHandler()
    // ProjectHandler destructor
    if(kCS) cout << "---XProjectHandler::~XProjectHandler------" << endl;
 
-   fHybridizations = 0; //do not delete since contained in fList
-   fTreatments     = 0; //do not delete since contained in fList
+   fHybridizations = 0;  //do not delete since contained in fList
+   fTreatments     = 0;  //do not delete since contained in fList
 }//Destructor
 
 //______________________________________________________________________________

@@ -70,8 +70,8 @@ class XTreatmentList;
 class XHandler {
 
    protected:
-      TNamed   *fNamed;         //! to allow multiple inheritance
-      TList    *fList;          //! list containing datatypes
+      TNamed   *fNamed;    //! to allow multiple inheritance
+      TList    *fList;     //! list containing datatypes
 
    protected:
       void  Add(TObject *obj);
