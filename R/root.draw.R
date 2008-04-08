@@ -266,33 +266,43 @@ function(x,
       treename <- paste("CallSet", treename, sep="/");
    }#if
 
+   ## unix vs windows settings
+   is.win <- (.Platform$OS.type == "windows");
+   if (is.win) {
+      sq  <- as.character("");  #
+      dq  <- as.character("\\\""); #\"
+   } else {
+      sq  <- as.character("'");  #'
+      dq  <- as.character("\""); #"
+   }#if
+
    ## get path to library xps.so
    xpsso <- system.file("libs", .Platform$r_arch,
                   paste("xps", .Platform$dynlib.ext, sep=''), package="xps");
    xpsso <- gsub("//", "/", xpsso);
 
    ## need to put character variables in parenthesis
-   temp       <- as.character("\""); #"
-   xpsso      <- paste(temp, xpsso, temp, sep="");
-   rootfile   <- paste(temp, rootfile, temp, sep="");
-   canvasname <- paste(temp, canvasname, temp, sep="");
+#   temp       <- as.character("\""); #"
+   xpsso      <- paste(dq, xpsso, dq, sep="");
+   rootfile   <- paste(dq, rootfile, dq, sep="");
+   canvasname <- paste(dq, canvasname, dq, sep="");
    ntree      <- as.integer(ntree);
-   treename1  <- paste(temp, treename[1], temp, sep="");
-   treename2  <- paste(temp, treename[2], temp, sep="");
-   treename3  <- paste(temp, treename[3], temp, sep="");
-   varlist    <- paste(temp, varlist, temp, sep="");
-   logbase    <- paste(temp, logbase, temp, sep="");
-   type       <- paste(temp, type, temp, sep="");
-   option     <- paste(temp, option, temp, sep="");
+   treename1  <- paste(dq, treename[1], dq, sep="");
+   treename2  <- paste(dq, treename[2], dq, sep="");
+   treename3  <- paste(dq, treename[3], dq, sep="");
+   varlist    <- paste(dq, varlist, dq, sep="");
+   logbase    <- paste(dq, logbase, dq, sep="");
+   type       <- paste(dq, type, dq, sep="");
+   option     <- paste(dq, option, dq, sep="");
    w          <- as.integer(w);
    h          <- as.integer(h);
 
    ## call ROOT macro
    macro <- paste(system.file(package="xps"), "rootsrc/macroDraw.C", sep="/");
-   macro <- paste("'", macro, "(", xpsso,",", rootfile,",", canvasname,",",
+   macro <- paste(sq, macro, "(", xpsso,",", rootfile,",", canvasname,",",
                   ntree,",", treename1,",", treename2,",", treename3,",",
                   varlist,",", logbase,",", type,",", option,",",
-                  w,",", h, ")", "'", sep="");
+                  w,",", h, ")", sq, sep="");
    system(paste("root -l", macro));
 
 }#root.draw

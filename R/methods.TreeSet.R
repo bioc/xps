@@ -178,15 +178,22 @@ function(object)
    savedir <- getwd();
    setwd(object@filedir);
 
+   ## unix vs windows settings
+   is.win <- (.Platform$OS.type == "windows");
+   if (is.win) {
+      sq  <- as.character("");  #
+      dq  <- as.character("\\\""); #\"
+   } else {
+      sq  <- as.character("'");  #'
+      dq  <- as.character("\""); #"
+   }#if
+
    macro <- paste(system.file(package="xps"), "rootsrc/macroOpenBrowser.C", sep="/");
    xpsso <- system.file("libs", .Platform$r_arch,
                   paste("xps", .Platform$dynlib.ext, sep=''), package="xps");
    xpsso <- gsub("//", "/", xpsso);
-   temp  <- as.character("\""); #"
-   xpsso <- paste(temp, xpsso, temp, sep="");
-   ## sQuote is ok on Mac ('') but false on Linux (´`)!!
-#   macro <- sQuote(paste(macro, "(", xpsso, ")", sep=""));
-   macro <- paste("'", macro, "(", xpsso, ")", "'", sep="");
+   xpsso <- paste(dq, xpsso, dq, sep="");
+   macro <- paste(sq, macro, "(", xpsso, ")", sq, sep="");
    system(paste("root -l", macro));
 
    setwd(savedir);
