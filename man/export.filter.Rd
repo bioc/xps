@@ -69,6 +69,4 @@ current R session as \code{data.frame}. Otherwise, \code{NULL} will be returned.
 }
 \author{Christian Stratowa}
 \seealso{\code{\link{export-methods}}}
-\examples{
-}
 \keyword{manip}

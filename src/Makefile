@@ -100,6 +100,7 @@ clean-$(MAIN):
 #		@rm -f $(OBJS) core
 		@rm -f $(OBJS) core $(MAIN)Dict.* $(MAIN).$(DllSuf) *.so
 
+mostlyclean:    clean
 clean::         clean-$(MAIN)
 
 .SUFFIXES: .$(SrcSuf)

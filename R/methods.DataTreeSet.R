@@ -292,6 +292,7 @@ function(object,
    }#if
 
    treenames <- namePart(object@treenames);
+   treenames <- make.names(treenames);  #to compare names with colnames of data.frame
    datanames <- namePart(colnames(data));
 
    ds <- data[,!is.na(match(datanames, treenames))];
@@ -315,6 +316,7 @@ function(object,
    }#if
 
    treenames <- namePart(object@bgtreenames);
+   treenames <- make.names(treenames);  #to compare names with colnames of data.frame
    bgrdnames <- namePart(colnames(bgrd));
 
    return(bgrd[,!is.na(match(bgrdnames, treenames))]);

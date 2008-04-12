@@ -106,6 +106,7 @@ function(object) {
    }#if
 
    treenames <- namePart(object@treenames);
+   treenames <- make.names(treenames);  #to compare names with colnames of data.frame
    callnames <- namePart(colnames(dcall));
 
    return(dcall[,!is.na(match(callnames, treenames))]);

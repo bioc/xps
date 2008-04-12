@@ -483,9 +483,14 @@ exonLevel <- function(exonlevel="", chiptype, as.sum=TRUE) {
 extenPart <- function(names, as.unique=TRUE) {
    if (debug.xps()) print("------extenPart------")
 
+   subPart <- function(strg, pat) {
+      pos <- which(unlist(strsplit(strg,"")) == pat);
+      pos <- ifelse(length(pos), pos[length(pos)] + 1, 1);
+      return(substr(strg, pos, 99999));
+   }
+
    strg <- unlist(names);
-   len  <- length(strg);
-   strg <- sapply(strsplit(strg,"\\."), function(x) x[2]);
+   strg <- sapply(strg, function(x) subPart(x, "."));
    if (as.unique == TRUE) {
       strg <- unique(strg);
    }#if
@@ -499,9 +504,14 @@ extenPart <- function(names, as.unique=TRUE) {
 namePart <- function(names) {
    if (debug.xps()) print("------namePart------")
 
+   subPart <- function(strg, pat) {
+      pos <- which(unlist(strsplit(strg,"")) == pat);
+      pos <- ifelse(length(pos), pos[length(pos)] - 1, 99999);
+      return(substr(strg, 1, pos));
+   }
+
    strg <- unlist(names);
-   len  <- length(strg);
-   strg <- sapply(strsplit(strg,"\\."), function(x) x[1]);
+   strg <- sapply(strg, function(x) subPart(x, "."));
  
    return(strg[!is.na(strg)]);
 }#namePart
