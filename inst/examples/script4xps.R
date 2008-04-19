@@ -34,8 +34,9 @@ scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # create ROOT scheme files for expression arrays
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# note: as of April 2008 the latest Affymetrix annotation is na25
 # note: do not separate name of ROOT files with dots, use underscores,
-#       e.g. do not use "Scheme.Test3.na21" but "Scheme_Test3_na21"
+#       e.g. do not use "Scheme.Test3.na25" but "Scheme_Test3_na25"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # Test3:
@@ -251,31 +252,31 @@ scheme.raex10stv1r2.na25 <- import.exon.scheme("Scheme_RaEx10stv2r2_na25",filedi
 
 ### export different trees from ROOT scheme file
 # Test3: export as table only
-export(scheme.test3.na23, treetype="idx", outfile="Test3_idx.txt")
-export(scheme.test3.na23, treetype="scm", outfile="Test3_scm.txt")
-export(scheme.test3.na23, treetype="prb", outfile="Test3_prb.txt")
-export(scheme.test3.na23, treetype="ann", outfile="Test3_ann.txt")
+export(scheme.test3.na25, treetype="idx", outfile="Test3_idx.txt")
+export(scheme.test3.na25, treetype="scm", outfile="Test3_scm.txt")
+export(scheme.test3.na25, treetype="prb", outfile="Test3_prb.txt")
+export(scheme.test3.na25, treetype="ann", outfile="Test3_ann.txt")
 
 # export as table and import as data.frame
-idx <- export(scheme.test3.na23, treetype="idx", outfile="Test3_idx.txt",as.dataframe=T)
-ann <- export(scheme.test3.na23, treetype="ann", outfile="Test3_ann.txt",as.dataframe=T)
+idx <- export(scheme.test3.na25, treetype="idx", outfile="Test3_idx.txt",as.dataframe=T)
+ann <- export(scheme.test3.na25, treetype="ann", outfile="Test3_ann.txt",as.dataframe=T)
 
 ### attach mask later: if import parameter was: as.dataframe=FALSE
-scheme.test3.na23 <- attachMask(scheme.test3.na23)
-str(scheme.test3.na23)
+scheme.test3.na25 <- attachMask(scheme.test3.na25)
+str(scheme.test3.na25)
 ### export scheme mask
-msk <- chipMask(scheme.test3.na23)
-scheme.test3.na23 <- removeMask(scheme.test3.na23)
-str(scheme.test3.na23)
+msk <- chipMask(scheme.test3.na25)
+scheme.test3.na25 <- removeMask(scheme.test3.na25)
+str(scheme.test3.na25)
 
 ### scheme accessors
-rootFile(scheme.test3.na23)
-chipName(scheme.test3.na23)
-chipType(scheme.test3.na23)
-probeInfo(scheme.test3.na23)
+rootFile(scheme.test3.na25)
+chipName(scheme.test3.na25)
+chipType(scheme.test3.na25)
+probeInfo(scheme.test3.na25)
 
 ### browse ROOT scheme files
-root.browser(scheme.test3.na23)
+root.browser(scheme.test3.na25)
 
 
 
@@ -447,7 +448,7 @@ datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 
 ### HG-U133_Plus_2 data: import raw data
 # first, import ROOT scheme file
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na23.root",sep="/"))
+scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na25.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("u1332plus_ivt_breast_A.CEL","u1332plus_ivt_breast_B.CEL","u1332plus_ivt_breast_C.CEL",
@@ -466,7 +467,7 @@ data.mix.u133p2 <- import.data(scheme.u133p2, "HuTissuesU133P2", filedir=datdir,
 
 ### HuEx-1_0-st-v2 data: import raw data
 # first, import ROOT scheme file
-scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na23.root",sep="/"))
+scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na25.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("huex_wta_breast_A.CEL","huex_wta_breast_B.CEL","huex_wta_breast_C.CEL",
@@ -488,7 +489,7 @@ celdir <- "/Volumes/GigaDrive/ChipData/Exon/HuGene"
 
 ### HuGene-1_0-st-v1 data: import raw data
 # first, import ROOT scheme file
-scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na23.root",sep="/"))
+scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na25.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("TisMap_Breast_01_v1_WTGene1.CEL","TisMap_Breast_02_v1_WTGene1.CEL","TisMap_Breast_03_v1_WTGene1.CEL",
@@ -508,9 +509,9 @@ library(xps)
 
 # import ROOT scheme files
 scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na23.root",sep="/"))
-scheme.exon   <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na23.root",sep="/"))
-scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na23.root",sep="/"))
+scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na25.root",sep="/"))
+scheme.exon   <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na25.root",sep="/"))
+scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na25.root",sep="/"))
 
 # import ROOT data files
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
@@ -729,7 +730,7 @@ library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
 scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na23.root",sep="/"))
+scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na25.root",sep="/"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.u133p2 <- root.data(scheme.u133p2, paste(datdir,"HuTissuesU133P2_cel.root",sep="/"))
 
@@ -836,7 +837,7 @@ library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
 scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na23.root",sep="/"))
+scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na25.root",sep="/"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.exon <- root.data(scheme.exon, paste(datdir,"HuTissuesExon_cel.root",sep="/"))
 
@@ -969,7 +970,7 @@ library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
 scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na23.root",sep="/"))
+scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na25.root",sep="/"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.genome <- root.data(scheme.genome, paste(datdir,"HuTissuesGenome_cel.root",sep="/"))
 

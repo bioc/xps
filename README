@@ -141,7 +141,7 @@ I. Install ROOT:
    Furthermore, daily versions from ROOT can be downloaded via svn and
    should work fine with 'xps', however, the current versions 5.18/00 and
    5.19/02 have been used to test 'xps' for both Linux Fedora Core 4 and
-   MacOS X.
+   MacOS X and WinXP.
 
    Note 4: ROOT fails to compile
    Like R, the ROOT framework can be installed on many architectures, see
@@ -205,13 +205,13 @@ II.  Install package 'xps':
 
  IIa.  Install 'xps' from source
 
-   Currently, xps can be downloaded as gezipped source file "xps_0.99.5.tar.gz"
+   Currently, xps can be downloaded as gezipped source file "xps_0.99.10.tar.gz"
    for MacOS X (Intel and PPC) and for Linux
 
    It can be installed with:
-      R CMD INSTALL xps_0.99.5.tar.gz
+      R CMD INSTALL xps_0.99.10.tar.gz
    or e.g. on a Mac in the User library:
-      R CMD INSTALL -l ~/Library/R/library xps_0.99.5.tar.gz
+      R CMD INSTALL -l ~/Library/R/library xps_0.99.10.tar.gz
 
    However, the recommended way to install packages from source is:
       source("http://bioconductor.org/biocLite.R")
@@ -220,8 +220,8 @@ II.  Install package 'xps':
 
  IIb.  Install 'xps' for Windows
 
-   Hopefully, the Windows binary of xps can be downloaded from the Bioconductor
-   web site, and installed using: biocLite("xps")
+   The Windows binary of xps can be downloaded from the Bioconductor web site, and
+   installed using: biocLite("xps")
 
    If you want to install xps from source, then you need to do the following:
    You can still install the binaries for ROOT and R but in addition you need 
@@ -234,7 +234,7 @@ II.  Install package 'xps':
    by Microsoft:
       C:\Program Files (x86)\Microsoft Visual Studio 9\VC\vcvarsall.bat (or a similar path).
    Then you can install xps from source as usual:
-      R CMD INSTALL xps_0.99.5.tar.gz
+      R CMD INSTALL xps_0.99.10.tar.gz
 
 
  IIc.  Tested architectures
@@ -242,13 +242,13 @@ II.  Install package 'xps':
    Currently, package 'xps' has been built (with R CMD INSTALL) and
    passed R CMD check with no errors and no warnings on the following computers:
    1. MacBook Pro Core 2 Duo 2GHz with 2 GB RAM running MacOS X 10.4.8
-      R versions tested: R-2.5.0, R-2.6.0, R-2.6.1
+      R versions tested: R-2.5.0, R-2.6.0, R-2.6.1, R-2.7.0 alpha
    2. PowerBook Titanium G4 550MHz with 1 GB RAM running MacOS X 10.4.9
       R versions tested: R-2.5.0, R-2.6.0
    3. HP Compaq nx6110 Intel Centrino 1.4 GHz with 512 MB RAM with Fedora Core 4
-      R versions tested: R-2.4.1, R-2.6.0
+      R versions tested: R-2.4.1, R-2.6.0, R-2.7.0 alpha
    4. HP Compaq nx6110 Intel Centrino 1.4 GHz with 512 MB RAM with Windows XP
-      R versions tested: R-2.6.2
+      R versions tested: R-2.6.2, R-2.7.0 alpha
       
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -266,10 +266,13 @@ III. Learning how to use package 'xps'
    HG-U133_Plus_2 arrays, HuEx-1_0-st-v2 arrays and HuGene-1_0-st-v1 arrays.
    The corresponding CEL-files must be downloaded from the Affymetrix web site.
 
+   The use of Affymetrix human Tissues dataset is also explained in more detail
+   in the example script "script4exon.R".
+
    Comments regarding the tested architectures:
    1. MacBook Pro Intel Core 2 Duo 2GHz with 2 GB RAM running MacOS X 10.4.8
       All examples were tested, including the Affymetrix human mixture
-      dataset for HG-U133_Plus_2 AND HuEx-1_0-st-v2.r2
+      dataset for HG-U133_Plus_2, HuGene-1_0-st-v1 AND HuEx-1_0-st-v2.r2
 
    2. PowerBook Titanium PowerPC G4 550MHz with 1 GB RAM running MacOS X 10.4.9
       Most examples were tested, including the Affymetrix human mixture
@@ -279,7 +282,16 @@ III. Learning how to use package 'xps'
    3. HP Compaq nx6110 Intel Centrino 1.4 GHz with 512 MB RAM with Fedora Core 4
       All examples were tested, including the Affymetrix human mixture
       dataset for HG-U133_Plus_2  but NOT HuEx-1_0-st-v2.r2.
-      512 MB RAM are simply not enough to work with Exon arrays.
+
+   4. HP Compaq nx6110 Intel Centrino 1.4 GHz with 512 MB RAM with Windows XP
+      Most examples were tested, including the Affymetrix human mixture
+      dataset for HG-U133_Plus_2,  HuGene-1_0-st-v1 AND HuEx-1_0-st-v2.r2.
+      Note: I could indeed run RMA using 6 exon arrays of the Affmetrix dataset
+            with only 512 MB of RAM. However, it may not be possible to run MAS5,
+            since the MAS5 background correction uses lots of RAM.
+            Furthermore, it was not possible to create the scheme for the exon
+            arrays with "import.exon.scheme()", since the Affymetrix files are
+            too large; you need at least 1GB RAM.
 
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 04/01/2008
+// File created: 05/18/2002                          last modified: 04/19/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -1252,7 +1252,8 @@ TFile *XAlgorithm::NewFile(const char *name, const char *exten)
 
 // Add extension to file name
    TString filename = gSystem->BaseName(name);
-   TString dirname  = gSystem->DirName(name);
+//   TString dirname  = gSystem->DirName(name);
+   TString dirname  = Name2Path(name, sSEP);
 
    filename = Path2Name(filename, "", ".");
    filename = dirname + dSEP + filename;

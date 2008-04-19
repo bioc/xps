@@ -365,45 +365,29 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
    r += manager->Initialize(chiptype[0]);
 
 // temporary files for background, normalization, expression algorithms
-   char *bgrdfile = new char[strlen(tmpdir[0]) + 22];
+   const char *tmpfile = new char[strlen(tmpdir[0]) + 22];
    if (strcmp(tmpdir[0], "") != 0) {
-      bgrdfile = strcpy(bgrdfile, tmpdir[0]);
-      bgrdfile = strcat(bgrdfile, "/tmp_bgrd_310151.root");
+      tmpfile = strcpy((char*)tmpfile , tmpdir[0]);
+      tmpfile = strcat((char*)tmpfile , "/tmp_310151.root");
    } else {
-      bgrdfile = "";
-   }//if
-
-   char *normfile = new char[strlen(tmpdir[0]) + 14];
-   if (strcmp(tmpdir[0], "") != 0) {
-      normfile = strcpy(normfile, tmpdir[0]);
-      normfile = strcat(normfile, "/tmp_rkq.root");
-   } else {
-      normfile = "";
-   }//if
-
-   char *exprfile = new char[strlen(tmpdir[0]) + 22];
-   if (strcmp(tmpdir[0], "") != 0) {
-      exprfile = strcpy(exprfile, tmpdir[0]);
-      exprfile = strcat(exprfile, "/tmp_expr_310151.root");
-   } else {
-      exprfile = "";
+      tmpfile = "";
    }//if
 
 // initialize backgrounder
-   char *bgrdopt = new char[strlen(bgrdoption[0]) + 14];
+   const char *bgrdopt = new char[strlen(bgrdoption[0]) + 14];
    if (strcmp(bgrdoption[0], "pmonly") == 0 || strcmp(bgrdoption[0], "mmonly") == 0) {
-      bgrdopt = strcpy(bgrdopt, bgrdoption[0]);
-      bgrdopt = strcat(bgrdopt, ":epanechnikov");
+      bgrdopt = strcpy((char*)bgrdopt, bgrdoption[0]);
+      bgrdopt = strcat((char*)bgrdopt, ":epanechnikov");
 
       r += manager->InitAlgorithm("selector", "probe", bgrdoption[0], 0);
-      r += manager->InitAlgorithm("backgrounder", "rma", bgrdopt, bgrdfile, 1, 16384);
+      r += manager->InitAlgorithm("backgrounder", "rma", bgrdopt, tmpfile, 1, 16384);
    } else if (strcmp(bgrdoption[0], "genomic") == 0 || strcmp(bgrdoption[0], "antigenomic") == 0) {
 //??      int bgrdlevel = 16383;
       int bgrdlevel = *level; //use only those probes which are also used for expression
       int bgrdtype  = (strcmp(bgrdoption[0], "genomic") == 0) ? -1 : -2;
 
       r += manager->InitAlgorithm("selector", "probe", "exon", 0, 2, bgrdlevel, bgrdtype);
-      r += manager->InitAlgorithm("backgrounder", "rma", "pmonly:epanechnikov", bgrdfile, 1, 16384);
+      r += manager->InitAlgorithm("backgrounder", "rma", "pmonly:epanechnikov", tmpfile, 1, 16384);
    }//if
 
 // initialize normalizer
@@ -420,7 +404,7 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
          r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, normlevel);
       }//if
 
-      r += manager->InitAlgorithm("normalizer", "quantile", "together:none:0", normfile, 1, 0.0);
+      r += manager->InitAlgorithm("normalizer", "quantile", "together:none:0", tmpfile, 1, 0.0);
    }//if
 
 // initialize expressor
@@ -432,10 +416,10 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
       r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *level);
    }//if
 
-   char *expropt = new char[strlen(exproption[0]) + 6];
-   expropt = strcpy(expropt, exproption[0]);
-   expropt = strcat(expropt, ":log2");
-   manager->InitAlgorithm("expressor", "medianpolish", expropt, exprfile, 3, 10, 0.01, 1.0);
+   const char *expropt = new char[strlen(exproption[0]) + 6];
+   expropt = strcpy((char*)expropt, exproption[0]);
+   expropt = strcat((char*)expropt, ":log2");
+   manager->InitAlgorithm("expressor", "medianpolish", expropt, tmpfile, 3, 10, 0.01, 1.0);
 
 // create new root data file 
    r += manager->New(filename[0], dirname[0], chiptype[0], "preprocess");
@@ -465,9 +449,7 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
    delete [] expropt;
    delete [] bgrdopt;
    if (strcmp(tmpdir[0], "") != 0) {
-      delete [] exprfile;
-      delete [] normfile;
-      delete [] bgrdfile;
+      delete [] tmpfile;
    }//if
 
    manager->Close();
@@ -1898,7 +1880,7 @@ void GetTreeNames4Exten(char **filename, char **exten, int *gettitle,
 /*____________________________________________________________________________*/
 void GetRawCELNames(char **datafile, int *ntrees, char **treename, char **celname)
 {
-// Get path/naem.CEL of imported CEL-files
+// Get path/name.CEL of imported CEL-files
 
 // create new data manager
    XDataManager *manager = new XDataManager("DataManager", "", 0);

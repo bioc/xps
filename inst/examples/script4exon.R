@@ -2,7 +2,7 @@
 # Script: step-by-step functions to demonstrate how to analyze exon arrays
 #         using the Affymetrix human tissue-mixture exon array dataset
 #
-# Copyright (c) 2007-2007 Christian Stratowa, Vienna, Austria.
+# Copyright (c) 2007-2008 Christian Stratowa, Vienna, Austria.
 # All rights reserved.
 #
 #------------------------------------------------------------------------------#
@@ -14,7 +14,7 @@ library(xps)
 # directory containing Affymetrix library files
 libdir <- "/Volumes/GigaDrive/Affy/libraryfiles"
 # directory containing Affymetrix annotation files
-anndir <- "/Volumes/GigaDrive/Affy/Annotation/Version07Jul"
+anndir <- "/Volumes/GigaDrive/Affy/Annotation/Version08Mar"
 # directory to store ROOT scheme files
 scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
 
@@ -24,17 +24,23 @@ scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
 #------------------------------------------------------------------------------#
 
 # HG-U133_Plus_2:
-scheme.hgu133p2 <- import.expr.scheme("Scheme_HGU133p2_na23", filedir=scmdir,
+scheme.hgu133p2 <- import.expr.scheme("Scheme_HGU133p2_na25", filedir=scmdir,
                    schemefile=paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),
                    probefile=paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),
-                   annotfile=paste(anndir,"HG-U133_Plus_2.na23.annot.csv",sep="/"))
+                   annotfile=paste(anndir,"HG-U133_Plus_2.na25.annot.csv",sep="/"))
+
+# HuGene-1_0-st-v1.r3:
+scheme.hugene10stv1r3 <- import.genome.scheme("Scheme_HuGene10stv1r3_na25",filedir=scmdir,
+                         layoutfile=paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.clf",sep="/"),
+                         schemefile=paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.pgf",sep="/"),
+                         transcript=paste(anndir,"/HuGene-1_0-st-v1.na25.hg18.transcript.csv",sep="/"))
 
 # HuEx-1_0-st-v2.r2:
-scheme.huex10stv2r2 <- import.exon.scheme("Scheme_HuEx10stv2r2_na23",filedir=scmdir,
+scheme.huex10stv2r2 <- import.exon.scheme("Scheme_HuEx10stv2r2_na25",filedir=scmdir,
                        layoutfile=paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
                        schemefile=paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
-                       probeset=paste(anndir,"HuEx-1_0-st-v2.na23.hg18.probeset.csv",sep="/"),
-                       transcript=paste(anndir,"HuEx-1_0-st-v2.na23.hg18.transcript.csv",sep="/"))
+                       probeset=paste(anndir,"HuEx-1_0-st-v2.na25.hg18.probeset.csv",sep="/"),
+                       transcript=paste(anndir,"HuEx-1_0-st-v2.na25.hg18.transcript.csv",sep="/"))
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -94,7 +100,7 @@ datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 
 ### HG-U133_Plus_2 data: import raw data
 # first, import ROOT scheme file
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na23.root",sep="/"))
+scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na25.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("u1332plus_ivt_breast_A.CEL","u1332plus_ivt_breast_B.CEL","u1332plus_ivt_breast_C.CEL",
@@ -117,7 +123,7 @@ celdir <- "/Volumes/GigaDrive/ChipData/Exon/HuGene"
 
 ### HuGene-1_0-st-v1 data: import raw data
 # first, import ROOT scheme file
-scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na23.root",sep="/"))
+scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na25.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("TisMap_Breast_01_v1_WTGene1.CEL","TisMap_Breast_02_v1_WTGene1.CEL","TisMap_Breast_03_v1_WTGene1.CEL",
@@ -139,7 +145,7 @@ celdir <- "/Volumes/GigaDrive/ChipData/Exon/HuMixture"
 
 ### HuEx-1_0-st-v2 data: import raw data
 # first, import ROOT scheme file
-scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na23.root",sep="/"))
+scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na25.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("huex_wta_breast_A.CEL","huex_wta_breast_B.CEL","huex_wta_breast_C.CEL",
@@ -160,13 +166,15 @@ library(xps)
 
 # import ROOT scheme files
 scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na23.root",sep="/"))
-scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na23.root",sep="/"))
+scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na25.root",sep="/"))
+scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na25.root",sep="/"))
+scheme.exon   <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na25.root",sep="/"))
 
 # import ROOT data files
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.u133p2 <- root.data(scheme.u133p2, paste(datdir,"HuTissuesU133P2_cel.root",sep="/"))
-data.exon <- root.data(scheme.exon, paste(datdir,"HuTissuesExon_cel.root",sep="/"))
+data.genome <- root.data(scheme.genome, paste(datdir,"HuTissuesGenome_cel.root",sep="/"))
+data.exon   <- root.data(scheme.exon, paste(datdir,"HuTissuesExon_cel.root",sep="/"))
 
 
 ### plot raw data for HG-U133_Plus_2
@@ -174,7 +182,7 @@ data.exon <- root.data(scheme.exon, paste(datdir,"HuTissuesExon_cel.root",sep="/
 data.u133p2 <- attachMask(data.u133p2)
 # need to attach data 
 data.u133p2 <- attachInten(data.u133p2)
-gc()
+str(data.u133p2)
 
 # plots
 hist(data.u133p2)
@@ -183,17 +191,40 @@ mboxplot(data.u133p2, ylim=c(-6,6))
 pmplot(data.u133p2)
 image.dev(data.u133p2, col=rainbow(32), names="BreastA.cel_MEAN")
 
-#########
-pmplot(data.u133p2, "metacore")
-#BETTER:
-#pmplot(data.u133p2, "metacore", "antigenomic")
-#pmplot(data.u133p2, "core", "full")
-#pmplot(data.u133p2, "core", "extended")
-#########
-
 # to avoid memory comsumption of R remove data:
 data.u133p2 <- removeInten(data.u133p2)
 data.u133p2 <- removeMask(data.u133p2)
+gc()
+
+# plots - alternative possibility to avoid memory problems:
+# select File->SaveAs...->nnn.png to save to disk
+root.density(data.u133p2)
+root.image(data.u133p2, treename="BreastA.cel")
+
+
+### plot raw data for HuGene-1_0-st-v1
+# need to attach scheme mask, since it was not attached to scheme
+data.genome <- attachMask(data.genome)
+# need to attach data 
+data.genome <- attachInten(data.genome)
+str(data.genome)
+
+# plots
+hist(data.genome)
+boxplot(data.genome, which="core")
+mboxplot(data.genome, which="core", ylim=c(-6,6))
+pmplot(data.genome, which="core")
+image.dev(data.genome, col=rainbow(32), names="Breast01.cel_MEAN")
+
+# to avoid memory comsumption of R remove data:
+data.genome <- removeInten(data.genome)
+data.genome <- removeMask(data.genome)
+gc()
+
+# plots - alternative possibility to avoid memory problems:
+# select File->SaveAs...->nnn.png to save to disk
+root.density(data.genome)
+root.image(data.genome, treename="Breast01.cel")
 
 
 ### plot raw data for HuEx-1_0-st-v2
@@ -201,6 +232,7 @@ data.u133p2 <- removeMask(data.u133p2)
 data.exon <- attachInten(data.exon)
 # need to attach scheme mask, since it was not attached to scheme
 data.exon <- attachMask(data.exon)
+str(data.exon)
 gc()
 
 # Note: On my MacBook Pro with 2 GB RAM it was necessary to use "core" values only and
@@ -210,13 +242,30 @@ gc()
 # plots
 hist(data.exon, which="core",size=100000)
 boxplot(data.exon, which="core",size=100000)
+gc()
 mboxplot(data.exon, which="core",size=100000, ylim=c(-6,6))
+gc()
 pmplot(data.exon, which="core",size=100000)
+gc()
 image.dev(data.exon, col=rainbow(32), names="BreastA.cel_MEAN")
+
+#########
+pmplot(data.exon, "metacore",size=100000)
+#BETTER (not implemented):
+#pmplot(data.exon, "metacore", "antigenomic",size=100000)
+#pmplot(data.exon, "core", "full",size=100000)
+#pmplot(data.exon, "core", "extended",size=100000)
+#########
 
 # to avoid memory comsumption of R remove data:
 data.exon <- removeInten(data.exon)
 data.exon <- removeMask(data.exon)
+gc()
+
+# plots - alternative possibility to avoid memory problems:
+# select File->SaveAs...->nnn.png to save to disk
+root.density(data.exon)
+root.image(data.exon, treename="BreastA.cel")
 
 
 #------------------------------------------------------------------------------#
@@ -232,21 +281,27 @@ library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
 scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na23.root",sep="/"))
+scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na25.root",sep="/"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.u133p2 <- root.data(scheme.u133p2, paste(datdir,"HuTissuesU133P2_cel.root",sep="/"))
 
 ### preprocess raw data ###
+datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Exon/hutissues/u133p2"
 
 # 1. RMA
-data.rma <- rma(data.u133p2,"MixU133P2RMA",tmpdir="",background="pmonly",normalize=TRUE)
+data.rma <- rma(data.u133p2,"MixU133P2RMA",filedir=datdir,tmpdir="",
+                background="pmonly",normalize=TRUE)
+tmpdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Exon/temp"
+data.rma <- rma(data.u133p2,"MixU133P2RMAtmp",filedir=datdir,tmpdir=tmpdir,
+                background="pmonly",normalize=TRUE)
 
 # 2. MAS5
 # to store all trees (including e.g. background trees) in same ROOT file, use "update=TRUE"
-data.mas5 <- mas5(data.u133p2,"MixU133P2MAS5All",,tmpdir="",normalize=TRUE,sc=500, update=TRUE)
+data.mas5 <- mas5(data.u133p2,"MixU133P2MAS5All",filedir=datdir,tmpdir="",
+                  normalize=TRUE,sc=500, update=TRUE)
 
 # 3. MAS5 detection call
-call.mas5 <- mas5.call(data.u133p2,"MixU133P2Call",tmpdir="")
+call.mas5 <- mas5.call(data.u133p2,"MixU133P2Call",filedir=datdir,tmpdir="")
 
 # get data.frames
 expr.rma <- validData(data.rma)
@@ -279,6 +334,94 @@ mvaplot.dev(data.mas5, pch=20, names="BreastA.tmn_LEVEL")
 callplot(call.mas5)
 callplot(call.mas5, beside=FALSE, ylim=c(0,125))
 
+# save image
+rm(data.u133p2,datdir,scheme.u133p2,scmdir)
+save.image(file="HuTissues.U133P2.Rdata");
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Tissues from Affymetrix Exon Array Dataset for HuGene-1_0-st-v1
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+### new R session: load library xps
+library(xps)
+
+### first, load ROOT scheme file and ROOT data file
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
+scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na25.root",sep="/"))
+datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
+data.genome <- root.data(scheme.genome, paste(datdir,"HuTissuesGenome_cel.root",sep="/"))
+
+
+### preprocess raw data ###
+datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Exon/hutissues/hugene"
+
+# 1. RMA
+data.g.rma <- rma(data.genome,"HuGeneMixRMAMetacore",filedir=datdir,tmpdir="",
+                  background="antigenomic",normalize=T,exonlevel="metacore+affx")
+
+# 2. MAS5
+data.g.mas5 <- mas5(data.genome,"HuGeneMixMAS5Metacore",filedir=datdir,tmpdir="",
+                    normalize=T,sc=500,exonlevel="metacore+affx")
+# to store all trees (including e.g. background trees) in same ROOT file, use "update=T"
+data.g.mas5 <- mas5(data.genome,"HuGeneMixMAS5MetacoreAll",filedir=datdir,tmpdir="",
+                    normalize=T,sc=500,exonlevel="metacore+affx", update=T)
+
+# 3. MAS5 detection call (yes, this is possible for genome/exon arrays)
+# note: alpha1 and alpha2 need to be adjusted to get usable P/M/A calls
+call.g.mas5 <- mas5.call(data.genome,"HuGeneMixCallMetacore",filedir=datdir,tmpdir="",
+                         exonlevel="metacore+affx")
+
+# 4. DABG detection call
+# note: alpha1 and alpha2 need to be adjusted to get usable P/M/A calls for transcripts
+call.g.dabg <- dabg.call(data.genome,"HuGeneMixDABGMetacore",filedir=datdir,
+                         exonlevel="metacore+affx")
+#call.g.dabg <- dabg.call(data.genome,"HuGeneMixDABGMetacore", alpha1=???,alpha2=???)
+
+# get data.frames
+expr.g.rma <- validData(data.g.rma)
+expr.g.mas5 <- validData(data.g.mas5)
+pval.g.mas5 <- pvalData(call.g.mas5)
+pres.g.mas5 <- presCall(call.g.mas5)
+pval.g.dabg <- pvalData(call.g.dabg)
+pres.g.dabg <- presCall(call.g.dabg)
+
+
+### plot results ###
+
+# compare mas5 to rma
+plot(expr.g.rma[,1],expr.g.mas5[,1])
+plot(expr.g.rma[,1],expr.g.mas5[,1],log="xy",xlim=c(1,20000),ylim=c(1,20000))
+
+# density plots
+hist(data.g.rma)
+hist(data.g.mas5)
+
+# boxplots
+boxplot(data.g.rma)
+boxplot(data.g.mas5)
+
+# relative boxplots
+mboxplot(data.g.rma, ylim=c(-3,3))
+mboxplot(data.g.mas5, ylim=c(-4,5))
+
+# M vs A plots
+mvaplot(data.g.rma, pch=20, ylim=c(-4,4))
+mvaplot.dev(data.g.rma, pch=20, ylim=c(-6,6))
+mvaplot.dev(data.g.rma, pch=20, ylim=c(-6,6), names="Breast01.mdp_LEVEL")
+
+mvaplot(data.g.mas5, pch=20)
+mvaplot.dev(data.g.mas5, pch=20)
+mvaplot.dev(data.g.mas5, pch=20, names="Breast01.tmn_LEVEL")
+
+# present call plots
+callplot(call.g.mas5)
+callplot(call.g.dabg)
+
+# save image
+rm(data.genome,datdir,scheme.genome,scmdir)
+save.image(file="HuTissues.Genome.Rdata");
+
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Tissues from Affymetrix Exon Array Dataset for HuEx-1_0-st-v2
@@ -289,76 +432,82 @@ library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
 scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na23.root",sep="/"))
+scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na25.root",sep="/"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.exon <- root.data(scheme.exon, paste(datdir,"HuTissuesExon_cel.root",sep="/"))
 
 ### preprocess raw data ###
+datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Exon/hutissues/exon"
 
 # 1. RMA
 # transcript: metacore
 # ok for 6 exon arrays in RAM
-data.rma <- rma(data.exon,"MixRMAMetacore",tmpdir="",background="antigenomic",
-                normalize=T,option="transcript",exonlevel="metacore")
+data.x.rma <- rma(data.exon,"MixRMAMetacore",filedir=datdir,tmpdir="",background="antigenomic",
+                  normalize=T,option="transcript",exonlevel="metacore")
 # for more exon arrays better use tmpdir
 tmpdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Exon/temp"
-data.rma.tmp <- rma(data.exon,"MixRMAtmpMetacore",tmpdir=tmpdir,background="antigenomic",
-                    normalize=T,option="transcript",exonlevel="metacore")
+data.x.rma.tmp <- rma(data.exon,"MixRMAtmpMetacore",filedir=datdir,tmpdir=tmpdir,background="antigenomic",
+                      normalize=T,option="transcript",exonlevel="metacore")
 # probeset: metacore
-data.rma.ps <- rma(data.exon,"MixRMAMetacorePS",tmpdir="",background="antigenomic",
-                   normalize=T,option="probeset",exonlevel="metacore")
+data.x.rma.ps <- rma(data.exon,"MixRMAMetacorePS",filedir=datdir,tmpdir="",background="antigenomic",
+                     normalize=T,option="probeset",exonlevel="metacore")
 
 # 2. MAS5
 # to store all trees (including e.g. background trees) in same ROOT file, use "update=T"
-data.mas5 <- mas5(data.exon,"MixExonMAS5MetacoreAll",tmpdir="",
-                  normalize=T,sc=500,option="transcript",exonlevel="metacore", update=T)
+data.x.mas5 <- mas5(data.exon,"MixExonMAS5MetacoreAll",filedir=datdir,tmpdir="",
+                    normalize=T,sc=500,option="transcript",exonlevel="metacore", update=T)
 
 # 3. MAS5 detection call (yes, this is possible for exon arrays)
 # note: alpha1 and alpha2 need to be adjusted to get usable P/M/A calls
-call.mas5 <- mas5.call(data.exon,"MixCallMetacore",tmpdir="",option="transcript",exonlevel="metacore")
+call.x.mas5 <- mas5.call(data.exon,"MixCallMetacore",filedir=datdir,tmpdir="",
+                         option="transcript",exonlevel="metacore")
 
 # 4. DABG detection call
 # transcript: metacore
-call.dabg <- dabg.call(data.exon,"MixDABGMetacore",option="transcript",exonlevel="metacore")
+call.x.dabg <- dabg.call(data.exon,"MixDABGMetacore",filedir=datdir,option="transcript",exonlevel="metacore")
 # note: alpha1 and alpha2 need to be adjusted to get usable P/M/A calls for transcripts
-#call.dabg <- dabg.call(data.exon,"MixDABGMetacore", alpha1=???,alpha2=???)
+#call.x.dabg <- dabg.call(data.exon,"MixDABGMetacore", alpha1=???,alpha2=???)
 # probeset: metacore
-call.dabg.ps <- dabg.call(data.exon,"MixDABGMetacorePS",option="probeset",exonlevel="metacore")
+call.x.dabg.ps <- dabg.call(data.exon,"MixDABGMetacorePS",filedir=datdir,option="probeset",exonlevel="metacore")
 
 # get data.frames
-expr.rma <- validData(data.rma)
-expr.mas5 <- validData(data.mas5)
-pval.mas5 <- pvalData(call.mas5)
-pres.mas5 <- presCall(call.mas5)
-pval.dabg <- pvalData(call.dabg)
-pres.dabg <- presCall(call.dabg)
+expr.x.rma <- validData(data.x.rma)
+expr.x.mas5 <- validData(data.x.mas5)
+pval.x.mas5 <- pvalData(call.x.mas5)
+pres.x.mas5 <- presCall(call.x.mas5)
+pval.x.dabg <- pvalData(call.x.dabg)
+pres.x.dabg <- presCall(call.x.dabg)
 
 ### plot results ###
 
 # compare mas5 to rma
-plot(expr.rma[,1],expr.mas5[,1],log="xy",xlim=c(1,20000),ylim=c(1,20000))
+plot(expr.x.rma[,1],expr.x.mas5[,1],log="xy",xlim=c(1,20000),ylim=c(1,20000))
 
 # density plots
-hist(data.rma)
-hist(data.mas5)
+hist(data.x.rma)
+hist(data.x.mas5)
 
 # boxplots
-boxplot(data.rma)
-boxplot(data.mas5)
+boxplot(data.x.rma)
+boxplot(data.x.mas5)
 
 # relative boxplots
-mboxplot(data.rma, ylim=c(-4,5))
-mboxplot(data.mas5, ylim=c(-4,5))
+mboxplot(data.x.rma, ylim=c(-4,5))
+mboxplot(data.x.mas5, ylim=c(-4,5))
 
 # M vs A plots
-mvaplot.dev(data.rma, pch=20, ylim=c(-6,6), names="BreastA.mdp_LEVEL")
-mvaplot.dev(data.mas5, pch=20, names="BreastA.tmn_LEVEL")
+mvaplot.dev(data.x.rma, pch=20, ylim=c(-6,6), names="BreastA.mdp_LEVEL")
+mvaplot.dev(data.x.mas5, pch=20, names="BreastA.tmn_LEVEL")
 
 # present call plots
-callplot(call.mas5)
-callplot(call.mas5, beside=F, ylim=c(0,125))
-callplot(call.dabg)
-callplot(call.dabg, beside=F, ylim=c(0,125))
+callplot(call.x.mas5)
+callplot(call.x.mas5, beside=F, ylim=c(0,125))
+callplot(call.x.dabg)
+callplot(call.x.dabg, beside=F, ylim=c(0,125))
+
+# save image
+rm(data.exon,datdir,scheme.exon,scmdir)
+save.image(file="HuTissues.Exon.Rdata");
 
 
 #------------------------------------------------------------------------------#
@@ -382,7 +531,7 @@ datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 
 ### HG-U133_Plus_2 data: import raw data
 # import ROOT scheme file
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na23.root",sep="/"))
+scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na25.root",sep="/"))
 
 # import current ROOT data file
 data.u133p2 <- root.data(scheme.u133p2, paste(datdir,"HuTissuesU133P2_cel.root",sep="/"))
@@ -419,7 +568,7 @@ data.u133p2 <- addData(data.u133p2, celdir=celdir, celfiles=celfiles, celnames=c
 
 ### HuEx-1_0-st-v2 data: import raw data
 # import ROOT scheme file
-scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na23.root",sep="/"))
+scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na25.root",sep="/"))
 
 # import current ROOT data file
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
@@ -458,7 +607,7 @@ library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
 scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na23.root",sep="/"))
+scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na25.root",sep="/"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.u133p2 <- root.data(scheme.u133p2, paste(datdir,"HuTissuesU133P2_cel.root",sep="/"))
 
