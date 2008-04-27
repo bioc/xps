@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 11/18/2007
+// File created: 08/05/2002                          last modified: 04/27/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -59,6 +59,7 @@
 //#endif
 
 #include "TBranch.h"
+#include "THashTable.h"
 #include "TKey.h"
 #include "TLeaf.h"
 #include "TSystem.h"
@@ -1286,4 +1287,154 @@ Int_t XProcesSet::CopyUnitBranch(TTree *fromtree, TTree *totree, Int_t writeopt)
 
    return errNoErr;
 }//CopyUnitBranch
+
+//______________________________________________________________________________
+TTree *XProcesSet::GetUnitTree(XGeneChip *chip, Int_t type)
+{
+   // Get unit tree of type
+   if(kCS) cout << "------XProcesSet::GetUnitTree------" << endl;
+
+   if (!fSchemeFile->cd(fSchemeName)) return 0;
+
+   TTree *unittree = 0; 
+   if (type == ePROBESET) { 
+      unittree = (TTree*)gDirectory->Get(((XExonChip*)chip)->GetProbesetUnitTree()); 
+   } else if (type == eEXONTYPE) {
+      unittree = (TTree*)gDirectory->Get(((XExonChip*)chip)->GetExonUnitTree()); 
+   } else if (type == eTRANSCRIPT) {
+      unittree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
+   } else {
+      cerr << "Error: Unknown unit tree type" << endl;
+   }//if
+   if (unittree == 0) return 0;
+
+   return unittree;
+}//GetUnitTree
+
+//______________________________________________________________________________
+TTree *XProcesSet::GetAnnotationTree(XGeneChip *chip, Int_t type)
+{
+   // Get annotation tree of type
+   if(kCS) cout << "------XProcesSet::GetAnnotationTree------" << endl;
+
+   if (!fSchemeFile->cd(fSchemeName)) return 0;
+
+   TTree *anntree  = 0; 
+   if (type == ePROBESET) { 
+      anntree = (TTree*)gDirectory->Get(((XExonChip*)chip)->GetProbesetAnnotTree()); 
+   } else if (type == eEXONTYPE) {
+      anntree = (TTree*)gDirectory->Get(((XExonChip*)chip)->GetExonAnnotTree()); 
+   } else if (type == eTRANSCRIPT) {
+      anntree = (TTree*)gDirectory->Get(((XExonChip*)chip)->GetAnnotTree()); 
+   } else {
+      cerr << "Error: Unknown annotation tree type" << endl;
+   }//if
+   if (anntree == 0) return 0;
+
+   return anntree;
+}//GetAnnotationTree
+
+//______________________________________________________________________________
+THashTable *XProcesSet::FillHashTable(THashTable *htable, TTree *anntree,
+                        XTransAnnotation *annot)
+{
+   // Fill hash table with IDs from annotation tree
+   if(kCS) cout << "------XProcesSet::FillHashTable------" << endl;
+
+   if (XManager::fgVerbose) {
+      cout << "Reading entries from <" << anntree->GetName() << "> ...";
+   }//if
+
+   XIdxString *idxstr = 0;
+   Int_t numannot = (Int_t)(anntree->GetEntries());
+   for (Int_t i=0; i<numannot; i++) {
+      anntree->GetEntry(i);
+
+      idxstr = new XIdxString(i, annot->GetTranscriptID());
+      htable->Add(idxstr);
+   }//for_i
+
+   if (XManager::fgVerbose) {
+      cout << "Finished" << endl;
+   }//if
+
+   return htable;
+}//FillHashTable
+
+//______________________________________________________________________________
+THashTable *XProcesSet::FillHashTable(THashTable *htable, TTree *anntree,
+                        XTransAnnotation *annot, Int_t type)
+{
+   // Fill hash table with IDs from annotation tree of type
+   if(kCS) cout << "------XProcesSet::FillHashTable(type)------" << endl;
+
+   if (XManager::fgVerbose) {
+      cout << "Reading entries from <" << anntree->GetName() << "> ...";
+   }//if
+
+   TString str;
+   XIdxString *idxstr = 0;
+
+   Int_t numannot = (Int_t)(anntree->GetEntries());
+   for (Int_t i=0; i<numannot; i++) {
+      anntree->GetEntry(i);
+
+      if (type == ePROBESET) { 
+         str.Form("%d", ((XProbesetAnnotation*)annot)->GetProbesetID());
+         idxstr = new XIdxString(i, str.Data());
+      } else if (type == eEXONTYPE) {
+         str.Form("%d", ((XExonAnnotation*)annot)->GetExonID());
+         idxstr = new XIdxString(i, str.Data());
+      } else if (type == eTRANSCRIPT) {
+         str = ((XGenomeAnnotation*)annot)->GetTranscriptID();
+         idxstr = new XIdxString(i, str.Data());
+      } else {
+         cerr << "Error: Unknown annotation type" << endl;
+      }//if
+
+      htable->Add(idxstr);
+   }//for_i
+
+   if (XManager::fgVerbose) {
+      cout << "Finished" << endl;
+   }//if
+
+   return htable;
+}//FillHashTable
+
+//______________________________________________________________________________
+XIdxString *XProcesSet::FindUnitID(THashTable *htable, XGCUnit *unit)
+{
+   // Find unit ID in hash table with IDs from annotation tree of type
+
+   return (XIdxString*)(htable->FindObject(unit->GetUnitName()));
+}//FindUnitID
+
+//______________________________________________________________________________
+XIdxString *XProcesSet::FindUnitID(THashTable *htable, XExonUnit *unit)
+{
+   // Find unit ID in hash table with IDs from annotation tree of type
+
+   TString str;
+   str.Form("%d", unit->GetSubUnitID());
+
+   return (XIdxString*)(htable->FindObject(str.Data()));
+}//FindUnitID
+
+//______________________________________________________________________________
+const char *XProcesSet::GetTranscriptID(XTransAnnotation *annot)
+{
+   // Get transcript IDs from annotation tree
+
+   return annot->GetTranscriptID();
+}//GetTranscriptID
+
+//______________________________________________________________________________
+Int_t XProcesSet::GetTranscriptID(XExonUnit *unit, XTransAnnotation *annot, Int_t type)
+{
+   // Get transcript IDs from unit tree
+
+   return (type == eTRANSCRIPT) ? unit->GetSubUnitID()
+                                : ((XProbesetAnnotation*)annot)->GetTranscriptID();
+}//GetTranscriptID
 

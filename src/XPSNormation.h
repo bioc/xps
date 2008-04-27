@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 10/27/2007
+// File created: 08/05/2002                          last modified: 04/27/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -193,10 +193,6 @@ class XNormedGCSet: public XNormedSet {
 class XNormedGenomeSet: public XNormedGCSet {
 
    protected:
-
-   protected:
-      virtual Int_t ExportExprTrees(Int_t n, TString *names, const char *varlist,
-                       ofstream &output, const char *sep);
 
    public:
       XNormedGenomeSet();

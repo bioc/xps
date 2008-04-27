@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 02/16/2008
+// File created: 05/18/2002                          last modified: 04/26/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -7721,7 +7721,9 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
       if (i == ctrlsize) {
 
          // fill transcript unit tree
-         unit->SetUnitName(probe_type);
+         str = TString(""); str += ctrlpbt[ctrlidx[i-1]];
+         unit->SetUnitName(str);
+//x         unit->SetUnitName(probe_type);
          unit->SetUnitID(ctrlpbt[ctrlidx[i-1]]);
          unit->SetSubUnitID(ctrlpbt[ctrlidx[i-1]]);
          unit->SetUnitType(ctrlpbt[ctrlidx[i-1]]);
@@ -7731,6 +7733,7 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
          unittree->Fill();
 
          // fill exon unit tree
+         exon->SetUnitName(str);
          exon->SetUnitID(ctrlpbt[ctrlidx[i-1]]);
          exon->SetSubUnitID(ctrlpbt[ctrlidx[i-1]]);
          exon->SetUnitType(ctrlpbt[ctrlidx[i-1]]);
@@ -7741,6 +7744,7 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
 
 //TO DO: > 1 probesets per ctrl!!!!
          // fill probeset unit tree
+         pset->SetUnitName(str);
          pset->SetUnitID(ctrlpbt[ctrlidx[i-1]]);
          pset->SetSubUnitID(ctrlpbt[ctrlidx[i-1]]); //not probe_type
 //to do: correct probeset_id => subdivide e.g. thermo.at also by probeset_id
@@ -7760,7 +7764,9 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
          if (flag) {
 
             // fill transcript unit tree
-            unit->SetUnitName(probe_type);
+            str = TString(""); str += ctrlpbt[ctrlidx[i-1]];
+            unit->SetUnitName(str);
+//x            unit->SetUnitName(probe_type);
             unit->SetUnitID(ctrlpbt[ctrlidx[i-1]]);
             unit->SetSubUnitID(ctrlpbt[ctrlidx[i-1]]);
 //to do: correct probeset_id => subdivide e.g. thermo.at also by probeset_id
@@ -7771,6 +7777,7 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
             unittree->Fill();
 
             // fill exon unit tree
+            exon->SetUnitName(str);
             exon->SetUnitID(ctrlpbt[ctrlidx[i-1]]);
             exon->SetSubUnitID(ctrlpbt[ctrlidx[i-1]]);
             exon->SetUnitType(ctrlpbt[ctrlidx[i-1]]);
@@ -7781,6 +7788,7 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
 
 //TO DO: > 1 probesets per ctrl!!!!
             // fill probeset unit tree
+            pset->SetUnitName(str);
             pset->SetUnitID(ctrlpbt[ctrlidx[i-1]]);
             pset->SetSubUnitID(ctrlpbt[ctrlidx[i-1]]); //not probe_type
             pset->SetUnitType(ctrlpbt[ctrlidx[i-1]]);
@@ -7958,6 +7966,7 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
       unittree->Fill();
 
       // fill exon unit tree
+      exon->SetUnitName(str);
       exon->SetUnitID(-ctlcount);
       exon->SetSubUnitID(probeset_id);
       exon->SetUnitType(pst[i]);
@@ -7967,6 +7976,7 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
       exontree->Fill();
 
       // fill probeset unit tree
+      pset->SetUnitName(str);
       pset->SetUnitID(-ctlcount);
       pset->SetSubUnitID(probeset_id);
       pset->SetUnitType(pst[i]);
@@ -8093,6 +8103,7 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
       unittree->Fill();
 
       // fill exon unit tree
+      exon->SetUnitName(str);
       exon->SetUnitID(unitID);
       exon->SetSubUnitID(probeset_id);
       exon->SetUnitType(unittype);
@@ -8102,6 +8113,7 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
       exontree->Fill();
 
       // fill probeset unit tree
+      pset->SetUnitName(str);
       pset->SetUnitID(unitID);
       pset->SetSubUnitID(probeset_id);
       pset->SetUnitType(unittype);
@@ -8333,6 +8345,8 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
          }//while
 
          // fill probeset unit tree
+         str = TString(""); str += probeset_id;
+         pset->SetUnitName(str);
          pset->SetUnitID(intpsetID);
          pset->SetSubUnitID(probeset_id);
          pset->SetUnitType(mask);
@@ -8344,10 +8358,10 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
          if (exonID == arrExon[i+1]) {
             numperex++;
          } else {
-            str = TString(""); str += exonID;
             exonlevel = exonbitmsk.TestBits(XBitSet::kBitMask);
 
             // fill exon unit tree
+            str = TString(""); str += exonID;
             exon->SetUnitName(str);
             exon->SetUnitID(intexonID);
             exon->SetSubUnitID(exonID);
@@ -8386,10 +8400,10 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
       // count number of exons
       exncount += numexons;
 
-      str = TString(""); str += geneID;
       translevel = transbitmsk.TestBits(XBitSet::kBitMask);
 
       // fill transcript unit tree
+      str = TString(""); str += geneID;
       unit->SetUnitName(str);
       unit->SetUnitID(unitID);
       unit->SetSubUnitID(geneID);
@@ -8529,6 +8543,7 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
       unittree->Fill();
 
       // fill exon unit tree
+      exon->SetUnitName(str);
       exon->SetUnitID(intexonID);
       exon->SetSubUnitID(probeset_id);
       exon->SetUnitType(probesetype);
@@ -8538,6 +8553,7 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
       exontree->Fill();
 
       // fill probeset unit tree
+      pset->SetUnitName(str);
       pset->SetUnitID(intpsetID);
       pset->SetSubUnitID(probeset_id);
       pset->SetUnitType(probesetype);

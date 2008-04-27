@@ -129,7 +129,12 @@ void XNormalizer::SetOptions(Option_t *opt)
 
 /////////////
 //tmp   useTmpFile ???
-/////////////
+////////////
+
+//////////////////////////
+// TO DO: include: transcript, exon, probeset
+///////////////////////////
+
    char *options = (char*)optcpy.Data();
    if (NumSeparators(opt, ":") == 0) {
       fOption  = ""; 

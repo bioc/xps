@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 09/19/2007
+// File created: 08/05/2002                          last modified: 04/27/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -289,6 +289,7 @@ class XGCProcesSet: public XPreProcesSet {
                   Int_t numbgrd, TTree **bgrdtree,
                   Int_t nrow, Int_t ncol, Double_t *arr, Bool_t doBg);
 
+
    public:
       XGCProcesSet();
       XGCProcesSet(const char *name, const char *type);
@@ -324,10 +325,6 @@ class XGenomeProcesSet: public XGCProcesSet {
                        Int_t numbgrd, TTree **bgrdtree);
       virtual Int_t DoMedianPolish(Int_t numdata, TTree **datatree,
                        Int_t numbgrd, TTree **bgrdtree, TFile *file);
-      virtual Int_t ExportExprTrees(Int_t n, TString *names, const char *varlist,
-                       ofstream &output, const char *sep);
-      virtual Int_t ExportCallTrees(Int_t n, TString *names, const char *varlist,
-                       ofstream &output, const char *sep);
 
       virtual Int_t *FillMaskArray(XDNAChip *chip, TTree *scmtree, XScheme *scheme,
                         Int_t level, Int_t n, Int_t *msk);
@@ -370,6 +367,7 @@ class XExonProcesSet: public XGenomeProcesSet {
 
       virtual Int_t *FillMaskArray(XDNAChip *chip, TTree *scmtree, XScheme *scheme,
                         Int_t level, Int_t n, Int_t *msk);
+
 
    public:
       XExonProcesSet();

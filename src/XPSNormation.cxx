@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 02/16/2008
+// File created: 08/05/2002                          last modified: 04/27/2008
 
 // Author: Christian Stratowa 06/18/2000
 
@@ -1282,6 +1282,8 @@ Int_t XNormedGCSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
    // Export variables from varlist for all expression trees
    if(kCS) cout << "------XNormedGCSet::ExportExprTrees------" << endl;
 
+   Int_t err = errNoErr;
+
 // Decompose varlist
    Short_t hasUnit   = 0;  //unit name
    Short_t hasTrans  = 0;  //transcript_id
@@ -1342,6 +1344,7 @@ Int_t XNormedGCSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
 // Get trees
    TTree       **tree = new TTree*[n];
    XExpression **expr = new XExpression*[n];
+
    if (fTrees->GetSize() == 0) {
    // Get trees from names
       for (Int_t k=0; k<n; k++) {
@@ -1361,84 +1364,57 @@ Int_t XNormedGCSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
          tree[k]->SetBranchAddress("ExprBranch", &expr[k]);
       }//for_k
    }//if
+/*
+// Get treeinfo and its option for selection of unittree and anntree
+   XTreeInfo *info   = (XTreeInfo*)tree[0]->GetUserInfo()->At(0);
+   Option_t  *option = info->GetOption();
 
+   Int_t type = eTRANSCRIPT;
+   if      (strcmp(option, "exon")     == 0) type = eEXONTYPE; 
+   else if (strcmp(option, "probeset") == 0) type = ePROBESET; 
+cout << "option = " << option << "   type = " << type << endl;
+*/
 // Get scheme name (also for alternative CDFs)
    if (strcmp(fSchemeName.Data(), "") == 0) {
       fSchemeName = tree[0]->GetTitle();
    } else if (!fSchemeName.Contains(tree[0]->GetTitle())) {
       cerr << "Error: Scheme <" << fSchemeName.Data() << "> is not derived from <"
            << tree[0]->GetTitle() << ">." << endl;
-      hasUnit  = 0;
-      hasAnnot = 0;
+      return errAbort;
    }//if
 
-// If scheme file is present get unit tree
-   Int_t    numgenes = 0;
-   Int_t    numctrls = 0;
-   XFolder *schemes  = 0;
-   XGCUnit *unit     = 0;
-   TTree   *unittree = 0; 
-   TTree   *anntree  = 0; 
+// Get chip from scheme file
+   if (fSchemeFile == 0) return errGetScheme;
+   fSchemeFile->cd();
+   XFolder *schemes = (XFolder*)(fSchemeFile->Get(kContent));
+   if (!schemes) {
+      return fManager->HandleError(errMissingContent, "Scheme", kContent);
+   }//if
+
+   XGeneChip *chip = (XGeneChip*)schemes->FindObject(fSchemeName, kTRUE);
+   if (chip == 0) return errAbort;
+
+// Get unit tree for scheme (needed for annotation)
+   XGCUnit *unit   = 0;
+//   XExonUnit *unit = 0;
+   TTree *unittree = this->GetUnitTree(chip, eTRANSCRIPT);
+   if (unittree == 0) return errGetTree;
+   unittree->SetBranchAddress("IdxBranch", &unit);
+
+// Get annotation tree for scheme
    XTransAnnotation *annot = 0;
-   if ((hasUnit || hasAnnot) && fSchemeFile) {
-   // Get chip from scheme file
-      fSchemeFile->cd();
-      schemes = (XFolder*)(fSchemeFile->Get(kContent));
-      if (!schemes) {
-         return fManager->HandleError(errMissingContent, "Scheme", kContent);
-      }//if
+   TTree *anntree = this->GetAnnotationTree(chip, eTRANSCRIPT);
+   if (anntree == 0) return errGetTree;
+   anntree->SetBranchAddress("AnnBranch", &annot);
 
-      XDNAChip *chip = 0;
-      chip = (XDNAChip*)schemes->FindObject(fSchemeName, kTRUE);
-      if (chip) {
-         numgenes = chip->GetNumGenes();
-         numctrls = chip->GetNumControls();
+   Int_t numunits = (Int_t)(unittree->GetEntries());
+   Int_t numannot = (Int_t)(anntree->GetEntries());
 
-         if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
+// Create hash table to store unit names from anntree
+   THashTable *htable = 0;
+   if (!(htable = new THashTable(2*numannot))) return errInitMemory;
 
-      // Get unit tree for scheme
-         if (hasUnit) {
-            unittree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
-            if (unittree == 0) return errGetTree;
-            unittree->SetBranchAddress("IdxBranch", &unit);
-         }//if
-
-      // Get annotation tree for scheme
-         if (hasAnnot) {
-            anntree = (TTree*)gDirectory->Get(chip->GetAnnotTree()); 
-            if (anntree) {
-               anntree->SetBranchAddress("AnnBranch", &annot);
-            } else {
-               cout << "Warning: Missing annotation, gene info not exported."
-                    << endl;
-               hasAnnot = 0;
-            }//if
-         }//if
-      } else {
-         cerr << "Error: Could not find scheme <" << fSchemeName.Data() << ">." << endl;
-         hasUnit  = 0;
-         hasAnnot = 0;
-      }//if
-   } else if (hasUnit || hasAnnot) {
-      cout << "Warning: Missing scheme file, unit names not exported." << endl;
-      hasUnit  = 0;
-      hasAnnot = 0;
-   }//if
-
-////////////
-//better: see XExonProcesSet!!!
-////////////
-// Check if tree entries is equal to number of genes in unittree
-   Int_t entries = (Int_t)(tree[0]->GetEntries());
-   if ((hasUnit || hasAnnot) && (entries != numgenes)) {
-      if (XManager::fgVerbose) {
-         cout << "Note: Number of tree entries <" << entries  
-              << "> is not equal to number of units <" << numgenes << ">" << endl;
-         cout << "         Unit data will not be exported." << endl;
-      }//if
-      hasUnit  = 0;
-      hasAnnot = 0;
-   }//if
+   htable = this->FillHashTable(htable, anntree, annot);
 
 // Output header
    output << "UNIT_ID";
@@ -1470,33 +1446,59 @@ Int_t XNormedGCSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
    }//for_j
    output << endl;
 
-// Loop over tree entries and tree branches
+// Loop over tree entries and trees
+   XIdxString *idxstr = 0;
+   Int_t index = 0;
+   Int_t entries = (Int_t)(tree[0]->GetEntries());
    for (Int_t i=0; i<entries; i++) {
       tree[0]->GetEntry(i);
 
       Int_t unitID = expr[0]->GetUnitID();
       output << unitID;
 
+      unittree->GetEntry(index++);
+      while (unitID != unit->GetUnitID()) {
+         if (index == numunits) {
+           cerr << "Error: UnitID <" << unitID << "> not found." << endl;
+           err = errAbort; goto cleanup;
+         }//if
+
+         unittree->GetEntry(index++);
+      }//while
+
       for (Short_t j=1; j<=idx; j++) {
          // export unitname
          if (hasUnit == j) {
-            unittree->GetEntry(unitID + numctrls); //unit names for genes only
             output << sep << unit->GetUnitName();
          }//if
 
          // export annotation
          if (hasAnnot > 0) {
-            anntree->GetEntry(unitID);
-            if (hasTrans  == j) output << sep << annot->GetTranscriptID();
-            if (hasName   == j) output << sep << annot->GetName();
-            if (hasSymbol == j) output << sep << annot->GetSymbol();
-            if (hasAccess == j) output << sep << annot->GetAccession();
-            if (hasEntrez == j) output << sep << annot->GetEntrezID();
-            if (hasChromo == j) output << sep << annot->GetChromosome();
-            if (hasStart  == j) output << sep << annot->GetStart();
-            if (hasStop   == j) output << sep << annot->GetStop();
-            if (hasStrand == j) output << sep << annot->GetStrand();
-            if (hasCyto   == j) output << sep << annot->GetCytoBand();
+            idxstr = FindUnitID(htable, unit);
+            if (idxstr) {
+               anntree->GetEntry(idxstr->GetIndex());
+               if (hasTrans  == j) output << sep << this->GetTranscriptID(annot);
+               if (hasName   == j) output << sep << annot->GetName();
+               if (hasSymbol == j) output << sep << annot->GetSymbol();
+               if (hasAccess == j) output << sep << annot->GetAccession();
+               if (hasEntrez == j) output << sep << annot->GetEntrezID();
+               if (hasChromo == j) output << sep << annot->GetChromosome();
+               if (hasStart  == j) output << sep << annot->GetStart();
+               if (hasStop   == j) output << sep << annot->GetStop();
+               if (hasStrand == j) output << sep << annot->GetStrand();
+               if (hasCyto   == j) output << sep << annot->GetCytoBand();
+            } else {
+               if (hasTrans  == j) output << sep << "NA";
+               if (hasName   == j) output << sep << "NA";
+               if (hasSymbol == j) output << sep << "NA";
+               if (hasAccess == j) output << sep << "NA";
+               if (hasEntrez == j) output << sep << "NA";
+               if (hasChromo == j) output << sep << "NA";
+               if (hasStart  == j) output << sep << "-1";
+               if (hasStop   == j) output << sep << "-1";
+               if (hasStrand == j) output << sep << "?";
+               if (hasCyto   == j) output << sep << "NA";
+            }//if
          }//if
 
          // export data
@@ -1511,9 +1513,11 @@ Int_t XNormedGCSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
    }//for_i
 
 //Cleanup
+cleanup:
    // remove trees from RAM
    if (anntree)  {anntree->Delete("");  anntree  = 0;}
    if (unittree) {unittree->Delete(""); unittree = 0;}
+   if (htable)   {htable->Delete(); delete htable; htable = 0;}
    SafeDelete(schemes);
 
    delete [] expr;
@@ -1721,266 +1725,6 @@ XNormedGenomeSet::~XNormedGenomeSet()
 }//Destructor
 
 
-//______________________________________________________________________________
-Int_t XNormedGenomeSet::ExportExprTrees(Int_t n, TString *names, const char *varlist,
-                        ofstream &output, const char *sep)
-{
-   // Export variables from varlist for expression tree(s) to file output
-   if(kCS) cout << "------XNormedGenomeSet::ExportExprTrees------" << endl;
-
-   Int_t err = errNoErr;
-
-// Decompose varlist
-   Short_t hasUnit   = 0;  //unit name
-   Short_t hasTrans  = 0;  //transcript_id
-   Short_t hasName   = 0;  //gene name
-   Short_t hasSymbol = 0;  //gens symbol
-   Short_t hasAccess = 0;  //mRNA accession
-   Short_t hasEntrez = 0;  //entrez ID
-   Short_t hasChromo = 0;  //chromosome
-   Short_t hasStart  = 0;  //start position
-   Short_t hasStop   = 0;  //stop position
-   Short_t hasStrand = 0;  //strand
-   Short_t hasCyto   = 0;  //cytoband
-   Short_t hasLevel  = 0;  //expression level
-////////////////
-//??for genome:
-//fCrossHybType
-//fProbesetType
-////////////////
-
-   Short_t hasAnnot  = 0;  //annotation
-
-   Short_t idx = 0;
-   if (strcmp(varlist,"*")  == 0) {
-      hasUnit   = ++idx;
-      hasTrans  = ++idx;
-      hasName   = ++idx;
-      hasSymbol = ++idx;
-      hasAccess = ++idx;
-      hasEntrez = ++idx;
-      hasChromo = ++idx;
-      hasStart  = ++idx;
-      hasStop   = ++idx;
-      hasStrand = ++idx;
-      hasCyto   = ++idx;
-      hasLevel  = ++idx;
-   } else {
-      char *name  = new char[strlen(varlist) + 1];
-      char *dname = name;
-      name = strtok(strcpy(name,varlist),":");
-      while(name) {
-         if (strcmp(name,"fUnitName")     == 0) {hasUnit   = ++idx;}
-         if (strcmp(name,"fTranscriptID") == 0) {hasTrans  = ++idx;}
-         if (strcmp(name,"fName")         == 0) {hasName   = ++idx;}
-         if (strcmp(name,"fSymbol")       == 0) {hasSymbol = ++idx;}
-         if (strcmp(name,"fAccession")    == 0) {hasAccess = ++idx;}
-         if (strcmp(name,"fEntrezID")     == 0) {hasEntrez = ++idx;}
-         if (strcmp(name,"fChromosome")   == 0) {hasChromo = ++idx;}
-         if (strcmp(name,"fStart")        == 0) {hasStart  = ++idx;}
-         if (strcmp(name,"fStop")         == 0) {hasStop   = ++idx;}
-         if (strcmp(name,"fStrand")       == 0) {hasStrand = ++idx;}
-         if (strcmp(name,"fCytoBand")     == 0) {hasCyto   = ++idx;}
-         if (strcmp(name,"fLevel")        == 0) {hasLevel  = ++idx;}
-         name = strtok(NULL, ":");
-         if (name == 0) break;
-      }//while
-      delete [] dname;
-   }//if
-
-   // check for presence of at least one annotation variable
-   hasAnnot = (hasTrans + hasName  + hasSymbol + hasAccess + hasEntrez
-            + hasChromo + hasStart + hasStop   + hasStrand + hasCyto);
-
-// Get trees
-   TTree       **tree = new TTree*[n];
-   XExpression **expr = new XExpression*[n];
-
-   if (fTrees->GetSize() == 0) {
-   // Get trees from names
-      for (Int_t k=0; k<n; k++) {
-         expr[k] = 0;
-         tree[k] = (TTree*)gDirectory->Get((names[k]).Data());
-         if (!tree[k]) return errGetTree;
-
-         tree[k]->SetBranchAddress("ExprBranch", &expr[k]);
-      }//for_k
-   } else {
-   // Get trees from list fTrees
-      for (Int_t k=0; k<n; k++) {
-         expr[k] = 0;
-         tree[k] = (TTree*)fTrees->At(k);
-         if (!tree[k]) return errGetTree;
-
-         tree[k]->SetBranchAddress("ExprBranch", &expr[k]);
-      }//for_k
-   }//if
-
-// Get scheme name (also for alternative CDFs)
-   if (strcmp(fSchemeName.Data(), "") == 0) {
-      fSchemeName = tree[0]->GetTitle();
-   } else if (!fSchemeName.Contains(tree[0]->GetTitle())) {
-      cerr << "Error: Scheme <" << fSchemeName.Data() << "> is not derived from <"
-           << tree[0]->GetTitle() << ">." << endl;
-      return errAbort;
-   }//if
-
-// Get chip from scheme file
-   if (fSchemeFile == 0) return errGetScheme;
-   fSchemeFile->cd();
-   XFolder *schemes = (XFolder*)(fSchemeFile->Get(kContent));
-   if (!schemes) {
-      return fManager->HandleError(errMissingContent, "Scheme", kContent);
-   }//if
-
-   XGeneChip *chip = (XGeneChip*)schemes->FindObject(fSchemeName, kTRUE);
-   if (chip == 0) return errAbort;
-
-   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
-
-// Get unit tree for scheme
-   XUnit *unit     = 0;
-   TTree *unittree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
-   if (unittree == 0) return errGetTree;
-   unittree->SetBranchAddress("IdxBranch", &unit);
-
-// Get annotation tree for scheme
-   XTransAnnotation *annot = 0;
-   TTree *anntree = (TTree*)gDirectory->Get(chip->GetAnnotTree()); 
-   if (anntree == 0) return errGetTree;
-   anntree->SetBranchAddress("AnnBranch", &annot);
-
-   Int_t numunits = (Int_t)(unittree->GetEntries());
-   Int_t numannot = (Int_t)(anntree->GetEntries());
-
-// Create hash table to store unit names from anntree
-   THashTable *htable = 0;
-   if (!(htable = new THashTable(2*numannot))) return errInitMemory;
-
-   if (XManager::fgVerbose) {
-      cout << "Reading entries from <" << anntree->GetName() << "> ...";
-   }//if
-   XIdxString *idxstr = 0;
-   for (Int_t i=0; i<numannot; i++) {
-      anntree->GetEntry(i);
-
-      idxstr = new XIdxString(i, annot->GetTranscriptID());
-      htable->Add(idxstr);
-   }//for_i
-   if (XManager::fgVerbose) {
-      cout << "Finished" << endl;
-   }//if
-
-// Output header
-   output << "UNIT_ID";
-   for (Short_t j=1; j<=idx; j++) {
-      if (hasUnit == j) output << sep << "UnitName";
-
-      if (hasAnnot > 0) {
-         if (hasTrans  == j) output << sep << "ProbesetID";
-         if (hasName   == j) output << sep << "GeneName";
-         if (hasSymbol == j) output << sep << "GeneSymbol";
-         if (hasAccess == j) output << sep << "GeneAccession";
-         if (hasEntrez == j) output << sep << "EntrezID";
-         if (hasChromo == j) output << sep << "Chromosome";
-         if (hasStart  == j) output << sep << "Start";
-         if (hasStop   == j) output << sep << "Stop";
-         if (hasStrand == j) output << sep << "Strand";
-         if (hasCyto   == j) output << sep << "Cytoband";
-      }//if
-
-      if (hasLevel == j) {
-         if (n == 1) {
-            output << sep << "LEVEL";
-         } else {
-            for (Int_t k=0; k<n; k++) {
-               output << sep << (names[k] + "_LEVEL").Data();
-            }//for_k
-         }//if
-      }//if
-   }//for_j
-   output << endl;
-
-// Loop over tree entries and trees
-   Int_t index = 0;
-   Int_t entries = (Int_t)(tree[0]->GetEntries());
-   for (Int_t i=0; i<entries; i++) {
-      tree[0]->GetEntry(i);
-
-      Int_t unitID = expr[0]->GetUnitID();
-      output << unitID;
-
-      unittree->GetEntry(index++);
-      while (unitID != unit->GetUnitID()) {
-         if (index == numunits) {
-           cerr << "Error: UnitID <" << unitID << "> not found." << endl;
-           err = errAbort; goto cleanup;
-         }//if
-
-         unittree->GetEntry(index++);
-      }//while
-
-      for (Short_t j=1; j<=idx; j++) {
-         // export unitname
-         if (hasUnit == j) {
-            output << sep << unit->GetUnitName();
-         }//if
-
-         // export annotation
-         if (hasAnnot > 0) {
-            idxstr = (XIdxString*)(htable->FindObject(unit->GetUnitName()));
-            if (idxstr) {
-               anntree->GetEntry(idxstr->GetIndex());
-               if (hasTrans  == j) output << sep << annot->GetTranscriptID();
-               if (hasName   == j) output << sep << annot->GetName();
-               if (hasSymbol == j) output << sep << annot->GetSymbol();
-               if (hasAccess == j) output << sep << annot->GetAccession();
-               if (hasEntrez == j) output << sep << annot->GetEntrezID();
-               if (hasChromo == j) output << sep << annot->GetChromosome();
-               if (hasStart  == j) output << sep << annot->GetStart();
-               if (hasStop   == j) output << sep << annot->GetStop();
-               if (hasStrand == j) output << sep << annot->GetStrand();
-               if (hasCyto   == j) output << sep << annot->GetCytoBand();
-            } else {
-               if (hasTrans  == j) output << sep << "NA";
-               if (hasName   == j) output << sep << "NA";
-               if (hasSymbol == j) output << sep << "NA";
-               if (hasAccess == j) output << sep << "NA";
-               if (hasEntrez == j) output << sep << "NA";
-               if (hasChromo == j) output << sep << "NA";
-               if (hasStart  == j) output << sep << "-1";
-               if (hasStop   == j) output << sep << "-1";
-               if (hasStrand == j) output << sep << "?";
-               if (hasCyto   == j) output << sep << "NA";
-            }//if
-         }//if
-
-         // export data
-         if (hasLevel == j) {
-            for (Int_t k=0; k<n; k++) {
-               tree[k]->GetEntry(i);
-               output << sep << expr[k]->GetLevel();
-            }//for_k
-         }//if
-      }//for_j
-      output << endl;
-   }//for_i
-
-//Cleanup
-cleanup:
-   // remove trees from RAM
-   if (anntree)  {anntree->Delete("");  anntree  = 0;}
-   if (unittree) {unittree->Delete(""); unittree = 0;}
-   if (htable)   {htable->Delete(); delete htable; htable = 0;}
-   SafeDelete(schemes);
-
-   delete [] expr;
-   delete [] tree;
-
-   return err;
-}//ExportExprTrees
-
-
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
 // XNormedExonSet                                                       //
@@ -2120,6 +1864,15 @@ Int_t XNormedExonSet::ExportExprTrees(Int_t n, TString *names, const char *varli
    XTreeInfo *info   = (XTreeInfo*)tree[0]->GetUserInfo()->At(0);
    Option_t  *option = info->GetOption();
 
+   Int_t type = eTRANSCRIPT;
+   if      (strcmp(option, "exon")     == 0) type = eEXONTYPE; 
+   else if (strcmp(option, "probeset") == 0) type = ePROBESET; 
+///////////////////////
+// PROBLEM: option=all
+// should be: transcript, exon, probeset
+///////////////////////////
+cout << "PROBLEM: option = " << option << "   type = " << type << endl;
+
 // Get scheme name (also for alternative CDFs)
    if (strcmp(fSchemeName.Data(), "") == 0) {
       fSchemeName = tree[0]->GetTitle();
@@ -2137,34 +1890,19 @@ Int_t XNormedExonSet::ExportExprTrees(Int_t n, TString *names, const char *varli
       return fManager->HandleError(errMissingContent, "Scheme", kContent);
    }//if
 
-   XExonChip *chip = (XExonChip*)schemes->FindObject(fSchemeName, kTRUE);
+   XGeneChip *chip = (XGeneChip*)schemes->FindObject(fSchemeName, kTRUE);
    if (chip == 0) return errAbort;
 
-   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
-
 // Get unit tree for scheme (needed for annotation)
+//   XGCUnit *unit   = 0;
    XExonUnit *unit = 0;
-   TTree *unittree = 0; 
-   if (strcmp(option, "exon") == 0) { 
-      unittree = (TTree*)gDirectory->Get(chip->GetExonUnitTree()); 
-   } else if (strcmp(option, "probeset") == 0) {
-      unittree = (TTree*)gDirectory->Get(chip->GetProbesetUnitTree()); 
-   } else {
-      unittree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
-   }//if
+   TTree *unittree = this->GetUnitTree(chip, type);
    if (unittree == 0) return errGetTree;
    unittree->SetBranchAddress("IdxBranch", &unit);
 
 // Get annotation tree for scheme
-   TTree *anntree  = 0; 
    XTransAnnotation *annot = 0;
-   if (strcmp(option, "exon") == 0) { 
-      anntree = (TTree*)gDirectory->Get(chip->GetExonAnnotTree()); 
-   } else if (strcmp(option, "probeset") == 0) {
-      anntree = (TTree*)gDirectory->Get(chip->GetProbesetAnnotTree()); 
-   } else {
-      anntree = (TTree*)gDirectory->Get(chip->GetAnnotTree()); 
-   }//if
+   TTree *anntree = this->GetAnnotationTree(chip, type);
    if (anntree == 0) return errGetTree;
    anntree->SetBranchAddress("AnnBranch", &annot);
 
@@ -2175,30 +1913,7 @@ Int_t XNormedExonSet::ExportExprTrees(Int_t n, TString *names, const char *varli
    THashTable *htable = 0;
    if (!(htable = new THashTable(2*numannot))) return errInitMemory;
 
-   if (XManager::fgVerbose) {
-      cout << "Reading entries from <" << anntree->GetName() << "> ...";
-   }//if
-   TString str;
-   XIdxString *idxstr = 0;
-   for (Int_t i=0; i<numannot; i++) {
-      anntree->GetEntry(i);
-
-      if (strcmp(option, "exon") == 0) { 
-         str.Form("%d", ((XExonAnnotation*)annot)->GetExonID());
-         idxstr = new XIdxString(i, str.Data());
-      } else if (strcmp(option, "probeset") == 0) {
-         str.Form("%d", ((XProbesetAnnotation*)annot)->GetProbesetID());
-         idxstr = new XIdxString(i, str.Data());
-      } else {
-         str = ((XGenomeAnnotation*)annot)->GetTranscriptID();
-         idxstr = new XIdxString(i, str.Data());
-      }//if
-
-      htable->Add(idxstr);
-   }//for_i
-   if (XManager::fgVerbose) {
-      cout << "Finished" << endl;
-   }//if
+   htable = this->FillHashTable(htable, anntree, annot, type);
 
 // Output header
    output << "UNIT_ID";
@@ -2231,6 +1946,7 @@ Int_t XNormedExonSet::ExportExprTrees(Int_t n, TString *names, const char *varli
    output << endl;
 
 // Loop over tree entries and trees
+   XIdxString *idxstr = 0;
    Int_t index = 0;
    Int_t entries = (Int_t)(tree[0]->GetEntries());
    for (Int_t i=0; i<entries; i++) {
@@ -2257,11 +1973,10 @@ Int_t XNormedExonSet::ExportExprTrees(Int_t n, TString *names, const char *varli
 
          // export annotation
          if (hasAnnot > 0) {
-            str.Form("%d", unit->GetSubUnitID());
-            idxstr = (XIdxString*)(htable->FindObject(str.Data()));
+            idxstr = FindUnitID(htable, unit);
             if (idxstr) {
                anntree->GetEntry(idxstr->GetIndex());
-               if (hasTrans  == j) output << sep << annot->GetTranscriptID();
+               if (hasTrans  == j) output << sep << this->GetTranscriptID(unit, annot, type);
                if (hasName   == j) output << sep << annot->GetName();
                if (hasSymbol == j) output << sep << annot->GetSymbol();
                if (hasAccess == j) output << sep << annot->GetAccession();
