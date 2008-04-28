@@ -47,14 +47,6 @@ function(xps.data,
       stop(paste(sQuote("xps.data"), "is not a class", sQuote("DataTreeSet")));
    }#if
 
-###################
-tmp <- rootFile(set)
-print(tmp)
-print(basename(tmp))
-print(dirname(tmp))
-print(fileDir(set))
-#################
-
    ## normalize MAS5 data using trimmed mean
    if (normalize) {
       ## check for valid sc
