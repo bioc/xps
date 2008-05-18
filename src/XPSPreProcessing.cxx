@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 04/27/2008
+// File created: 08/05/2002                          last modified: 05/04/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -1446,8 +1446,6 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
 {
    // Adjust background, i.e. calculate background and subtact from intensity.
    // All datatrees will be replaced with bg-corrected datatrees
-   // Note: each datatree is processed individually and thus can have different
-   //       number of entries (i.e. belong to different chip types)
    // Note: Parameter numbgrd will be set to numbgrd=0 to prevent further use
    //       of externally added bgrdtrees, since datatrees are already corrected!
    if(kCS) cout << "------XGCProcesSet::AdjustBackground------" << endl;
@@ -1459,6 +1457,7 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
 
    Int_t err   = errNoErr;
    Int_t split = 99;
+   Int_t i, j, ij, x, y;
 
    TDirectory *savedir = gDirectory;
    TFile      *tmpfile = fBackgrounder->GetFile();
@@ -1481,8 +1480,87 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
    Double_t *arrBgrd  = 0;  //background signal of probes
    Double_t *arrNoise = 0;  //standard deviation of probe background signal
 
+// Get chip parameters from scheme file (also for alternative CDFs)
+   if (datatree[0] == 0) return errGetTree;
+   if (strcmp(fSchemeName.Data(), "") == 0) {
+      fSchemeName = datatree[0]->GetTitle();
+   } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
+      return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
+   }//if
+   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
+
+   XDNAChip *chip = (XDNAChip*)fSchemes->FindObject(fSchemeName, kTRUE);
+   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
+   Int_t numrows = chip->GetNumRows();
+   Int_t numcols = chip->GetNumColumns();
+   Int_t size    = numrows*numcols;
+
+// Get exon level of annotation
+   Int_t level = 0;
+   if (fBgrdSelector->GetNumParameters() > 0) {
+      level = (Int_t)(fBgrdSelector->GetParameters())[0];
+   }//if
+
+// Initialize memory for mask array
+   if (!(arrMask  = new (nothrow) Int_t[size])) return errInitMemory;
+   //not =0,since msk=1 and msk=0 must be determined!
+   for (i=0; i<size; i++) arrMask[i] = eINITMASK;
+
+// Get mask for PM/MM from scheme tree and store in array 
+   err = this->SchemeMask(chip, level, size, arrMask);
+   if (err != errNoErr) goto cleanup;
+
+// Calculate mask for background
+   err = fBgrdSelector->Calculate(size, 0, 0, arrMask);
+   if (err != errNoErr) goto cleanup;
+
+// For GCBackground only, fill arrMask with GC content:
+// for PM set GC >= 0 , i.e. GC = 0...kProbeLength,
+// for MM set GC < eINITMASK, i.e. GC = eINITMASK - (1...kProbeLength+1)
+   if (strcmp(fBackgrounder->GetName(), "gccontent") == 0) {
+   // Get probe tree for scheme
+      XGCProbe *probe = 0;
+      TTree *probetree = (TTree*)gDirectory->Get(chip->GetProbeTree()); 
+      if (probetree == 0) {err = errGetTree; goto cleanup;}
+      probetree->SetBranchAddress("PrbBranch", &probe);
+
+   // Get GC content from probe tree and store in array
+      for (i=0; i<size; i++) {
+         probetree->GetEntry(i);
+
+         x  = probe->GetX();
+         y  = probe->GetY();
+         ij = XY2Index(x, y, numcols);
+
+// IMPORTANT NOTE: do not use the following code although it is faster:
+// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
+// Every tree contains the (x,y) coordinates as unique identifier, thus
+// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
+
+         if (arrMask[ij] == 1) {
+            arrMask[ij] = probe->GetNumberGC();
+         } else if (arrMask[ij] == 0) {
+            //need to use (numberGC + 1) to avoid setting arrMask=eINITMASK for GC=0!!
+            arrMask[ij] = eINITMASK - (probe->GetNumberGC() + 1);
+//no!!            arrMask[ij] = eINITMASK - probe->GetNumberGC();
+         }//if
+      }//for_i
+   }//if
+
+// Change directory
+   if (tmpfile != 0) tmpfile->cd();
+   else if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
+
+// Initialize memory for data arrays
+   if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+   if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+   if (!(arrBgrd  = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+   if (!(arrNoise = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+   for (i=0; i<size; i++) {
+      arrInten[i] = arrStdev[i] = arrBgrd[i] = arrNoise[i] = 0.0;
+   }//for_i
+
 // Calculate background
-   Int_t i, j, ij, x, y;
    for (Int_t k=0; k<numdata; k++) {
       if (datatree[k] == 0) {err = errGetTree; break;}
 
@@ -1496,81 +1574,11 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
       XGCCell *gccell = 0;
       datatree[k]->SetBranchAddress("DataBranch", &gccell);
 
-   // Get chip parameters from scheme file (also for alternative CDFs)
-      if (strcmp(fSchemeName.Data(), "") == 0) {
-         fSchemeName = datatree[k]->GetTitle();
-      } else if (!fSchemeName.Contains(datatree[k]->GetTitle())) {
-         return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[k]->GetTitle());
-      }//if
-      if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
-
-      XDNAChip *chip = (XDNAChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-      if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
-      Int_t numrows = chip->GetNumRows();
-      Int_t numcols = chip->GetNumColumns();
-
    // Init counters for min/max values
       Double_t min    = DBL_MAX;  //defined in float.h
       Double_t max    = 0;
       Int_t    nummin = 0;
       Int_t    nummax = 0;
-
-   // Get exon level of annotation
-      Int_t level = 0;
-      if (fBgrdSelector->GetNumParameters() > 0) {
-         level = (Int_t)(fBgrdSelector->GetParameters())[0];
-      }//if
-
-   // Initialize memory for mask array
-      Int_t size = numrows*numcols;
-      if (!(arrMask  = new (nothrow) Int_t[size])) return errInitMemory;
-      //not =0,since msk=1 and msk=0 must be determined!
-      for (i=0; i<size; i++) arrMask[i] = eINITMASK;
-
-// IMPORTANT NOTE: do not use the following code although it is faster:
-// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
-// Every tree contains the (x,y) coordinates as unique identifier, thus
-// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
-
-   // Get mask for PM/MM from scheme tree and store in array 
-      err = this->SchemeMask(chip, level, size, arrMask);
-      if (err != errNoErr) return err;
-
-   // Calculate mask for background
-      err = fBgrdSelector->Calculate(size, 0, 0, arrMask);
-      if (err != errNoErr) return err;
-
-   // For GCBackground only, fill arrMask with GC content:
-   // for PM set GC >= 0 , i.e. GC = 0...kProbeLength,
-   // for MM set GC < eINITMASK, i.e. GC = eINITMASK - (1...kProbeLength+1)
-      if (strcmp(fBackgrounder->GetName(), "gccontent") == 0) {
-      // Get probe tree for scheme
-         XGCProbe *probe = 0;
-         TTree *probetree = (TTree*)gDirectory->Get(chip->GetProbeTree()); 
-         if (probetree == 0) return errGetTree;
-         probetree->SetBranchAddress("PrbBranch", &probe);
-
-      // Get GC content from probe tree and store in array
-         for (i=0; i<size; i++) {
-            probetree->GetEntry(i);
-
-            x  = probe->GetX();
-            y  = probe->GetY();
-            ij = XY2Index(x, y, numcols);
-
-            if (arrMask[ij] == 1) {
-               arrMask[ij] = probe->GetNumberGC();
-            } else if (arrMask[ij] == 0) {
-               //need to use (numberGC + 1) to avoid setting arrMask=eINITMASK for GC=0!!
-               arrMask[ij] = eINITMASK - (probe->GetNumberGC() + 1);
-//no!!               arrMask[ij] = eINITMASK - probe->GetNumberGC();
-            }//if
-         }//for_i
-      }//if
-
-   // Change directory
-      if (tmpfile != 0) tmpfile->cd();
-      else if (!fFile->cd(fName)) return errGetDir;
 
    // Create new tree bgrdtree
       TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
@@ -1579,15 +1587,6 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
       if (bgrdtree[k] == 0) return errCreateTree;
       XBgCell *bgcell = new XBgCell();
       bgrdtree[k]->Branch("BgrdBranch", "XBgCell", &bgcell, 64000, split);
-
-   // Initialize memory for data arrays
-      if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-      if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-      if (!(arrBgrd  = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-      if (!(arrNoise = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-      for (i=0; i<size; i++) {
-         arrInten[i] = arrStdev[i] = arrBgrd[i] = arrNoise[i] = 0.0;
-      }//for_i
 
    // Get data from data tree and store in array
       for (i=0; i<size; i++) {
@@ -1651,8 +1650,10 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
 //or?:  if (tmpfile == 0) treeid = 0 else treeid = 1; //do NOt add to fHeaders->Add()??
 //PROBLEM: for tmpfile!=0  fSize of fHeaders too large!!!
 //////////////////////
-      AddTreeHeader(bgrdtree[k]->GetName(), "Bgrd", 0, fBackgrounder->GetNumParameters(),
-                    fBackgrounder->GetParameters());
+      if (tmpfile == 0) {
+         AddTreeHeader(bgrdtree[k]->GetName(), "Bgrd", 0, fBackgrounder->GetNumParameters(),
+                       fBackgrounder->GetParameters());
+      }//if
 
    // Write background-corrected data tree to file 
       arrStdev = fBackgrounder->AdjustError(size, arrStdev, arrNoise);
@@ -1660,19 +1661,19 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
                           numrows, numcols, arrInten, arrStdev);
       if (datatree[k] == 0) {err = errCreateTree; goto cleanup;}
 
-   cleanup:
-      // delete arrays
-      if (arrNoise) {delete [] arrNoise; arrNoise = 0;}
-      if (arrBgrd)  {delete [] arrBgrd;  arrBgrd  = 0;}
-      if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
-      if (arrInten) {delete [] arrInten; arrInten = 0;}
-      if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
-//?      // delete scheme tree from RAM
-//?      if (scmtree)  {scmtree->Delete(""); scmtree = 0;}
-      // note: keep datatree[k] and bgrdtree[k] for later use!
-
       if (err != errNoErr) break;
    }//for_k
+
+cleanup:
+   // delete arrays
+   if (arrNoise) {delete [] arrNoise; arrNoise = 0;}
+   if (arrBgrd)  {delete [] arrBgrd;  arrBgrd  = 0;}
+   if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
+   if (arrInten) {delete [] arrInten; arrInten = 0;}
+   if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
+//?   // delete scheme tree from RAM
+//?   if (scmtree)  {scmtree->Delete(""); scmtree = 0;}
+   // note: keep datatree[k] and bgrdtree[k] for later use!
 
    savedir->cd();
 
@@ -2089,8 +2090,6 @@ Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
 {
    // Detect presence call
    // Note: Present call data will be stored as: 'P'=2, 'M'=1, 'A'=0
-   // Note: each datatree is processed individually and thus can have different
-   //       number of entries (i.e. belong to different chip types)
    if(kCS) cout << "------XGCProcesSet::DetectCall------" << endl;
 
 // Informing user
@@ -2099,6 +2098,7 @@ Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
    }//if
 
    Int_t err= errNoErr;
+   Int_t  i, j, ij, idx, x, y, start, end;
 
    fFile->cd();
 
@@ -2132,9 +2132,116 @@ Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
    XPCall *call     = 0;
    Int_t   split    = 99;
 
-// Calculate detection call
+// Get chip parameters from scheme file (also alternative CDFs)
+   if (datatree[0] == 0) return errGetTree;
+   if (strcmp(fSchemeName.Data(), "") == 0) {
+      fSchemeName = datatree[0]->GetTitle();
+   } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
+      return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
+   }//if
+   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
+
+   XDNAChip *chip = (XDNAChip*)fSchemes->FindObject(fSchemeName, kTRUE);
+   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
+   Int_t numrows  = chip->GetNumRows();
+   Int_t numcols  = chip->GetNumColumns();
+   Int_t numctrls = chip->GetNumControls();
+   Int_t numunits = chip->GetNumUnits();
+
+// Get scheme tree for scheme
+   XScheme *scheme = 0;
+   TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
+   if (scmtree == 0) return errGetTree;
+   scmtree->SetBranchAddress("ScmBranch", &scheme);
+
+// Get unit tree for scheme
+   XGCUnit *unit = 0;
+   TTree *idxtree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
+   if (idxtree == 0) return errGetTree;
+   idxtree->SetBranchAddress("IdxBranch", &unit);
+
+// Get maximum number of pairs from tree info for unit tree
+   XUnitTreeInfo *idxinfo = 0;
+   idxinfo = (XUnitTreeInfo*)idxtree->GetUserInfo()->FindObject(idxtree->GetName());
+   if (!idxinfo) {
+      cerr << "Error: Could not get tree info for <" << idxtree->GetName() << ">." << endl;
+      return errGeneral;
+   }//if
+   Int_t maxnumpairs = (Int_t)idxinfo->GetValue("fMaxNPairs");
+
+// Get exon level of annotation
+   Int_t level = 0;
+   if (fCallSelector->GetNumParameters() > 0) {
+      level = (Int_t)(fCallSelector->GetParameters())[0];
+   }//if
+
+// Initialize memory for data arrays
+   Int_t size     = numrows*numcols;
+   Int_t nentries = scmtree->GetEntries();
+   if (!(arrMask  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
+   if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+   if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+   if (!(arrNPix  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
+
+   for (i=0; i<size; i++) {
+      arrMask[i]  = eINITMASK;  //not =0,since msk=1 and msk=0 must be determined!
+      arrInten[i] = arrStdev[i] = 0.0;
+      arrNPix[i]  = 0;
+   }//for_i
+
+// Get mask for PM/MM from scheme tree and store in array 
+//?0?   arrMask = this->FillMaskArray(chip, scmtree, scheme, 0, size, arrMask);
+   arrMask = this->FillMaskArray(chip, scmtree, scheme, level, size, arrMask);
+
+// Calculate mask for detection call
+   err = fCallSelector->Calculate(nentries, 0, 0, arrMask);
+   if (err != errNoErr) goto cleanup;
+
+// For DABG only, fill arrMask with GC content (GC>=0 for PM)
+// for PM set GC >= 0 , i.e. GC = 0...kProbeLength,
+// for MM set GC < eINITMASK, i.e. GC = eINITMASK - (1...kProbeLength+1)
    Bool_t doGC = (Bool_t)(strcmp(fCaller->GetName(), "dabgcall") == 0);
-   Int_t  i, j, ij, idx, x, y, start, end;
+   if (doGC) {
+      // get probe tree for scheme
+      XGCProbe *probe = 0;
+      TTree *probetree = (TTree*)gDirectory->Get(chip->GetProbeTree()); 
+      if (probetree == 0) {err = errGetTree; goto cleanup;}
+      probetree->SetBranchAddress("PrbBranch", &probe);
+
+      // get GC content from probe tree and store in array
+      for (i=0; i<size; i++) {
+         probetree->GetEntry(i);
+
+         x  = probe->GetX();
+         y  = probe->GetY();
+         ij = XY2Index(x, y, numcols);
+
+// IMPORTANT NOTE: do not use the following code although it is faster:
+// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
+// Every tree contains the (x,y) coordinates as unique identifier, thus
+// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
+
+         if (arrMask[ij] == 1) {
+            arrMask[ij] = probe->GetNumberGC();
+         } else if (arrMask[ij] == 0) {
+            //need to use (numberGC + 1) to avoid setting arrMask=eINITMASK for GC=0!!
+            arrMask[ij] = eINITMASK - (probe->GetNumberGC() + 1);
+//no!!            arrMask[ij] = eINITMASK - probe->GetNumberGC();
+         }//if
+      }//for_i
+   }//if
+
+   if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
+
+// Initialize maximum memory for PM/MM arrays (maxnumpairs+1 to avoid potential buffer overflow)
+   if (!(arrPM = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
+   if (!(arrMM = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
+   if (!(arrSP = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
+   if (!(arrSM = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
+   if (!(arrXP = new (nothrow) Int_t[maxnumpairs+1]))    {err = errInitMemory; goto cleanup;}
+   if (!(arrXM = new (nothrow) Int_t[maxnumpairs+1]))    {err = errInitMemory; goto cleanup;}
+
+// Calculate detection call
    for (Int_t k=0; k<numdata; k++) {
       if (datatree[k] == 0) return errGetTree;
 
@@ -2152,135 +2259,29 @@ Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
          return errGeneral;
       }//if
 
-   // Get chip parameters from scheme file (also alternative CDFs)
-      if (strcmp(fSchemeName.Data(), "") == 0) {
-         fSchemeName = datatree[k]->GetTitle();
-      } else if (!fSchemeName.Contains(datatree[k]->GetTitle())) {
-         return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[k]->GetTitle());
-      }//if
-      if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
-
-      XDNAChip *chip = (XDNAChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-      if (!chip) {
-         return fManager->HandleError(errGetScheme, fSchemeName);
-      }//if
-      Int_t numrows  = chip->GetNumRows();
-      Int_t numcols  = chip->GetNumColumns();
-      Int_t numctrls = chip->GetNumControls();
-      Int_t numunits = chip->GetNumUnits();
-
       Int_t numabsent  = 0;
       Int_t numarginal = 0;
       Int_t numpresent = 0;
       Double_t minpval = 1.0;
       Double_t maxpval = 0.0;
 
-   // Get scheme tree for scheme
-      XScheme *scheme = 0;
-      TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
-      if (scmtree == 0) return errGetTree;
-      scmtree->SetBranchAddress("ScmBranch", &scheme);
-
-   // Get unit tree for scheme
-      XGCUnit *unit = 0;
-      TTree *idxtree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
-      if (idxtree == 0) return errGetTree;
-      idxtree->SetBranchAddress("IdxBranch", &unit);
-
-   // Get maximum number of pairs from tree info for unit tree
-      XUnitTreeInfo *idxinfo = 0;
-      idxinfo = (XUnitTreeInfo*)idxtree->GetUserInfo()->FindObject(idxtree->GetName());
-      if (!idxinfo) {
-         cerr << "Error: Could not get tree info for <" << idxtree->GetName() << ">." << endl;
-         return errGeneral;
-      }//if
-      Int_t maxnumpairs = (Int_t)idxinfo->GetValue("fMaxNPairs");
-
-   // Get exon level of annotation
-      Int_t level = 0;
-      if (fCallSelector->GetNumParameters() > 0) {
-         level = (Int_t)(fCallSelector->GetParameters())[0];
-      }//if
-
-   // Initialize memory for data arrays
-      Int_t size     = numrows*numcols;
-      Int_t nentries = scmtree->GetEntries();
-      if (!(arrMask  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-      if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-      if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-      if (!(arrNPix  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-
-      for (i=0; i<size; i++) {
-         arrMask[i]  = eINITMASK;  //not =0,since msk=1 and msk=0 must be determined!
-         arrInten[i] = arrStdev[i] = 0.0;
-         arrNPix[i]  = 0;
-      }//for_i
-
-// IMPORTANT NOTE: do not use the following code although it is faster:
-// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
-// Every tree contains the (x,y) coordinates as unique identifier, thus
-// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
-
-   // Get mask for PM/MM from scheme tree and store in array 
-//?0?      arrMask = this->FillMaskArray(chip, scmtree, scheme, 0, size, arrMask);
-      arrMask = this->FillMaskArray(chip, scmtree, scheme, level, size, arrMask);
-
-   // Calculate mask for detection call
-      err = fCallSelector->Calculate(nentries, 0, 0, arrMask);
-      if (err != errNoErr) goto cleanup;
-
    // Get data from datatree and store in arrays
       err = this->FillDataArrays(datatree[k], bgrdtree[k], doBg,
                        numrows, numcols, arrInten, arrStdev, arrNPix);
       if (err != errNoErr) goto cleanup;
 
-   // For DABG only, fill arrMask with GC content (GC>=0 for PM)
-   // for PM set GC >= 0 , i.e. GC = 0...kProbeLength,
-   // for MM set GC < eINITMASK, i.e. GC = eINITMASK - (1...kProbeLength+1)
+   // For DABG only
       if (doGC) {
-         // get probe tree for scheme
-         XGCProbe *probe = 0;
-         TTree *probetree = (TTree*)gDirectory->Get(chip->GetProbeTree()); 
-         if (probetree == 0) {err = errGetTree; goto cleanup;}
-         probetree->SetBranchAddress("PrbBranch", &probe);
-
-         // get GC content from probe tree and store in array
-         for (i=0; i<size; i++) {
-            probetree->GetEntry(i);
-
-            x  = probe->GetX();
-            y  = probe->GetY();
-            ij = XY2Index(x, y, numcols);
-
-            if (arrMask[ij] == 1) {
-               arrMask[ij] = probe->GetNumberGC();
-            } else if (arrMask[ij] == 0) {
-               //need to use (numberGC + 1) to avoid setting arrMask=eINITMASK for GC=0!!
-               arrMask[ij] = eINITMASK - (probe->GetNumberGC() + 1);
-//no!!               arrMask[ij] = eINITMASK - probe->GetNumberGC();
-            }//if
-         }//for_i
-
          // get intensities and save in table sorted for GC-content
          if ((err = fCaller->Calculate(size, arrInten, arrMask))) goto cleanup;
       }//if
 
    // Create new tree calltree
-      if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
-
       name = Path2Name(datatree[k]->GetName(), dSEP, ".") + "." + fCaller->GetTitle();
       calltree = new TTree(name, fSchemeName);
       if (calltree == 0) {err = errCreateTree; goto cleanup;}
       call = new XPCall();
       calltree->Branch("CallBranch", "XPCall", &call, 64000, split);
-
-   // Initialize maximum memory for PM/MM arrays (maxnumpairs+1 to avoid potential buffer overflow)
-      if (!(arrPM = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
-      if (!(arrMM = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
-      if (!(arrSP = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
-      if (!(arrSM = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
-      if (!(arrXP = new (nothrow) Int_t[maxnumpairs+1]))    {err = errInitMemory; goto cleanup;}
-      if (!(arrXM = new (nothrow) Int_t[maxnumpairs+1]))    {err = errInitMemory; goto cleanup;}
 
    // Calculate detection call values
       start = 0;
@@ -2409,23 +2410,23 @@ Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
                        fCaller->GetParameters());
       }//if
 
-   cleanup:
-      // delete arrays
-      if (arrPM)    {delete [] arrPM;    arrPM    = 0;}
-      if (arrMM)    {delete [] arrMM;    arrMM    = 0;}
-      if (arrSP)    {delete [] arrSP;    arrSP    = 0;}
-      if (arrSM)    {delete [] arrSM;    arrSM    = 0;}
-      if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
-      if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
-      if (arrNPix)  {delete [] arrNPix;  arrNPix  = 0;}
-      if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
-      if (arrInten) {delete [] arrInten; arrInten = 0;}
-      if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
-//??      // delete scheme tree from RAM
-//??      if (scmtree)  {scmtree->Delete(""); scmtree = 0;}
-
       if (err != errNoErr) break;
    }//for_k
+
+cleanup:
+   // delete arrays
+   if (arrPM)    {delete [] arrPM;    arrPM    = 0;}
+   if (arrMM)    {delete [] arrMM;    arrMM    = 0;}
+   if (arrSP)    {delete [] arrSP;    arrSP    = 0;}
+   if (arrSM)    {delete [] arrSM;    arrSM    = 0;}
+   if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
+   if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
+   if (arrNPix)  {delete [] arrNPix;  arrNPix  = 0;}
+   if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
+   if (arrInten) {delete [] arrInten; arrInten = 0;}
+   if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
+//??   // delete scheme tree from RAM
+//??   if (scmtree)  {scmtree->Delete(""); scmtree = 0;}
 
    return err;
 }//DetectCall
@@ -3620,12 +3621,10 @@ TTree *XGCProcesSet::FillDataTree(const char *name, XAlgorithm *algorithm,
    // Write tree header to list
 //tmp      if tmpfile then fSelections->Add()??? else fHeaders->Add() ??
 //tmp      AddTreeHeader(tree->GetName(), algorithm->GetName(),, useTmpFile,
-///////////////
-//tmp: test:
-      if (algorithm->GetFile() == 0)
-///////////////
-      AddTreeHeader(tree->GetName(), algorithm->GetName(), 0,
-                    algorithm->GetNumParameters(), algorithm->GetParameters());
+      if (algorithm->GetFile() == 0) {
+         AddTreeHeader(tree->GetName(), algorithm->GetName(), 0,
+                       algorithm->GetNumParameters(), algorithm->GetParameters());
+      }//if
    }//if
 
    return tree;
@@ -3675,12 +3674,10 @@ Int_t XGCProcesSet::FillMaskTree(const char *name, XAlgorithm *algorithm,
       if (header) {fHeaders->Remove(header); delete header;}  //????
 
    // Write tree header to list
-///////////////
-//tmp: test:
-      if (algorithm->GetFile() == 0)
-///////////////
-      AddTreeHeader(tree->GetName(), algorithm->GetName(), 0,
-                    algorithm->GetNumParameters(), algorithm->GetParameters());
+      if (algorithm->GetFile() == 0) {
+         AddTreeHeader(tree->GetName(), algorithm->GetName(), 0,
+                       algorithm->GetNumParameters(), algorithm->GetParameters());
+      }//if
    }//if
 
 // Cleanup
@@ -3780,12 +3777,11 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
                     Int_t numbgrd, TTree **bgrdtree)
 {
    // Condense data from  datatrees to expression values
-   // Note: each datatree is processed individually and thus can have different
-   //       number of entries (i.e. belong to different chip types)
    if(kCS) cout << "------XGCProcesSet::DoExpress------" << endl;
 
    Int_t err = errNoErr;
    Int_t split = 99;
+   Int_t i, j, ij, x, y, start, end;
 
 // Get parameters for background subtraction
    Bool_t doBg = this->BackgroundParameters(fExpressor, fExpressor->GetBgrdOption());
@@ -3813,19 +3809,85 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
    Int_t    *arrXP    = 0; 
    Int_t    *arrXM    = 0;
 
+// Get chip parameters from scheme file (also alternative CDFs)
+   if (datatree[0] == 0) return errGetTree;
+   if (strcmp(fSchemeName.Data(), "") == 0) {
+      fSchemeName = datatree[0]->GetTitle();
+   } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
+      return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
+   }//if
+   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
+
+   XDNAChip *chip = (XDNAChip*)fSchemes->FindObject(fSchemeName, kTRUE);
+   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
+   Int_t numrows  = chip->GetNumRows();
+   Int_t numcols  = chip->GetNumColumns();
+   Int_t numctrls = chip->GetNumControls();
+   Int_t numunits = chip->GetNumUnits();
+
+// Get scheme tree for scheme
+   XScheme *scheme = 0;
+   TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
+   if (scmtree == 0) return errGetTree;
+   scmtree->SetBranchAddress("ScmBranch", &scheme);
+
+// Get unit tree for scheme
+   XGCUnit *unit = 0;
+   TTree *idxtree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
+   if (idxtree == 0) return errGetTree;
+   idxtree->SetBranchAddress("IdxBranch", &unit);
+
+// Get maximum number of pairs from tree info for unit tree
+   XUnitTreeInfo *idxinfo = 0;
+   idxinfo = (XUnitTreeInfo*)idxtree->GetUserInfo()->FindObject(idxtree->GetName());
+   if (!idxinfo) {
+      cerr << "Error: Could not get tree info for <" << idxtree->GetName() << ">." << endl;
+      return errGeneral;
+   }//if
+   Int_t maxnumpairs = (Int_t)idxinfo->GetValue("fMaxNPairs");
+
+// Initialize memory for data arrays
+   Int_t size = numrows*numcols;
+   if (!(arrMask  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
+   if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+   if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+   if (!(arrNPix  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
+
+   for (i=0; i<size; i++) {
+      arrMask[i]  = eINITMASK;  //init mask
+      arrInten[i] = arrStdev[i] = 0.0;
+      arrNPix[i]  = 0;
+   }//for_i
+
+// Get mask for PM/MM from scheme tree and store in array 
+   arrMask = this->FillMaskArray(chip, scmtree, scheme, 0, size, arrMask); //level=0?
+
+// Calculate mask for expression
+   err = fExprSelector->Calculate(size, 0, 0, arrMask);
+   if (err != errNoErr) goto cleanup;
+
+// Initialize maximum memory for PM/MM arrays (maxnumpairs+1 to avoid potential buffer overflow)
+   if (!(arrPM = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
+   if (!(arrMM = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
+   if (!(arrSP = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
+   if (!(arrSM = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
+   if (!(arrXP = new (nothrow) Int_t[maxnumpairs+1]))    {err = errInitMemory; goto cleanup;}
+   if (!(arrXM = new (nothrow) Int_t[maxnumpairs+1]))    {err = errInitMemory; goto cleanup;}
+
+   if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
+
 // Calculate expression
-   Int_t i, j, ij, x, y, start, end;
    for (Int_t k=0; k<numdata; k++) {
       if (datatree[k] == 0) {err = errGetTree; break;}
 
    // Informing user
+      TString name = datatree[k]->GetName();
       if (XManager::fgVerbose) {
-         cout << "      summarizing <" << datatree[k]->GetName() << ">..." << endl;
+         cout << "      summarizing <" << name.Data() << ">..." << endl;
       }//if
 
    // Get tree info from datatree
-      fDataFile->cd();
-      TString name = datatree[k]->GetName();
+//      fDataFile->cd();
 
       XDataTreeInfo *info = 0;
       info = (XDataTreeInfo*)datatree[k]->GetUserInfo()->FindObject(name);
@@ -3835,53 +3897,16 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
          break;
       }//if
 
-   // Get chip parameters from scheme file (also alternative CDFs)
-      if (strcmp(fSchemeName.Data(), "") == 0) {
-         fSchemeName = datatree[k]->GetTitle();
-      } else if (!fSchemeName.Contains(datatree[k]->GetTitle())) {
-         return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[k]->GetTitle());
-      }//if
-      if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
-
-      XDNAChip *chip = (XDNAChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-      if (!chip) {
-         err = fManager->HandleError(errGetScheme, fSchemeName);
-         break;
-      }//if
-      Int_t numrows  = chip->GetNumRows();
-      Int_t numcols  = chip->GetNumColumns();
-      Int_t numctrls = chip->GetNumControls();
-      Int_t numunits = chip->GetNumUnits();
-
    // Init min/max expression levels
       Double_t min = DBL_MAX;  //defined in float.h
       Double_t max = 0;
 
-   // Get scheme tree for scheme
-      XScheme *scheme = 0;
-      TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
-      if (scmtree == 0) {err = errGetTree; break;}
-      scmtree->SetBranchAddress("ScmBranch", &scheme);
-
-   // Get unit tree for scheme
-      XGCUnit *unit = 0;
-      TTree *idxtree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
-      if (idxtree == 0) {err = errGetTree; break;}
-      idxtree->SetBranchAddress("IdxBranch", &unit);
-
-   // Get maximum number of pairs from tree info for unit tree
-      XUnitTreeInfo *idxinfo = 0;
-      idxinfo = (XUnitTreeInfo*)idxtree->GetUserInfo()->FindObject(idxtree->GetName());
-      if (!idxinfo) {
-         cerr << "Error: Could not get tree info for <" << idxtree->GetName() << ">." << endl;
-         err = errGeneral;
-         break;
-      }//if
-      Int_t maxnumpairs = (Int_t)idxinfo->GetValue("fMaxNPairs");
+   // Get data from datatree and store in arrays
+      err = this->FillDataArrays(datatree[k], bgrdtree[k], doBg,
+                       numrows, numcols, arrInten, arrStdev, arrNPix);
+      if (err != errNoErr) goto cleanup;
 
    // Create new tree exprtree
-      if (!fFile->cd(fName)) {err = errGetDir; break;}
-
       TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
       TString exprname = dataname + "." + fExpressor->GetTitle();
       TTree  *exprtree = new TTree(exprname, fSchemeName);
@@ -3890,44 +3915,6 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
       XGCExpression *expr = 0;
       expr = new XGCExpression();
       exprtree->Branch("ExprBranch", "XGCExpression", &expr, 64000, split);
-
-   // Initialize memory for data arrays
-      Int_t size = numrows*numcols;
-      if (!(arrMask  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-      if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-      if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-      if (!(arrNPix  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-
-      for (i=0; i<size; i++) {
-         arrMask[i]  = eINITMASK;  //init mask
-         arrInten[i] = arrStdev[i] = 0.0;
-         arrNPix[i]  = 0;
-      }//for_i
-
-// IMPORTANT NOTE: do not use the following code although it is faster:
-// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
-// Every tree contains the (x,y) coordinates as unique identifier, thus
-// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
-
-   // Get mask for PM/MM from scheme tree and store in array 
-      arrMask = this->FillMaskArray(chip, scmtree, scheme, 0, size, arrMask); //level=0?
-
-   // Calculate mask for expression
-      err = fExprSelector->Calculate(size, 0, 0, arrMask);
-      if (err != errNoErr) goto cleanup;
-
-   // Get data from datatree and store in arrays
-      err = this->FillDataArrays(datatree[k], bgrdtree[k], doBg,
-                       numrows, numcols, arrInten, arrStdev, arrNPix);
-      if (err != errNoErr) goto cleanup;
-
-   // Initialize maximum memory for PM/MM arrays (maxnumpairs+1 to avoid potential buffer overflow)
-      if (!(arrPM = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
-      if (!(arrMM = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
-      if (!(arrSP = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
-      if (!(arrSM = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
-      if (!(arrXP = new (nothrow) Int_t[maxnumpairs+1]))    {err = errInitMemory; goto cleanup;}
-      if (!(arrXM = new (nothrow) Int_t[maxnumpairs+1]))    {err = errInitMemory; goto cleanup;}
 
    // Calculate expression values
       start = 0;
@@ -3959,6 +3946,11 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
             x  = scheme->GetX();
             y  = scheme->GetY();
             ij = XY2Index(x, y, numcols);
+
+// IMPORTANT NOTE: do not use the following code although it is faster:
+// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
+// Every tree contains the (x,y) coordinates as unique identifier, thus
+// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
 
             if (arrMask[ij] == 1) {
                arrPM[p] = arrInten[ij];
@@ -4030,24 +4022,24 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
                        fExpressor->GetParameters());
       }//if
 
-   cleanup:
-      // delete arrays
-      if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
-      if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
-      if (arrSM)    {delete [] arrSM;    arrSM    = 0;}
-      if (arrSP)    {delete [] arrSP;    arrSP    = 0;}
-      if (arrMM)    {delete [] arrMM;    arrMM    = 0;}
-      if (arrPM)    {delete [] arrPM;    arrPM    = 0;}
-      if (arrNPix)  {delete [] arrNPix;  arrNPix  = 0;}
-      if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
-      if (arrInten) {delete [] arrInten; arrInten = 0;}
-      if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
-//?      // delete scheme tree from RAM
-//?      if (scmtree)  {scmtree->Delete(""); scmtree = 0;}
-      // Note: do not remove exprtree and expr from RAM, needed later
-
       if (err != errNoErr) break;
    }//for_k
+
+cleanup:
+   // delete arrays
+   if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
+   if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
+   if (arrSM)    {delete [] arrSM;    arrSM    = 0;}
+   if (arrSP)    {delete [] arrSP;    arrSP    = 0;}
+   if (arrMM)    {delete [] arrMM;    arrMM    = 0;}
+   if (arrPM)    {delete [] arrPM;    arrPM    = 0;}
+   if (arrNPix)  {delete [] arrNPix;  arrNPix  = 0;}
+   if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
+   if (arrInten) {delete [] arrInten; arrInten = 0;}
+   if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
+//?   // delete scheme tree from RAM
+//?   if (scmtree)  {scmtree->Delete(""); scmtree = 0;}
+   // Note: do not remove exprtree and expr from RAM, needed later
 
    return err;
 }//DoExpress
@@ -4078,6 +4070,7 @@ Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    Bool_t doBg = this->BackgroundParameters(fExpressor, fExpressor->GetBgrdOption());
 
 // Get chip parameters from scheme file (also alternative CDFs)
+   if (datatree[0] == 0) return errGetTree;
    if (strcmp(fSchemeName.Data(), "") == 0) {
       fSchemeName = datatree[0]->GetTitle();
    } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
@@ -4086,9 +4079,7 @@ Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
 
    XDNAChip *chip = (XDNAChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-   if (!chip) {
-      return fManager->HandleError(errGetScheme, fSchemeName);
-   }//if
+   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
    Int_t numrows  = chip->GetNumRows();
    Int_t numcols  = chip->GetNumColumns();
    Int_t numctrls = chip->GetNumControls();
@@ -4434,6 +4425,7 @@ Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    Bool_t doBg = this->BackgroundParameters(fExpressor, fExpressor->GetBgrdOption());
 
 // Get chip parameters from scheme file (also alternative CDFs)
+   if (datatree[0] == 0) return errGetTree;
    if (strcmp(fSchemeName.Data(), "") == 0) {
       fSchemeName = datatree[0]->GetTitle();
    } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
@@ -4442,9 +4434,7 @@ Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
 
    XDNAChip *chip = (XDNAChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-   if (!chip) {
-      return fManager->HandleError(errGetScheme, fSchemeName);
-   }//if
+   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
    Int_t numrows  = chip->GetNumRows();
    Int_t numcols  = chip->GetNumColumns();
    Int_t numctrls = chip->GetNumControls();
@@ -4831,8 +4821,6 @@ Int_t XGenomeProcesSet::DetectCall(Int_t numdata, TTree **datatree,
 {
    // Detect presence call
    // Note: Present call data will be stored as: 'P'=2, 'M'=1, 'A'=0
-   // Note: each datatree is processed individually and thus can have different
-   //       number of entries (i.e. belong to different chip types)
    if(kCS) cout << "------XGenomeProcesSet::DetectCall------" << endl;
 
 // Informing user
@@ -4841,8 +4829,11 @@ Int_t XGenomeProcesSet::DetectCall(Int_t numdata, TTree **datatree,
    }//if
 
    Int_t err = errNoErr;
+   Int_t  ij, idx, x, y, start, end;
 
    fFile->cd();
+
+   Bool_t doGC = (Bool_t)(strcmp(fCaller->GetName(), "dabgcall") == 0);
 
 // Init local arrays to store data from trees
    Int_t    *arrUnit  = 0;
@@ -4864,9 +4855,147 @@ Int_t XGenomeProcesSet::DetectCall(Int_t numdata, TTree **datatree,
    XPCall *call     = 0;
    Int_t   split    = 99;
 
+// Get chip parameters from scheme file (also alternative CDFs)
+   if (datatree[0] == 0) return errGetTree;
+   if (strcmp(fSchemeName.Data(), "") == 0) {
+      fSchemeName = datatree[0]->GetTitle();
+   } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
+      return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
+   }//if
+   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
+
+   XGeneChip *chip = (XGeneChip*)fSchemes->FindObject(fSchemeName, kTRUE);
+   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
+   Int_t numrows  = chip->GetNumRows();
+   Int_t numcols  = chip->GetNumColumns();
+   Int_t numctrls = chip->GetNumControls();
+   Int_t numunits = chip->GetNumUnits();
+   Int_t size     = numrows*numcols;
+
+// Get scheme tree for scheme
+   XScheme *scheme = 0;
+   TLeaf *scmleaf = 0;
+   TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
+   if (scmtree == 0) return errGetTree;
+   scmtree->SetBranchAddress("ScmBranch", &scheme);
+
+// Get unit tree for scheme
+   XGCUnit *unit = 0;
+   TTree *idxtree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
+   if (idxtree == 0) return errGetTree;
+   idxtree->SetBranchAddress("IdxBranch", &unit);
+
+// Get maximum number of cells from tree info for unit tree
+   XGenomeTreeInfo *idxinfo = 0;
+   idxinfo = (XGenomeTreeInfo*)idxtree->GetUserInfo()->FindObject(idxtree->GetName());
+   if (!idxinfo) {
+      cerr << "Error: Could not get tree info for <" << idxtree->GetName() << ">." << endl;
+      return errGeneral;
+   }//if
+   Int_t maxnumcells = (Int_t)idxinfo->GetValue("fMaxNCells");
+
+// Get exon level of annotation
+   Int_t level = 0;
+   if (fCallSelector->GetNumParameters() > 0) {
+      level = (Int_t)(fCallSelector->GetParameters())[0];
+   }//if
+
+// Init unit selector
+   XUnitSelector *unitSelector = 0;
+
+// Initialize memory for unit arrays
+   if (!(arrUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
+   if (!(mskUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
+
+   for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
+
+// Initialize memory for data arrays (uncomment when needed in fCaller)
+   if (!(arrMask  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
+   if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+//   if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+//   if (!(arrNPix  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
+
+   for (Int_t i=0; i<size; i++) {
+      arrMask[i]  = eINITMASK;  //init mask
+      arrInten[i] = 0.0;
+   }//for_i
+
+// Get mask from scheme tree and store in array 
+   arrMask = this->FillMaskArray(chip, scmtree, scheme, level, size, arrMask);
+   if (arrMask == 0) {err = errInitMemory; goto cleanup;}
+
+// Calculate units satisfying mask
+   unitSelector = new XUnitSelector(kTypeSlct[3], kExtenSlct[3]);
+   unitSelector->SetOption("genome");
+   err = unitSelector->InitParameters(fCallSelector->GetNumParameters(),
+                                      fCallSelector->GetParameters());
+   if (err != errNoErr) goto cleanup;
+
+// Get mask from scheme tree and store in array 
+   arrUnit = this->FillUnitArray(idxtree, unit, numunits, arrUnit, mskUnit);
+
+   err = unitSelector->Calculate(numunits, arrUnit, mskUnit);
+   if (err != errNoErr) goto cleanup;
+
+// Calculate mask for detection call (set arrMask to 1 or 0)
+   err = fCallSelector->Calculate(size, 0, 0, arrMask);
+   if (err != errNoErr) goto cleanup;
+
+// For DABG only, fill arrMask with GC content (GC>=0 for PM)
+// for PM set GC >= 0 , i.e. GC = 0...kProbeLength,
+// for MM set GC < eINITMASK, i.e. GC = eINITMASK - (1...kProbeLength+1)
+   if (doGC) {
+   // Get probe tree for scheme
+      XGCProbe *probe = 0;
+      TTree *probetree = (TTree*)gDirectory->Get(chip->GetProbeTree()); 
+      if (probetree == 0) {err = errGetTree; goto cleanup;}
+      probetree->SetBranchAddress("PrbBranch", &probe);
+
+   // Get GC content from probe tree and store in array
+      for (Int_t i=0; i<size; i++) {
+         probetree->GetEntry(i);
+
+         x  = probe->GetX();
+         y  = probe->GetY();
+         ij = XY2Index(x, y, numcols);
+
+// IMPORTANT NOTE: do not use the following code although it is faster:
+// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
+// Every tree contains the (x,y) coordinates as unique identifier, thus
+// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
+
+         if (arrMask[ij] == 1) {
+            arrMask[ij] = probe->GetNumberGC();
+         } else if (arrMask[ij] == 0) {
+            //need to use (numberGC + 1) to avoid setting arrMask=eINITMASK for GC=0!!
+            arrMask[ij] = eINITMASK - (probe->GetNumberGC() + 1);
+//no            arrMask[ij] = eINITMASK - probe->GetNumberGC();
+         }//if
+      }//for_i
+   } else {
+   // Need to get background data for MM values!
+      if (!(arrBgrd  = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+//      if (!(arrBgdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+
+      for (Int_t i=0; i<size; i++) arrBgrd[i] = 0.0;
+   }//if
+
+   if (!fFile->cd(fName)) return errGetDir;
+
+// Initialize memory for PM/MM arrays (uncomment when needed in fCaller)
+   if (!(arrPM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
+   if (!(arrMM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
+//   if (!(arrSP = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
+//   if (!(arrSM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
+   if (!(arrXP = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
+//   if (!(arrXM = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
+
+   for (Int_t i=0; i<maxnumcells; i++) {
+      arrPM[i] = arrMM[i] = 0.0; 
+      arrXP[i] = 0;
+   }//for_i
+
 // Calculate detection call
-   Bool_t doGC = (Bool_t)(strcmp(fCaller->GetName(), "dabgcall") == 0);
-   Int_t  ij, idx, x, y, start, end;
    for (Int_t k=0; k<numdata; k++) {
       if (datatree[k] == 0) return errGetTree;
 
@@ -4884,144 +5013,21 @@ Int_t XGenomeProcesSet::DetectCall(Int_t numdata, TTree **datatree,
          return errGeneral;
       }//if
 
-   // Get chip parameters from scheme file (also alternative CDFs)
-      if (strcmp(fSchemeName.Data(), "") == 0) {
-         fSchemeName = datatree[k]->GetTitle();
-      } else if (!fSchemeName.Contains(datatree[k]->GetTitle())) {
-         return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[k]->GetTitle());
-      }//if
-      if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
-
-      XGeneChip *chip = (XGeneChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-      if (!chip) {
-         return fManager->HandleError(errGetScheme, fSchemeName);
-      }//if
-      Int_t numrows  = chip->GetNumRows();
-      Int_t numcols  = chip->GetNumColumns();
-      Int_t numctrls = chip->GetNumControls();
-      Int_t numunits = chip->GetNumUnits();
-      Int_t size     = numrows*numcols;
-
       Int_t numabsent  = 0;
       Int_t numarginal = 0;
       Int_t numpresent = 0;
       Double_t minpval = 1.0;
       Double_t maxpval = 0.0;
 
-   // Get scheme tree for scheme
-      XScheme *scheme = 0;
-      TLeaf *scmleaf = 0;
-      TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
-      if (scmtree == 0) return errGetTree;
-      scmtree->SetBranchAddress("ScmBranch", &scheme);
-
-   // Get unit tree for scheme
-      XGCUnit *unit = 0;
-      TTree *idxtree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
-      if (idxtree == 0) return errGetTree;
-      idxtree->SetBranchAddress("IdxBranch", &unit);
-
-   // Get maximum number of cells from tree info for unit tree
-      XGenomeTreeInfo *idxinfo = 0;
-      idxinfo = (XGenomeTreeInfo*)idxtree->GetUserInfo()->FindObject(idxtree->GetName());
-      if (!idxinfo) {
-         cerr << "Error: Could not get tree info for <" << idxtree->GetName() << ">." << endl;
-         return errGeneral;
-      }//if
-      Int_t maxnumcells = (Int_t)idxinfo->GetValue("fMaxNCells");
-
-   // Get exon level of annotation
-      Int_t level = 0;
-      if (fCallSelector->GetNumParameters() > 0) {
-         level = (Int_t)(fCallSelector->GetParameters())[0];
-      }//if
-
-   // Init unit selector
-      XUnitSelector *unitSelector = 0;
-
-   // Initialize memory for unit arrays
-      if (!(arrUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
-      if (!(mskUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
-
-      for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
-
-   // Initialize memory for data arrays (uncomment when needed in fCaller)
-      if (!(arrMask  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-      if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-//      if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-//      if (!(arrNPix  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-
-      for (Int_t i=0; i<size; i++) {
-         arrMask[i]  = eINITMASK;  //init mask
-         arrInten[i] = 0.0;
-      }//for_i
-
-// IMPORTANT NOTE: do not use the following code although it is faster:
-// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
-// Every tree contains the (x,y) coordinates as unique identifier, thus
-// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
-
-   // Get mask from scheme tree and store in array 
-      arrMask = this->FillMaskArray(chip, scmtree, scheme, level, size, arrMask);
-      if (arrMask == 0) {err = errInitMemory; goto cleanup;}
-
-   // Calculate units satisfying mask
-      unitSelector = new XUnitSelector(kTypeSlct[3], kExtenSlct[3]);
-      unitSelector->SetOption("genome");
-      err = unitSelector->InitParameters(fCallSelector->GetNumParameters(),
-                                         fCallSelector->GetParameters());
-      if (err != errNoErr) goto cleanup;
-
-   // Get mask from scheme tree and store in array 
-      arrUnit = this->FillUnitArray(idxtree, unit, numunits, arrUnit, mskUnit);
-
-      err = unitSelector->Calculate(numunits, arrUnit, mskUnit);
-      if (err != errNoErr) goto cleanup;
-
-   // Calculate mask for detection call (set arrMask to 1 or 0)
-      err = fCallSelector->Calculate(size, 0, 0, arrMask);
-      if (err != errNoErr) goto cleanup;
-
    // Get data from datatree and store in arrays
       err = FillDataArrays(datatree[k], numrows, numcols, arrInten, arrStdev, arrNPix);
       if (err != errNoErr) goto cleanup;
 
-   // For DABG only, fill arrMask with GC content (GC>=0 for PM)
-   // for PM set GC >= 0 , i.e. GC = 0...kProbeLength,
-   // for MM set GC < eINITMASK, i.e. GC = eINITMASK - (1...kProbeLength+1)
+   // For DABG only
       if (doGC) {
-      // Get probe tree for scheme
-         XGCProbe *probe = 0;
-         TTree *probetree = (TTree*)gDirectory->Get(chip->GetProbeTree()); 
-         if (probetree == 0) {err = errGetTree; goto cleanup;}
-         probetree->SetBranchAddress("PrbBranch", &probe);
-
-      // Get GC content from probe tree and store in array
-         for (Int_t i=0; i<size; i++) {
-            probetree->GetEntry(i);
-
-            x  = probe->GetX();
-            y  = probe->GetY();
-            ij = XY2Index(x, y, numcols);
-
-            if (arrMask[ij] == 1) {
-               arrMask[ij] = probe->GetNumberGC();
-            } else if (arrMask[ij] == 0) {
-               //need to use (numberGC + 1) to avoid setting arrMask=eINITMASK for GC=0!!
-               arrMask[ij] = eINITMASK - (probe->GetNumberGC() + 1);
-//no               arrMask[ij] = eINITMASK - probe->GetNumberGC();
-            }//if
-         }//for_i
-
          // get intensities and save in table sorted for GC-content
          if ((err = fCaller->Calculate(size, arrInten, arrMask))) goto cleanup;
       } else {
-      // Need to get background data for MM values!
-         if (!(arrBgrd  = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-//         if (!(arrBgdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-
-         for (Int_t i=0; i<size; i++) arrBgrd[i] = 0.0;
-
          if (bgrdtree[k] != 0) {
            // get data from bgrdtree and store in arrays
 //            err = FillBgrdArrays(bgrdtree[k], numrows, numcols, arrBgrd, arrBgdev);
@@ -5031,26 +5037,11 @@ Int_t XGenomeProcesSet::DetectCall(Int_t numdata, TTree **datatree,
       }//if
 
    // Create new tree calltree
-      if (!fFile->cd(fName)) return errGetDir;
-
       name = Path2Name(datatree[k]->GetName(), dSEP, ".") + "." + fCaller->GetTitle();
       calltree = new TTree(name, fSchemeName);
       if (calltree == 0) return errCreateTree;
       call = new XPCall();
       calltree->Branch("CallBranch", "XPCall", &call, 64000, split);
-
-   // Initialize memory for PM/MM arrays (uncomment when needed in fCaller)
-      if (!(arrPM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-      if (!(arrMM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-//      if (!(arrSP = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-//      if (!(arrSM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-      if (!(arrXP = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
-//      if (!(arrXM = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
-
-      for (Int_t i=0; i<maxnumcells; i++) {
-         arrPM[i] = arrMM[i] = 0.0; 
-         arrXP[i] = 0;
-      }//for_i
 
    // Calculate detection call values
       start = 0;
@@ -5092,6 +5083,7 @@ Int_t XGenomeProcesSet::DetectCall(Int_t numdata, TTree **datatree,
                   p++;
                }//if
             } else {
+//               if (arrMask[ij] >= 0) {
                if (arrMask[ij] == 1) {
                   if (p == 0) idx++;  //count number of units
                   arrPM[p] = arrInten[ij];
@@ -5179,25 +5171,26 @@ Int_t XGenomeProcesSet::DetectCall(Int_t numdata, TTree **datatree,
                        fCaller->GetParameters());
       }//if
 
-   cleanup:
-      // delete arrays
-      if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
-      if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
-      if (arrSM)    {delete [] arrSM;    arrSM    = 0;}
-      if (arrSP)    {delete [] arrSP;    arrSP    = 0;}
-      if (arrMM)    {delete [] arrMM;    arrMM    = 0;}
-      if (arrPM)    {delete [] arrPM;    arrPM    = 0;}
-      if (arrBgdev) {delete [] arrBgdev; arrBgdev = 0;}
-      if (arrBgrd)  {delete [] arrBgrd;  arrBgrd  = 0;}
-      if (arrNPix)  {delete [] arrNPix;  arrNPix  = 0;}
-      if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
-      if (arrInten) {delete [] arrInten; arrInten = 0;}
-      if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
-      if (mskUnit)  {delete [] mskUnit;  mskUnit  = 0;}
-      if (arrUnit)  {delete [] arrUnit;  arrUnit  = 0;}
-
       if (err != errNoErr) break;
    }//for_k
+
+// Cleanup
+cleanup:
+   // delete arrays
+   if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
+   if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
+   if (arrSM)    {delete [] arrSM;    arrSM    = 0;}
+   if (arrSP)    {delete [] arrSP;    arrSP    = 0;}
+   if (arrMM)    {delete [] arrMM;    arrMM    = 0;}
+   if (arrPM)    {delete [] arrPM;    arrPM    = 0;}
+   if (arrBgdev) {delete [] arrBgdev; arrBgdev = 0;}
+   if (arrBgrd)  {delete [] arrBgrd;  arrBgrd  = 0;}
+   if (arrNPix)  {delete [] arrNPix;  arrNPix  = 0;}
+   if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
+   if (arrInten) {delete [] arrInten; arrInten = 0;}
+   if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
+   if (mskUnit)  {delete [] mskUnit;  mskUnit  = 0;}
+   if (arrUnit)  {delete [] arrUnit;  arrUnit  = 0;}
 
    return err;
 }//DetectCall
@@ -5207,12 +5200,15 @@ Int_t XGenomeProcesSet::DoExpress(Int_t numdata, TTree **datatree,
                         Int_t numbgrd, TTree **bgrdtree)
 {
    // Condense data from  datatrees to expression values
-   // Note: each datatree is processed individually and thus can have different
-   //       number of entries (i.e. belong to different chip types)
    if(kCS) cout << "------XGenomeProcesSet::DoExpress------" << endl;
 
    Int_t err = errNoErr;
    Int_t split = 99;
+
+   Int_t ij, idx, x, y, start, end;
+   Int_t    arrlen = 0;
+   Double_t mean   = 0;
+   Double_t var    = 0;
 
 // Init local arrays to store data from trees
    Int_t    *arrUnit  = 0;
@@ -5230,12 +5226,114 @@ Int_t XGenomeProcesSet::DoExpress(Int_t numdata, TTree **datatree,
    Int_t    *arrXP    = 0; 
    Int_t    *arrXM    = 0;
 
-// Calculate expression
-   Int_t ij, idx, x, y, start, end;
-   Int_t    arrlen = 0;
-   Double_t mean   = 0;
-   Double_t var    = 0;
+// Get chip parameters from scheme file (also alternative CDFs)
+   if (datatree[0] == 0) return errGetTree;
+   if (strcmp(fSchemeName.Data(), "") == 0) {
+      fSchemeName = datatree[0]->GetTitle();
+   } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
+      return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
+   }//if
+   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
 
+   XGeneChip *chip = (XGeneChip*)fSchemes->FindObject(fSchemeName, kTRUE);
+   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
+   Int_t numrows  = chip->GetNumRows();
+   Int_t numcols  = chip->GetNumColumns();
+   Int_t numctrls = chip->GetNumControls();
+   Int_t numunits = chip->GetNumUnits();
+   Int_t size     = numrows*numcols;
+
+// Get scheme tree for scheme
+   XScheme *scheme = 0;
+   TLeaf *scmleaf = 0;
+   TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
+   if (scmtree == 0) return errGetTree;
+   scmtree->SetBranchAddress("ScmBranch", &scheme);
+   scmleaf = scmtree->FindLeaf("fUnitID"); 
+
+// Get unit tree for scheme
+   XGCUnit *unit = 0;
+   TTree *idxtree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
+   if (idxtree == 0) return errGetTree;
+   idxtree->SetBranchAddress("IdxBranch", &unit);
+
+// Get maximum number of cells from tree info for unit tree
+   XGenomeTreeInfo *idxinfo = 0;
+   idxinfo = (XGenomeTreeInfo*)idxtree->GetUserInfo()->FindObject(idxtree->GetName());
+   if (!idxinfo) {
+      cerr << "Error: Could not get tree info for <" << idxtree->GetName() << ">." << endl;
+      return errGeneral;
+   }//if
+   Int_t maxnumcells = (Int_t)idxinfo->GetValue("fMaxNCells");
+
+// Get exon level of annotation
+   Int_t level = 0;
+   if (fExprSelector->GetNumParameters() > 0) {
+      level = (Int_t)(fExprSelector->GetParameters())[0];
+   }//if
+
+// Init unit selector
+   XUnitSelector *unitSelector = 0;
+
+// Initialize memory for unit arrays
+   if (!(arrUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
+   if (!(mskUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
+
+   for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
+
+// Initialize memory for scheme arrays
+   if (!(arrMask  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
+   if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+   if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+   if (!(arrNPix  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
+   if (!(arrBgrd  = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+   if (!(arrBgdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+
+   for (Int_t i=0; i<size; i++) {
+      arrMask[i]  = eINITMASK;  //init mask
+      arrInten[i] = arrStdev[i] = 0.0; 
+      arrNPix[i]  = 0; 
+      arrBgrd[i]  = arrBgdev[i] = 0.0;
+   }//for_i
+
+// Get mask from scheme tree and store in array 
+   arrMask = this->FillMaskArray(chip, scmtree, scheme, level, size, arrMask);
+   if (arrMask == 0) {err = errInitMemory; goto cleanup;}
+
+// Calculate units satisfying mask
+   unitSelector = new XUnitSelector(kTypeSlct[3], kExtenSlct[3]);
+   unitSelector->SetOption("genome");
+   err = unitSelector->InitParameters(fExprSelector->GetNumParameters(),
+                                      fExprSelector->GetParameters());
+   if (err != errNoErr) goto cleanup;
+
+// Get mask from scheme tree and store in array 
+   arrUnit = this->FillUnitArray(idxtree, unit, numunits, arrUnit, mskUnit);
+
+   err = unitSelector->Calculate(numunits, arrUnit, mskUnit);
+   if (err != errNoErr) goto cleanup;
+
+// Calculate mask for expression
+   err = fExprSelector->Calculate(size, 0, 0, arrMask);
+   if (err != errNoErr) goto cleanup;
+
+// Initialize memory for PM/MM arrays
+   if (!(arrPM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
+   if (!(arrMM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
+   if (!(arrSP = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
+   if (!(arrSM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
+   if (!(arrXP = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
+   if (!(arrXM = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
+
+   for (Int_t i=0; i<maxnumcells; i++) {
+      arrPM[i] = arrMM[i] = 0.0; 
+      arrSP[i] = arrSM[i] = 0.0; 
+      arrXP[i] = arrXM[i] = 0; 
+   }//for_i
+
+   if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
+
+// Calculate expression
    for (Int_t k=0; k<numdata; k++) {
       if (datatree[k] == 0) return errGetTree;
       if (bgrdtree[k] == 0) {
@@ -5251,9 +5349,6 @@ Int_t XGenomeProcesSet::DoExpress(Int_t numdata, TTree **datatree,
               << ">..." << endl;
       }//if
 
-   // Get tree info from datatree
-      fDataFile->cd();
-
       XDataTreeInfo *info = 0;
       info = (XDataTreeInfo*)datatree[k]->GetUserInfo()->FindObject(name);
       if (!info) {
@@ -5261,55 +5356,11 @@ Int_t XGenomeProcesSet::DoExpress(Int_t numdata, TTree **datatree,
          return errGeneral;
       }//if
 
-   // Get chip parameters from scheme file (also alternative CDFs)
-      if (strcmp(fSchemeName.Data(), "") == 0) {
-         fSchemeName = datatree[k]->GetTitle();
-      } else if (!fSchemeName.Contains(datatree[k]->GetTitle())) {
-         return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[k]->GetTitle());
-      }//if
-      if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
-
-      XGeneChip *chip = (XGeneChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-      if (!chip) {
-         return fManager->HandleError(errGetScheme, fSchemeName);
-      }//if
-      Int_t numrows  = chip->GetNumRows();
-      Int_t numcols  = chip->GetNumColumns();
-      Int_t numctrls = chip->GetNumControls();
-      Int_t numunits = chip->GetNumUnits();
-      Int_t size     = numrows*numcols;
-
    // Init min/max expression levels
       Double_t min = DBL_MAX;  //defined in float.h
       Double_t max = 0;
 
-   // Get scheme tree for scheme
-      XScheme *scheme = 0;
-      TLeaf *scmleaf = 0;
-      TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
-      if (scmtree == 0) return errGetTree;
-      scmtree->SetBranchAddress("ScmBranch", &scheme);
-      scmleaf = scmtree->FindLeaf("fUnitID"); 
-
-   // Get unit tree for scheme
-      XGCUnit *unit = 0;
-      TTree *idxtree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
-      if (idxtree == 0) return errGetTree;
-      idxtree->SetBranchAddress("IdxBranch", &unit);
-
-   // Get maximum number of cells from tree info for unit tree
-      XGenomeTreeInfo *idxinfo = 0;
-      idxinfo = (XGenomeTreeInfo*)idxtree->GetUserInfo()->FindObject(idxtree->GetName());
-      if (!idxinfo) {
-         cerr << "Error: Could not get tree info for <" << idxtree->GetName() << ">." << endl;
-         err = errGeneral;
-         break;
-      }//if
-      Int_t maxnumcells = (Int_t)idxinfo->GetValue("fMaxNCells");
-
    // Create new tree exprtree
-      if (!fFile->cd(fName)) return errGetDir;
-
       TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
       TString exprname = dataname + "." + fExpressor->GetTitle();
       TTree  *exprtree = new TTree(exprname, fSchemeName);
@@ -5318,76 +5369,6 @@ Int_t XGenomeProcesSet::DoExpress(Int_t numdata, TTree **datatree,
       XGCExpression *expr = 0;
       expr = new XGCExpression();
       exprtree->Branch("ExprBranch", "XGCExpression", &expr, 64000, split);
-
-   // Get exon level of annotation
-      Int_t level = 0;
-      if (fExprSelector->GetNumParameters() > 0) {
-         level = (Int_t)(fExprSelector->GetParameters())[0];
-      }//if
-
-   // Init unit selector
-      XUnitSelector *unitSelector = 0;
-
-   // Initialize memory for unit arrays
-      if (!(arrUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
-      if (!(mskUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
-
-      for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
-
-   // Initialize memory for scheme arrays
-      if (!(arrMask  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-      if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-      if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-      if (!(arrNPix  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-      if (!(arrBgrd  = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-      if (!(arrBgdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-
-      for (Int_t i=0; i<size; i++) {
-         arrMask[i]  = eINITMASK;  //init mask
-         arrInten[i] = arrStdev[i] = 0.0; 
-         arrNPix[i]  = 0; 
-         arrBgrd[i]  = arrBgdev[i] = 0.0;
-      }//for_i
-
-   // Initialize memory for PM/MM arrays
-      if (!(arrPM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-      if (!(arrMM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-      if (!(arrSP = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-      if (!(arrSM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-      if (!(arrXP = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
-      if (!(arrXM = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
-
-      for (Int_t i=0; i<maxnumcells; i++) {
-         arrPM[i] = arrMM[i] = 0.0; 
-         arrSP[i] = arrSM[i] = 0.0; 
-         arrXP[i] = arrXM[i] = 0; 
-      }//for_i
-
-// IMPORTANT NOTE: do not use the following code although it is faster:
-// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
-// Every tree contains the (x,y) coordinates as unique identifier, thus
-// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
-
-   // Get mask from scheme tree and store in array 
-      arrMask = this->FillMaskArray(chip, scmtree, scheme, level, size, arrMask);
-      if (arrMask == 0) {err = errInitMemory; goto cleanup;}
-
-   // Calculate units satisfying mask
-      unitSelector = new XUnitSelector(kTypeSlct[3], kExtenSlct[3]);
-      unitSelector->SetOption("genome");
-      err = unitSelector->InitParameters(fExprSelector->GetNumParameters(),
-                                         fExprSelector->GetParameters());
-      if (err != errNoErr) goto cleanup;
-
-   // Get mask from scheme tree and store in array 
-      arrUnit = this->FillUnitArray(idxtree, unit, numunits, arrUnit, mskUnit);
-
-      err = unitSelector->Calculate(numunits, arrUnit, mskUnit);
-      if (err != errNoErr) goto cleanup;
-
-   // Calculate mask for expression
-      err = fExprSelector->Calculate(size, 0, 0, arrMask);
-      if (err != errNoErr) goto cleanup;
 
    // Get data from datatree and bgrdtree and store in arrays
       err = FillDataArrays(datatree[k], numrows, numcols, arrInten, arrStdev, arrNPix);
@@ -5426,6 +5407,11 @@ Int_t XGenomeProcesSet::DoExpress(Int_t numdata, TTree **datatree,
             x  = scheme->GetX();
             y  = scheme->GetY();
             ij = XY2Index(x, y, numcols);
+
+// IMPORTANT NOTE: do not use the following code although it is faster:
+// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
+// Every tree contains the (x,y) coordinates as unique identifier, thus
+// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
 
             if (arrMask[ij] == 1) {
                if (p == 0) idx++;  //count number of units to be summarized
@@ -5502,26 +5488,27 @@ Int_t XGenomeProcesSet::DoExpress(Int_t numdata, TTree **datatree,
                        fExpressor->GetParameters());
       }//if
 
-   cleanup:
-      // delete arrays
-      if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
-      if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
-      if (arrSM)    {delete [] arrSM;    arrSM    = 0;}
-      if (arrSP)    {delete [] arrSP;    arrSP    = 0;}
-      if (arrMM)    {delete [] arrMM;    arrMM    = 0;}
-      if (arrPM)    {delete [] arrPM;    arrPM    = 0;}
-      if (arrBgdev) {delete [] arrBgdev; arrBgdev = 0;}
-      if (arrBgrd)  {delete [] arrBgrd;  arrBgrd  = 0;}
-      if (arrNPix)  {delete [] arrNPix;  arrNPix  = 0;}
-      if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
-      if (arrInten) {delete [] arrInten; arrInten = 0;}
-      if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
-      if (mskUnit)  {delete [] mskUnit;  mskUnit  = 0;}
-      if (arrUnit)  {delete [] arrUnit;  arrUnit  = 0;}
-      // Note: do not remove exprtree and expr from RAM, needed later!
-
       if (err != errNoErr) break;
    }//for_k
+
+// Cleanup
+cleanup:
+   // delete arrays
+   if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
+   if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
+   if (arrSM)    {delete [] arrSM;    arrSM    = 0;}
+   if (arrSP)    {delete [] arrSP;    arrSP    = 0;}
+   if (arrMM)    {delete [] arrMM;    arrMM    = 0;}
+   if (arrPM)    {delete [] arrPM;    arrPM    = 0;}
+   if (arrBgdev) {delete [] arrBgdev; arrBgdev = 0;}
+   if (arrBgrd)  {delete [] arrBgrd;  arrBgrd  = 0;}
+   if (arrNPix)  {delete [] arrNPix;  arrNPix  = 0;}
+   if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
+   if (arrInten) {delete [] arrInten; arrInten = 0;}
+   if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
+   if (mskUnit)  {delete [] mskUnit;  mskUnit  = 0;}
+   if (arrUnit)  {delete [] arrUnit;  arrUnit  = 0;}
+   // Note: do not remove exprtree and expr from RAM, needed later!
 
    return err;
 }//DoExpress
@@ -5554,6 +5541,7 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    Bool_t doBg = this->BackgroundParameters(fExpressor, fExpressor->GetBgrdOption());
 
 // Get chip parameters from scheme file (also alternative CDFs)
+   if (datatree[0] == 0) return errGetTree;
    if (strcmp(fSchemeName.Data(), "") == 0) {
       fSchemeName = datatree[0]->GetTitle();
    } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
@@ -5562,9 +5550,7 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
 
    XGeneChip *chip = (XGeneChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-   if (!chip) {
-      return fManager->HandleError(errGetScheme, fSchemeName);
-   }//if
+   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
    Int_t numrows  = chip->GetNumRows();
    Int_t numcols  = chip->GetNumColumns();
    Int_t numunits = chip->GetNumUnits();
@@ -5629,8 +5615,6 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 
 // Init expression trees
    Int_t  split = 99;
-//x   TTree *exprtree[numdata];
-//x   XGCExpression *expr[numdata];
    TTree     **exprtree = new TTree*[numdata];
    XGCExpression **expr = new XGCExpression*[numdata];
 
@@ -5944,6 +5928,7 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    Bool_t doBg = this->BackgroundParameters(fExpressor, fExpressor->GetBgrdOption());
 
 // Get chip parameters from scheme file (also alternative CDFs)
+   if (datatree[0] == 0) return errGetTree;
    if (strcmp(fSchemeName.Data(), "") == 0) {
       fSchemeName = datatree[0]->GetTitle();
    } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
@@ -5952,9 +5937,7 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
 
    XGeneChip *chip = (XGeneChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-   if (!chip) {
-      return fManager->HandleError(errGetScheme, fSchemeName);
-   }//if
+   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
    Int_t numrows  = chip->GetNumRows();
    Int_t numcols  = chip->GetNumColumns();
    Int_t numunits = chip->GetNumUnits();
@@ -6443,8 +6426,6 @@ Int_t XExonProcesSet::DetectCall(Int_t numdata, TTree **datatree,
 {
    // Detect presence call
    // Note: Present call data will be stored as: 'P'=2, 'M'=1, 'A'=0
-   // Note: each datatree is processed individually and thus can have different
-   //       number of entries (i.e. belong to different chip types)
    if(kCS) cout << "------XExonProcesSet::DetectCall------" << endl;
 
 // Informing user
@@ -6453,8 +6434,11 @@ Int_t XExonProcesSet::DetectCall(Int_t numdata, TTree **datatree,
    }//if
 
    Int_t err = errNoErr;
+   Int_t  ij, idx, x, y, start, end;
 
    fFile->cd();
+
+   Bool_t doGC = (Bool_t)(strcmp(fCaller->GetName(), "dabgcall") == 0);
 
 // Init local arrays to store data from trees
    Int_t    *arrUnit  = 0;
@@ -6476,9 +6460,164 @@ Int_t XExonProcesSet::DetectCall(Int_t numdata, TTree **datatree,
    XPCall *call     = 0;
    Int_t   split    = 99;
 
+// Get chip parameters from scheme file (also alternative CDFs)
+   if (datatree[0] == 0) return errGetTree;
+   if (strcmp(fSchemeName.Data(), "") == 0) {
+      fSchemeName = datatree[0]->GetTitle();
+   } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
+      return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
+   }//if
+   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
+
+   XExonChip *chip = (XExonChip*)fSchemes->FindObject(fSchemeName, kTRUE);
+   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
+   Int_t numrows  = chip->GetNumRows();
+   Int_t numcols  = chip->GetNumColumns();
+   Int_t numctrls = chip->GetNumControls();
+   Int_t size     = numrows*numcols;
+
+// Get scheme tree for scheme
+   XExonScheme *scheme = 0;
+   TLeaf *scmleaf = 0;
+   TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
+   if (scmtree == 0) return errGetTree;
+   scmtree->SetBranchAddress("ScmBranch", &scheme);
+
+// Get unit tree for scheme
+   XGCUnit *unit    = 0;
+   TTree   *idxtree = 0; 
+   Int_t   numunits = 0;
+   if (strcmp(fCaller->GetOption(), "exon") == 0) { 
+      idxtree  = (TTree*)gDirectory->Get(chip->GetExonUnitTree()); //tree.exn
+      if (idxtree == 0) return errGetTree;
+
+      numunits = chip->GetNumExonUnits();
+      scmleaf  = scmtree->FindLeaf("fExonID");      
+   } else if (strcmp(fCaller->GetOption(), "probeset") == 0) {
+      idxtree  = (TTree*)gDirectory->Get(chip->GetProbesetUnitTree()); //tree.pbs
+      if (idxtree == 0) return errGetTree;
+
+      numunits = idxtree->GetEntries();
+      scmleaf  = scmtree->FindLeaf("fProbesetID");      
+   } else {
+      idxtree  = (TTree*)gDirectory->Get(chip->GetUnitTree());     //tree.idx
+      if (idxtree == 0) return errGetTree;
+
+      numunits = chip->GetNumUnits();
+      scmleaf  = scmtree->FindLeaf("fUnitID");      
+   }//if
+   idxtree->SetBranchAddress("IdxBranch", &unit);
+
+// Get maximum number of cells from tree info for unit tree
+   XGenomeTreeInfo *idxinfo = 0;
+   idxinfo = (XGenomeTreeInfo*)idxtree->GetUserInfo()->FindObject(idxtree->GetName());
+   if (!idxinfo) {
+      cerr << "Error: Could not get tree info for <" << idxtree->GetName() << ">." << endl;
+      return errGeneral;
+   }//if
+   Int_t maxnumcells = (Int_t)idxinfo->GetValue("fMaxNCells");
+
+// Get exon level of annotation
+   Int_t level = 0;
+   if (fCallSelector->GetNumParameters() > 0) {
+      level = (Int_t)(fCallSelector->GetParameters())[0];
+   }//if
+
+// Init unit selector
+   XUnitSelector *unitSelector = 0;
+
+// Initialize memory for unit arrays
+   if (!(arrUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
+   if (!(mskUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
+
+   for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
+
+// Initialize memory for data arrays (uncomment when needed in fCaller)
+   if (!(arrMask  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
+   if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+//   if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+//   if (!(arrNPix  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
+
+   for (Int_t i=0; i<size; i++) {
+      arrMask[i]  = eINITMASK;  //init mask
+      arrInten[i] = 0.0; 
+   }//for_i
+
+// Get mask for PM/MM from scheme tree and store in array 
+   arrMask = this->FillMaskArray(chip, scmtree, scheme, 0, size, arrMask);
+   if (arrMask == 0) {err = errInitMemory; goto cleanup;}
+
+// Calculate units satisfying mask
+   unitSelector = new XUnitSelector(kTypeSlct[3], kExtenSlct[3]);
+   unitSelector->SetOption("exon");
+   err = unitSelector->InitParameters(fCallSelector->GetNumParameters(),
+                                      fCallSelector->GetParameters());
+   if (err != errNoErr) goto cleanup;
+
+// Get mask from scheme tree and store in array 
+   arrUnit = this->FillUnitArray(idxtree, unit, numunits, arrUnit, mskUnit);
+
+   err = unitSelector->Calculate(numunits, arrUnit, mskUnit);
+   if (err != errNoErr) goto cleanup;
+
+// Calculate mask for detection call
+   err = fCallSelector->Calculate(size, 0, 0, arrMask);
+   if (err != errNoErr) goto cleanup;
+
+// For DABG only, fill arrMask with GC content (GC>=0 for PM)
+// for PM set GC >= 0 , i.e. GC = 0...kProbeLength,
+// for MM set GC < eINITMASK, i.e. GC = eINITMASK - (1...kProbeLength+1)
+   if (doGC) {
+   // Get probe tree for scheme
+      XGCProbe *probe = 0;
+      TTree *probetree = (TTree*)gDirectory->Get(chip->GetProbeTree()); 
+      if (probetree == 0) {err = errGetTree; goto cleanup;}
+      probetree->SetBranchAddress("PrbBranch", &probe);
+
+   // Get GC content from probe tree and store in array
+      for (Int_t i=0; i<size; i++) {
+         probetree->GetEntry(i);
+
+         x  = probe->GetX();
+         y  = probe->GetY();
+         ij = XY2Index(x, y, numcols);
+
+// IMPORTANT NOTE: do not use the following code although it is faster:
+// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
+// Every tree contains the (x,y) coordinates as unique identifier, thus
+// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
+
+         if (arrMask[ij] == 1) {
+            arrMask[ij] = probe->GetNumberGC();
+         } else if (arrMask[ij] == 0) {
+            //need to use (numberGC + 1) to avoid setting arrMask=eINITMASK for GC=0!!
+            arrMask[ij] = eINITMASK - (probe->GetNumberGC() + 1);
+//no            arrMask[ij] = eINITMASK - probe->GetNumberGC();
+         }//if
+      }//for_i
+   } else {
+      if (!(arrBgrd  = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+//      if (!(arrBgdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+
+      for (Int_t i=0; i<size; i++) arrBgrd[i] = 0.0;
+   }//if
+
+   if (!fFile->cd(fName)) return errGetDir;
+
+// Initialize memory for PM/MM arrays (uncomment when needed in fCaller)
+   if (!(arrPM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
+   if (!(arrMM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
+//   if (!(arrSP = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
+//   if (!(arrSM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
+   if (!(arrXP = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
+//   if (!(arrXM = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
+
+   for (Int_t i=0; i<maxnumcells; i++) {
+      arrPM[i] = arrMM[i] = 0.0; 
+      arrXP[i] = 0; 
+   }//for_i
+
 // Calculate detection call
-   Bool_t doGC = (Bool_t)(strcmp(fCaller->GetName(), "dabgcall") == 0);
-   Int_t  ij, idx, x, y, start, end;
    for (Int_t k=0; k<numdata; k++) {
       if (datatree[k] == 0) return errGetTree;
 
@@ -6496,153 +6635,18 @@ Int_t XExonProcesSet::DetectCall(Int_t numdata, TTree **datatree,
          return errGeneral;
       }//if
 
-   // Get chip parameters from scheme file (also alternative CDFs)
-      if (strcmp(fSchemeName.Data(), "") == 0) {
-         fSchemeName = datatree[k]->GetTitle();
-      } else if (!fSchemeName.Contains(datatree[k]->GetTitle())) {
-         return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[k]->GetTitle());
-      }//if
-      if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
-
-      XExonChip *chip = (XExonChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-      if (!chip) {
-         return fManager->HandleError(errGetScheme, fSchemeName);
-      }//if
-      Int_t numrows  = chip->GetNumRows();
-      Int_t numcols  = chip->GetNumColumns();
-      Int_t numctrls = chip->GetNumControls();
-      Int_t size     = numrows*numcols;
-
       Int_t    numabsent  = 0;
       Int_t    numarginal = 0;
       Int_t    numpresent = 0;
       Double_t minpval    = 1.0;
       Double_t maxpval    = 0.0;
 
-   // Get scheme tree for scheme
-      XExonScheme *scheme = 0;
-      TLeaf *scmleaf = 0;
-      TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
-      if (scmtree == 0) return errGetTree;
-      scmtree->SetBranchAddress("ScmBranch", &scheme);
-
-   // Get unit tree for scheme
-      XGCUnit *unit    = 0;
-      TTree   *idxtree = 0; 
-      Int_t   numunits = 0;
-      if (strcmp(fCaller->GetOption(), "exon") == 0) { 
-         idxtree  = (TTree*)gDirectory->Get(chip->GetExonUnitTree()); //tree.exn
-         if (idxtree == 0) return errGetTree;
-
-         numunits = chip->GetNumExonUnits();
-         scmleaf  = scmtree->FindLeaf("fExonID");      
-      } else if (strcmp(fCaller->GetOption(), "probeset") == 0) {
-         idxtree  = (TTree*)gDirectory->Get(chip->GetProbesetUnitTree()); //tree.pbs
-         if (idxtree == 0) return errGetTree;
-
-         numunits = idxtree->GetEntries();
-         scmleaf  = scmtree->FindLeaf("fProbesetID");      
-      } else {
-         idxtree  = (TTree*)gDirectory->Get(chip->GetUnitTree());     //tree.idx
-         if (idxtree == 0) return errGetTree;
-
-         numunits = chip->GetNumUnits();
-         scmleaf  = scmtree->FindLeaf("fUnitID");      
-      }//if
-      idxtree->SetBranchAddress("IdxBranch", &unit);
-
-   // Get maximum number of cells from tree info for unit tree
-      XGenomeTreeInfo *idxinfo = 0;
-      idxinfo = (XGenomeTreeInfo*)idxtree->GetUserInfo()->FindObject(idxtree->GetName());
-      if (!idxinfo) {
-         cerr << "Error: Could not get tree info for <" << idxtree->GetName() << ">." << endl;
-         return errGeneral;
-      }//if
-      Int_t maxnumcells = (Int_t)idxinfo->GetValue("fMaxNCells");
-
-   // Get exon level of annotation
-      Int_t level = 0;
-      if (fCallSelector->GetNumParameters() > 0) {
-         level = (Int_t)(fCallSelector->GetParameters())[0];
-      }//if
-
-   // Init unit selector
-      XUnitSelector *unitSelector = 0;
-
-   // Initialize memory for unit arrays
-      if (!(arrUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
-      if (!(mskUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
-
-      for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
-
-   // Initialize memory for data arrays (uncomment when needed in fCaller)
-      if (!(arrMask  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-      if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-//      if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-//      if (!(arrNPix  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-
-      for (Int_t i=0; i<size; i++) {
-         arrMask[i]  = eINITMASK;  //init mask
-         arrInten[i] = 0.0; 
-      }//for_i
-
-// IMPORTANT NOTE: do not use the following code although it is faster:
-// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
-// Every tree contains the (x,y) coordinates as unique identifier, thus
-// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
-
-   // Get mask for PM/MM from scheme tree and store in array 
-      arrMask = this->FillMaskArray(chip, scmtree, scheme, 0, size, arrMask);
-      if (arrMask == 0) {err = errInitMemory; goto cleanup;}
-
-   // Calculate units satisfying mask
-      unitSelector = new XUnitSelector(kTypeSlct[3], kExtenSlct[3]);
-      unitSelector->SetOption("exon");
-      err = unitSelector->InitParameters(fCallSelector->GetNumParameters(),
-                                         fCallSelector->GetParameters());
-      if (err != errNoErr) goto cleanup;
-
-   // Get mask from scheme tree and store in array 
-      arrUnit = this->FillUnitArray(idxtree, unit, numunits, arrUnit, mskUnit);
-
-      err = unitSelector->Calculate(numunits, arrUnit, mskUnit);
-      if (err != errNoErr) goto cleanup;
-
-   // Calculate mask for detection call
-      err = fCallSelector->Calculate(size, 0, 0, arrMask);
-      if (err != errNoErr) goto cleanup;
-
    // Get data from datatree and store in arrays
       err = FillDataArrays(datatree[k], numrows, numcols, arrInten, arrStdev, arrNPix);
       if (err != errNoErr) goto cleanup;
 
-   // For DABG only, fill arrMask with GC content (GC>=0 for PM)
-   // for PM set GC >= 0 , i.e. GC = 0...kProbeLength,
-   // for MM set GC < eINITMASK, i.e. GC = eINITMASK - (1...kProbeLength+1)
+   // For DABG only
       if (doGC) {
-      // Get probe tree for scheme
-         XGCProbe *probe = 0;
-         TTree *probetree = (TTree*)gDirectory->Get(chip->GetProbeTree()); 
-         if (probetree == 0) {err = errGetTree; goto cleanup;}
-         probetree->SetBranchAddress("PrbBranch", &probe);
-
-      // Get GC content from probe tree and store in array
-         for (Int_t i=0; i<size; i++) {
-            probetree->GetEntry(i);
-
-            x  = probe->GetX();
-            y  = probe->GetY();
-            ij = XY2Index(x, y, numcols);
-
-            if (arrMask[ij] == 1) {
-               arrMask[ij] = probe->GetNumberGC();
-            } else if (arrMask[ij] == 0) {
-               //need to use (numberGC + 1) to avoid setting arrMask=eINITMASK for GC=0!!
-               arrMask[ij] = eINITMASK - (probe->GetNumberGC() + 1);
-//no               arrMask[ij] = eINITMASK - probe->GetNumberGC();
-            }//if
-         }//for_i
-
          // get intensities and save in table sorted for GC-content
          if ((err = fCaller->Calculate(size, arrInten, arrMask))) goto cleanup;
       } else {
@@ -6653,9 +6657,6 @@ Int_t XExonProcesSet::DetectCall(Int_t numdata, TTree **datatree,
             err = errGetTree; goto cleanup;
          }//if
 
-         if (!(arrBgrd  = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-//         if (!(arrBgdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-
         // get data from bgrdtree and store in arrays
 //         err = FillBgrdArrays(bgrdtree[k], numrows, numcols, arrBgrd, arrBgdev);
          err = FillBgrdArrays(bgrdtree[k], numrows, numcols, arrBgrd, 0);
@@ -6663,26 +6664,11 @@ Int_t XExonProcesSet::DetectCall(Int_t numdata, TTree **datatree,
       }//if
 
    // Create new tree calltree
-      if (!fFile->cd(fName)) return errGetDir;
-
       name = Path2Name(datatree[k]->GetName(), dSEP, ".") + "." + fCaller->GetTitle();
       calltree = new TTree(name, fSchemeName);
       if (calltree == 0) return errCreateTree;
       call = new XPCall();
       calltree->Branch("CallBranch", "XPCall", &call, 64000, split);
-
-   // Initialize memory for PM/MM arrays (uncomment when needed in fCaller)
-      if (!(arrPM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-      if (!(arrMM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-//      if (!(arrSP = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-//      if (!(arrSM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-      if (!(arrXP = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
-//      if (!(arrXM = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
-
-      for (Int_t i=0; i<maxnumcells; i++) {
-         arrPM[i] = arrMM[i] = 0.0; 
-         arrXP[i] = 0; 
-      }//for_i
 
    // Calculate detection call values
       start = 0;
@@ -6811,25 +6797,26 @@ Int_t XExonProcesSet::DetectCall(Int_t numdata, TTree **datatree,
                        fCaller->GetParameters());
       }//if
 
-   cleanup:
-      // delete arrays
-      if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
-      if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
-      if (arrSM)    {delete [] arrSM;    arrSM    = 0;}
-      if (arrSP)    {delete [] arrSP;    arrSP    = 0;}
-      if (arrMM)    {delete [] arrMM;    arrMM    = 0;}
-      if (arrPM)    {delete [] arrPM;    arrPM    = 0;}
-      if (arrBgdev) {delete [] arrBgdev; arrBgdev = 0;}
-      if (arrBgrd)  {delete [] arrBgrd;  arrBgrd  = 0;}
-      if (arrNPix)  {delete [] arrNPix;  arrNPix  = 0;}
-      if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
-      if (arrInten) {delete [] arrInten; arrInten = 0;}
-      if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
-      if (mskUnit)  {delete [] mskUnit;  mskUnit  = 0;}
-      if (arrUnit)  {delete [] arrUnit;  arrUnit  = 0;}
-
       if (err != errNoErr) break;
    }//for_k
+
+// Cleanup
+cleanup:
+   // delete arrays
+   if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
+   if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
+   if (arrSM)    {delete [] arrSM;    arrSM    = 0;}
+   if (arrSP)    {delete [] arrSP;    arrSP    = 0;}
+   if (arrMM)    {delete [] arrMM;    arrMM    = 0;}
+   if (arrPM)    {delete [] arrPM;    arrPM    = 0;}
+   if (arrBgdev) {delete [] arrBgdev; arrBgdev = 0;}
+   if (arrBgrd)  {delete [] arrBgrd;  arrBgrd  = 0;}
+   if (arrNPix)  {delete [] arrNPix;  arrNPix  = 0;}
+   if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
+   if (arrInten) {delete [] arrInten; arrInten = 0;}
+   if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
+   if (mskUnit)  {delete [] mskUnit;  mskUnit  = 0;}
+   if (arrUnit)  {delete [] arrUnit;  arrUnit  = 0;}
 
    return err;
 }//DetectCall
@@ -6839,12 +6826,15 @@ Int_t XExonProcesSet::DoExpress(Int_t numdata, TTree **datatree,
                       Int_t numbgrd, TTree **bgrdtree)
 {
    // Condense data from  datatrees to expression values
-   // Note: each datatree is processed individually and thus can have different
-   //       number of entries (i.e. belong to different chip types)
    if(kCS) cout << "------XExonProcesSet::DoExpress------" << endl;
 
    Int_t err = errNoErr;
    Int_t split = 99;
+
+   Int_t ij, idx, x, y, start, end;
+   Int_t    arrlen = 0;
+   Double_t mean   = 0;
+   Double_t var    = 0;
 
 // Init local arrays to store data from trees
    Int_t    *arrUnit  = 0;
@@ -6862,12 +6852,131 @@ Int_t XExonProcesSet::DoExpress(Int_t numdata, TTree **datatree,
    Int_t    *arrXP    = 0; 
    Int_t    *arrXM    = 0;
 
-// Calculate expression
-   Int_t ij, idx, x, y, start, end;
-   Int_t    arrlen = 0;
-   Double_t mean   = 0;
-   Double_t var    = 0;
+// Get chip parameters from scheme file (also alternative CDFs)
+   if (datatree[0] == 0) return errGetTree;
+   if (strcmp(fSchemeName.Data(), "") == 0) {
+      fSchemeName = datatree[0]->GetTitle();
+   } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
+      return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
+   }//if
+   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
 
+   XExonChip *chip = (XExonChip*)fSchemes->FindObject(fSchemeName, kTRUE);
+   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
+   Int_t numrows  = chip->GetNumRows();
+   Int_t numcols  = chip->GetNumColumns();
+   Int_t numctrls = chip->GetNumControls();
+   Int_t size     = numrows*numcols;
+
+// Get scheme tree for scheme
+   XExonScheme *scheme = 0;
+   TLeaf *scmleaf = 0;
+   TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
+   if (scmtree == 0) return errGetTree;
+   scmtree->SetBranchAddress("ScmBranch", &scheme);
+
+// Get unit tree for scheme
+   XGCUnit *unit    = 0;
+   TTree   *idxtree = 0; 
+   Int_t   numunits = 0;
+   if (strcmp(fExpressor->GetOption(), "exon") == 0) { 
+      idxtree  = (TTree*)gDirectory->Get(chip->GetExonUnitTree()); //tree.exn
+      if (idxtree == 0) return errGetTree;
+
+      numunits = chip->GetNumExonUnits();
+      scmleaf  = scmtree->FindLeaf("fExonID");      
+   } else if (strcmp(fExpressor->GetOption(), "probeset") == 0) {
+      idxtree  = (TTree*)gDirectory->Get(chip->GetProbesetUnitTree()); //tree.pbs
+      if (idxtree == 0) return errGetTree;
+
+      numunits = idxtree->GetEntries();
+      scmleaf  = scmtree->FindLeaf("fProbesetID");      
+   } else {
+      idxtree  = (TTree*)gDirectory->Get(chip->GetUnitTree());     //tree.idx
+      if (idxtree == 0) return errGetTree;
+
+      numunits = chip->GetNumUnits();
+      scmleaf  = scmtree->FindLeaf("fUnitID");      
+   }//if
+   idxtree->SetBranchAddress("IdxBranch", &unit);
+
+// Get maximum number of cells from tree info for unit tree
+   XGenomeTreeInfo *idxinfo = 0;
+   idxinfo = (XGenomeTreeInfo*)idxtree->GetUserInfo()->FindObject(idxtree->GetName());
+   if (!idxinfo) {
+      cerr << "Error: Could not get tree info for <" << idxtree->GetName() << ">." << endl;
+      return errGeneral;
+   }//if
+   Int_t maxnumcells = (Int_t)idxinfo->GetValue("fMaxNCells");
+
+// Get exon level of annotation
+   Int_t level = 0;
+   if (fExprSelector->GetNumParameters() > 0) {
+      level = (Int_t)(fExprSelector->GetParameters())[0];
+   }//if
+
+// Init unit selector
+   XUnitSelector *unitSelector = 0;
+
+// Initialize memory for unit arrays
+   if (!(arrUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
+   if (!(mskUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
+
+   for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
+
+// Initialize memory for local arrays
+   if (!(arrMask  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
+   if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+   if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+   if (!(arrNPix  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
+   if (!(arrBgrd  = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+   if (!(arrBgdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+
+   for (Int_t i=0; i<size; i++) {
+      arrMask[i]  = eINITMASK;  //init mask
+      arrInten[i] = arrStdev[i] = 0.0; 
+      arrNPix[i]  = 0; 
+      arrBgrd[i]  = arrBgdev[i] = 0.0;
+   }//for_i
+
+// Get mask for PM/MM from scheme tree and store in array 
+   arrMask = this->FillMaskArray(chip, scmtree, scheme, 0, size, arrMask);
+   if (arrMask == 0) {err = errInitMemory; goto cleanup;}
+
+// Calculate units satisfying mask
+   unitSelector = new XUnitSelector(kTypeSlct[3], kExtenSlct[3]);
+   unitSelector->SetOption("exon");
+   err = unitSelector->InitParameters(fExprSelector->GetNumParameters(),
+                                      fExprSelector->GetParameters());
+   if (err != errNoErr) goto cleanup;
+
+// Get mask from scheme tree and store in array 
+   arrUnit = this->FillUnitArray(idxtree, unit, numunits, arrUnit, mskUnit);
+
+   err = unitSelector->Calculate(numunits, arrUnit, mskUnit);
+   if (err != errNoErr) goto cleanup;
+
+// Calculate mask for expression
+   err = fExprSelector->Calculate(size, 0, 0, arrMask);
+   if (err != errNoErr) goto cleanup;
+
+// Initialize memory for PM/MM arrays
+   if (!(arrPM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
+   if (!(arrMM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
+   if (!(arrSP = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
+   if (!(arrSM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
+   if (!(arrXP = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
+   if (!(arrXM = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
+
+   for (Int_t i=0; i<maxnumcells; i++) {
+      arrPM[i] = arrMM[i] = 0.0; 
+      arrSP[i] = arrSM[i] = 0.0; 
+      arrXP[i] = arrXM[i] = 0; 
+   }//for_i
+
+   if (!fFile->cd(fName)) return errGetDir;
+
+// Calculate expression
    for (Int_t k=0; k<numdata; k++) {
       if (datatree[k] == 0) return errGetTree;
       if (bgrdtree[k] == 0) {
@@ -6883,9 +6992,6 @@ Int_t XExonProcesSet::DoExpress(Int_t numdata, TTree **datatree,
               << ">..." << endl;
       }//if
 
-   // Get tree info from datatree
-      fDataFile->cd();
-
       XDataTreeInfo *info = 0;
       info = (XDataTreeInfo*)datatree[k]->GetUserInfo()->FindObject(name);
       if (!info) {
@@ -6893,72 +6999,11 @@ Int_t XExonProcesSet::DoExpress(Int_t numdata, TTree **datatree,
          return errGeneral;
       }//if
 
-   // Get chip parameters from scheme file (also alternative CDFs)
-      if (strcmp(fSchemeName.Data(), "") == 0) {
-         fSchemeName = datatree[k]->GetTitle();
-      } else if (!fSchemeName.Contains(datatree[k]->GetTitle())) {
-         return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[k]->GetTitle());
-      }//if
-      if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
-
-      XExonChip *chip = (XExonChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-      if (!chip) {
-         return fManager->HandleError(errGetScheme, fSchemeName);
-      }//if
-      Int_t numrows  = chip->GetNumRows();
-      Int_t numcols  = chip->GetNumColumns();
-      Int_t numctrls = chip->GetNumControls();
-      Int_t size     = numrows*numcols;
-
    // Init min/max expression levels
       Double_t min = DBL_MAX;  //defined in float.h
       Double_t max = 0;
 
-   // Get scheme tree for scheme
-      XExonScheme *scheme = 0;
-      TLeaf *scmleaf = 0;
-      TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
-      if (scmtree == 0) return errGetTree;
-      scmtree->SetBranchAddress("ScmBranch", &scheme);
-
-   // Get unit tree for scheme
-      XGCUnit *unit    = 0;
-      TTree   *idxtree = 0; 
-      Int_t   numunits = 0;
-      if (strcmp(fExpressor->GetOption(), "exon") == 0) { 
-         idxtree  = (TTree*)gDirectory->Get(chip->GetExonUnitTree()); //tree.exn
-         if (idxtree == 0) return errGetTree;
-
-         numunits = chip->GetNumExonUnits();
-         scmleaf  = scmtree->FindLeaf("fExonID");      
-      } else if (strcmp(fExpressor->GetOption(), "probeset") == 0) {
-         idxtree  = (TTree*)gDirectory->Get(chip->GetProbesetUnitTree()); //tree.pbs
-         if (idxtree == 0) return errGetTree;
-
-         numunits = idxtree->GetEntries();
-         scmleaf  = scmtree->FindLeaf("fProbesetID");      
-      } else {
-         idxtree  = (TTree*)gDirectory->Get(chip->GetUnitTree());     //tree.idx
-         if (idxtree == 0) return errGetTree;
-
-         numunits = chip->GetNumUnits();
-         scmleaf  = scmtree->FindLeaf("fUnitID");      
-      }//if
-      idxtree->SetBranchAddress("IdxBranch", &unit);
-
-   // Get maximum number of cells from tree info for unit tree
-      XGenomeTreeInfo *idxinfo = 0;
-      idxinfo = (XGenomeTreeInfo*)idxtree->GetUserInfo()->FindObject(idxtree->GetName());
-      if (!idxinfo) {
-         cerr << "Error: Could not get tree info for <" << idxtree->GetName() << ">." << endl;
-         err = errGeneral;
-         break;
-      }//if
-      Int_t maxnumcells = (Int_t)idxinfo->GetValue("fMaxNCells");
-
    // Create new tree exprtree
-      if (!fFile->cd(fName)) return errGetDir;
-
       TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
       TString exprname = dataname + "." + fExpressor->GetTitle();
       TTree  *exprtree = new TTree(exprname, fSchemeName);
@@ -6967,76 +7012,6 @@ Int_t XExonProcesSet::DoExpress(Int_t numdata, TTree **datatree,
       XGCExpression *expr = 0;
       expr = new XGCExpression();
       exprtree->Branch("ExprBranch", "XGCExpression", &expr, 64000, split);
-
-   // Get exon level of annotation
-      Int_t level = 0;
-      if (fExprSelector->GetNumParameters() > 0) {
-         level = (Int_t)(fExprSelector->GetParameters())[0];
-      }//if
-
-   // Init unit selector
-      XUnitSelector *unitSelector = 0;
-
-   // Initialize memory for unit arrays
-      if (!(arrUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
-      if (!(mskUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
-
-      for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
-
-   // Initialize memory for local arrays
-      if (!(arrMask  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-      if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-      if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-      if (!(arrNPix  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-      if (!(arrBgrd  = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-      if (!(arrBgdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-
-      for (Int_t i=0; i<size; i++) {
-         arrMask[i]  = eINITMASK;  //init mask
-         arrInten[i] = arrStdev[i] = 0.0; 
-         arrNPix[i]  = 0; 
-         arrBgrd[i]  = arrBgdev[i] = 0.0;
-      }//for_i
-
-   // Initialize memory for PM/MM arrays
-      if (!(arrPM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-      if (!(arrMM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-      if (!(arrSP = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-      if (!(arrSM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-      if (!(arrXP = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
-      if (!(arrXM = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
-
-      for (Int_t i=0; i<maxnumcells; i++) {
-         arrPM[i] = arrMM[i] = 0.0; 
-         arrSP[i] = arrSM[i] = 0.0; 
-         arrXP[i] = arrXM[i] = 0; 
-      }//for_i
-
-// IMPORTANT NOTE: do not use the following code although it is faster:
-// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
-// Every tree contains the (x,y) coordinates as unique identifier, thus
-// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
-
-   // Get mask for PM/MM from scheme tree and store in array 
-      arrMask = this->FillMaskArray(chip, scmtree, scheme, 0, size, arrMask);
-      if (arrMask == 0) {err = errInitMemory; goto cleanup;}
-
-   // Calculate units satisfying mask
-      unitSelector = new XUnitSelector(kTypeSlct[3], kExtenSlct[3]);
-      unitSelector->SetOption("exon");
-      err = unitSelector->InitParameters(fExprSelector->GetNumParameters(),
-                                         fExprSelector->GetParameters());
-      if (err != errNoErr) goto cleanup;
-
-   // Get mask from scheme tree and store in array 
-      arrUnit = this->FillUnitArray(idxtree, unit, numunits, arrUnit, mskUnit);
-
-      err = unitSelector->Calculate(numunits, arrUnit, mskUnit);
-      if (err != errNoErr) goto cleanup;
-
-   // Calculate mask for expression
-      err = fExprSelector->Calculate(size, 0, 0, arrMask);
-      if (err != errNoErr) goto cleanup;
 
    // Get data from datatree and bgrdtree and store in arrays
       err = FillDataArrays(datatree[k], numrows, numcols, arrInten, arrStdev, arrNPix);
@@ -7075,6 +7050,11 @@ Int_t XExonProcesSet::DoExpress(Int_t numdata, TTree **datatree,
             x  = scheme->GetX();
             y  = scheme->GetY();
             ij = XY2Index(x, y, numcols);
+
+// IMPORTANT NOTE: do not use the following code although it is faster:
+// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
+// Every tree contains the (x,y) coordinates as unique identifier, thus
+// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
 
             if (arrMask[ij] == 1) {
                if (p == 0) idx++;  //count number of units to be summarized
@@ -7151,26 +7131,27 @@ Int_t XExonProcesSet::DoExpress(Int_t numdata, TTree **datatree,
                        fExpressor->GetParameters());
       }//if
 
-   cleanup:
-      // delete arrays
-      if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
-      if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
-      if (arrSM)    {delete [] arrSM;    arrSM    = 0;}
-      if (arrSP)    {delete [] arrSP;    arrSP    = 0;}
-      if (arrMM)    {delete [] arrMM;    arrMM    = 0;}
-      if (arrPM)    {delete [] arrPM;    arrPM    = 0;}
-      if (arrBgdev) {delete [] arrBgdev; arrBgdev = 0;}
-      if (arrBgrd)  {delete [] arrBgrd;  arrBgrd  = 0;}
-      if (arrNPix)  {delete [] arrNPix;  arrNPix  = 0;}
-      if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
-      if (arrInten) {delete [] arrInten; arrInten = 0;}
-      if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
-      if (mskUnit)  {delete [] mskUnit;  mskUnit  = 0;}
-      if (arrUnit)  {delete [] arrUnit;  arrUnit  = 0;}
-      // Note: do not remove exprtree and expr from RAM, needed later!
-
       if (err != errNoErr) break;
    }//for_k
+
+// Cleanup
+cleanup:
+   // delete arrays
+   if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
+   if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
+   if (arrSM)    {delete [] arrSM;    arrSM    = 0;}
+   if (arrSP)    {delete [] arrSP;    arrSP    = 0;}
+   if (arrMM)    {delete [] arrMM;    arrMM    = 0;}
+   if (arrPM)    {delete [] arrPM;    arrPM    = 0;}
+   if (arrBgdev) {delete [] arrBgdev; arrBgdev = 0;}
+   if (arrBgrd)  {delete [] arrBgrd;  arrBgrd  = 0;}
+   if (arrNPix)  {delete [] arrNPix;  arrNPix  = 0;}
+   if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
+   if (arrInten) {delete [] arrInten; arrInten = 0;}
+   if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
+   if (mskUnit)  {delete [] mskUnit;  mskUnit  = 0;}
+   if (arrUnit)  {delete [] arrUnit;  arrUnit  = 0;}
+   // Note: do not remove exprtree and expr from RAM, needed later!
 
    return err;
 }//DoExpress
@@ -7203,6 +7184,7 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    Bool_t doBg = this->BackgroundParameters(fExpressor, fExpressor->GetBgrdOption());
 
 // Get chip parameters from scheme file (also alternative CDFs)
+   if (datatree[0] == 0) return errGetTree;
    if (strcmp(fSchemeName.Data(), "") == 0) {
       fSchemeName = datatree[0]->GetTitle();
    } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
@@ -7211,9 +7193,7 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
 
    XExonChip *chip = (XExonChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-   if (!chip) {
-      return fManager->HandleError(errGetScheme, fSchemeName);
-   }//if
+   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
    Int_t numrows  = chip->GetNumRows();
    Int_t numcols  = chip->GetNumColumns();
 
@@ -7603,6 +7583,7 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    Bool_t doBg = this->BackgroundParameters(fExpressor, fExpressor->GetBgrdOption());
 
 // Get chip parameters from scheme file (also alternative CDFs)
+   if (datatree[0] == 0) return errGetTree;
    if (strcmp(fSchemeName.Data(), "") == 0) {
       fSchemeName = datatree[0]->GetTitle();
    } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
@@ -7611,9 +7592,7 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
 
    XExonChip *chip = (XExonChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-   if (!chip) {
-      return fManager->HandleError(errGetScheme, fSchemeName);
-   }//if
+   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
    Int_t numrows  = chip->GetNumRows();
    Int_t numcols  = chip->GetNumColumns();
 

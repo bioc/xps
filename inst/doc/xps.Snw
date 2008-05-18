@@ -26,7 +26,7 @@
 \begin{document}
 
 \title{Introduction to the xps Package: Overview}
-\date{April, 2008}
+\date{May, 2008}
 \author{Christian Stratowa}
 \maketitle
 
@@ -48,7 +48,7 @@ challenge, since R stores all objects in memory.
 
 Package \xps\ ~- \Rclass{eXpression Profiling System} - is designed to analyze 
 Affymetrix GeneChip expression and exon arrays on computers with limited amounts 
-of memory (1-2 GB RAM). To achieve this goal, \xps\  takes advantage of \ROOT, a 
+of memory (1 GB RAM). To achieve this goal, \xps\  takes advantage of \ROOT, a 
 framework especially developed to handle and analyse large amounts of data in a 
 memory efficient way.
  
@@ -163,19 +163,22 @@ further project--relevant data for the experiment, see S4 class \Rclass{ProjectI
 {\bf Note 2:} Since \ROOT\ \Rclass{data} files contain the raw data, it is proposed
 to create them in a common system directory, which may be accessible to other users, too.
 
-{\bf Note 3:} Usually, \ROOT\ \Rclass{data} files are kept permanently. Thus it is not
-possible to accidently overwrite a \ROOT\ \Rclass{data} file with another file of the
-same name; you will get an error message. If you want to create a temporary \ROOT\ 
-\Rclass{data} file, which can be overwritten, the name must start with `tmp\_', as we
-have done in the example above.
-
-{\bf Note 4:} In order to distinguish \ROOT\ \Rclass{data} files containing the raw data 
+{\bf Note 3:} In order to distinguish \ROOT\ \Rclass{data} files containing the raw data 
 from other \ROOT\ files, extension `\_cel' is automatically added to the file name. Thus
 creating a raw data file with name \Rclass{DataTest3} will result in a \ROOT\ file with
 name \Rclass{DataTest3\_cel.root}. Extension `root' is always added to each \ROOT\ file.
 
+{\bf Note 4:} Usually, \ROOT\ \Rclass{data} files are kept permanently. Thus it is not
+possible to accidently overwrite a \ROOT\ \Rclass{data} file with another file of the
+same name; you will get an error message. If you want to create a temporary \ROOT\ 
+\Rclass{data} file, which can be overwritten, the name must start with `tmp\_'. However, 
+in the example above we needed to use `tmpdt\_' otherwise R CMD check would produce 
+an error on Windows. Please note that `tmpdt\_' will not work with function 
+\Rfunction{import.data} for the reason described in Note 3 above.
+
 {\bf Note 5:} It is highly recommended to keep the default setting \Rcode{verbose=TRUE}, 
-especially when working with exon arrays.
+especially when working with exon arrays. On Windows you will see the verbose messages
+only when starting \Robject{R} from the command line.
 
 
 \subsection{Accessing raw data}
@@ -301,7 +304,10 @@ store the results as \ROOT\ \Rclass{Trees} in \ROOT\ file \Rclass{tmpdt\_Test3RM
 <<results=hide>>=
 data.rma <- rma(data.test3, "tmpdt_Test3RMA", verbose=FALSE)
 @
-{\bf Note:} In this example and the following examples we suppress the usual output. \\
+{\bf Note:} In this example and the following examples we suppress the usual output.
+Furthermore, once again we use `tmpdt\_', which adds date and time to the tmp-file, 
+otherwise R CMD check would produce an error on Winodws. Usually, it is recommended to 
+use `tmp\_' which will be overwritten.  \\
 
 
 Then we preprocess the raw data using method `MAS5' to compute expression levels, and
@@ -660,8 +666,9 @@ and \Rfunction{?import.genome.scheme} for more information.
 
 Additional examples how to use package \xps\ can be found in file "script4xps.R", located
 in subdirectory examples. Most of these examples are easily adaptable to users need and can 
-be copied with no or only minor modifications. This file uses the  Affymetrix Human Tisse 
-Datasets for arrays HG-U133\_Plus\_2, HuEx-1\_0-st-v2 and HuGene-1\_0-st-v1.
+be copied with no or only minor modifications. This file and a second file "script4exon.R" 
+use the Affymetrix Human Tisse Datasets for arrays HG-U133\_Plus\_2, HuEx-1\_0-st-v2 and 
+HuGene-1\_0-st-v1.
 
 
 \subsection{Using Biobase class ExpressionSet}

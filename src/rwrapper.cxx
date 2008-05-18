@@ -163,6 +163,9 @@ void ImportData(char **filename, char **dirname, char **chiptype,
 // create new data manager
    XDataManager *manager = new XDataManager("DataManager","", *verbose);
 
+// increase default maximum file size from 1.9 GB to 2 TB
+   manager->SetMaxFileSize(2000000000);
+
 // initialize chip type and variable list
    int r = 0;
    r += manager->Initialize(chiptype[0]);
@@ -360,6 +363,9 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
 // create new preprocessing manager
    XPreProcessManager *manager = new XPreProcessManager("PreProcessManager","", *verbose);
 
+// increase default maximum file size from 1.9 GB to 2 TB
+   manager->SetMaxFileSize(2000000000);
+
 // initialize chip type
    int r = 0;
    r += manager->Initialize(chiptype[0]);
@@ -391,6 +397,7 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
    }//if
 
 // initialize normalizer
+   const char *normopt = new char[strlen(exproption[0]) + 17];
    if (normalize) {
       if (strcmp(chiptype[0], "GeneChip") == 0) {
          r += manager->InitAlgorithm("selector", "probe", "pmonly", 0);
@@ -404,7 +411,10 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
          r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, normlevel);
       }//if
 
-      r += manager->InitAlgorithm("normalizer", "quantile", "together:none:0", tmpfile, 1, 0.0);
+//x      r += manager->InitAlgorithm("normalizer", "quantile", "together:none:0", tmpfile, 1, 0.0);
+      normopt = strcpy((char*)normopt, exproption[0]);
+      normopt = strcat((char*)normopt, ":together:none:0");
+      r += manager->InitAlgorithm("normalizer", "quantile", normopt, tmpfile, 1, 0.0);
    }//if
 
 // initialize expressor
@@ -447,6 +457,7 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
 
 // cleanup
    delete [] expropt;
+   delete [] normopt;
    delete [] bgrdopt;
    if (strcmp(tmpdir[0], "") != 0) {
       delete [] tmpfile;
@@ -466,6 +477,9 @@ void PreprocessMAS4(char **filename, char **dirname, char **chipname,
 
 // create new preprocessing manager
    XPreProcessManager *manager = new XPreProcessManager("PreProcessManager","", *verbose);
+
+// increase default maximum file size from 1.9 GB to 2 TB
+   manager->SetMaxFileSize(2000000000);
 
 // initialize chip type
    int r = 0;
@@ -547,6 +561,9 @@ void PreprocessMAS5(char **filename, char **dirname, char **chipname,
 // create new preprocessing manager
    XPreProcessManager *manager = new XPreProcessManager("PreProcessManager","", *verbose);
 
+// increase default maximum file size from 1.9 GB to 2 TB
+   manager->SetMaxFileSize(2000000000);
+
 // initialize chip type
    int r = 0;
    r += manager->Initialize(chiptype[0]);
@@ -627,6 +644,9 @@ void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
 
 // create new preprocessing manager
    XPreProcessManager *manager = new XPreProcessManager("PreProcessManager","", *verbose);
+
+// increase default maximum file size from 1.9 GB to 2 TB
+   manager->SetMaxFileSize(2000000000);
 
 // initialize chip type
    int r = 0;
@@ -718,6 +738,9 @@ void PreprocessDABGCall(char **filename, char **dirname, char **chipname,
 // create new preprocessing manager
    XPreProcessManager *manager = new XPreProcessManager("PreProcessManager","", *verbose);
 
+// increase default maximum file size from 1.9 GB to 2 TB
+   manager->SetMaxFileSize(2000000000);
+
 // initialize chip type
    int r = 0;
    r += manager->Initialize(chiptype[0]);
@@ -788,6 +811,9 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
 
 // create new preprocessing manager
    XPreProcessManager *manager = new XPreProcessManager("PreProcessManager","", *verbose);
+
+// increase default maximum file size from 1.9 GB to 2 TB
+   manager->SetMaxFileSize(2000000000);
 
 // initialize chip type
    r += manager->Initialize(chiptype[0]);
@@ -953,6 +979,9 @@ void BgCorrect(char **filename, char **dirname, char **chiptype,
 // create new preprocessing manager
    XPreProcessManager *manager = new XPreProcessManager("PreProcessManager","", *verbose);
 
+// increase default maximum file size from 1.9 GB to 2 TB
+   manager->SetMaxFileSize(2000000000);
+
 // initialize chip type
    int r = 0;
    r += manager->Initialize(chiptype[0]);
@@ -1075,6 +1104,9 @@ void Normalize(char **filename, char **dirname, char **chiptype,
 // create new preprocessing manager
    XPreProcessManager *manager = new XPreProcessManager("PreProcessManager","", *verbose);
 
+// increase default maximum file size from 1.9 GB to 2 TB
+   manager->SetMaxFileSize(2000000000);
+
 // initialize chip type
    int r = 0;
    r += manager->Initialize(chiptype[0]);
@@ -1102,6 +1134,7 @@ void Normalize(char **filename, char **dirname, char **chiptype,
    } else if (strcmp(chiptype[0], "ExonChip") == 0) {
       r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *level);
    }//if
+
    r += manager->InitAlgorithm("normalizer",type[0],option[0],tmpfile, *npar,p0,p1);
 //NEED TO TEST:
    if (strcmp(type[0], "lowess") == 0 || strcmp(type[0], "supsmu") == 0) {
@@ -1162,6 +1195,9 @@ void Summarize(char **filename, char **dirname, char **chipname, char **chiptype
 
 // create new preprocessing manager
    XPreProcessManager *manager = new XPreProcessManager("PreProcessManager","", *verbose);
+
+// increase default maximum file size from 1.9 GB to 2 TB
+   manager->SetMaxFileSize(2000000000);
 
 // initialize chip type
    int r = 0;
@@ -1258,6 +1294,9 @@ void Normxpress(char **filename, char **dirname, char **chiptype,
 // create new normation manager
    XNormationManager *manager = new XNormationManager("NormationManager","", *verbose);
 
+// increase default maximum file size from 1.9 GB to 2 TB
+   manager->SetMaxFileSize(2000000000);
+
 // initialize chip type
    int r = 0;
    r += manager->Initialize(chiptype[0]);
@@ -1351,6 +1390,9 @@ void PreFilter(char **filename, char **dirname, char **chiptype, char **chipname
 
 // create new analysis manager
    XAnalysisManager *manager = new XAnalysisManager("AnalysisManager","", *verbose);
+
+// increase default maximum file size from 1.9 GB to 2 TB
+   manager->SetMaxFileSize(2000000000);
 
 // init default settings: type should be type of analysis
    int r = 0;
@@ -1448,6 +1490,9 @@ void UniFilter(char **filename, char **dirname, char **chiptype, char **chipname
 
 // create new analysis manager
    XAnalysisManager *manager = new XAnalysisManager("AnalysisManager","", *verbose);
+
+// increase default maximum file size from 1.9 GB to 2 TB
+   manager->SetMaxFileSize(2000000000);
 
 // init default settings: type should be type of analysis
    int r = 0;
@@ -1563,9 +1608,6 @@ void ChipNameType(char **filename, char **nametype)
    XDNAChip *chip = 0;
    TString chip_type;
    while ((chip = (XDNAChip*)next())) {
-//      nametype[0] = (char*)(chip->GetName());
-//      nametype[1] = (char*)(chip->GetTitle());
-
       chip_type = chip->GetName();
       nametype[0] = new char[chip_type.Length() + 1];
       strcpy(nametype[0], (char*)chip_type.Data());
@@ -1575,6 +1617,10 @@ void ChipNameType(char **filename, char **nametype)
       strcpy(nametype[1], (char*)chip_type.Data());
       i++;
    }//while
+
+// Cleanup
+   SafeDelete(content);
+   delete file;
 }//ChipNameType
 
 /*____________________________________________________________________________*/
@@ -1620,6 +1666,10 @@ void GeneChipProbeInfo(char **filename, int *value)
       value[7] = chip->GetNumAffx();
       i++;
    }//while
+
+// Cleanup
+   SafeDelete(content);
+   delete file;
 }//GeneChipProbeInfo
 
 /*____________________________________________________________________________*/
@@ -1658,10 +1708,10 @@ void GetNumberOfTrees(char **filename, char **setname, char **exten, int *numtre
    }//while
    *numtrees = ntrees;
 
-// Close file
-   file->Close();
-
    gSystem->ChangeDirectory(savedir);
+
+// Cleanup
+   delete file;
 }//GetNumberOfTrees
 
 /*____________________________________________________________________________*/
@@ -1716,10 +1766,11 @@ void GetNumberOfTrees4Exten(char **filename, char **exten, int *numtrees)
    }//while
    *numtrees = ntrees;
 
-// Close file
-   file->Close();
-
    gSystem->ChangeDirectory(savedir);
+
+// Cleanup
+   SafeDelete(content);
+   delete file;
 }//GetNumberOfTrees4Exten
 
 /*____________________________________________________________________________*/
@@ -1758,7 +1809,6 @@ void GetTreeNames(char **filename, char **setname, char **exten, int *gettitle,
    }//while
 
 // Get tree names
-//x   TString names[ntrees];
    TString *names = new TString[ntrees];
    ntrees = 0;
    key    = 0;
@@ -1773,14 +1823,12 @@ void GetTreeNames(char **filename, char **setname, char **exten, int *gettitle,
 
    for (int i=0; i<ntrees; i++) {
       treenames[i] = (char*)(names[i].Data());
-//x      treenames[i] = new char[names[i].Length() + 1];
-//x      strcpy(treenames[i], (char*)names[i].Data());
    }//for_i
 
-// Close file
-   file->Close();
-
    gSystem->ChangeDirectory(savedir);
+
+// Cleanup
+   delete file;
 }//GetTreeNames
 
 /*____________________________________________________________________________*/
@@ -1836,7 +1884,6 @@ void GetTreeNames4Exten(char **filename, char **exten, int *gettitle,
    }//while
 
 // Get tree names
-//x   TString names[ntrees];
    TString *names = new TString[ntrees];
    ntrees = 0;
    key    = 0;
@@ -1867,14 +1914,14 @@ void GetTreeNames4Exten(char **filename, char **exten, int *gettitle,
 
    for (int i=0; i<ntrees; i++) {
       treenames[i] = (char*)(names[i].Data());
-//x      treenames[i] = new char[names[i].Length() + 1];
-//x      strcpy(treenames[i], (char*)names[i].Data());
    }//for_i
 
-// Close file
-   file->Close();
-
    gSystem->ChangeDirectory(savedir);
+
+// Cleanup
+//no   delete [] names;
+   SafeDelete(content);
+   delete file;
 }//GetTreeNames4Exten
 
 /*____________________________________________________________________________*/
@@ -1889,15 +1936,12 @@ void GetRawCELNames(char **datafile, int *ntrees, char **treename, char **celnam
    manager->Open(datafile[0]);
 
 // get header
-//x   TString names[*ntrees];
    TString *names = new TString[*ntrees];
    XTreeHeader *treeheader = 0;
    for (int i=0; i<*ntrees; i++) {
       treeheader = manager->GetTreeHeader(treename[i]);
       names[i]   = (treeheader) ? treeheader->GetInfile() : "NA";
       celname[i] = (char*)(names[i].Data());
-//x      celname[i] = new char[names[i].Length() + 1];
-//x      strcpy(celname[i], (char*)names[i].Data());
    }//for_i
 
 // cleanup

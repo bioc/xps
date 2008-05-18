@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 04/19/2008
+// File created: 05/18/2002                          last modified: 05/05/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -3084,6 +3084,16 @@ void XManager::PrintContents()
       }//if
    }//while
 }//PrintContents
+
+//______________________________________________________________________________
+void XManager::SetMaxFileSize(Long64_t maxsize)
+{
+   // Set maximum tree size, where maxsize is defined as KB, i.e. maxsize=100 means 100KB
+   // Default tree file size is 1.9 GB, default SetMaxFileSize() is 1.9 TB
+   if(kCS) cout << "------XManager::SetMaxFileSize------" << endl;
+
+   TTree::SetMaxTreeSize(1000*maxsize);
+}//SetMaxFileSize
 
 //______________________________________________________________________________
 Bool_t XManager::IsOpen(TFile *file, const char *filename)

@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 09/20/2007
+// File created: 08/05/2002                          last modified: 05/16/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -1717,6 +1717,8 @@ Double_t XDetectionCall::WilcoxTest(Int_t n, Double_t *x, Double_t mu)
    }//for_i
    n = j;
 
+   if (n == 0) return 1; //pval=1.0
+
 // Init local arrays
    Double_t *rank  = 0;
    Double_t *absx  = 0;
@@ -1757,8 +1759,9 @@ Double_t XDetectionCall::WilcoxTest(Int_t n, Double_t *x, Double_t mu)
       }//if
    }//for_i
 
-   z     = stat - n*(n + 1)/4.0;
-   sigma = TMath::Sqrt(n*(n + 1)*(2*n + 1)/24.0 - nties/48.0);
+   // need to convert to double otherwise large numbers create nan
+   z     = stat - (Double_t)n*(n + 1)/4.0;
+   sigma = TMath::Sqrt((Double_t)n*(n + 1)*(2*n + 1)/24.0 - nties/48.0);
    pval  = TStat::PNormApprox(z/sigma);
 
 // Cleanup
@@ -1767,7 +1770,6 @@ cleanup:
    if (absx)  delete [] absx;
    if (rank)  delete [] rank;
 
-//   return (1.0 - pval);
    return ((err == errNoErr) ? (1.0 - pval) : (Double_t)err);
 }//WilcoxTest
 
@@ -1974,19 +1976,17 @@ Double_t XDABGCall::PValueFisher(Int_t n, Int_t *arrgc, Double_t *inten)
    Double_t pvalue = 1.0;
 
 // Calculate p-value product
-   Double_t pvalpro = 1.0;
+   Double_t pvalpro = 0.0;
    for (Int_t i=0; i<n; i++) {
       pvalue  = this->Intensity2PValue(arrgc[i], inten[i]);
-      pvalpro = pvalpro * pvalue;
-//ev?      fPValueProbe[i] = this->Intensity2PValue(arrgc[i], inten[i]);
-//ev?      pvalpro = pvalpro * fPValueProbe[i];
+      pvalpro = pvalpro + log(pvalue);
    }//for_i
 
 // Set minimum value: why?
    if (pvalpro == 0.0) pvalpro = 0.000001;
 
 // Get chi-squared probability
-   Double_t stat = -2*log(pvalpro);  //why -2*
+   Double_t stat = -2*pvalpro;  //why -2*
    pvalue = this->ChiSqrProb(2*n, (Float_t)stat);
 
    return pvalue;
@@ -2008,12 +2008,10 @@ Double_t XDABGCall::PValuePercentile(Int_t n, Int_t *arrgc, Double_t *inten, Dou
    for (Int_t i=0; i<n; i++) {
       pvalue = this->Intensity2PValue(arrgc[i], inten[i]);
       vecpval.push_back(pvalue);
-//ev?      fPValueProbe[i] = this->Intensity2PValue(arrgc[i], inten[i]);
    }//for_i
 
    if (n == 1) {
       pvalue = vecpval[0];
-//ev?      pvalue = fPValueProbe[0];
    } else {
       Double_t pos = cut*(n - 1);
       Int_t    idx = (Int_t)pos;

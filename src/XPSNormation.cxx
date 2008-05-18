@@ -1364,16 +1364,7 @@ Int_t XNormedGCSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
          tree[k]->SetBranchAddress("ExprBranch", &expr[k]);
       }//for_k
    }//if
-/*
-// Get treeinfo and its option for selection of unittree and anntree
-   XTreeInfo *info   = (XTreeInfo*)tree[0]->GetUserInfo()->At(0);
-   Option_t  *option = info->GetOption();
 
-   Int_t type = eTRANSCRIPT;
-   if      (strcmp(option, "exon")     == 0) type = eEXONTYPE; 
-   else if (strcmp(option, "probeset") == 0) type = ePROBESET; 
-cout << "option = " << option << "   type = " << type << endl;
-*/
 // Get scheme name (also for alternative CDFs)
    if (strcmp(fSchemeName.Data(), "") == 0) {
       fSchemeName = tree[0]->GetTitle();
@@ -1867,11 +1858,6 @@ Int_t XNormedExonSet::ExportExprTrees(Int_t n, TString *names, const char *varli
    Int_t type = eTRANSCRIPT;
    if      (strcmp(option, "exon")     == 0) type = eEXONTYPE; 
    else if (strcmp(option, "probeset") == 0) type = ePROBESET; 
-///////////////////////
-// PROBLEM: option=all
-// should be: transcript, exon, probeset
-///////////////////////////
-cout << "PROBLEM: option = " << option << "   type = " << type << endl;
 
 // Get scheme name (also for alternative CDFs)
    if (strcmp(fSchemeName.Data(), "") == 0) {
