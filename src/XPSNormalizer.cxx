@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 02/16/2008
+// File created: 08/05/2002                          last modified: 05/05/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -83,6 +83,7 @@ XNormalizer::XNormalizer()
    // Default Normalizer constructor
    if(kCS) cout << "---XNormalizer::XNormalizer(default)------" << endl;
 
+   fDataOpt = "";
    fBgrdOpt = "";
    fLogBase = "0";
    fMethod  = "";
@@ -99,6 +100,8 @@ XNormalizer::XNormalizer(const char *name, const char *type)
    // Normal Normalizer constructor
    if(kCS) cout << "---XNormalizer::XNormalizer------" << endl;
 
+   fOption  = "transcript"; //default for normalizer
+   fDataOpt = "";
    fBgrdOpt = "none";
    fLogBase = "0";
    fMethod  = "";
@@ -127,23 +130,25 @@ void XNormalizer::SetOptions(Option_t *opt)
 
 	TString optcpy = opt;
 
-/////////////
-//tmp   useTmpFile ???
-////////////
-
-//////////////////////////
-// TO DO: include: transcript, exon, probeset
-///////////////////////////
-
    char *options = (char*)optcpy.Data();
    if (NumSeparators(opt, ":") == 0) {
-      fOption  = ""; 
+      fOption  = "transcript"; 
+      fDataOpt = "all"; 
+      fBgrdOpt = "none";
       fLogBase = strtok(options, ":");
    } else if (NumSeparators(opt, ":") == 1) {
+      fOption  = "transcript"; 
+      fDataOpt = strtok(options, ":");
+      fBgrdOpt = "none";
+      fLogBase = strtok(NULL, ":");
+   } else if (NumSeparators(opt, ":") == 2) {
       fOption  = strtok(options, ":");
+      fDataOpt = strtok(NULL, ":");
+      fBgrdOpt = "none";
       fLogBase = strtok(NULL, ":");
    } else {
       fOption  = strtok(options, ":");
+      fDataOpt = strtok(NULL, ":");
       fBgrdOpt = strtok(NULL, ":");
       fLogBase = strtok(NULL, ":");
    }//if
@@ -354,20 +359,20 @@ Int_t XMeanNormalizer::DoNormalize(Int_t nin, const Double_t *xin, const Double_
 
 // Calculate scaling factor
    Double_t sf = 1.0;
-   if (strcmp(fOption.Data(), "sel") == 0) {
+   if (strcmp(fDataOpt.Data(), "sel") == 0) {
       if (targetinten > 0) {
          sf = targetinten / TStat::Mean(nin, yin, trim);
       } else {
          sf = TStat::Mean(nin, xin, trim) / TStat::Mean(nin, yin, trim);
       }//if
-   } else if (strcmp(fOption.Data(), "all") == 0) {
+   } else if (strcmp(fDataOpt.Data(), "all") == 0) {
       if (targetinten > 0) {
          sf = targetinten / TStat::Mean(nout, yout, trim);
       } else {
          sf = TStat::Mean(nout, xout, trim) / TStat::Mean(nout, yout, trim);
       }//if
    } else {
-      cerr << "Error: Normalization option <" << fOption.Data() << "> is not known."
+      cerr << "Error: Normalization option <" << fDataOpt.Data() << "> is not known."
            << endl;
       return errAbort;
    }//if
@@ -434,20 +439,20 @@ Int_t XMedianNormalizer::DoNormalize(Int_t nin, const Double_t *xin, const Doubl
 
 // Calculate scaling factor
    Double_t sf = 1.0;
-   if (strcmp(fOption.Data(), "sel") == 0) {
+   if (strcmp(fDataOpt.Data(), "sel") == 0) {
       if (targetinten > 0) {
          sf = targetinten / TStat::Median(nin, yin);
       } else {
          sf = TStat::Median(nin, xin) / TStat::Median(nin, yin);
       }//if
-   } else if (strcmp(fOption.Data(), "all") == 0) {
+   } else if (strcmp(fDataOpt.Data(), "all") == 0) {
       if (targetinten > 0) {
          sf = targetinten / TStat::Median(nout, yout);
       } else {
          sf = TStat::Median(nout, xout) / TStat::Median(nout, yout);
       }//if
    } else {
-      cerr << "Error: Normalization option <" << fOption.Data() << "> is not known."
+      cerr << "Error: Normalization option <" << fDataOpt.Data() << "> is not known."
            << endl;
       return errAbort;
    }//if
@@ -523,7 +528,7 @@ Int_t XKernelNormalizer::DoNormalize(Int_t nin, const Double_t *xin, const Doubl
    TGraph *grin, *grout;
    TGraphSmooth *gs = new TGraphSmooth("ksmooth");
    grin = new TGraph(nin, yin, xin); //reference xin as y array!
-   grout = gs->SmoothKern(grin, fOption.Data() ,bandwidth);
+   grout = gs->SmoothKern(grin, fDataOpt.Data() ,bandwidth);
 
 // Approximate y values for corresponding x values
    TGraph *grnor, *grapp;
@@ -601,7 +606,7 @@ Int_t XLowessNormalizer::DoNormalize(Int_t nin, const Double_t *xin, const Doubl
    TGraph *grin, *grout;
    TGraphSmooth *gs = new TGraphSmooth("lowess");
    grin = new TGraph(nin, yin, xin); //reference xin as y array!
-   grout = gs->SmoothLowess(grin, fOption.Data() ,span, iter);
+   grout = gs->SmoothLowess(grin, fDataOpt.Data() ,span, iter);
 
 // Approximate y values for corresponding x values
    TGraph *grnor, *grapp;
@@ -783,7 +788,7 @@ Int_t XQuantileNormalizer::AddArray(Int_t n, Double_t *x, Int_t *msk,
 
 // Fill tree(s) with sorted data array and store in fTmpFile
    fTmpFile->cd();
-   if (strcmp(fOption.Data(), "together") == 0) {
+   if (strcmp(fDataOpt.Data(), "together") == 0) {
       TString   tname = TString(name) + ".rkt";  //rkt - rank together
       Double_t  sort  = 0;
       Int_t     rank  = 0;
@@ -843,7 +848,7 @@ Int_t XQuantileNormalizer::AddArray(Int_t n, Double_t *x, Int_t *msk,
       if (ord)  {delete [] ord;    ord  = 0;}
       if (idx)  {delete [] idx;    idx  = 0;}
       if (arr)  {delete [] arr;    arr  = 0;}
-   } else if (strcmp(fOption.Data(), "separate") == 0) {
+   } else if (strcmp(fDataOpt.Data(), "separate") == 0) {
       TString   pname  = TString(name) + ".rkp";  //rks - pm rank separate
       TString   mname  = TString(name) + ".rkm";  //rks - mm rank separate
       Double_t  pmsort = 0;
@@ -951,7 +956,7 @@ Int_t XQuantileNormalizer::AddArray(Int_t n, Double_t *x, Int_t *msk,
       if (mmtree) {mmtree->Delete(""); mmtree = 0;}
       if (pmtree) {pmtree->Delete(""); pmtree = 0;}
    } else { 
-      cerr << "Error: Option <" << fOption.Data()
+      cerr << "Error: Option <" << fDataOpt.Data()
            << "> cannot be used with quantile normalizer." << endl;
       err = errGeneral;
    }//if
@@ -971,7 +976,7 @@ Double_t *XQuantileNormalizer::GetArray(Int_t n, Double_t *x, Int_t *msk,
    TDirectory *savedir = gDirectory;
    fTmpFile->cd();
 
-   if (strcmp(fOption.Data(), "together") == 0) {
+   if (strcmp(fDataOpt.Data(), "together") == 0) {
    // Get tree with name
       TString tname = TString(name) + ".rkt";
       Int_t   rank  = 0;
@@ -999,7 +1004,7 @@ Double_t *XQuantileNormalizer::GetArray(Int_t n, Double_t *x, Int_t *msk,
    // Cleanup
       // need to delete tree from RAM
       tree->Delete(""); tree = 0;
-   } else if (strcmp(fOption.Data(), "separate") == 0) {
+   } else if (strcmp(fDataOpt.Data(), "separate") == 0) {
    // Get PM tree with name
       TString pmname = TString(name) + ".rkp";
       Int_t   pmrank = 0;
@@ -1040,7 +1045,7 @@ Double_t *XQuantileNormalizer::GetArray(Int_t n, Double_t *x, Int_t *msk,
       mmtree->Delete(""); mmtree = 0;
       pmtree->Delete(""); pmtree = 0;
    } else {
-      cerr << "Error: Option <" << fOption.Data()
+      cerr << "Error: Option <" << fDataOpt.Data()
            << "> cannot be used with quantile normalizer." << endl;
       return 0;
    }//if
@@ -1068,7 +1073,7 @@ Int_t XQuantileNormalizer::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *m
    fTmpFile->cd();
 
 // Calculate trimmed mean
-   if (strcmp(fOption.Data(), "together") == 0) {
+   if (strcmp(fDataOpt.Data(), "together") == 0) {
       TTree   **treek = new TTree*[fNData];
       Double_t *sortk = new Double_t[fNData];
       for (Int_t k=0; k<fNData; k++) sortk[k] = 0;
@@ -1116,7 +1121,7 @@ Int_t XQuantileNormalizer::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *m
       // need to delete tree from RAM
       for (Int_t k=0; k<fNData; k++) {treek[k]->Delete(""); treek[k] = 0;}
 //x??      delete [] treek;
-   } else if (strcmp(fOption.Data(),"separate") == 0) {
+   } else if (strcmp(fDataOpt.Data(),"separate") == 0) {
       TTree   **pmtreek = new TTree*[fNData];
       TTree   **mmtreek = new TTree*[fNData];
       Double_t *pmsortk = new Double_t[fNData];
@@ -1191,7 +1196,7 @@ Int_t XQuantileNormalizer::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *m
 //x??      delete [] mmtreek;
 //x??      delete [] pmtreek;
    } else {
-      cerr << "Error: Option <" << fOption.Data()
+      cerr << "Error: Option <" << fDataOpt.Data()
            << "> cannot be used with quantile normalizer." << endl;
       return 0;
    }//if

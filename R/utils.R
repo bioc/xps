@@ -9,6 +9,7 @@
 # rootDirFile:
 # validLogbase:
 # validMsg:
+# validOption:
 # validOutfile:
 # validROOTFile:
 # validSchemeTreeSet:
@@ -198,6 +199,26 @@ validMsg <- function(msg, result) {
       msg;
    }#if
 }#validMsg
+
+#------------------------------------------------------------------------------#
+# validOption: check for presence of valid option
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+validOption <- function(option) {
+   if (debug.xps()) print("------validOption------")
+
+   TYPE <- c("all", "together:none");
+   if (is.na(match(option, TYPE))) {
+      transcript <- unlist(strsplit(option, ":"))[1];
+      transcript <- validTranscriptOption(transcript);
+
+      opt <- substring(option, nchar(transcript)+2);
+      if (is.na(match(opt, TYPE))) {
+         stop(paste(sQuote("option"), "is not a valid method option"));
+      }#if
+   }#if
+
+   return(as.character(option));
+}#validOption
 
 #------------------------------------------------------------------------------#
 # validOutfile: check for presence of valid outfile = /filepath/filename
@@ -456,7 +477,7 @@ exonLevel <- function(exonlevel="", chiptype, as.sum=TRUE) {
       ## levels are defined in src/XPSSchemes.h
       level <- unlist(strsplit(exonlevel, "\\+"));
       LEVEL <- c("core", "metacore", "extended", "metaextended", "full", "metafull", "ambiguous", "affx", "all");
-      CODE  <- c( 1024,   8192,       512,        4096,           256,    2048,       128,         60,    16256);
+      CODE  <- c( 1024,   8192,       512,        4096,           256,    2048,       128,         60,    16316);
       level <- match(level, LEVEL);
 
       if (is.na(all(level))) {

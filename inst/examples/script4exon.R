@@ -2,6 +2,9 @@
 # Script: step-by-step functions to demonstrate how to analyze exon arrays
 #         using the Affymetrix human tissue-mixture exon array dataset
 #
+# Note: please feel free to copy-paste the examples of interest and adapt the
+#       examples to your own needs
+#
 # Copyright (c) 2007-2008 Christian Stratowa, Vienna, Austria.
 # All rights reserved.
 #
@@ -444,7 +447,7 @@ datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Exon/hutissues/exon"
 # ok for 6 exon arrays in RAM
 data.x.rma <- rma(data.exon,"MixRMAMetacore",filedir=datdir,tmpdir="",background="antigenomic",
                   normalize=T,option="transcript",exonlevel="metacore")
-# for more exon arrays better use tmpdir
+# for many exon arrays you may decide to use tmpdir (see helpfile for more information)
 tmpdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Exon/temp"
 data.x.rma.tmp <- rma(data.exon,"MixRMAtmpMetacore",filedir=datdir,tmpdir=tmpdir,background="antigenomic",
                       normalize=T,option="transcript",exonlevel="metacore")

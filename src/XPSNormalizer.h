@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 09/14/2007
+// File created: 08/05/2002                          last modified: 05/05/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -53,6 +53,7 @@
 class XNormalizer: public XAlgorithm {
 
    protected:
+      TString     fDataOpt;     //option to apply to data type
       TString     fBgrdOpt;     //option for background subtraction
       TString     fLogBase;     //logbase: 0, log, log2, log10
       TString     fMethod;      //approx method
@@ -87,8 +88,10 @@ class XNormalizer: public XAlgorithm {
       using XAlgorithm::Calculate;
       virtual Int_t Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk);
 
+      void    SetDataOption(Option_t *opt) {fDataOpt = opt; fDataOpt.ToLower();}
       void    SetBgrdOption(Option_t *opt) {fBgrdOpt = opt; fBgrdOpt.ToLower();}
       void    SetLogBase(const char *lgb)  {fLogBase = lgb; fLogBase.ToLower();}
+      TString GetDataOption()        const {return fDataOpt;}
       TString GetBgrdOption()        const {return fBgrdOpt;}
       TString GetLogBase()           const {return fLogBase;}
 

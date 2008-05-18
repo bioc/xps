@@ -1556,10 +1556,8 @@ function(object,
          stop(paste(sQuote("normalize.select"), "is not a valid selector option"));
       }#if
 
-      TYPE <- c("all", "together:none");
-      if (is.na(match(normalize.option, TYPE))) {
-         stop(paste(sQuote("normalize.option"), "is not a valid method option"));
-      }#if
+      ## check for valid normalization "option:logbase"
+      normalize.option  <- validOption(normalize.option);
       normalize.logbase <- validLogbase(normalize.logbase);
       normalize.option  <- paste(normalize.option, normalize.logbase, sep=":");
 
@@ -1583,6 +1581,7 @@ function(object,
          stop(paste(sQuote(summarize.select), "is not a valid selector option"));
       }#if
 
+      ## check for valid summarization "option:logbase"
       summarize.option  <- validTranscriptOption(summarize.option);
       summarize.logbase <- validLogbase(summarize.logbase);
       summarize.option  <- paste(summarize.option, summarize.logbase, sep=":");
@@ -1965,10 +1964,7 @@ function(object,
    }#if
 
    ## check for valid normalization "option:logbase"
-   TYPE <- c("all", "together:none");
-   if (is.na(match(option, TYPE))) {
-      stop(paste(sQuote("option"), "is not a valid method option"));
-   }#if
+   option  <- validOption(option);
    logbase <- validLogbase(logbase);
    option  <- paste(option, logbase, sep=":");
 

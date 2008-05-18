@@ -13,7 +13,7 @@
  (\dQuote{high-level normalization}).
 }
 \usage{
-normalize(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, select = "all", method = "mean", option = "all", logbase = "0", exonlevel = "", refindex = 0, refmethod = "mean", params = list(0.02, 0), verbose = TRUE)
+normalize(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, select = "all", method = "mean", option = "transcript:all", logbase = "0", exonlevel = "", refindex = 0, refmethod = "mean", params = list(0.02, 0), verbose = TRUE)
 
 normalize.constant(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, method = "mean", logbase = "0", exonlevel = "", refindex = 0, refmethod = "mean", params = list(0.02, 0), verbose = TRUE)
 
@@ -33,8 +33,8 @@ xpsNormalize(object, ...)
   \item{update}{logical. If \code{TRUE} the existing ROOT data file \code{filename} will be updated.}
   \item{select}{type of probes to select for normalization.}
   \item{method}{normalization method to use.}
-  \item{option}{option determining the grouping of probes for normalization, one of 
-   \sQuote{transcript}, \sQuote{exon}, \sQuote{probeset}; exon arrays only.}
+  \item{option}{option determining the grouping of probes for normalization, and the selection
+   of the probes.}
   \item{logbase}{logarithm base as character, one of \sQuote{0}, \sQuote{log},
    \sQuote{log2}, \sQuote{log10}.}
   \item{exonlevel}{exon annotation level determining which probes should be used

@@ -197,6 +197,11 @@ function(object,
       stop(paste(sQuote("method"), "must be <mean, median,lowess,supsmu>"));
    }#if
 
+   ## get transcript part and option part
+   transcript <- unlist(strsplit(option, ":"))[1];
+   transcript <- validTranscriptOption(transcript);
+   option     <- unlist(strsplit(option, ":"))[2];
+
    ## percent units to be selected
    if (option == "all") {
       pc <- 1.0;
@@ -227,7 +232,7 @@ function(object,
             params[[2]] <- 0;
          }#if
          params <- list(trim=params[[1]], sc=params[[2]]);
-         option <- paste(ifelse(pc<1, "sel", "all"), logbase, sep=":");
+         option <- paste(transcript, ifelse(pc<1, "sel", "all"), logbase, sep=":");
          exten  <- "tmn";
       }, median = {
          if (length(params) == 1) {
@@ -246,7 +251,7 @@ function(object,
          }#if
          params <- list(trim=params[[1]], sc=params[[2]]);
          method <- "mean";
-         option <- paste(ifelse(pc<1, "sel", "all"), logbase, sep=":");
+         option <- paste(transcript, ifelse(pc<1, "sel", "all"), logbase, sep=":");
          exten  <- "med";
       }, lowess = {
          if (!(length(params) == 2 &&
@@ -258,7 +263,7 @@ function(object,
             params[[2]] <- 3;
          }#if
          params <- list(f=params[[1]], iter=params[[2]]);
-         option <- logbase;
+         option <- paste(transcript, option, logbase, sep=":");
          exten  <- "low";
       }, supsmu = {
          if (!(length(params) == 2 &&
@@ -270,7 +275,7 @@ function(object,
             params[[2]] <- 0.0;
          }#if
          params <- list(span=params[[1]], bass=params[[2]]);
-         option <- logbase;
+         option <- paste(transcript, option, logbase, sep=":");
          exten  <- "sup";
       }
    )#switch

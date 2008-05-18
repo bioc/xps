@@ -27,7 +27,8 @@ xpsRMA(object, ...)
   \item{filename}{file name of ROOT data file.}
   \item{filedir}{system directory where ROOT data file should be stored.}
   \item{tmpdir}{optional temporary directory where temporary ROOT files should be stored.}
-  \item{background}{probes used to compute background, one of \sQuote{pmonly}, \sQuote{mmonly}, \sQuote{both}}
+  \item{background}{probes used to compute background, one of \sQuote{pmonly}, \sQuote{mmonly},
+   \sQuote{both}; for genome/exon arrays one of \sQuote{genomic}, \sQuote{antigenomic}}
   \item{normalize}{logical. If \code{TRUE} normalize data using quantile normalization.}
   \item{option}{option determining the grouping of probes for summarization, one of 
    \sQuote{transcript}, \sQuote{exon}, \sQuote{probeset}; exon arrays only.}
@@ -62,14 +63,14 @@ Following \code{exonlevel} annotations are valid for exon arrays:
   \tab \code{full}:\tab probesets supported by gene predictions only. \cr
   \tab \code{metafull}:\tab full meta-probesets. \cr
   \tab \code{affx}:\tab standard AFFX controls. \cr
-  \tab \code{all}:\tab combination of above.
+  \tab \code{all}:\tab combination of above (including affx).
 }
 Following \code{exonlevel} annotations are valid for whole genome arrays:
 \tabular{lll}{
-  \tab \code{core}:\tab probesets with category \sQuote{unique} and \sQuote{mixed}. \cr
+  \tab \code{core}:\tab probesets with category \sQuote{unique}, \sQuote{similar} and \sQuote{mixed}. \cr
   \tab \code{metacore}:\tab probesets with category \sQuote{unique} only. \cr
   \tab \code{affx}:\tab standard AFFX controls. \cr
-  \tab \code{all}:\tab combination of above.
+  \tab \code{all}:\tab combination of above (including affx).
 }
 Exon levels can also be combined, with following combinations being most useful:
 \tabular{ll}{
@@ -94,8 +95,10 @@ containing the same parameters.
 In contrary to other implementations of RMA the expression measure is given to you in linear scale,
 analogously to the expression measures computed with \code{\link{mas5}} and \code{\link{mas4}}. 
 
-For the analysis of many exon arrays it is strongly recommended to define a \code{tmpdir} 
-unless you know that your computer has sufficient RAM.
+For the analysis of many exon arrays it may be better to define a \code{tmpdir}, since this will
+store only the results in the main file and not e.g. background and normalized intensities, and
+thus will reduce the file size of the main file. For quantile normalization memory should not
+be an issue, however medianpolish depends on RAM unless you are using a temporary file.
 }
 \references{
  Rafael. A. Irizarry, Benjamin M. Bolstad, Francois Collin, Leslie M. Cope, Bridget Hobbs
@@ -130,5 +133,36 @@ boxplot(log2(expr.rma))
 
 rm(scheme.test3, data.test3)
 gc()
+
+\dontrun{
+## examples using Affymetrix human tissue dataset (see also xps/examples/script4exon.R)
+## first, load ROOT scheme file and ROOT data file from e.g.:
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
+datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
+
+## 1. example - expression array, e.g. HG-U133_Plus_2:
+scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na25.root",sep="/"))
+data.u133p2   <- root.data(scheme.u133p2, paste(datdir,"HuTissuesU133P2_cel.root",sep="/"))
+
+workdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Exon/hutissues/u133p2"
+data.rma <- rma(data.u133p2,"MixU133P2RMA",filedir=workdir,tmpdir="",
+                background="pmonly",normalize=TRUE)
+
+## 2. example - whole genome array, e.g. HuGene-1_0-st-v1:
+scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na25.root",sep="/"))
+data.genome   <- root.data(scheme.genome, paste(datdir,"HuTissuesGenome_cel.root",sep="/"))
+
+workdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Exon/hutissues/hugene"
+data.g.rma <- rma(data.genome,"HuGeneMixRMAMetacore",filedir=workdir,tmpdir="",
+                  background="antigenomic",normalize=T,exonlevel="metacore+affx")
+
+## 3. example - exon array, e.g. HuEx-1_0-st-v2:
+scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na25.root",sep="/"))
+data.exon   <- root.data(scheme.exon, paste(datdir,"HuTissuesExon_cel.root",sep="/"))
+
+workdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Exon/hutissues/exon"
+data.x.rma <- rma(data.exon,"MixRMAMetacore",filedir=workdir,tmpdir="",background="antigenomic",
+                  normalize=T,option="transcript",exonlevel="metacore")
+}
 }
 \keyword{manip}

@@ -65,14 +65,14 @@ Following \code{exonlevel} annotations are valid for exon arrays:
   \tab \code{full}:\tab probesets supported by gene predictions only. \cr
   \tab \code{metafull}:\tab full meta-probesets. \cr
   \tab \code{affx}:\tab standard AFFX controls. \cr
-  \tab \code{all}:\tab combination of above.
+  \tab \code{all}:\tab combination of above (including affx).
 }
 Following \code{exonlevel} annotations are valid for whole genome arrays:
 \tabular{lll}{
-  \tab \code{core}:\tab probesets with category \sQuote{unique} and \sQuote{mixed}. \cr
+  \tab \code{core}:\tab probesets with category \sQuote{unique}, \sQuote{similar} and \sQuote{mixed}. \cr
   \tab \code{metacore}:\tab probesets with category \sQuote{unique} only. \cr
   \tab \code{affx}:\tab standard AFFX controls. \cr
-  \tab \code{all}:\tab combination of above.
+  \tab \code{all}:\tab combination of above (including affx).
 }
 Exon levels can also be combined, with following combinations being most useful:
 \tabular{ll}{

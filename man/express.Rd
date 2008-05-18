@@ -93,7 +93,7 @@ data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataT
 ## compute rma with a single call to express()
 expr.rma <- express(data.test3,"tmp_Test3Exprs",filedir=getwd(),tmpdir="",update=FALSE,
             bgcorrect.method="rma",bgcorrect.select="none",bgcorrect.option="pmonly:epanechnikov",bgcorrect.params=c(16384),
-            normalize.method="quantile",normalize.select="pmonly",normalize.option="together:none",normalize.logbase="0",normalize.params=c(0.0),
+            normalize.method="quantile",normalize.select="pmonly",normalize.option="transcript:together:none",normalize.logbase="0",normalize.params=c(0.0),
             summarize.method="medianpolish",summarize.select="pmonly",summarize.option="transcript",summarize.logbase="log2",summarize.params=c(10, 0.01, 1.0),
             verbose=FALSE)
 

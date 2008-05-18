@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 03/13/2008
+// File created: 05/18/2002                          last modified: 05/05/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -586,6 +586,8 @@ class XManager: public TNamed {
 
       void PrintContents(const char *setname);
       void PrintContents();
+      void SetMaxFileSize(Long64_t maxsize = 1900000000);
+
       void ResetAbort()                  {fAbort = kFALSE;}  //use with caution!
       void SetFileOwner(Bool_t isOwner)  {fIsFileOwner = isOwner;}
       void SetDataType(const char *type) {fDataType = type;}

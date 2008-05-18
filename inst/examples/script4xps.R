@@ -1,6 +1,9 @@
 #------------------------------------------------------------------------------#
 # Script: step-by-step functions to demonstrate how to use package "xps"
 #
+# Note: please feel free to copy-paste the examples of interest and adapt the
+#       examples to your own needs
+#
 # Copyright (c) 2007-2007 Christian Stratowa, Vienna, Austria.
 # All rights reserved.
 #
@@ -850,7 +853,7 @@ datdir <- getwd()
 # ok for 6 exon arrays in RAM
 data.rma <- rma(data.exon,"HuExonMixRMAMetacore",filedir=datdir,tmpdir="",background="antigenomic",
                 normalize=T,option="transcript",exonlevel="metacore+affx")
-# for more exon arrays better use tmpdir
+# for many exon arrays you may decide to use tmpdir (see helpfile for more information)
 tmpdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Exon/temp"
 data.rma.tmp <- rma(data.exon,"HuExonMixRMAtmpMetacore",filedir=datdir,tmpdir=tmpdir,background="antigenomic",
                     normalize=T,option="transcript",exonlevel="metacore+affx")
