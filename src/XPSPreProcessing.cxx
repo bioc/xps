@@ -2104,6 +2104,7 @@ Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
 
 // Get parameters for background subtraction
    Bool_t doBg = this->BackgroundParameters(fCaller, fCaller->GetBgrdOption());
+   Bool_t doGC = (Bool_t)(strcmp(fCaller->GetName(), "dabgcall") == 0);
 
 // Check for presence of background trees
    if (numbgrd == 0) {
@@ -2200,7 +2201,6 @@ Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
 // For DABG only, fill arrMask with GC content (GC>=0 for PM)
 // for PM set GC >= 0 , i.e. GC = 0...kProbeLength,
 // for MM set GC < eINITMASK, i.e. GC = eINITMASK - (1...kProbeLength+1)
-   Bool_t doGC = (Bool_t)(strcmp(fCaller->GetName(), "dabgcall") == 0);
    if (doGC) {
       // get probe tree for scheme
       XGCProbe *probe = 0;
