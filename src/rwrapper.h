@@ -48,21 +48,25 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
                    char **chiptype, char **schemefile, char **tmpdir,
                    char **bgrdoption, char **exproption, char **treeset,
                    char **treenames, int *ntrees, int *normalize,
-                   int *level, int *verbose, char **result);
+                   int *bgrdlevel, int *normlevel, int *exprlevel,
+                   int *verbose, char **result);
 void PreprocessMAS4(char **filename, char **dirname, char **chipname,
                     char **chiptype, char **schemefile, char **tmpdir,
                     char **exproption, char **treeset, char **treenames,
-                    int *ntrees, int *level, int *verbose, char **result);
+                    int *ntrees, int *bgrdlevel, int *exprlevel,
+                    int *verbose, char **result);
 void PreprocessMAS5(char **filename, char **dirname, char **chipname,
                     char **chiptype, char **schemefile, char **tmpdir,
                     char **exproption, char **treeset, char **treenames,
-                    int *ntrees, int *level, int *verbose, char **result);
+                    int *ntrees, int *bgrdlevel, int *exprlevel,
+                    int *verbose, char **result);
 
 void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
                         char **chiptype, char **schemefile, char **tmpdir,
                         char **calloption, char **treeset, char **treenames,
                         int *ntrees, double *tau, double *alpha1, double *alpha2,
-                        int *ignore, int *level, int *verbose, char **result);
+                        int *ignore, int *bgrdlevel, int *callevel,
+                        int *verbose, char **result);
 void PreprocessDABGCall(char **filename, char **dirname, char **chipname,
                         char **chiptype, char **schemefile, char **calloption,
                         char **treeset, char **treenames, int *ntrees,
@@ -79,7 +83,8 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
                 int *nexprpar, double *exprpars,
                 char **reftree, char **refmethod, double *refparam,
                 char **treeset, char **treenames, int *ntrees,
-                int *level, int *verbose, char **result);
+                int *bgrdlevel, int *normlevel, int *exprlevel,
+                int *verbose, char **result);
 void BgCorrect(char **filename, char **dirname, char **chiptype,
                char **schemefile, char **tmpdir, char **seloption,
                char **bgrdtype, char **bgrdoption, int *npars, double *pars,
@@ -134,6 +139,8 @@ void GetTreeNames(char **filename, char **setname, char **exten, int *gettitle,
 void GetTreeNames4Exten(char **filename, char **exten, int *gettitle,
                         char **treenames);
 void GetRawCELNames(char **datafile, int *numtrees, char **treename, char **celname);
+void MetaProbesets(char **schemefile, char **infile, char **outfile,
+                   int *level, int *meta, int *err);
 
 void PlotImage(char **filename, char **canvasname, char **treename,
                char **varlist, char **logbase, char **option, int *err);

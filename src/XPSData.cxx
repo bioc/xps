@@ -4543,6 +4543,7 @@ Int_t XGeneChipPlot::DrawUnit(const char *canvasname, const char *treename,
       cerr << "Error: Treename must be of form <treename.cel>." << endl;
       return perrTreeName;
    }//if
+cout << "tname = " << tname.Data() << endl;
 
 // Extract root filename and get datafile
    TString filename = "";
@@ -4556,6 +4557,7 @@ Int_t XGeneChipPlot::DrawUnit(const char *canvasname, const char *treename,
       cerr << "Error: Data file is not open." << endl;
       return perrOpenFile;
    }//if
+cout << "filename = " << filename.Data() << endl;
 
 // Get name of treeset and change directory
    TString setname  = "";
@@ -4566,6 +4568,7 @@ Int_t XGeneChipPlot::DrawUnit(const char *canvasname, const char *treename,
    } else if (strstr(treename, dSEP)) {
       setname = Path2Name(treename, "", dSEP);
    }//if
+cout << "setname = " << setname.Data() << endl;
 
    if (!fDataFile->cd(setname)) return perrGetDir;
 
@@ -4583,6 +4586,7 @@ Int_t XGeneChipPlot::DrawUnit(const char *canvasname, const char *treename,
       return errChipType;
    }//if
    if (!fSchemeFile->cd(scmname)) return errGetDir;
+cout << "scmname = " << scmname.Data() << endl;
 
 // Get chip parameters from scheme file
    XDNAChip *chip = 0;
@@ -4594,6 +4598,9 @@ Int_t XGeneChipPlot::DrawUnit(const char *canvasname, const char *treename,
    Int_t numunits = chip->GetNumUnits();
    Int_t numctrls = chip->GetNumControls();
    Int_t numcols  = chip->GetNumColumns();
+cout << "numunits = " << numunits << endl;
+cout << "numctrls = " << numctrls << endl;
+cout << "numcols = " << numcols << endl;
 
 // Get scheme tree for scheme
    XGCScheme *scheme = 0;
@@ -4621,7 +4628,7 @@ Int_t XGeneChipPlot::DrawUnit(const char *canvasname, const char *treename,
 
 // Get annotation tree for scheme
    Bool_t hasAnnot = kTRUE;
-   XAnnotation *annot = 0;
+   XTransAnnotation *annot = 0;
    TTree *anntree = (TTree*)gDirectory->Get(chip->GetAnnotTree()); 
    if (anntree == 0) {
       cout << "Warning: Scheme <" << scmname.Data() << "> has no annotation."
@@ -4663,6 +4670,7 @@ Int_t XGeneChipPlot::DrawUnit(const char *canvasname, const char *treename,
       symbol   = annot->GetSymbol();
    }//if
    TString title = tname + ": " + TString(unitname) + "  -  " + symbol;
+cout << "title = " << title.Data() << endl;
 
    TString *str = new TString[16];
    for (Int_t i=0; i<16; i++) str[i] = "";
@@ -4709,6 +4717,7 @@ Int_t XGeneChipPlot::DrawUnit(const char *canvasname, const char *treename,
       cout << "Warning: Logbase not known, using default." << endl;
       base = 0;
    }//if
+cout << "base = " << base << endl;
 
    Int_t x, y, ij;
    Int_t numpix;
@@ -4765,6 +4774,7 @@ Int_t XGeneChipPlot::DrawUnit(const char *canvasname, const char *treename,
       goto cleanup;
 */
    }//if
+cout << "entries = " << entries << endl;
 
 // Fill table
    for (Int_t i=0; i<entries; i++) {
@@ -4859,6 +4869,8 @@ Int_t XGeneChipPlot::DrawUnit(const char *canvasname, const char *treename,
          fMax  = (fMax  > fMaxZ)   ? fMax  : fMaxZ;
       }//if
    }//for_i
+cout << "fMin = " << fMin << endl;
+cout << "fMax = " << fMax << endl;
 
 // Set axes range
    if ((min == 0) && (max == 0)) {

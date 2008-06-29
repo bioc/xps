@@ -12,6 +12,7 @@
 
 //XPSUtils.h
 #pragma link C++ enum EPlotErrors;
+#pragma link C++ class XBitSet+;
 #pragma link C++ class XPlot+;
 
 //XPSBase.h

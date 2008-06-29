@@ -87,6 +87,7 @@
 const Bool_t kCS  = 0;
 const Bool_t kCSa = 0;
 
+ClassImp(XBitSet);
 ClassImp(XPlot);
 
 

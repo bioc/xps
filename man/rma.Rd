@@ -99,6 +99,12 @@ For the analysis of many exon arrays it may be better to define a \code{tmpdir},
 store only the results in the main file and not e.g. background and normalized intensities, and
 thus will reduce the file size of the main file. For quantile normalization memory should not
 be an issue, however medianpolish depends on RAM unless you are using a temporary file.
+
+Parameter \code{exonlevel} determines not only which probes are used for medianpolish, but also
+the probes used for background calculation and for quantile normalization. If you want to use
+seperate probes for background calculation, quantile normalization and medianpolish summarization,
+you can pass a numeric vector containing three integer values corresponding to the respective 
+\code{exonlevel}, e.g. you can use \code{exonlevel=c(16316,8252,8252)}.
 }
 \references{
  Rafael. A. Irizarry, Benjamin M. Bolstad, Francois Collin, Leslie M. Cope, Bridget Hobbs

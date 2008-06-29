@@ -243,7 +243,7 @@ setGeneric("exprType<-",   function(object, value) standardGeneric("exprType<-")
 setGeneric("normType",     function(object) standardGeneric("normType"));
 setGeneric("normType<-",   function(object, value) standardGeneric("normType<-"));
 setGeneric("exprs",        function(object) standardGeneric("exprs"));
-setGeneric("exprs<-",      function(object, value) standardGeneric("exprs<-"));
+setGeneric("exprs<-",      function(object, ..., value) standardGeneric("exprs<-"));
 setGeneric("xpsPreFilter", function(object, ...) standardGeneric("xpsPreFilter"));
 setGeneric("xpsUniFilter", function(object, ...) standardGeneric("xpsUniFilter"));
 setGeneric("se.exprs",     function(object) standardGeneric("se.exprs"));
@@ -266,9 +266,9 @@ setClass("CallTreeSet",
 
 # generic methods for class CallTreeSet
 setGeneric("pvalData",   function(object) standardGeneric("pvalData"));
-setGeneric("pvalData<-", function(object, value) standardGeneric("pvalData<-"));
+setGeneric("pvalData<-", function(object, ..., value) standardGeneric("pvalData<-"));
 setGeneric("presCall",   function(object) standardGeneric("presCall"));
-setGeneric("presCall<-", function(object, value) standardGeneric("presCall<-"));
+setGeneric("presCall<-", function(object, ..., value) standardGeneric("presCall<-"));
 setGeneric("validCall",  function(object) standardGeneric("validCall"));
 setGeneric("callplot",   function(x, ...) standardGeneric("callplot"));
 

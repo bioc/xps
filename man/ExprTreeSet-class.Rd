@@ -7,9 +7,7 @@
 \alias{exprType<-,ExprTreeSet,character-method}
 \alias{exprType<-}
 \alias{exprs,ExprTreeSet-method}
-\alias{exprs}
 \alias{exprs<-,ExprTreeSet,data.frame-method}
-\alias{exprs<-}
 \alias{mvaplot,ExprTreeSet-method}
 \alias{normType,ExprTreeSet-method}
 \alias{normType}

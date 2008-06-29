@@ -168,23 +168,25 @@ extern Int_t    DecodeINT(ASTRING *value);
 //////////////////////////////////////////////////////////////////////////
 class XBitSet {
 
-private:
-   UInt_t fBits;
+   private:
+      UInt_t fBits;
 
-public:
-   enum {
-      kBitClear = 0x00000000,
-      kBitMask  = 0x00ffffff
-   };
+   public:
+      enum {
+         kBitClear = 0x00000000,
+         kBitMask  = 0x00ffffff
+      };
 
-   XBitSet();
-   virtual ~XBitSet();
+      XBitSet();
+      virtual ~XBitSet();
 
-   void    SetBit(UInt_t f)         { fBits |= f & kBitMask; }
-   void    ResetBit(UInt_t f)       { fBits &= ~(f & kBitMask); }
-   Bool_t  TestBit(UInt_t f)  const { return (Bool_t) ((fBits & f) != 0); }
-   Int_t   TestBits(UInt_t f) const { return (Int_t) (fBits & f); }
-   void    InvertBit(UInt_t f)      { fBits ^= f & kBitMask; }
+      void    SetBit(UInt_t f)         { fBits |= f & kBitMask; }
+      void    ResetBit(UInt_t f)       { fBits &= ~(f & kBitMask); }
+      Bool_t  TestBit(UInt_t f)  const { return (Bool_t) ((fBits & f) != 0); }
+      Int_t   TestBits(UInt_t f) const { return (Int_t) (fBits & f); }
+      void    InvertBit(UInt_t f)      { fBits ^= f & kBitMask; }
+
+      ClassDef(XBitSet,1) //BitSet
 };
 
 

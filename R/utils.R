@@ -31,6 +31,7 @@
 # getProbeInfo:
 # getNumberTrees:
 # getTreeNames:
+# metaProbesets:
 #==============================================================================#
 
 
@@ -446,9 +447,16 @@ CELNames <- function(celnames) {
 exonLevel <- function(exonlevel="", chiptype, as.sum=TRUE) {
    if (debug.xps()) print("------exonLevel------")
 
-   exlevel <- 0;
+   exlevel <- 0; if (as.sum) exlevel <- c(0, 0, 0);
    if (chiptype == "GenomeChip") {
-      if (exonlevel == "") {
+      ## separate levels for bgrd, norm, expr must be given as integers
+      if (is.numeric(exonlevel)) {
+         if (length(exonlevel) == 3 && identical(c(TRUE,TRUE,TRUE), exonlevel > 0)) {
+            return(exonlevel);
+         } else {
+            stop(paste("numeric argument", sQuote("exonlevel"), "must be of length 3 and positive."));
+         }#if
+      } else if (exonlevel == "") {
          stop(paste("invalid argument", sQuote("exonlevel")));
       }#if
 
@@ -467,10 +475,21 @@ exonLevel <- function(exonlevel="", chiptype, as.sum=TRUE) {
       if (any(level == 4)) level <- c(1:3); 
       level <- unique(level);
 
-      if (as.sum) exlevel <- sum(CODE[level])
-      else        exlevel <- CODE[level];
+      if (as.sum) {
+         exlevel <- sum(CODE[level]);
+         exlevel <- c(exlevel, exlevel, exlevel);
+      } else {
+         exlevel <- CODE[level];
+      }#if
    } else if (chiptype == "ExonChip") {
-      if (exonlevel == "") {
+      ## separate levels for bgrd, norm, expr must be given as integers
+      if (is.numeric(exonlevel)) {
+         if (length(exonlevel) == 3 && identical(c(TRUE,TRUE,TRUE), exonlevel > 0)) {
+            return(exonlevel);
+         } else {
+            stop(paste("numeric argument", sQuote("exonlevel"), "must be of length 3 and positive."));
+         }#if
+      } else if (exonlevel == "") {
          stop(paste("invalid argument", sQuote("exonlevel")));
       }#if
 
@@ -491,8 +510,12 @@ exonLevel <- function(exonlevel="", chiptype, as.sum=TRUE) {
       if (any(level == 9)) level <- c(1:8);
       level <- unique(level);
 
-      if (as.sum) exlevel <- sum(CODE[level])
-      else        exlevel <- CODE[level];
+      if (as.sum) {
+         exlevel <- sum(CODE[level]);
+         exlevel <- c(exlevel, exlevel, exlevel);
+      } else {
+         exlevel <- CODE[level];
+      }#if
    }#if
 
    return(exlevel);
@@ -703,6 +726,63 @@ getTreeNames <- function(rootfile, treetype="*", setname=NULL, gettitle=FALSE) {
 #   return(tnames);
    return(as.vector(tnames, mode="character"));
 }#getTreeNames
+
+#------------------------------------------------------------------------------#
+# metaProbesets: create file containing meta probeset definitions for "apt-probeset-summarize"
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+metaProbesets <- function(xps.scheme, infile = character(0),
+                          outfile = character(0), exonlevel="metacore") {
+   if (debug.xps()) print("------metaProbesets------")
+
+   ## check for presence of exon scheme file
+   if (!(is(xps.scheme, "SchemeTreeSet") &&
+       (chipType(xps.scheme) == "ExonChip") &&
+       (file.exists(rootFile(xps.scheme))))) {
+      stop(paste("File", sQuote("xps.scheme"), "is not a SchemeTreeSet of type ExonChip."));
+   }#if
+   schemefile <- rootFile(xps.scheme);
+
+   ## check for presence of infile
+   if (!file.exists(infile)) {
+      stop(paste("File", sQuote(infile), "does not exist."));
+   }#if
+
+    ## levels are defined in src/XPSSchemes.h
+   level <- unlist(strsplit(exonlevel, "\\+"));
+   LEVEL <- c("core", "metacore", "extended", "metaextended", "full", "metafull", "ambiguous", "affx", "all");
+#   CODE  <- c( 1024,   8192,       512,        4096,           256,    2048,       128,         60,    16316);
+   CODE  <- c( 1024,   1024,       512,        512,            256,    256,        128,         0,     1920);
+   level <- match(level, LEVEL);
+
+   if (is.na(all(level))) {
+      stop(paste("invalid argument", sQuote("exonlevel")));
+   }#if
+
+   ## replace e.g. "all" with "core+extended+full+ambiguous"
+   if (any(level == 9)) level <- c(1, 3, 5, 7);
+   level <- unique(level);
+   level <- sum(CODE[level]);
+
+   ## check for "meta"-level
+   meta <- 0;
+   if (substr(exonlevel, 1, 4) == "meta") {
+      meta <- 1;
+   }#if
+
+   ## create metaprobeset file
+   r <- .C("MetaProbesets",
+           as.character(schemefile),
+           as.character(infile),
+           as.character(outfile),
+           as.integer(level),
+           as.integer(meta),
+           err=integer(1),
+           PACKAGE="xps")$err;
+
+   if (r != 0) {
+      stop(paste("error in utility function", sQuote("MetaProbesets")));
+   }#if
+}#metaProbesets
 
 #------------------------------------------------------------------------------#
 

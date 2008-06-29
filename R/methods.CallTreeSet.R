@@ -70,8 +70,39 @@ setMethod("pvalData", signature(object="CallTreeSet"),
 )#pvalData
 
 setReplaceMethod("pvalData", signature(object="CallTreeSet", value="data.frame"),
-   function(object, value) {
-      object@data <- value;
+   function(object, treenames = NULL, value) {
+      ## keep columns "UNIT_ID" and "UnitName"
+      ds <- value[, c("UNIT_ID", "UnitName")];
+
+      ## remove columns "UNIT_ID" and "UnitName"
+      value <- value[, is.na(match(colnames(value), "UNIT_ID"))];
+      value <- value[, is.na(match(colnames(value), "UnitName"))];
+
+      ## result dataframe ds
+      if (is.null(treenames)) {
+         if (is.null(ds)) {ds <- value} else {ds <-cbind(ds, value)}
+      } else {
+         treenames <- namePart(treenames);
+         treenames <- make.names(treenames);  #to compare names with colnames of data.frame
+         datanames <- namePart(colnames(value));
+
+         pos <- match(datanames, treenames);
+         if (length(pos[!is.na(pos)]) != length(treenames)) {
+            stop("at least one treename is not present in value");
+         }#if
+
+         value <- value[,!is.na(match(datanames, treenames))];
+
+         if (is.null(ds)) {ds <- value} else {ds <-cbind(ds, value)}
+      }#if
+
+      ## correct extension
+      treenames <- colnames(value);
+      treenames <- sub("_PVALUE", "", treenames);
+
+      object@data      <- ds;
+      object@treenames <- as.list(treenames);
+      object@numtrees  <- length(treenames);
       return(object);
    }
 )#pvalData<-
@@ -83,8 +114,33 @@ setMethod("presCall", signature(object="CallTreeSet"),
 )#presCall
 
 setReplaceMethod("presCall", signature(object="CallTreeSet", value="data.frame"),
-   function(object, value) {
-      object@detcall <- value;
+   function(object, treenames = NULL, value) {
+      ## keep columns "UNIT_ID" and "UnitName"
+      ds <- value[, c("UNIT_ID", "UnitName")];
+
+      ## remove columns "UNIT_ID" and "UnitName"
+      value <- value[, is.na(match(colnames(value), "UNIT_ID"))];
+      value <- value[, is.na(match(colnames(value), "UnitName"))];
+
+      ## result dataframe ds
+      if (is.null(treenames)) {
+         if (is.null(ds)) {ds <- value} else {ds <-cbind(ds, value)}
+      } else {
+         treenames <- namePart(treenames);
+         treenames <- make.names(treenames);  #to compare names with colnames of data.frame
+         datanames <- namePart(colnames(value));
+
+         pos <- match(datanames, treenames);
+         if (length(pos[!is.na(pos)]) != length(treenames)) {
+            stop("at least one treename is not present in value");
+         }#if
+
+         value <- value[,!is.na(match(datanames, treenames))];
+
+         if (is.null(ds)) {ds <- value} else {ds <-cbind(ds, value)}
+      }#if
+
+      object@detcall <- ds;
       return(object);
    }
 )#presCall<-

@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "THashTable.h"
 #include "TKey.h"
 #include "TString.h"
 #include "TSystem.h"
@@ -356,7 +357,8 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
                    char **chiptype, char **schemefile, char **tmpdir,
                    char **bgrdoption, char **exproption, char **treeset,
                    char **treenames, int *ntrees, int *normalize,
-                   int *level, int *verbose, char **result)
+                   int *bgrdlevel, int *normlevel, int *exprlevel,
+                   int *verbose, char **result)
 {
 // Preprocess trees using RMA
 
@@ -388,11 +390,9 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
       r += manager->InitAlgorithm("selector", "probe", bgrdoption[0], 0);
       r += manager->InitAlgorithm("backgrounder", "rma", bgrdopt, tmpfile, 1, 16384);
    } else if (strcmp(bgrdoption[0], "genomic") == 0 || strcmp(bgrdoption[0], "antigenomic") == 0) {
-//??      int bgrdlevel = 16383;
-      int bgrdlevel = *level; //use only those probes which are also used for expression
       int bgrdtype  = (strcmp(bgrdoption[0], "genomic") == 0) ? -1 : -2;
 
-      r += manager->InitAlgorithm("selector", "probe", "exon", 0, 2, bgrdlevel, bgrdtype);
+      r += manager->InitAlgorithm("selector", "probe", "exon", 0, 2, *bgrdlevel, bgrdtype);
       r += manager->InitAlgorithm("backgrounder", "rma", "pmonly:epanechnikov", tmpfile, 1, 16384);
    }//if
 
@@ -402,13 +402,9 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
       if (strcmp(chiptype[0], "GeneChip") == 0) {
          r += manager->InitAlgorithm("selector", "probe", "pmonly", 0);
       } else if (strcmp(chiptype[0], "GenomeChip") == 0) {
-//??         int normlevel = 16383; 
-         int normlevel = *level; //use only those probes which are also used for expression
-         r += manager->InitAlgorithm("selector", "probe", "genome", 0, 1, normlevel);
+         r += manager->InitAlgorithm("selector", "probe", "genome", 0, 1, *normlevel);
       } else if (strcmp(chiptype[0], "ExonChip") == 0) {
-//??         int normlevel = 16383; 
-         int normlevel = *level; //use only those probes which are also used for expression
-         r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, normlevel);
+         r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *normlevel);
       }//if
 
 //x      r += manager->InitAlgorithm("normalizer", "quantile", "together:none:0", tmpfile, 1, 0.0);
@@ -421,9 +417,9 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
    if (strcmp(chiptype[0], "GeneChip") == 0) {
       r += manager->InitAlgorithm("selector", "probe", "pmonly", 0);
    } else if (strcmp(chiptype[0], "GenomeChip") == 0) {
-      r += manager->InitAlgorithm("selector", "probe", "genome", 0, 1, *level);
+      r += manager->InitAlgorithm("selector", "probe", "genome", 0, 1, *exprlevel);
    } else if (strcmp(chiptype[0], "ExonChip") == 0) {
-      r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *level);
+      r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *exprlevel);
    }//if
 
    const char *expropt = new char[strlen(exproption[0]) + 6];
@@ -471,7 +467,8 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
 void PreprocessMAS4(char **filename, char **dirname, char **chipname,
                     char **chiptype, char **schemefile, char **tmpdir,
                     char **exproption, char **treeset, char **treenames,
-                    int *ntrees, int *level, int *verbose, char **result)
+                    int *ntrees, int *bgrdlevel, int *exprlevel,
+                    int *verbose, char **result)
 {
 // Preprocess trees using MAS4
 
@@ -506,7 +503,7 @@ void PreprocessMAS4(char **filename, char **dirname, char **chipname,
    } else if ((strcmp(chiptype[0], "GenomeChip") == 0) ||
               (strcmp(chiptype[0], "ExonChip")   == 0)) {
    // initialize backgrounder
-      r += manager->InitAlgorithm("selector","probe","exon",0, 1, *level);
+      r += manager->InitAlgorithm("selector","probe","exon",0, 1, *bgrdlevel);
       r += manager->InitAlgorithm("backgrounder","sector","subtractbg",0, 4,0.02,4,4,0);
 
    // initialize expressor
@@ -514,7 +511,7 @@ void PreprocessMAS4(char **filename, char **dirname, char **chipname,
       expropt = strcpy(expropt, exproption[0]);
       expropt = strcat(expropt, ":0");
 
-      r += manager->InitAlgorithm("selector","probe","exon",0, 2, *level, 1); //pm=level; mm=affx
+      r += manager->InitAlgorithm("selector","probe","exon",0, 2, *exprlevel, 1); //pm=level; mm=affx
       r += manager->InitAlgorithm("expressor","avgdiff",expropt,tmpfile,1,3.0);
    }//if
 
@@ -554,7 +551,8 @@ void PreprocessMAS4(char **filename, char **dirname, char **chipname,
 void PreprocessMAS5(char **filename, char **dirname, char **chipname,
                     char **chiptype, char **schemefile, char **tmpdir,
                     char **exproption, char **treeset, char **treenames,
-                    int *ntrees, int *level, int *verbose, char **result)
+                    int *ntrees, int *bgrdlevel, int *exprlevel,
+                    int *verbose, char **result)
 {
 // Preprocess trees using MAS5
 
@@ -589,7 +587,7 @@ void PreprocessMAS5(char **filename, char **dirname, char **chipname,
    } else if ((strcmp(chiptype[0], "GenomeChip") == 0) ||
               (strcmp(chiptype[0], "ExonChip")   == 0)) {
    // initialize backgrounder
-      r += manager->InitAlgorithm("selector","probe","exon",0, 1, *level);
+      r += manager->InitAlgorithm("selector","probe","exon",0, 1, *bgrdlevel);
       r += manager->InitAlgorithm("backgrounder","weightedsector","correctbg",tmpfile, 6,0.02,4,4,0,100,0.5);
 
    // initialize expressor
@@ -597,7 +595,7 @@ void PreprocessMAS5(char **filename, char **dirname, char **chipname,
       expropt = strcpy(expropt, exproption[0]);
       expropt = strcat(expropt, ":log2");
 
-      r += manager->InitAlgorithm("selector","probe","exon",0, 1, *level);
+      r += manager->InitAlgorithm("selector","probe","exon",0, 1, *exprlevel);
       r += manager->InitAlgorithm("expressor","TukeyBiweight",expropt,tmpfile,7,0.03,10.0,2.0e-20,5.0,0.0001,1.0,0.5);
    }//if
 
@@ -638,7 +636,8 @@ void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
                         char **chiptype, char **schemefile, char **tmpdir,
                         char **calloption, char **treeset, char **treenames,
                         int *ntrees, double *tau, double *alpha1, double *alpha2,
-                        int *ignore, int *level, int *verbose, char **result)
+                        int *ignore, int *bgrdlevel, int *callevel,
+                        int *verbose, char **result)
 {
 // Preprocess trees using MAS5 call
 
@@ -671,13 +670,13 @@ void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
       callopt = strcat(callopt, ":adjusted");
 
       // initialize backgrounder
-      r += manager->InitAlgorithm("selector", "probe", "genome", 0, 1, *level);
+      r += manager->InitAlgorithm("selector", "probe", "genome", 0, 1, *bgrdlevel);
       // the following setting calculates bg but does not subtract bg from intensity:
       r += manager->InitAlgorithm("backgrounder", "weightedsector", "correctbg", bgrdfile, 6, 0.02, 4, 4, 0, 100, 0.5);
 //?      r += manager->InitAlgorithm("backgrounder", "weightedsector", "none", bgrdfile, 6, 0.02, 4, 4, 0, 100, -1.0);
 
       // initialize call detector
-      r += manager->InitAlgorithm("selector", "probe", "genome", 0, 2, *level, -2); //??mm=antigenommic??
+      r += manager->InitAlgorithm("selector", "probe", "genome", 0, 2, *callevel, -2); //??mm=antigenommic??
       r += manager->InitAlgorithm("calldetector", "dc5", callopt, 0, 6, *tau, *alpha1, *alpha2, *ignore, 0, 0);
    } else if (strcmp(chiptype[0], "ExonChip") == 0) {
       callopt = new char[strlen(calloption[0]) + 9];
@@ -685,12 +684,12 @@ void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
       callopt = strcat(callopt, ":adjusted");
 
       // initialize backgrounder
-      r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *level);
+      r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *bgrdlevel);
       // the following setting calculates bg but does not subtract bg from intensity:
       r += manager->InitAlgorithm("backgrounder", "weightedsector", "none", bgrdfile, 6, 0.02, 4, 4, 0, 100, -1.0);
 
       // initialize call detector
-      r += manager->InitAlgorithm("selector", "probe", "exon", 0, 2, *level, -2); //??mm=antigenommic??
+      r += manager->InitAlgorithm("selector", "probe", "exon", 0, 2, *callevel, -2); //??mm=antigenommic??
       r += manager->InitAlgorithm("calldetector", "dc5", callopt, 0, 6, *tau, *alpha1, *alpha2, *ignore, 0, 0);
    }//if
 
@@ -802,7 +801,8 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
                 int *nexprpar, double *exprpars,
                 char **reftree, char **refmethod, double *refparam,
                 char **treeset, char **treenames, int *ntrees,
-                int *level, int *verbose, char **result)
+                int *bgrdlevel, int *normlevel, int *exprlevel,
+                int *verbose, char **result)
 {
 // Preprocess trees
    int    r = 0;
@@ -866,12 +866,10 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
                                      bgrdfile, n, p0, p1, p2, p3, p4, p5, p6, p7);
       } else if (strcmp(bgrdselection[0], "genomic")     == 0 ||
                  strcmp(bgrdselection[0], "antigenomic") == 0) {
-//??         int bgrdlevel = 16383;
-         int bgrdlevel = *level; //use only those probes which are also used for expression
          int bgrdopt   = (strcmp(bgrdselection[0], "genomic") == 0) ? -1 : -2;
 
          r += manager->InitAlgorithm("selector", "probe", "exon", 0, 2,
-                                     bgrdlevel, bgrdopt);
+                                     *bgrdlevel, bgrdopt);
          r += manager->InitAlgorithm("backgrounder", bgrdtype[0], bgrdoption[0],
                                      bgrdfile, n, p0, p1, p2, p3, p4, p5, p6, p7);
       }//if
@@ -888,9 +886,9 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
       if (strcmp(chiptype[0], "GeneChip") == 0) {
          r += manager->InitAlgorithm("selector", "probe", normselection[0], 0);
       } else if (strcmp(chiptype[0], "GenomeChip") == 0) {
-         r += manager->InitAlgorithm("selector", "probe", "genome", 0, 1, *level);
+         r += manager->InitAlgorithm("selector", "probe", "genome", 0, 1, *normlevel);
       } else if (strcmp(chiptype[0], "ExonChip") == 0) {
-         r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *level);
+         r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *normlevel);
       }//if
 
       r += manager->InitAlgorithm("normalizer", normtype[0], normoption[0],
@@ -913,9 +911,9 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
       if (strcmp(chiptype[0], "GeneChip") == 0) {
          r += manager->InitAlgorithm("selector", "probe", exprselection[0], 0, 0);
       } else if (strcmp(chiptype[0], "GenomeChip") == 0) {
-         r += manager->InitAlgorithm("selector", "probe", "genome", 0, 1, *level);
+         r += manager->InitAlgorithm("selector", "probe", "genome", 0, 1, *exprlevel);
       } else if (strcmp(chiptype[0], "ExonChip") == 0) {
-         r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *level);
+         r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *exprlevel);
       }//if
       r += manager->InitAlgorithm("expressor", exprtype[0], exproption[0],
                                   exprfile, n, p0, p1, p2, p3, p4, p5, p6, p7);
@@ -1030,11 +1028,9 @@ void BgCorrect(char **filename, char **dirname, char **chiptype,
 //   manager->InitAlgorithm("backgrounder","gccontent","attenuatebg", "", 3,0.4,0.005,-1.0);
    } else if (strcmp(seloption[0], "genomic")     == 0 ||
               strcmp(seloption[0], "antigenomic") == 0) {
-//      int bgrdlevel = 16383;
-      int bgrdlevel = *level; //use only those probes which are also used for expression
       int bgrdopt   = (strcmp(seloption[0], "genomic") == 0) ? -1 : -2;
 
-      r += manager->InitAlgorithm("selector", "probe", "exon", 0, 2, bgrdlevel, bgrdopt);
+      r += manager->InitAlgorithm("selector", "probe", "exon", 0, 2, *level, bgrdopt);
       r += manager->InitAlgorithm("backgrounder", bgrdtype[0], bgrdoption[0], tmpfile,
                                   *npar, p0, p1, p2, p3, p4, p5, p6, p7);
 
@@ -1948,6 +1944,189 @@ void GetRawCELNames(char **datafile, int *ntrees, char **treename, char **celnam
    manager->Close();
    delete manager;
 }//GetRawCELNames
+
+//______________________________________________________________________________
+void MetaProbesets(char **schemefile, char **infile, char **outfile,
+                   int *level, int *meta, int *err)
+{
+// Create metaprobeset list
+
+// Open file
+   TFile *file = TFile::Open(schemefile[0], "READ");
+   if (!file || file->IsZombie()) {
+      printf("Could not open file <%s>", schemefile[0]);
+      *err = 1;
+      return;
+   }//if
+
+// Get content from file
+   XFolder *content = (XFolder*)(file->Get("Content"));
+   if (!content) {
+      printf("Content for file <%s> not found.", schemefile[0]);
+      *err = 1;
+      return;
+   }//if
+
+// Check if file is schemefile
+   TString datatype = content->GetTitle();
+   if (strcmp(content->GetTitle(), "Schemes") != 0) {
+      printf("File <%s> is not a scheme file.", schemefile[0]);
+      *err = 1;
+      return;
+   }//if
+
+// Get chip type
+   TIter next(content->GetListOfFolders());
+   XExonChip *chip = 0;
+   TString chiptype;
+   TString treename;
+   while ((chip = (XExonChip*)next())) {
+      chiptype = chip->GetName();
+      treename = chip->GetProbesetAnnotTree();
+   }//while
+
+// Change directory
+   TDirectory *dir = file->GetDirectory(chiptype.Data());
+   if (dir) {
+      file->cd(chiptype.Data());
+   } else {
+      printf("Could not open file directory <%s>", chiptype.Data());
+      *err = 1;
+      return;
+   }//if
+
+// Get annotation tree for scheme
+   XProbesetAnnotation *annot = 0;
+   TTree *anntree = (TTree*)(gDirectory->Get(treename)); 
+   if (anntree == 0) {*err = 1; return;}
+   anntree->SetBranchAddress("AnnBranch", &annot);
+
+   Int_t size = (Int_t)(anntree->GetEntries());
+
+// Read infile
+   ifstream input;
+   std::string nextline;
+   streampos position;
+
+   input.open(infile[0], ios::in);
+   if (!input.good()) {
+      cerr << "Error: File does not exist: " << infile[0] << endl;
+      input.close();
+      *err = 1;
+      return;
+   }//if
+
+   // count number of infile lines
+   Int_t count = 0;
+   while (1) {
+      std::getline(input, nextline, '\n');
+      if (nextline.compare("probeset_id") == 0) continue;
+      if (input.eof()) break;
+      count++;
+   }//while
+
+   // reset input file to first probeset_id
+   input.clear();  //clear all flags
+   input.seekg(position, ios::beg);
+
+   Int_t   *pset = new Int_t[count];
+   Int_t   *arr  = new Int_t[size];
+   Int_t   *pcnt = new Int_t[size];
+   TString *str  = new TString[size];
+
+   for (Int_t i=0; i<size; i++) arr[i] = -1;
+
+   // read lines
+   count = 0;
+   while (input.good()) {
+      std::getline(input, nextline, '\n');
+      if (nextline.compare("probeset_id") == 0) continue;
+      if (input.eof()) break;
+
+      pset[count++] = atoi(nextline.c_str());
+   }//while
+
+   input.close();
+
+// Create hash table to store unit names from anntree
+   THashTable *htable = 0;
+   if (!(htable = new THashTable(2*size))) {*err = 1; return;}
+   TString strg;
+   XIdxString *idxstr = 0;
+
+// Set bit mask to level
+   XBitSet bitmsk;
+   bitmsk.ResetBit(XBitSet::kBitMask);
+   bitmsk.SetBit(*level);
+
+   Int_t idx = 0;
+   Int_t pct = 0;
+   Int_t tid = 0;
+   Int_t pid = 0;
+   Int_t lev = 0;
+   Int_t xhy = 0;
+   Int_t bnd = 0;
+   Int_t old = -1;
+   for (Int_t i=0; i<size; i++) {
+      anntree->GetEntry(i);
+
+      lev = annot->GetLevelID();
+      if (bitmsk.TestBit(lev) == kFALSE) continue;
+
+      xhy = annot->GetCrossHybType();
+      bnd = annot->GetBounded();
+      if (*meta && (xhy > 1 || bnd > 0)) continue;
+
+      tid = annot->GetTranscriptID();
+      pid = annot->GetProbesetID();
+      pct = annot->GetNumProbes();
+
+      if (old != tid) {
+         arr[idx]  = old = tid;
+         str[idx]  = "";
+         str[idx] += arr[idx];
+         str[idx] += "\t";
+         str[idx] += arr[idx];
+         str[idx] += "\t";
+         str[idx] += pid;
+         str[idx] += " ";
+
+         pcnt[idx] = pct;
+
+         strg.Form("%d", arr[idx]);
+         idxstr = new XIdxString(idx, strg.Data());
+         htable->Add(idxstr);
+         idx++;
+      } else {
+         str[idx-1]  += pid;
+         str[idx-1]  += " ";
+
+         pcnt[idx-1] += pct;
+      }//if
+   }//for_i
+
+// Write outfile
+   ofstream output(outfile[0], ios::out);
+   output << "probeset_id" << "\t" << "transcript_cluster_id" << "\t" << "probeset_list" << "\t" << "probe_count" << endl;
+   for (Int_t i=0; i<count; i++) {
+      strg.Form("%d", pset[i]);
+      idxstr = (XIdxString*)(htable->FindObject(strg.Data()));
+      if (idxstr) {
+         idx = idxstr->GetIndex();
+         output << str[idx] << "\t" << pcnt[idx] << endl;
+      }//if
+   }//for_i
+   output.close();
+
+// Cleanup
+   if (htable) {htable->Delete(); delete htable; htable = 0;}
+   if (str)  {delete [] str;  str  = 0;}
+   if (pcnt) {delete [] pcnt; pcnt = 0;}
+   if (arr)  {delete [] arr;  arr  = 0;}
+   if (pset) {delete [] pset; pset = 0;}
+   SafeDelete(content);
+   delete file;
+}//MetaProbesets
 
 
 /*////////////////////////////////////////////////////////////////////////////////

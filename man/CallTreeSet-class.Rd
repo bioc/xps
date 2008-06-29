@@ -4,13 +4,9 @@
 \alias{CallTreeSet}
 \alias{callplot,CallTreeSet-method}
 \alias{presCall,CallTreeSet-method}
-\alias{presCall}
 \alias{presCall<-,CallTreeSet,data.frame-method}
-\alias{presCall<-}
 \alias{pvalData,CallTreeSet-method}
-\alias{pvalData}
 \alias{pvalData<-,CallTreeSet,data.frame-method}
-\alias{pvalData<-}
 \alias{validCall,CallTreeSet-method}
 \alias{validCall}
 
