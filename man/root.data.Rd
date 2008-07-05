@@ -10,7 +10,7 @@ root.data(xps.scheme, rootfile = character(0), celnames = "*")
 \arguments{
   \item{xps.scheme}{A \code{\link{SchemeTreeSet}} containing the correct scheme for the ROOT data file.}
   \item{rootfile}{name of ROOT data file, including full path.}
-  \item{celnames}{optional vector of tree names to get only subset of trees.}
+  \item{celnames}{optional \code{character} vector of tree names to get only subset of trees.}
 }
 \details{
 An S4 class \code{\link{DataTreeSet}} will be created, serving as R wrapper to the 

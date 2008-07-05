@@ -49,6 +49,7 @@
                 "cmn", "cmd", "clw", "css", "cqu",
                 "dc5", "dab",
                 "amn", "gmn", "wmn", "wdf", "adf", "tbw", "mdp");
+   CALTYPE <- c("dc5", "dab");
    NRMTYPE <- c("tmn", "med", "ksm", "low", "sup", "qua", "mdp");
    FLRTYPE <- c("pfr", "ufr", "mfr");
    UNITYPE <- c("uvt", "stt", "wil", "var");

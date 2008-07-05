@@ -1,5 +1,5 @@
 Package: xps
-Version: 1.1.2
+Version: 1.1.3
 Title: Methods for Processing and Analysis of Affymetrix Oligonucleotide Arrays
        including Exon Arrays and Gene Arrays
 Author: Christian Stratowa, Vienna, Austria
@@ -25,6 +25,7 @@ Collate: utils.R TreeSetClasses.R
          Constructors.R
          import.expr.scheme.R import.exon.scheme.R import.genome.scheme.R root.scheme.R
          import.data.R root.data.R
+         root.expr.R root.call.R
          export.R
          rma.R mas4.R mas5.R mas5.call.R dabg.call.R
          bgcorrect.R normalize.R summarize.R express.R filter.R

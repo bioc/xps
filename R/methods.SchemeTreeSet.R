@@ -217,7 +217,7 @@ function(object,
    ds <- NULL;
    if (as.dataframe) {
       ## use quote = "\"", since annotation has single quotes e.g. "2'-PDE"
-      ds <- read.table(outfile, header=TRUE, sep=sep, row.names=NULL,quote = "\""); #"
+      ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep=sep, row.names=NULL, quote = "\""); #"
    }#if
 
    return(ds);

@@ -29,6 +29,9 @@
  replace slot \code{data} with the subset. Slots \code{treenames} and \code{numtrees} will be
  updated automatically.
 
+ Note: When creating \code{character} vector \code{treenames} it is sufficient to use the name
+ part of the tree name w/o the extension.
+
  Note: If you do not want to replace your current object, create first a copy of type
  \code{ExprTreeSet} by simply writing \code{newobj <- oldobj}, and use \code{newobj} for
  replacement.

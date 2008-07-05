@@ -125,7 +125,7 @@ setMethod("volcanoplot", signature(x="AnalysisTreeSet"),
    {
       if (debug.xps()) print("------volcanoplot.AnalysisTreeSet------")
 
-      PTYPE <- c("P.Value", "P.Adjusted", "P.Chance");
+      PTYPE <- c("P-Value", "P-Adjusted", "P-Chance");
       ptype <- c("pval", "padj", "pcha");
       if (is.na(match(p.value, ptype))) {
          stop(paste(sQuote("p.value"), "must be <pval,padj,pcha>"));
@@ -143,7 +143,7 @@ setMethod("volcanoplot", signature(x="AnalysisTreeSet"),
             ds <- validData(x, "UnitName");
          }#if
       }#if
-   
+
       pv <- -log10(ds[,PTYPE[match(p.value, ptype)]]);
       fc <- log2(ds[,"FoldChange"]);
 

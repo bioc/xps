@@ -755,7 +755,7 @@ function(object,
 
    ds <- data.frame(matrix(nr=0,nc=0));
    if (file.exists(outfile)) {
-      ds <- read.table(outfile, header=TRUE, sep="\t", row.names=NULL);
+      ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
    } else {
       warning(paste("could not export results as", sQuote(outfile)));
    }#if
@@ -898,7 +898,7 @@ function(object,
 
    ds <- data.frame(matrix(nr=0,nc=0));
    if (file.exists(outfile)) {
-      ds <- read.table(outfile, header=TRUE, sep="\t", row.names=NULL);
+      ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
    } else {
       warning(paste("error: could not export results as", sQuote(outfile)));
    }#if
@@ -1041,7 +1041,7 @@ function(object,
 
    ds <- data.frame(matrix(nr=0,nc=0));
    if (file.exists(outfile)) {
-      ds <- read.table(outfile, header=TRUE, sep="\t", row.names=NULL);
+      ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
    } else {
       warning(paste("error: could not export results as", sQuote(outfile)));
    }#if
@@ -1202,7 +1202,7 @@ function(object,
 
    ds <- data.frame(matrix(nr=0,nc=0));
    if (file.exists(outfile)) {
-      ds <- read.table(outfile, header=TRUE, sep="\t", row.names=NULL);
+      ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
    } else {
       warning(paste("error: could not export results as", sQuote(outfile)));
    }#if
@@ -1234,7 +1234,7 @@ function(object,
 
    dc <- data.frame(matrix(nr=0,nc=0));
    if (file.exists(outfile)) {
-      dc <- read.table(outfile, header=TRUE, sep="\t", row.names=NULL);
+      dc <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
    } else {
       warning(paste("error: could not export results as", sQuote(outfile)));
    }#if
@@ -1329,7 +1329,8 @@ function(object,
    fullnames <- paste(datafile, setname, treenames, sep="/");
 
    ## define setname and settype for new treeset
-   setname <- "CallTreeSet";
+#old   setname <- "CallTreeSet";
+   setname <- "CallSet";
    settype <- "preprocess";
 
    ## DABG detection call
@@ -1388,7 +1389,7 @@ function(object,
 
    ds <- data.frame(matrix(nr=0,nc=0));
    if (file.exists(outfile)) {
-      ds <- read.table(outfile, header=TRUE, sep="\t", row.names=NULL);
+      ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
    } else {
       warning(paste("error: could not export results as", sQuote(outfile)));
    }#if
@@ -1420,7 +1421,7 @@ function(object,
 
    dc <- data.frame(matrix(nr=0,nc=0));
    if (file.exists(outfile)) {
-      dc <- read.table(outfile, header=TRUE, sep="\t", row.names=NULL);
+      dc <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
    } else {
       warning(paste("error: could not export results as", sQuote(outfile)));
    }#if
@@ -1713,7 +1714,7 @@ function(object,
 
       ds <- data.frame(matrix(nr=0,nc=0));
       if (file.exists(outfile)) {
-         ds <- read.table(outfile, header=TRUE, sep="\t", row.names=NULL);
+         ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
       } else {
          warning(paste("could not export results as", sQuote(outfile)));
       }#if
@@ -2216,7 +2217,7 @@ function(object,
 
    ds <- data.frame(matrix(nr=0,nc=0));
    if (file.exists(outfile)) {
-      ds <- read.table(outfile, header=TRUE, sep="\t", row.names=NULL);
+      ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
    } else {
       warning(paste("error: could not export results as", sQuote(outfile)));
    }#if

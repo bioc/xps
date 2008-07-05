@@ -267,7 +267,7 @@ function(object,
    ## import outfile as dataframe
    ds <- NULL;
    if (as.dataframe) {
-      ds <- read.table(outfile, header=TRUE, sep=sep, row.names=NULL);
+      ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep=sep, row.names=NULL);
    }#if
 
    return(ds);

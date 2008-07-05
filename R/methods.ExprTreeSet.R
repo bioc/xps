@@ -404,9 +404,15 @@ function(object,
 
    ds <- data.frame(matrix(nr=0,nc=0));
    if (file.exists(outfile)) {
-      ds <- read.table(outfile, header=TRUE, sep="\t", row.names=NULL);
+      ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
    } else {
       warning(paste("could not export results as", sQuote(outfile)));
+   }#if
+
+   ## get exprtype of object
+   exprtype = "none";
+   if (class(object) == "ExprTreeSet") {
+      exprtype = object@exprtype;
    }#if
 
    ## create new class ExprTreeSet
@@ -420,7 +426,7 @@ function(object,
               scheme    = scheme,
               data      = ds,
               params    = params,
-              exprtype  = "none",
+              exprtype  = exprtype,
               normtype  = method);
 
    return(set);
@@ -679,7 +685,7 @@ function(object,
 
    ds <- data.frame(matrix(nr=0,nc=0));
    if (file.exists(outfile)) {
-      ds <- read.table(outfile, header=TRUE, sep="\t", row.names=NULL);
+      ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
    } else {
       warning(paste("could not export results as", sQuote(outfile)));
    }#if
@@ -937,7 +943,7 @@ function(object,
       }#if
 
       if (file.exists(outfile)) {
-         ds <- read.table(outfile, header=TRUE, sep="\t", row.names=NULL);
+         ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
       } else {
          warning(paste("could not export results as", sQuote(outfile)));
       }#if
@@ -1008,7 +1014,7 @@ function(object,
 
    ds <- data.frame(matrix(nr=0,nc=0));
    if (file.exists(outfile)) {
-      ds <- read.table(outfile, header=TRUE, sep="\t", row.names=NULL);
+      ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
    } else {
       warning(paste("could not export results as", sQuote(outfile)));
    }#if
