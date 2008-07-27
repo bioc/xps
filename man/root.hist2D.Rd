@@ -12,7 +12,7 @@ root.hist2D(x, treename1 = character(0), treename2 = character(0),logbase = "log
   \item{treename1}{name of first tree, must be present in \code{rootfile} of object \code{x}.}
   \item{treename2}{name of second tree, must be present in \code{rootfile} of object \code{x}.}
   \item{logbase}{usually \dQuote{log2}, or \dQuote{0}, determines if leaf data should be converted to log.}
-  \item{option}{ROOT hist TH1 option, usually one of \dQuote{SCAT}, \dQuote{COLZ}, \dQuote{BOX}.}
+  \item{option}{ROOT hist TH2 option, usually one of \dQuote{SCAT}, \dQuote{COLZ}, \dQuote{BOX}, \dQuote{SURF2}, \dQuote{SURF3}.}
   \item{canvasname}{name of ROOT canvas}
   \item{w}{the width of the canvas in pixels.}
   \item{h}{the height of the canvas in pixels.}
