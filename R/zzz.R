@@ -3,13 +3,14 @@
 #===========================================================================#
 
 .onLoad <- function(libname, pkgname) {
-  require(methods);
-  cat(paste("\nWelcome to", pkgname, "version 1.0.1", "\n"));
-  cat("    an R wrapper for XPS - eXpression Profiling System\n");
-  cat("    (c) Copyright 2001-2008 by Christian Stratowa\n");
-  cat("    \n");
+   require(methods);
+   require(utils);
+   cat(paste("\nWelcome to", pkgname, "version", packageDescription(pkgname, field="Version"), "\n"));
+   cat("    an R wrapper for XPS - eXpression Profiling System\n");
+   cat("    (c) Copyright 2001-2008 by Christian Stratowa\n");
+   cat("    \n");
 }
 
-.onUnload <- function( libpath ) {
-  library.dynam.unload( "xps", libpath )
+.onUnload <- function(libpath) {
+   library.dynam.unload( "xps", libpath )
 }

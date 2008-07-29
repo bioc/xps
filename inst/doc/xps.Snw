@@ -26,7 +26,7 @@
 \begin{document}
 
 \title{Introduction to the xps Package: Overview}
-\date{May, 2008}
+\date{July, 2008}
 \author{Christian Stratowa}
 \maketitle
 
@@ -63,10 +63,10 @@ provided with package \xps.
 
 ROOT (\url{http://root.cern.ch}) is an object-oriented framework that has been 
 developed at CERN for distributed data warehousing and data mining of particle 
-data in the petabyte range. Data are stored as sets of objects in machine-independent 
-files, and specialized storage methods are used to get direct access to separate 
-attributes of selected data objects. For more information see the ROOT User Guide
-(The ROOT \citet{root:2007}).
+data in the petabyte range, such as the data created with the new LHC collider. 
+Data are stored as sets of objects in machine-independent files, and specialized storage 
+methods are used to get direct access to separate attributes of selected data objects. 
+For more information see the ROOT User Guide (The ROOT \citet{root:2007}).
 
 Taking advantage of these features, package \xps\ stores all data in portable \ROOT\ files. 
 Data describing microarray layout, probe information and metadata for genes are stored 
@@ -100,6 +100,9 @@ package. The necessary \ROOT\ \Rclass{scheme} file \Rclass{SchemeTest3.root} for
 {\it Test3.CDF} is also supplied as well as the \ROOT\ \Rclass{data} file 
 \Rclass{DataTest3\_cel.root}. These files need to be loaded for every new \Robject{R}-session,
 unless the session has been saved.
+
+{\bf Note:} Please see Appendix A2 for many additional examples on how to use \xps.
+
 
 \subsection{Reading CEL file information}
 
@@ -160,8 +163,9 @@ the \ROOT\ \Rclass{data} file \Rclass{DataTest3\_cel.root}. \\
 {\bf Note 1:} It is also possible to import `phenotypic-data' describing samples and 
 further project--relevant data for the experiment, see S4 class \Rclass{ProjectInfo}.
 
-{\bf Note 2:} Since \ROOT\ \Rclass{data} files contain the raw data, it is proposed
-to create them in a common system directory, which may be accessible to other users, too.
+{\bf Note 2:} Since \ROOT\ \Rclass{data} files contain the raw data, it is recommended 
+to create them in a common system directory, e.g. 'rootdata', which is accessible to 
+other users, too.
 
 {\bf Note 3:} In order to distinguish \ROOT\ \Rclass{data} files containing the raw data 
 from other \ROOT\ files, extension `\_cel' is automatically added to the file name. Thus
@@ -231,6 +235,7 @@ to avoid this step.
 data.test3 <- attachMask(data.test3)
 data.test3 <- attachInten(data.test3)
 @
+
 {\bf Note:} We have applied method \Rfunction{attachMask} to \Rclass{data.test3} and not
 to \Rclass{scheme.test3}, since \Rclass{data.test3} contains its  own copy of 
 \Rclass{scheme.test3}. \\
@@ -276,7 +281,13 @@ After we are done, we remove the data from \Rclass{data.test3} to free \Robject{
 data.test3 <- removeInten(data.test3)
 data.test3 <- removeMask(data.test3)
 @
+
 This step is not necessary for small datasets or if the computer has sufficient RAM.
+
+{\bf Note:} From the description above it is evident, that it is not possible to plot exon 
+array data using e.g. functions \Rfunction{hist} or \Rfunction{image}, respectively, on 
+computers with 1GB RAM only. To allow plotting under low memory conditions, package \xps\ 
+supports \ROOT\ graphics, as described in Appendix A4. \\
 
 
 \section{Converting raw data to expression measures}
@@ -304,11 +315,12 @@ store the results as \ROOT\ \Rclass{Trees} in \ROOT\ file \Rclass{tmpdt\_Test3RM
 <<results=hide>>=
 data.rma <- rma(data.test3, "tmpdt_Test3RMA", verbose=FALSE)
 @
+
 {\bf Note:} In this example and the following examples we suppress the usual output.
 Furthermore, once again we use `tmpdt\_', which adds date and time to the tmp-file, 
-otherwise R CMD check would produce an error on Winodws. Usually, it is recommended to 
-use `tmp\_' which will be overwritten.  \\
-
+otherwise R CMD check would produce an error on Windows. Usually, you want to create a 
+permanent file, however, if you want to create a temporary file it is recommended to 
+use `tmp\_' as temporary file which will be overwritten. \\
 
 Then we preprocess the raw data using method `MAS5' to compute expression levels, and
 store the results in \ROOT\ file \Rclass{tmpdt\_Test3MAS5.root}:
@@ -330,6 +342,7 @@ Now we can plot the results for the first sample:
 plot(expr.rma[,1],expr.mas5[,1],log="xy",xlim=c(1,20000),ylim=c(1,20000))
 @
 \end{center}
+
 {\bf Note:} For both methods, `RMA' and `MAS5', true expression levels are extracted,
 which is in contrast to other packages which extract the log2 values for `RMA'.
 
@@ -351,7 +364,7 @@ time, e.g. on a computer with 2.3GHz Intel Core 2 Duo processor and 2GB RAM, com
 DABG calls for HG-U133\_Plus\_2 arrays will take about 45 min/array. \\
 
 
-Both, detection call, and detecion p-value can be extracted as \Robject{data.frame}:
+Both, detection call and detection p-value can be extracted as \Robject{data.frame}:
 <<>>=
 pres.mas5 <- presCall(call.mas5)
 head(pres.mas5)
@@ -412,7 +425,7 @@ Since the \ROOT\ expression files contain additional \ROOT\ \Rclass{Trees}, e.g.
 trees containing the computed background intensities, let us create an \Rfunction{image} 
 showing the distribution of the background intensities on an array for MAS5.
 
-First,we need to know the tree names stored in \Rclass{data.mas5}
+First, we need to know the tree names stored in \Rclass{data.mas5}
 <<>>=
 getTreeNames(rootFile(data.mas5))
 @
@@ -520,10 +533,10 @@ filters:
 \item \Rcode{unitestFilter}: A `unitest' filter to select genes where the p--value of
  the applied unitest, i.e. the \Rcode{t.test} is less than 0.1 (\Rcode{pval <= 0.1}).
 \end{enumerate}
-Only genes satisfying both filters are considered to be differentially expressed. \\
+Only genes satisfying both filters are considered to be differentially expressed. 
 
 {\bf Note:} If you want to change the default settings for \Rcode{t.test} and/or
-compute and adjusted p--value for multiple comparisons you need to initialize 
+compute an adjusted p--value for multiple comparisons you need to initialize 
 method \Rcode{uniTest}, too. \\
 
 
@@ -554,7 +567,7 @@ tmp
 @
 
 The data show that only 9 genes of the pre--selected 181 genes are considered to be 
-differentially expressed. 
+differentially expressed. \\
 
 {\bf Note:} If you want to extract all data as \Robject{data.frame} as well as the 
 resulting filter mask you can do:
@@ -573,8 +586,8 @@ tmp <- export.filter(rma.ufr, treetype="stt",
 head(tmp)
 @
 
-Now all pre--selected 181 genes are extracted as \Robject{data.frame} together with 
-the corresponding annotation and filter mask. \\
+Now all 181 pre--selected genes are extracted as \Robject{data.frame} together with 
+the corresponding annotation and the filter mask. \\
 
 It is also possible to create a fold-change vs p-value plot, called \Rcode{volcanoplot}.
 Setting the parameter \Rcode{labels="fSymbol"} allows us to draw the corresponding gene 
@@ -638,12 +651,16 @@ scmdir <- "/path/to/CRAN/Workspaces/Schemes"
 scheme.test3 <- root.scheme(paste(scmdir,"SchemeTest3.root",sep="/"))
 @
 
-Package \xps\ includes a file {\it script4xps.R} which contains code to import some of the 
+Package \xps\ includes a file "script4xps.R" which contains code to import some of the 
 main CDF and annotation files, which can be copied to an \Robject{R}-session, including
 code to create \ROOT\ \Rclass{scheme} files for the currently available Exon arrays and
 Gene arrays.
 
-{\bf Note:} As mentioned earlier, slot \Rcode{mask} of \Rclass{scheme.test3} needs to
+{\bf Note 1:} Since \ROOT\ \Rclass{scheme} files need to be created only once, it is 
+recommended to save them in a common system directory, e.g. 'Schemes', which is accessible 
+to other users, too.
+
+{\bf Note 2:} As mentioned earlier, slot \Rcode{mask} of \Rclass{scheme.test3} needs to
 be attached to instances of S4 class \Rclass{DataTreeSet} before accessing raw data,
 since  slot \Rcode{mask} contains the information which oligos on the array are PM, MM,
 or control oligos, respectivly. If you want to avoid this step you can create instances
@@ -654,7 +671,7 @@ e.g.:
 scheme.test3 <- import.expr.scheme("Scheme_Test3_na25",..., add.mask=TRUE)
 @
 
-{\bf Note:} Please note that for the new GeneChip exon array systems and gene array systems
+{\bf Note 3:} Please note that for the new GeneChip Exon array systems and Gene array systems
 Affymetrix no longer supports CDF-files, but uses the new CLF-files and PGF-files instead.
 For this reason package \xps\ also uses CLF-, PGF-files to create the root scheme files, and
 does not use the inofficial CDF-files. See the help files \Rfunction{?import.exon.scheme}
@@ -665,10 +682,11 @@ and \Rfunction{?import.genome.scheme} for more information.
 %\label{appA2}
 
 Additional examples how to use package \xps\ can be found in file "script4xps.R", located
-in subdirectory examples. Most of these examples are easily adaptable to users need and can 
-be copied with no or only minor modifications. This file and a second file "script4exon.R" 
-use the Affymetrix Human Tisse Datasets for arrays HG-U133\_Plus\_2, HuEx-1\_0-st-v2 and 
-HuGene-1\_0-st-v1.
+in subdirectory 'examples'. Most of these examples are easily adaptable to users need and can 
+be copied with no or only minor modifications. Furthermore, a second file, "script4exon.R", 
+shows how to use \xps\ with the novel Affymetrix Gene and Exon arrays. Both files use the 
+Affymetrix "Human Tissue Datasets" for arrays HG-U133\_Plus\_2, HuEx-1\_0-st-v2 and 
+HuGene-1\_0-st-v1, respectively.
 
 
 \subsection{Using Biobase class ExpressionSet}
@@ -702,6 +720,126 @@ exprs(vv)
 @
 
 This class \Rclass{ExpressionSet} can now be used from within other Bioconductor packages.
+
+
+\subsection{ROOT graphics}
+
+As noted earlier, package \xps\ allows to analyze Exon arrays on computers with only 1GB RAM. 
+However, in this case it is not possible to use R-based plots such as \Rfunction{image}, 
+\Rfunction{hist}, or \Rfunction{boxplot}, respectively. For this purpose \xps\ takes advantage 
+of the \ROOT\ graphics capabilities, which do not suffer from such memory limitations. 
+
+In the following we will demonstrate some of the \ROOT\ graphics capabilities using the 33 exon 
+array data of all 11 tissues from the Affymetrix Exon Array Data Set "Tissue Mixture" (see 
+file "script4exon.R"). \\
+
+Let us first create an image using function \Rfunction{root.image}:
+
+<<eval=FALSE>>=
+root.image(data.exon, treename="BreastA.cel", w=400, h=400)
+@
+
+\begin{figure}[h]
+\begin{center}
+  \includegraphics[width=70mm]{Image.png}
+  \includegraphics[width=70mm]{ImageZoom.png}
+%  \caption{xxx}
+%  \label{xxx}
+\end{center}
+\end{figure}
+
+\pagebreak
+
+The left side of the figure shows the image created, while the right side shows the figure after 
+zooming-in (see \Rcode{?root.image} how to save the image and how to zoom-in). \\
+
+Now let us create density-plots for the raw intensities of all 33 exon arrays, as well as for the 
+RMA-normalized expression levels:
+
+<<eval=FALSE>>=
+root.density(data.exon, "*", w=400, h=400)
+root.density(data.x.rma, "*", w=400, h=400)
+@
+
+\begin{figure}[h]
+\begin{center}
+  \includegraphics[width=70mm]{DensityPlot.png}
+  \includegraphics[width=70mm]{DensityPlotRMA.png}
+%  \caption{xxx}
+%  \label{xxx}
+\end{center}
+\end{figure}
+
+It is also possible to draw scatter-plots for the raw intensities between any two arrays, as well 
+as between two RMA-normalized expression levels:
+
+<<eval=FALSE>>=
+root.graph2D(data.exon, "BreastA.cel", "BreastB.cel")
+root.graph2D(data.x.rma, "BreastA.mdp", "BreastB.mdp")
+@
+
+\begin{figure}[h]
+\begin{center}
+  \includegraphics[width=70mm]{Graph2D.png}
+  \includegraphics[width=70mm]{Graph2DRMA.png}
+%  \caption{xxx}
+%  \label{xxx}
+\end{center}
+\end{figure}
+
+The left scatter-plot compares the raw intensities of two breast tissue replicas for all 
+probes on the exon array, while the right scatter-plot compares the respective normalized 
+expression levels. \\
+
+Besides using scatter-plots it is also possible to plot the same data as 2D-histograms:
+
+<<eval=FALSE>>=
+root.hist2D(data.exon, "BreastA.cel", "BreastB.cel", option="COLZ")
+root.hist2D(data.x.rma, "BreastA.mdp", "BreastB.mdp", option="COLZ")
+root.hist2D(data.x.rma, "BreastA.mdp", "BreastB.mdp", option="SURF2")
+@
+
+\begin{figure}[h]
+\begin{center}
+  \includegraphics[width=70mm]{Histogram2DRMA.png}
+  \includegraphics[width=70mm]{Histogram2DRMAsurf2.png}
+%  \caption{xxx}
+%  \label{xxx}
+\end{center}
+\end{figure}
+
+Here we show two different ways to plot the 2D-histogram for the normalized expression levels 
+by simply changing the parameter \Rcode{option}. The left histogram uses the default 
+\Rcode{option="COLZ"} while the right histogram was created using \Rcode{option="SURF2"} to 
+allow a 3-dimensional view of the expression level distribution. \\
+
+
+\pagebreak
+
+Finally, it is also possible to create 3D-histograms:
+
+<<eval=FALSE>>=
+root.hist3D(data.exon, "BreastA.cel", "BreastB.cel", "BreastC.cel", option="SCAT")
+root.hist3D(data.x.rma, "BreastA.mdp", "BreastB.mdp", "BreastC.mdp", option="SCAT")
+@
+
+\begin{figure}[h]
+\begin{center}
+  \includegraphics[width=70mm]{Histogram3D.png}
+  \includegraphics[width=70mm]{Histogram3DRMA.png}
+%  \caption{xxx}
+%  \label{xxx}
+\end{center}
+\end{figure}
+
+The left 3D-histogram compares the raw intensities of the breast tissue triplicates for all 
+probes on the exon array, while the right scatter-plot compares the respective normalized 
+expression levels. 
+
+Since quite often samples are hybridized onto arrays as triplicates, 3D-histograms are helpful 
+in getting a first impression on the quality of the triplicates.
+
+{\bf Note:} The 3D-histograms can be rotated interactively, see \Rcode{?root.hist3D}.
 
 
 \bibliographystyle{plainnat}

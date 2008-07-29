@@ -601,6 +601,15 @@ celnames <- c("CerebellumA","CerebellumB","CerebellumC",
 data.exon <- addData(data.exon, celdir=celdir, celfiles=celfiles, celnames=celnames)
 
 
+# plots - alternative possibility to avoid memory problems:
+# select File->SaveAs...->nnn.png to save to disk
+root.density(data.exon, "*", w=400, h=400)
+root.image(data.exon, treename="BreastA.cel", w=400, h=400)
+root.hist1D(data.exon, "BreastA.cel", type="density", option="COLZ", w=400, h=400)
+root.hist2D(data.exon, "BreastA.cel", "BreastB.cel", option="COLZ", w=400, h=400)
+root.hist3D(data.exon, "BreastA.cel", "BreastB.cel", "BreastC.cel", option="SCAT", w=400, h=400)
+root.graph2D(data.exon, "BreastA.cel", "BreastB.cel", w=400, h=400)
+
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # RMA for Tissues from Affymetrix Exon Array Dataset for HG-U133_Plus_2 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -628,6 +637,37 @@ hist(data.rma)
 # boxplots
 boxplot(data.rma,las=2)
 
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# RMA for Tissues from Affymetrix Exon Array Dataset for HuEx-1_0-st-v2
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+### new R session: load library xps
+library(xps)
+
+### first, load ROOT scheme file and ROOT data file
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
+scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na25.root",sep="/"))
+datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
+data.exon <- root.data(scheme.exon, paste(datdir,"HuTissuesExon_cel.root",sep="/"))
+
+### preprocess raw data ###
+datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Exon/hutissues/exon"
+
+# 1. RMA
+# transcript: metacore
+data.x.rma <- rma(data.exon,"MixRMAMetacore",filedir=datdir,tmpdir="",background="antigenomic",
+                  normalize=T,option="transcript",exonlevel="metacore")
+
+# root plots
+root.density(data.x.rma, "*", w=400, h=400)
+root.hist1D(data.x.rma, "BreastA.mdp", type="density", option="COLZ", w=400, h=400)
+root.hist2D(data.x.rma, "BreastA.mdp", "BreastB.mdp", option="COLZ", w=400, h=400)
+root.hist2D(data.x.rma, "BreastA.mdp", "BreastB.mdp", option="SURF2", w=400, h=400)
+root.hist2D(data.x.rma, "BreastA.mdp", "BreastB.mdp", option="SURF3", w=400, h=400)
+root.hist3D(data.x.rma, "BreastA.mdp", "BreastB.mdp", "BreastC.mdp", option="SCAT", w=400, h=400)
+root.graph2D(data.x.rma, "BreastA.mdp", "BreastB.mdp", w=400, h=400)
+root.mvaplot(data.x.rma, "BreastA.mdp", "BreastB.mdp", w=400, h=400)
 
 
 

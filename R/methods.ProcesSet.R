@@ -165,7 +165,7 @@ function(object,
    }#if
 
    treenames <- namePart(object@treenames);
-   treenames <- make.names(treenames);  #to compare names with colnames of data.frame
+#x   treenames <- make.names(treenames);  #to compare names with colnames of data.frame
    datanames <- namePart(colnames(data));
 
    return(data[,!is.na(match(datanames, treenames))]);
@@ -267,7 +267,7 @@ function(object,
    ## import outfile as dataframe
    ds <- NULL;
    if (as.dataframe) {
-      ds <- read.table(outfile, header=TRUE, sep=sep, row.names=NULL);
+      ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep=sep, row.names=NULL);
    }#if
 
    return(ds);
