@@ -292,7 +292,6 @@ function(object,
    }#if
 
    treenames <- namePart(object@treenames);
-   treenames <- make.names(treenames);  #to compare names with colnames of data.frame
    datanames <- namePart(colnames(data));
 
    ds <- data[,!is.na(match(datanames, treenames))];
@@ -316,7 +315,6 @@ function(object,
    }#if
 
    treenames <- namePart(object@bgtreenames);
-   treenames <- make.names(treenames);  #to compare names with colnames of data.frame
    bgrdnames <- namePart(colnames(bgrd));
 
    return(bgrd[,!is.na(match(bgrdnames, treenames))]);
@@ -378,7 +376,6 @@ function(object,
                  sQuote("celfiles")));
    }#if
    if (is.null(celnames)) {
-#      celnames <- "";
       celnames <- CELNames(celfiles);
    } else {
       celnames <- unlist(strsplit(celnames, "\\.[cC][eE][lL]"));

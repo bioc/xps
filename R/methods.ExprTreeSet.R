@@ -126,7 +126,6 @@ setReplaceMethod("exprs", signature(object="ExprTreeSet", value="data.frame"),
          if (is.null(ds)) {ds <- value} else {ds <-cbind(ds, value)}
       } else {
          treenames <- namePart(treenames);
-         treenames <- make.names(treenames);  #to compare names with colnames of data.frame
          datanames <- namePart(colnames(value));
 
          pos <- match(datanames, treenames);

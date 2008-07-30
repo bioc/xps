@@ -83,7 +83,6 @@ setReplaceMethod("pvalData", signature(object="CallTreeSet", value="data.frame")
          if (is.null(ds)) {ds <- value} else {ds <-cbind(ds, value)}
       } else {
          treenames <- namePart(treenames);
-         treenames <- make.names(treenames);  #to compare names with colnames of data.frame
          datanames <- namePart(colnames(value));
 
          pos <- match(datanames, treenames);
@@ -127,7 +126,6 @@ setReplaceMethod("presCall", signature(object="CallTreeSet", value="data.frame")
          if (is.null(ds)) {ds <- value} else {ds <-cbind(ds, value)}
       } else {
          treenames <- namePart(treenames);
-         treenames <- make.names(treenames);  #to compare names with colnames of data.frame
          datanames <- namePart(colnames(value));
 
          pos <- match(datanames, treenames);
@@ -162,7 +160,7 @@ function(object) {
    }#if
 
    treenames <- namePart(object@treenames);
-   treenames <- make.names(treenames);  #to compare names with colnames of data.frame
+#x   treenames <- make.names(treenames);  #to compare names with colnames of data.frame
    callnames <- namePart(colnames(dcall));
 
    return(dcall[,!is.na(match(callnames, treenames))]);
