@@ -1,4 +1,4 @@
-// File created: 10/16/2007                          last modified: 10/16/2007
+// File created: 10/16/2007                          last modified: 09/05/2008
 // Author: Christian Stratowa 10/16/2007
 
 /*
@@ -12,7 +12,7 @@
 
 void macroDrawDensity(const char *xps, const char *filename, const char *canvasname,
                       const char *treename, const char *varlist, const char *logbase,
-                      const char *option, Int_t width, Int_t height)
+                      const char *option, const char *savename, Int_t width, Int_t height)
 {
    gSystem->Load("libGui"); //necessary for ROOT version >=5.15/09
    gSystem->Load(xps);
@@ -37,6 +37,12 @@ void macroDrawDensity(const char *xps, const char *filename, const char *canvasn
 
 // draw density
    plotter->DrawDensity("", varlist, logbase, "epanechnikov", option, 512, 0, 0);
+
+// save figure and close canvas
+   if (strcmp(savename, "") != 0) {
+      plotter->SaveAs(savename);
+      plotter->CloseCanvas("");
+   }//if
 
 // cleanup
    delete plotter;

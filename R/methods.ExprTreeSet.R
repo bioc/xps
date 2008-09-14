@@ -10,6 +10,8 @@
 # exprs:
 # exprs<-:
 # se.exprs:
+# attachExpr:
+# removeExpr:
 # xpsNormalize:
 # xpsPreFilter:
 # xpsUniFilter:
@@ -149,10 +151,7 @@ setReplaceMethod("exprs", signature(object="ExprTreeSet", value="data.frame"),
    }
 )#exprs<-
 
-
-#------------------------------------------------------------------------------#
-# ExprTreeSet methods:
-#------------------------------------------------------------------------------#
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 setMethod("se.exprs", signature(object="ExprTreeSet"),
    function(object) {
@@ -166,6 +165,47 @@ setMethod("se.exprs", signature(object="ExprTreeSet"),
       return(se);
    }
 )#se.exprs
+
+
+#------------------------------------------------------------------------------#
+# ExprTreeSet methods:
+#------------------------------------------------------------------------------#
+
+setMethod("attachExpr", signature(object="ExprTreeSet"),
+   function(object, treenames="*") {
+      if (debug.xps()) print("------attachExpr.ExprTreeSet------")
+
+      oldtrees <- object@treenames;
+      treetype <- extenPart(oldtrees);
+      if (treenames[1] == "*") treenames <- oldtrees;
+      if (length(treenames) > 0) {
+         exprs(object, treenames) <- export(object,
+                                            treenames    = treenames,
+                                            treetype     = treetype,
+                                            varlist      = "fUnitName:fLevel",
+                                            as.dataframe = TRUE,
+                                            verbose      = FALSE);
+         ## necessary since "expr()<-" updates slots treenames, numtrees
+         object@treenames <- as.list(oldtrees);
+         object@numtrees  <- length(oldtrees);
+      } else {
+         warning("missing data tree names, data will not be added.");
+      }#if
+      return(object);
+   }
+)#attachExpr
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("removeExpr", signature(object="ExprTreeSet"),
+   function(object) {
+      if (debug.xps()) print("------removeExpr.ExprTreeSet------")
+
+      object@data  <- data.frame(matrix(nr=0,nc=0));
+      gc(); #????
+      return(object);
+   }
+)#removeExpr
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -183,6 +223,7 @@ function(object,
          refindex  = 0,
          refmethod = "mean",
          params    = list(), 
+         add.data  = TRUE,
          verbose   = TRUE)
 {
    if (debug.xps()) print("------normalize.ExprTreeSet------")
@@ -372,41 +413,43 @@ function(object,
    }#if
 
    ## export/import result as dataframe
-   outfile  <- sub(".root", ".txt", rootfile);
-   # get treename "treeset.treename.treetype"
-   treename <- paste(setname, "*", exten, sep=".");
-   numtrees <- 1; # must be one for treename="*"
+   ds <- data.frame(matrix(nr=0,nc=0));
+   if (add.data) {
+      outfile  <- sub(".root", ".txt", rootfile);
+      # get treename "treeset.treename.treetype"
+      treename <- paste(setname, "*", exten, sep=".");
+      numtrees <- 1; # must be one for treename="*"
 
-   r <- .C("ExportData",
-           as.character(rootfile),
-           as.character(schemefile),
-           as.character(chiptype),
-           as.character(settype),
-           as.character(treename),
-           as.integer(numtrees),
-           as.character(exten),
-           as.character("fUnitName:fLevel"),
-           as.character(outfile),
-           as.character("\t"),
-           as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
+      r <- .C("ExportData",
+              as.character(rootfile),
+              as.character(schemefile),
+              as.character(chiptype),
+              as.character(settype),
+              as.character(treename),
+              as.integer(numtrees),
+              as.character(exten),
+              as.character("fUnitName:fLevel"),
+              as.character(outfile),
+              as.character("\t"),
+              as.integer(verbose),
+              err=integer(1),
+              PACKAGE="xps")$err;
 
-   if (r != 0) {
-      stop(paste("error in function", sQuote("ExportData")));
-      return(NULL);
+      if (r != 0) {
+         stop(paste("error in function", sQuote("ExportData")));
+         return(NULL);
+      }#if
+
+      if (file.exists(outfile)) {
+         ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
+      } else {
+         warning(paste("could not export results as", sQuote(outfile)));
+      }#if
    }#if
 
    ## get treenames after normalization
    treenames <- getTreeNames(rootfile, exten);
    numtrees  <- length(treenames);
-
-   ds <- data.frame(matrix(nr=0,nc=0));
-   if (file.exists(outfile)) {
-      ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
-   } else {
-      warning(paste("could not export results as", sQuote(outfile)));
-   }#if
 
    ## get exprtype of object
    exprtype = "none";

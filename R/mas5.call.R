@@ -16,6 +16,7 @@ function(xps.data,
          option           = "transcript",
          exonlevel        = "",
          xps.scheme       = NULL,
+         add.data         = TRUE,
          verbose          = TRUE)
 {
    if (is(xps.data, "DataTreeSet")) {
@@ -30,6 +31,7 @@ function(xps.data,
                          option           = option,
                          exonlevel        = exonlevel,
                          xps.scheme       = xps.scheme,
+                         add.data         = add.data,
                          verbose          = verbose);
       return(set);
    } else {

@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 02/24/2008
+// File created: 08/05/2002                          last modified: 09/13/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -1712,6 +1712,13 @@ Int_t XGeneChipHyb::ReadData(ifstream &input, Option_t *option, const char * /*s
       cout << "      " << nummax << " cells with maximal intensity " << max << endl;
    }//if
 
+// Check for problems with intensities
+   if (max <= min) {
+      cout << "Warning: maximal intensity equal or less than minimal intensity!" << endl;
+      cout << "Thus CEL-file will not be imported as <" << fDataTreeName << ">!" << endl;
+      goto cleanup;
+   }//if
+
 // Write data tree to file if all data are read
    if (numcel == fNCells) {
    // Add tree info to tree
@@ -1732,6 +1739,7 @@ Int_t XGeneChipHyb::ReadData(ifstream &input, Option_t *option, const char * /*s
    }//if
 
 // Delete data tree from RAM
+cleanup:
    datatree->Delete("");
    datatree = 0;
    delete cell;
@@ -1900,6 +1908,13 @@ Int_t XGeneChipHyb::ReadXDAData(ifstream &input, Option_t *option, const char * 
       cout << "      " << nummax << " cells with maximal intensity " << max << endl;
    }//if
 
+// Check for problems with intensities
+   if (max <= min) {
+      cout << "Warning: maximal intensity equal or less than minimal intensity!" << endl;
+      cout << "Thus CEL-file will not be imported as <" << fDataTreeName << ">!" << endl;
+      goto cleanup;
+   }//if
+
 // Write data tree to file if all data are read
    if (numcel == fNCells) {
    // Add tree info to tree
@@ -1918,6 +1933,7 @@ Int_t XGeneChipHyb::ReadXDAData(ifstream &input, Option_t *option, const char * 
    }//if
 
 // Delete data tree from RAM
+cleanup:
    datatree->Delete("");
    datatree = 0;
    delete cell;
@@ -2300,6 +2316,13 @@ Int_t XGeneChipHyb::ReadDataGroup(ifstream &input, UInt_t &filepos,
       cout << "   hybridization statistics: " << endl;
       cout << "      " << nummin << " cells with minimal intensity " << min << endl;
       cout << "      " << nummax << " cells with maximal intensity " << max << endl;
+   }//if
+
+// Check for problems with intensities
+   if (max <= min) {
+      cout << "Warning: maximal intensity equal or less than minimal intensity!" << endl;
+      cout << "Thus CEL-file will not be imported as <" << fDataTreeName << ">!" << endl;
+      goto cleanup;
    }//if
 
 // Write data tree to file
@@ -3239,11 +3262,12 @@ Int_t XGeneChipPivot::ExportCallTrees(Int_t n, TString *names, const char *varli
 
          if (hasCall) {
             Short_t cl = call[k]->GetCall();
-            char   *ch = "NA";
-            if      (cl == 2) ch = "P";
-            else if (cl == 0) ch = "A";
-            else if (cl == 1) ch = "M";
-            output << sep << ch;
+            const char *ch[1];
+            ch[0] = "NA";
+            if      (cl == 2) ch[0] = "P";
+            else if (cl == 0) ch[0] = "A";
+            else if (cl == 1) ch[0] = "M";
+            output << sep << ch[0];
          }//if
 
          if (hasPVal) output << sep << call[k]->GetPValue();

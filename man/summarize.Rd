@@ -11,13 +11,13 @@
  values into one expression measure and a standard error for this summary.
 }
 \usage{
-summarize(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, select = "none", method = character(), option = "transcript", logbase = "0", exonlevel = "", params = list(), xps.scheme = NULL, verbose = TRUE)
+summarize(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, select = "none", method = character(), option = "transcript", logbase = "0", exonlevel = "", params = list(), xps.scheme = NULL, add.data = TRUE, verbose = TRUE)
 
-summarize.mas4(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, option = "transcript", exonlevel = "", xps.scheme = NULL, verbose = TRUE)
+summarize.mas4(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, option = "transcript", exonlevel = "", xps.scheme = NULL, add.data = TRUE, verbose = TRUE)
 
-summarize.mas5(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, option = "transcript", exonlevel = "", xps.scheme = NULL, verbose = TRUE)
+summarize.mas5(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, option = "transcript", exonlevel = "", xps.scheme = NULL, add.data = TRUE, verbose = TRUE)
 
-summarize.rma(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, option = "transcript", exonlevel = "", xps.scheme = NULL, verbose = TRUE)
+summarize.rma(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, option = "transcript", exonlevel = "", xps.scheme = NULL, add.data = TRUE, verbose = TRUE)
 
 xpsSummarize(object, ...)
 }
@@ -37,6 +37,7 @@ xpsSummarize(object, ...)
    for summarization; exon/genome arrays only.}
   \item{params}{vector of parameters for summarization method.}
   \item{xps.scheme}{optional alternative \code{SchemeTreeSet}.}
+  \item{add.data}{logical. If \code{TRUE} expression data will be included as slot \code{data}.}
   \item{verbose}{logical, if \code{TRUE} print status information.}
   \item{object}{object of class \code{DataTreeSet}.}
   \item{\dots}{the arguments described above.}

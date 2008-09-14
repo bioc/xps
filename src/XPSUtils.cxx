@@ -1,4 +1,4 @@
-// File created: 11/02/2002                          last modified: 04/01/2008
+// File created: 11/02/2002                          last modified: 08/09/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -68,6 +68,9 @@
 #include "TBranch.h"
 #include "TLeaf.h"
 #include "TObjString.h"
+#include "TParallelCoord.h"
+#include "TParallelCoordVar.h"
+#include "TParallelCoordRange.h"
 #include "TROOT.h"
 #include "TSystem.h"
 
@@ -1888,6 +1891,128 @@ cleanup:
    savedir->cd();
    return perr;
 }//DrawDensity
+
+//______________________________________________________________________________
+Int_t XPlot::DrawParallelCoord(const char *canvasname, const char *varlist,
+             Double_t min, Double_t max, Bool_t aslog, Bool_t gl, Bool_t can)
+{
+   // Draw parallel coordinate chart of varlist for all trees listed in fTrees,
+   // where varlist must be one leafname for a list of trees, 
+   // but should contain more than one leafname for only one tree.
+   // varlist: leafnames of a tree separated by colons, e.g. "fInten:fStdDev"
+   // gl: indicates if all axes should be drawn at the same (global) scale
+   // can: indicates if a candle chart should be drawn
+   // Note: If canvas is created by NewCanvas(), set canvasname = "".
+   if(kCS) cout << "------XPlot::DrawParallelCoord------" << endl;
+
+   if (fAbort) return perrAbort;
+   if (!fTrees || (fTrees->GetSize() == 0)) {
+      cerr << "Error: Need to add first trees to tree list." << endl;
+      return perrGetTree;
+   }//if
+   TDirectory *savedir = gDirectory;
+
+   Int_t perr = perrNoErr;
+
+// Create canvas for drawing
+   if (strcmp(canvasname, "") != 0) {
+      this->NewCanvas(canvasname, "");
+   }//if
+
+// Set pad number
+   if (fNPads > 1) fPadNr++;
+   if (fPadNr > fNPads) {
+      cerr << "Error: Number of pads <" << fPadNr << "> is larger than <" 
+           << fNPads << ">." << endl;
+      return perrNumPads;
+   }//if
+
+   fCanvas->cd(fPadNr);
+
+   Int_t  ntrees  = fTrees->GetSize();
+   TTree *tree    = (TTree*)(fTrees->At(0));
+   Int_t  entries = (Int_t)(tree->GetEntries());
+
+// Add tree friends
+   TTree  *treek = 0;
+   TString kname, alias;
+   if (ntrees > 1) {
+      kname = Path2Name(tree->GetName(), "", ".");
+      tree->SetName(kname);   //name witout extension
+      for (Int_t k=1; k<ntrees; k++) { 
+         treek = (TTree*)(fTrees->At(k));
+         kname = Path2Name(treek->GetName(), "", ".");
+         alias = kname + "=" + TString(treek->GetName());
+
+         tree->AddFriend(treek, alias.Data());
+      }//for_i
+   }//if
+
+   fCanvas->cd(fPadNr);
+
+// Create parallel coord
+   TParallelCoord *para = new TParallelCoord(tree, entries);
+
+   // add varlist
+   TString varname;
+   if (ntrees > 1) {
+      for (Int_t k=0; k<ntrees; k++) {
+         treek    = (TTree*)(fTrees->At(k));
+
+         // see documentation for TTree::Draw() and O.Couet at RootTalk
+         treek->SetEstimate(treek->GetEntries());
+
+         if (aslog) {varname = "log("; varname += treek->GetName();}
+         else       {varname = treek->GetName();}
+         varname += ".";
+         varname += varlist;
+         if (aslog) {varname += ")";}
+
+         para->AddVariable(varname);
+      }//for_k
+   } else {
+      char *name  = new char[strlen(varlist) + 1];
+      char *dname = name;
+
+      // see documentation for TTree::Draw() and O.Couet at RootTalk
+      tree->SetEstimate(tree->GetEntries());
+
+      name = strtok(strcpy(name, varlist), ":");
+      while(name) {
+         if (aslog) {varname = "log("; varname += name;}
+         else       {varname = name;}
+         if (aslog) {varname += ")";}
+
+         para->AddVariable(varname);
+
+         name = strtok(0, ":");
+         if (name == 0) break;
+      }//while
+
+      delete [] dname;
+   }//if
+
+   // set default parameters
+   para->SetGlobalScale(gl);
+   para->SetDotsSpacing(5);
+//no   para->SetCandleChart(can);
+   if (can) para->SetCandleChart(can);
+
+// Set axis range
+   if (min < max){
+      para->SetGlobalMin(min);
+      para->SetGlobalMax(max);
+   }//if
+
+   fMin = para->GetGlobalMin();
+   fMax = para->GetGlobalMax();
+
+// Draw parallel coord
+   para->Draw();
+
+   savedir->cd();
+   return perr;
+}//DrawParallelCoord
 
 //______________________________________________________________________________
 void XPlot::DrawGraph1D(Int_t n, Double_t *index, Double_t *x, Option_t *opt,
@@ -3802,9 +3927,12 @@ char *FirstPath(const char *name)
       if (!(i = strcspn(name + k, dSEP))) return 0;
    }//if
 
-   char *path = "";
+/*   char *path = "";
    path = strncat(path,name + k,i);
    return path;
+*/
+   const char *path = "";
+   return strncat((char*)path, name + k, i);
 }//FirstPath
 
 //______________________________________________________________________________

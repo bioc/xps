@@ -15,6 +15,7 @@ function(xps.data,
          exonlevel  = "",
          update     = FALSE,
          xps.scheme = NULL,
+         add.data   = TRUE,
          verbose    = TRUE)
 {
    ## check for valid normalize
@@ -42,6 +43,7 @@ function(xps.data,
                      option     = option,
                      exonlevel  = exonlevel,
                      xps.scheme = xps.scheme,
+                     add.data   = add.data,
                      verbose    = verbose);
    } else {
       stop(paste(sQuote("xps.data"), "is not a class", sQuote("DataTreeSet")));
@@ -75,6 +77,7 @@ function(xps.data,
                           refindex  = 1,
                           refmethod = "mean",
                           params    = c(0.02, sc),
+                          add.data  = add.data,
                           verbose   = verbose);
    }#if
 

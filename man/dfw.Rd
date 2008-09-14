@@ -1,52 +1,46 @@
-\name{mas5}
-\alias{mas5}
-\alias{xpsMAS5-methods}
-\alias{xpsMAS5}
-\title{MAS 5.0 Expression Measure}
+\name{dfw}
+\alias{dfw}
+\title{Distribution Free Weighted Expression Measure}
 \description{
  This function converts a \code{\link{DataTreeSet}} into an \code{\link{ExprTreeSet}}
- using the XPS implementation of Affymetrix's MAS 5.0 expression measure.
+ using the Distribution Free Weighted Fold Change (DFW) method.
 }
 \usage{
-mas5(xps.data,
-     filename   = character(0),
-     filedir    = getwd(),
-     tmpdir     = "",
-     normalize  = FALSE,
-     sc         = 500,
-     option     = "transcript",
-     exonlevel  = "",
-     update     = FALSE,
-     xps.scheme = NULL,
-     add.data   = TRUE,
-     verbose    = TRUE)
-
-
-xpsMAS5(object, ...)
+dfw(xps.data,
+    filename   = character(0),
+    filedir    = getwd(),
+    tmpdir     = "",
+    normalize  = TRUE,
+    m          = 3,
+    n          = 1,
+    c          = 0.01,
+    option     = "transcript",
+    exonlevel  = "",
+    xps.scheme = NULL,
+    add.data   = TRUE,
+    verbose    = TRUE)
 }
 \arguments{
-  \item{xps.data}{object of class \code{DataTreeSet}.}
+  \item{xps.data}{object of class \code{\link{DataTreeSet}}.}
   \item{filename}{file name of ROOT data file.}
   \item{filedir}{system directory where ROOT data file should be stored.}
   \item{tmpdir}{optional temporary directory where temporary ROOT files should be stored.}
-  \item{normalize}{logical. If \code{TRUE} scale normalization is used after an \code{ExprTreeSet} is obtained.}
-  \item{sc}{value at which all arrays will be scaled to.}
+  \item{normalize}{logical. If \code{TRUE} normalize data using quantile normalization.}
+  \item{m}{positive number as exponent of the weighted range WR.}
+  \item{n}{positive number as exponent of the weighted standard deviation WSD.}
+  \item{c}{scaling parameter.}
   \item{option}{option determining the grouping of probes for summarization, one of 
    \sQuote{transcript}, \sQuote{exon}, \sQuote{probeset}; exon arrays only.}
   \item{exonlevel}{exon annotation level determining which probes should be used for summarization;
    exon/genome arrays only.}
-  \item{update}{logical. If \code{TRUE} the existing ROOT data file \code{filename} will be updated.}
   \item{xps.scheme}{optional alternative \code{SchemeTreeSet}.}
   \item{add.data}{logical. If \code{TRUE} expression data will be included as slot \code{data}.}
   \item{verbose}{logical, if \code{TRUE} print status information.}
-  \item{object}{object of class \code{DataTreeSet}.}
-  \item{\dots}{arguments \code{filename},\code{filedir},\code{tmpdir},\code{option},\code{exonlevel},\code{xps.scheme}.}
 }
 \details{
-This function computes the Affymetrix MAS 5.0 expression measure as implemented in XPS.
-Although this implementation is based on the Affymetrix \sQuote{sadd\_whitepaper.pdf}, it 
-can be used to compute an expression level for both expression arrays and exon arrays. 
-For exon arrays it is necessary to supply the requested \code{option} and \code{exonlevel}.
+This function computes the DFW (Distribution Free Weighted Fold Change) expression measure 
+described in Chen et al. for both expression arrays and exon arrays. For exon arrays it is 
+necessary to supply the requested \code{option} and \code{exonlevel}.
 
 Following \code{option}s are valid for exon arrays:
 \tabular{ll}{
@@ -83,36 +77,27 @@ Exon levels can also be combined, with following combinations being most useful:
   \code{exonlevel="core+extended+full"}:  \tab supported plus predicted probesets \cr
 }
 
-Exon level annotations are described in the Affymetrix whitepaper 
-\sQuote{exon\_probeset\_trans\_clust\_whitepaper.pdf}.
+Exon level annotations are described in the Affymetrix whitepaper exon\_probeset\_trans\_clust\_whitepaper.pdf: \cr 
+\dQuote{Exon Probeset Annotations and Transcript Cluster Groupings}.
 
-If \code{normalize=TRUE} then the expression levels will be scaled to \code{sc}. 
-For \code{sc=0} the expression levels will be scaled to the mean expression level.
-
-If \code{update=TRUE} then the existing \code{\link{ROOT}} file \code{filename} will be
-updated, however, this is usually only recommended as option for function \code{\link{express}}.
-
-In order to use an alternative \code{\link{SchemeTreeSet}} set the corresponding SchemeTreeSet 
-\code{xps.scheme}.
-
-\code{xpsMAS5} is the \code{DataTreeSet} method called by function \code{mas5}, however, 
-expression levels will not be scaled to a common mean expression level.
+In order to use an alternative \code{\link{SchemeTreeSet}} set the corresponding SchemeSet \code{xps.scheme}.
 }
 \value{
  An \code{\link{ExprTreeSet}}
 }
 \author{Christian Stratowa}
 \note{
-In contrast to function \code{mas5}, expression levels computed with \code{xpsMAS5} 
-will not be scaled to a common mean expression level.
+The expression measure obtained with DFW is given in linear scale, analogously to the expression 
+measures computed with \code{\link{mas5}} and \code{\link{rma}}. 
+
+For the analysis of many exon arrays it may be better to define a \code{tmpdir}, since this will
+store only the results in the main file and not e.g. background and normalized intensities, and
+thus will reduce the file size of the main file. For quantile normalization memory should not
+be an issue, however DFW depends on RAM unless you are using a temporary file.
 }
 \references{
-Affymetrix (2002) Statistical Algorithms Description Document, Affymetrix Inc., 
-Santa Clara, CA, whitepaper.
-\url{http://www.affymetrix.com/support/technical/whitepapers/sadd_whitepaper.pdf}
-
-Affymetrix (2005) Exon Probeset Annotations and Transcript Cluster Groupings, Affymetrix Inc., 
-Santa Clara, CA, exon\_probeset\_trans\_clust\_whitepaper.pdf.
+ Chen, Z., McGee M., Liu Q., and Scheuermann, R.H. (2007), A distribution free summarization 
+ method for Affymetrix GeneChip arrays. Bioinformatics 23(3):321-327
 }
 \seealso{\code{\link{express}}}
 \examples{
@@ -120,19 +105,10 @@ Santa Clara, CA, exon\_probeset\_trans\_clust\_whitepaper.pdf.
 scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
 data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
 
-data.mas5 <- mas5(data.test3,"tmp_Test3MAS5",tmpdir="",normalize=TRUE,sc=500,update=TRUE,verbose=FALSE)
+data.dfw <- dfw(data.test3,"tmp_Test3DFW",verbose=FALSE)
 
 ## get data.frame
-expr.mas5 <- validData(data.mas5)
-head(expr.mas5)
-
-## plot results
-if (interactive()) {
-boxplot(data.mas5)
-boxplot(log2(expr.mas5))
-}
-
-rm(scheme.test3, data.test3)
-gc()
+expr.dfw <- validData(data.dfw)
+head(expr.dfw)
 }
 \keyword{manip}

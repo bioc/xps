@@ -7,6 +7,7 @@
 # isROOTFile:
 # existsROOTFile:
 # rootDirFile:
+# rootDrawName:
 # validLogbase:
 # validMsg:
 # validOption:
@@ -48,7 +49,7 @@
                 "sbg", "wbg", "rbg", "gbg",
                 "cmn", "cmd", "clw", "css", "cqu",
                 "dc5", "dab",
-                "amn", "gmn", "wmn", "wdf", "adf", "tbw", "mdp");
+                "amn", "gmn", "wmn", "wdf", "adf", "tbw", "mdp", "frm", "dfw");
    CALTYPE <- c("dc5", "dab");
    NRMTYPE <- c("tmn", "med", "ksm", "low", "sup", "qua", "mdp");
    FLRTYPE <- c("pfr", "ufr", "mfr");
@@ -175,6 +176,22 @@ rootDirFile <- function(filename=character(0), filedir=character(0)) {
 
    return(rootfile);
 }#rootDirFile
+
+#------------------------------------------------------------------------------#
+# rootDrawName: check for valid graphics type and return name to save
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+rootDrawName <- function(canvasname, graphtype) {
+   if (debug.xps()) print("------rootDrawName------")
+
+   if (graphtype == "") return(as.character(""));
+
+   TYPE <- c("ps", "eps", "pdf", "jpg", "gif", "png", "tiff");
+   if (is.na(match(graphtype, TYPE))) {
+      stop(paste(sQuote(graphtype), "is not a valid graphics type"));
+   }#if
+
+   return(paste(canvasname, graphtype, sep="."));
+}#rootDrawName
 
 #------------------------------------------------------------------------------#
 # validLogbase: check for presence of valid logbase
@@ -570,8 +587,10 @@ type2Exten <- function(type, datatype) {
    ## type and extensions are defined in src/XPSProcessing.cxx
    if (datatype == "preprocess") {
       TYPE <- c("mean", "median", "lowess", "supsmu", "quantile",
-                "avgdiff", "tukeybiweight", "medianpolish");
-      XTEN <- c("cmn", "cmd", "clw", "css", "cqu", "adf", "tbw", "mdp");
+                "avgdiff", "tukeybiweight", "medianpolish",
+                "farms", "dfw");
+      XTEN <- c("cmn", "cmd", "clw", "css", "cqu", "adf", "tbw",
+                "mdp", "frm", "dfw");
    } else if (datatype == "normation") {
       TYPE <- c("mean", "median", "ksmooth", "lowess", "supsmu",
                 "quantile", "medianpolish");

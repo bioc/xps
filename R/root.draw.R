@@ -16,6 +16,7 @@ function(x,
          logbase    = "log2",
          option     = "P",
          canvasname = "Graph1D",
+         save.as    = "",
          w          = 540,
          h          = 540) 
 {
@@ -37,6 +38,7 @@ function(x,
              type       = "graph",
              option     = option,
              canvasname = canvasname,
+             save.as    = save.as,
              w          = w,
              h          = h);
 }#root.graph1D
@@ -50,6 +52,7 @@ function(x,
          logbase    = "log2",
          option     = "P",
          canvasname = "Graph2D",
+         save.as    = "",
          w          = 540,
          h          = 540) 
 {
@@ -71,6 +74,7 @@ function(x,
              type       = "graph",
              option     = option,
              canvasname = canvasname,
+             save.as    = save.as,
              w          = w,
              h          = h);
 }#root.graph2D
@@ -84,6 +88,7 @@ function(x,
          logbase    = "log2",
          option     = "P",
          canvasname = "MvAPlot",
+         save.as    = "",
          w          = 540,
          h          = 540) 
 {
@@ -106,6 +111,7 @@ function(x,
              type       = "mvaplot",
              option     = option,
              canvasname = canvasname,
+             save.as    = save.as,
              w          = w,
              h          = h);
 }#root.mvaplot
@@ -119,6 +125,7 @@ function(x,
          type       = "hist",
          option     = "HIST",
          canvasname = "Histogram1D",
+         save.as    = "",
          w          = 540,
          h          = 540) 
 {
@@ -149,6 +156,7 @@ function(x,
              type       = type,
              option     = option,
              canvasname = canvasname,
+             save.as    = save.as,
              w          = w,
              h          = h);
 }#root.hist1D
@@ -162,6 +170,7 @@ function(x,
          logbase    = "log2",
          option     = "COLZ",
          canvasname = "Histogram2D",
+         save.as    = "",
          w          = 540,
          h          = 540) 
 {
@@ -183,6 +192,7 @@ function(x,
              type       = "hist",
              option     = option,
              canvasname = canvasname,
+             save.as    = save.as,
              w          = w,
              h          = h);
 }#root.hist2D
@@ -197,6 +207,7 @@ function(x,
          logbase    = "log2",
          option     = "HIST",
          canvasname = "Histogram3D",
+         save.as    = "",
          w          = 540,
          h          = 540) 
 {
@@ -218,6 +229,7 @@ function(x,
              type       = "hist",
              option     = option,
              canvasname = canvasname,
+             save.as    = save.as,
              w          = w,
              h          = h);
 }#root.hist3D
@@ -232,6 +244,7 @@ function(x,
          type       = "graph",
          option     = "L",
          canvasname = "DrawCanvas",
+         save.as    = "",
          w          = 540,
          h          = 540) 
 {
@@ -244,6 +257,7 @@ function(x,
 
    rootfile <- rootFile(x);
    varlist  <- leafname;
+   savename <- rootDrawName(canvasname, save.as);
 
    ## test for valid treenames
    ntree <- length(treename);
@@ -282,7 +296,6 @@ function(x,
    xpsso <- gsub("//", "/", xpsso);
 
    ## need to put character variables in parenthesis
-#   temp       <- as.character("\""); #"
    xpsso      <- paste(dq, xpsso, dq, sep="");
    rootfile   <- paste(dq, rootfile, dq, sep="");
    canvasname <- paste(dq, canvasname, dq, sep="");
@@ -294,6 +307,7 @@ function(x,
    logbase    <- paste(dq, logbase, dq, sep="");
    type       <- paste(dq, type, dq, sep="");
    option     <- paste(dq, option, dq, sep="");
+   savename   <- paste(dq, savename, dq, sep="");
    w          <- as.integer(w);
    h          <- as.integer(h);
 
@@ -301,8 +315,12 @@ function(x,
    macro <- paste(system.file(package="xps"), "rootsrc/macroDraw.C", sep="/");
    macro <- paste(sq, macro, "(", xpsso,",", rootfile,",", canvasname,",",
                   ntree,",", treename1,",", treename2,",", treename3,",",
-                  varlist,",", logbase,",", type,",", option,",",
+                  varlist,",", logbase,",", type,",", option,",", savename,",", 
                   w,",", h, ")", sq, sep="");
-   system(paste("root -l", macro));
 
+   if (save.as == "") {
+      system(paste("root -l", macro));
+   } else {
+      system(paste("root -l -q", macro));
+   }#if
 }#root.draw

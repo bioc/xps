@@ -26,7 +26,7 @@
 \begin{document}
 
 \title{Introduction to the xps Package: Overview}
-\date{July, 2008}
+\date{September, 2008}
 \author{Christian Stratowa}
 \maketitle
 
@@ -39,7 +39,9 @@ targeted transcript. Specialized algorithms have been developed to summarize
 low-level probe set intensities to get one expression measure for each transcript. 
 Some of these  methods, such as MAS 4.0's AvDiff \citep{affy4}, MAS5's signal
 \citep{affy5} or RMA  \citep{iriz:etal:2003}, are implemented in package
-\Rpackage{affy} \citep{gaut:cope:bols:iriz:2003}. 
+\Rpackage{affy} \citep{gaut:cope:bols:iriz:2003}. Further methods, such as 
+FARMS \citep{hochr:etal:2006} or DFW \citep{chen:etal:2007} are custom methods 
+that can be registered for use with package \Rpackage{affy}. 
 
 Advantages in technology allow Affymetrix to supply whole-genome expression arrays 
 such as the new GeneChip Exon array systems (Exon 1.0 ST) and Gene array systems 
@@ -736,7 +738,7 @@ file "script4exon.R"). \\
 Let us first create an image using function \Rfunction{root.image}:
 
 <<eval=FALSE>>=
-root.image(data.exon, treename="BreastA.cel", w=400, h=400)
+root.image(data.exon, treename="BreastA.cel", zlim=c(3,11), w=400, h=400)
 @
 
 \begin{figure}[h]
@@ -770,6 +772,25 @@ root.density(data.x.rma, "*", w=400, h=400)
 \end{center}
 \end{figure}
 
+In addition we create profile plots for the RMA-normalized expression levels:
+
+<<eval=FALSE>>=
+root.profile(data.x.rma, w=640, h=400)
+@
+
+\pagebreak
+
+\begin{figure}[h]
+\begin{center}
+  \includegraphics{ProfileExonRMA.png}
+%  \includegraphics[width=70mm]{ProfileExonRMA.png}
+%  \caption{xxx}
+%  \label{xxx}
+\end{center}
+\end{figure}
+
+As you see, the profile plots shows both a histogram and a boxplot for each sample. \\
+
 It is also possible to draw scatter-plots for the raw intensities between any two arrays, as well 
 as between two RMA-normalized expression levels:
 
@@ -790,6 +811,8 @@ root.graph2D(data.x.rma, "BreastA.mdp", "BreastB.mdp")
 The left scatter-plot compares the raw intensities of two breast tissue replicas for all 
 probes on the exon array, while the right scatter-plot compares the respective normalized 
 expression levels. \\
+
+\pagebreak
 
 Besides using scatter-plots it is also possible to plot the same data as 2D-histograms:
 
@@ -813,9 +836,6 @@ by simply changing the parameter \Rcode{option}. The left histogram uses the def
 \Rcode{option="COLZ"} while the right histogram was created using \Rcode{option="SURF2"} to 
 allow a 3-dimensional view of the expression level distribution. \\
 
-
-\pagebreak
-
 Finally, it is also possible to create 3D-histograms:
 
 <<eval=FALSE>>=
@@ -832,6 +852,8 @@ root.hist3D(data.x.rma, "BreastA.mdp", "BreastB.mdp", "BreastC.mdp", option="SCA
 \end{center}
 \end{figure}
 
+\pagebreak
+
 The left 3D-histogram compares the raw intensities of the breast tissue triplicates for all 
 probes on the exon array, while the right scatter-plot compares the respective normalized 
 expression levels. 
@@ -840,6 +862,49 @@ Since quite often samples are hybridized onto arrays as triplicates, 3D-histogra
 in getting a first impression on the quality of the triplicates.
 
 {\bf Note:} The 3D-histograms can be rotated interactively, see \Rcode{?root.hist3D}.
+
+
+\subsection{Using methods FARMS and DFW}
+
+Analogously to method \Rcode{medianpolish}, used for \Rcode{rma}, both \Rcode{farms} and
+\Rcode{dfw} are multichip summarization methods. The algorithm for FARMS (Factor Analysis 
+for Robust Microarray Summarization) is described in \citep{hochr:etal:2006} and is available 
+as package \Rpackage{farms}. The algorithm for DFW (Distribution Free Weighted Fold Change) 
+is described in \citep{chen:etal:2007} and the R implementation can be downloaded from the 
+web site of M.McGee. Both authors claim that their respective methods outperform method 
+\Rcode{rma} (see also Affycomp II: A benchmark for Affymetrix GeneChip expression measures). \\
+
+The \Robject{R} implementation of both methods requires package \Rpackage{affy} since both 
+methods must be registered with \Rpackage{affy}. In contrast, package \Rpackage{xps} implements 
+both summarization methods in C++ and thus does not require any additional package.
+
+In general, summarization methods are implemented in package \Rpackage{xps} as C++ classes 
+derived from base class \Rmethod{XExpressor}. Thus summarization method \Rcode{medianpolish} 
+is implemented as class \Rmethod{XMedianPolish}, while methods \Rcode{farms} and \Rcode{dfw} 
+are implemented as classes \Rmethod{XFARMS} and \Rmethod{XDFW}, respectively. \\
+
+To use FARMS you simply do:
+
+<<eval=FALSE>>=
+data.farms <- farms(data.test3,"tmp_Test3FARMS",verbose=FALSE)
+@
+
+To use DFW you simply do:
+
+<<eval=FALSE>>=
+data.dfw <- dfw(data.test3,"tmp_Test3DFW",verbose=FALSE)
+@
+
+Since the authors of both algorithms recommend to use their summarization methods with quantile 
+normalization but without background correction, methods \Rcode{farms} and \Rcode{dfw} follow 
+these suggestions.  Users wanting to use both methods with a background correction method need 
+to use the general method \Rcode{express} (see \Rcode{?express}). \\
+
+{\bf Note:} Although package \Rpackage{farms} is available under the GNU General Public License,
+the authors state on their web site that: "This package (i.e. \Rpackage{farms\_1.x}) is only free 
+for non-commercial users. Non-academic users must have a valid license." Since I do not know 
+if this statement applies for my C++ implementation, too, it is recommended that respective 
+users contact the authors of the original package. 
 
 
 \bibliographystyle{plainnat}

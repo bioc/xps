@@ -249,9 +249,9 @@ class XGCProcesSet: public XPreProcesSet {
                        Int_t &numbgrd, TTree **bgrdtree);
       virtual Int_t DoExpress(Int_t numdata, TTree **datatree,
                        Int_t numbgrd, TTree **bgrdtree);
-      virtual Int_t DoMedianPolish(Int_t numdata, TTree **datatree,
+      virtual Int_t DoMultichipExpress(Int_t numdata, TTree **datatree,
                        Int_t numbgrd, TTree **bgrdtree);
-      virtual Int_t DoMedianPolish(Int_t numdata, TTree **datatree,
+      virtual Int_t DoMultichipExpress(Int_t numdata, TTree **datatree,
                        Int_t numbgrd, TTree **bgrdtree, TFile *file);
       virtual Int_t ExportBgrdTrees(Int_t n, TString *names, const char *varlist,
                        ofstream &output, const char *sep);
@@ -321,9 +321,9 @@ class XGenomeProcesSet: public XGCProcesSet {
 
       virtual Int_t DoExpress(Int_t numdata, TTree **datatree,
                        Int_t numbgrd, TTree **bgrdtree);
-      virtual Int_t DoMedianPolish(Int_t numdata, TTree **datatree,
+      virtual Int_t DoMultichipExpress(Int_t numdata, TTree **datatree,
                        Int_t numbgrd, TTree **bgrdtree);
-      virtual Int_t DoMedianPolish(Int_t numdata, TTree **datatree,
+      virtual Int_t DoMultichipExpress(Int_t numdata, TTree **datatree,
                        Int_t numbgrd, TTree **bgrdtree, TFile *file);
 
       virtual Int_t *FillMaskArray(XDNAChip *chip, TTree *scmtree, XScheme *scheme,
@@ -356,9 +356,9 @@ class XExonProcesSet: public XGenomeProcesSet {
 
       virtual Int_t DoExpress(Int_t numdata, TTree **datatree,
                        Int_t numbgrd, TTree **bgrdtree);
-      virtual Int_t DoMedianPolish(Int_t numdata, TTree **datatree,
+      virtual Int_t DoMultichipExpress(Int_t numdata, TTree **datatree,
                        Int_t numbgrd, TTree **bgrdtree);
-      virtual Int_t DoMedianPolish(Int_t numdata, TTree **datatree,
+      virtual Int_t DoMultichipExpress(Int_t numdata, TTree **datatree,
                        Int_t numbgrd, TTree **bgrdtree, TFile *file);
       virtual Int_t ExportExprTrees(Int_t n, TString *names, const char *varlist,
                        ofstream &output, const char *sep);

@@ -1,4 +1,4 @@
-// File created: 11/02/2002                          last modified: 02/24/2008
+// File created: 11/02/2002                          last modified: 08/09/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -308,6 +308,9 @@ class XPlot: public TNamed {
       virtual Int_t DrawDensity(const char *canvasname, const char *leafname,
                        const char *logbase, const char *kernel, Option_t *opt,
                        Int_t npts, Double_t min, Double_t max);
+      virtual Int_t DrawParallelCoord(const char *canvasname, const char *varlist,
+                       Double_t min = 0, Double_t max = 0,
+                       Bool_t aslog = kTRUE, Bool_t gl = kTRUE, Bool_t can = kFALSE);
 
       void  DrawGraph1D(Int_t n, Double_t *index, Double_t *x, Option_t *opt,
                Int_t sort = 0);

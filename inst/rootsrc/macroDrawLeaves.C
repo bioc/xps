@@ -1,4 +1,4 @@
-// File created: 10/14/2007                          last modified: 10/15/2007
+// File created: 10/14/2007                          last modified: 09/05/2008
 // Author: Christian Stratowa 10/13/2007
 
 /*
@@ -12,8 +12,8 @@
 
 void macroDrawLeaves(const char *xps, const char *filename, const char *canvasname,
                      const char *treename, const char *varlist, const char *logbase,
-                     const char *type, const char *option, Int_t sort, Int_t width,
-                     Int_t height)
+                     const char *type, const char *option, const char *savename,
+                     Int_t sort, Int_t width, Int_t height)
 {
    gSystem->Load("libGui"); //necessary for ROOT version >=5.15/09
    gSystem->Load(xps);
@@ -38,6 +38,12 @@ void macroDrawLeaves(const char *xps, const char *filename, const char *canvasna
 
 // draw leaves
    plotter->DrawLeaves("",varlist, logbase, type, option, 0, 0, sort);
+
+// save figure and close canvas
+   if (strcmp(savename, "") != 0) {
+      plotter->SaveAs(savename);
+      plotter->CloseCanvas("");
+   }//if
 
 // cleanup
    delete plotter;

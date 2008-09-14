@@ -12,7 +12,7 @@
 mas5.call(xps.data,
           filename = character(0), filedir = getwd(), tmpdir = "",
           tau = 0.015, alpha1 = 0.04, alpha2 = 0.06, ignore.saturated = TRUE,
-          option = "transcript", exonlevel = "", xps.scheme = NULL, verbose = TRUE)
+          option = "transcript", exonlevel = "", xps.scheme = NULL, add.data = TRUE, verbose = TRUE)
 
 xpsMAS5Call(object, ...)
 }
@@ -30,6 +30,7 @@ xpsMAS5Call(object, ...)
   \item{exonlevel}{exon annotation level determining which probes should be used for summarization;
    exon/genome arrays only.}
   \item{xps.scheme}{optional alternative \code{SchemeTreeSet}.}
+  \item{add.data}{logical. If \code{TRUE} call data will be added to slots \code{data} and \code{detcall}.}
   \item{verbose}{logical, if \code{TRUE} print status information.}
   \item{object}{object of class \code{DataTreeSet}.}
   \item{\dots}{the arguments described above.}

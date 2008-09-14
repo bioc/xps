@@ -22,6 +22,7 @@ function(xps.data,
          refindex  = 0,
          refmethod = "mean",
          params    = list(0.02, 0),
+         add.data  = TRUE,
          verbose   = TRUE)
 {
    if (is(xps.data, "DataTreeSet") || is(xps.data, "ExprTreeSet")) {
@@ -38,6 +39,7 @@ function(xps.data,
                           refindex  = refindex,
                           refmethod = refmethod,
                           params    = params,
+                          add.data  = add.data,
                           verbose   = verbose);
       return(set);
    } else {
@@ -59,6 +61,7 @@ function(xps.data,
          refindex  = 0,
          refmethod = "mean",
          params    = list(0.02, 0),
+         add.data  = TRUE,
          verbose   = TRUE)
 {
    set <- normalize(xps.data,
@@ -74,6 +77,7 @@ function(xps.data,
                     refindex  = refindex,
                     refmethod = refmethod,
                     params    = params,
+                    add.data  = add.data,
                     verbose   = verbose);
    return(set);
 }#normalize.constant
@@ -87,6 +91,7 @@ function(xps.data,
          tmpdir    = "",
          update    = FALSE,
          exonlevel = "",
+         add.data  = TRUE,
          verbose   = TRUE)
 {
    set <- normalize(xps.data,
@@ -102,6 +107,7 @@ function(xps.data,
                     refindex  = 1,
                     refmethod = "mean",
                     params    = list(0.0),
+                    add.data  = add.data,
                     verbose   = verbose);
    return(set);
 }#normalize.quantiles
@@ -119,6 +125,7 @@ function(xps.data,
          refindex  = 0,
          refmethod = "mean",
          params    = list(0.67, 3),
+         add.data  = TRUE,
          verbose   = TRUE)
 {
    set <- normalize(xps.data,
@@ -134,6 +141,7 @@ function(xps.data,
                     refindex  = refindex,
                     refmethod = refmethod,
                     params    = params,
+                    add.data  = add.data,
                     verbose   = verbose);
    return(set);
 }#normalize.lowess
@@ -151,6 +159,7 @@ function(xps.data,
          refindex  = 0,
          refmethod = "mean",
          params    = list(0.67, 3),
+         add.data  = TRUE,
          verbose   = TRUE)
 {
    set <- normalize(xps.data,
@@ -166,6 +175,7 @@ function(xps.data,
                     refindex  = refindex,
                     refmethod = refmethod,
                     params    = params,
+                    add.data  = add.data,
                     verbose   = verbose);
    return(set);
 }#normalize.supsmu

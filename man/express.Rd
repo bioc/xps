@@ -31,13 +31,14 @@ express(xps.data,
         summarize.logbase = character(),
         summarize.params = list(),
       # reference values
-        reference.index = 0,
+        reference.index  = 0,
         reference.method = "mean",
         reference.params = list(0),
       # misc.
-        exonlevel = "",
+        exonlevel  = "",
         xps.scheme = NULL,
-        verbose = TRUE)
+        add.data   = TRUE,
+        verbose    = TRUE)
 
 xpsPreprocess(object, ...)
 }
@@ -69,6 +70,7 @@ xpsPreprocess(object, ...)
   \item{reference.params}{vector of parameters for reference method.}
   \item{exonlevel}{exon annotation level determining which probes should be used for summarization; exon/genome arrays only.}
   \item{xps.scheme}{optional alternative \code{SchemeSet}.}
+  \item{add.data}{logical. If \code{TRUE} expression data will be included as slot \code{data}.}
   \item{verbose}{logical, if \code{TRUE} print status information.}
   \item{object}{object of class \code{DataSet}.}
   \item{\dots}{the arguments described above.}

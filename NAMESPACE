@@ -112,22 +112,28 @@ exportMethods("addData",
               "xpsRMA")
 
 ## class ExprTreeSet
-exportMethods("exprs",
+exportMethods("attachExpr",
+              "exprs",
               "exprs<-",
               "exprType",
               "exprType<-",
               "mvaplot",
               "normType",
               "normType<-",
+              "removeExpr",
               "se.exprs",
               "xpsPreFilter",
               "xpsUniFilter")
 
 ## class CallTreeSet
-exportMethods("pvalData",
+exportMethods("attachCall",
+              "attachPVal",
+              "pvalData",
               "pvalData<-",
               "presCall",
               "presCall<-",
+              "removeCall",
+              "removePVal",
               "validCall",
               "callplot")
 
@@ -177,6 +183,7 @@ exportMethods("filterTreeset",
 export(import.expr.scheme, import.exon.scheme, import.genome.scheme, import.data)
 export(export.scheme, export.data, export.expr, export.call, export.filter, export.root)
 export(rma, mas4, mas5, mas5.call, dabg.call)
+export(dfw, farms)
 export(bgcorrect, normalize, summarize, express)
 export(bgcorrect.mas4, bgcorrect.mas5, bgcorrect.rma, bgcorrect.gc)
 export(normalize.constant, normalize.quantiles, normalize.lowess, normalize.supsmu)
@@ -193,7 +200,8 @@ export(root.scheme, root.data, root.expr, root.call)
 export(root.image)
 export(root.graph1D, root.graph2D, root.mvaplot)
 export(root.hist1D, root.hist2D, root.hist3D)
-export(root.density)
+export(root.density, root.profile)
+#to do export(root.draw.leaves)
 
 ## utility functions
 export(xpsOptions, debug.xps)

@@ -1440,8 +1440,8 @@ Int_t XNormedGCSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
 // Loop over tree entries and trees
    XIdxString *idxstr = 0;
    Int_t index = 0;
-   Int_t entries = (Int_t)(tree[0]->GetEntries());
-   for (Int_t i=0; i<entries; i++) {
+   Int_t nentries = (Int_t)(tree[0]->GetEntries());
+   for (Int_t i=0; i<nentries; i++) {
       tree[0]->GetEntry(i);
 
       Int_t unitID = expr[0]->GetUnitID();
@@ -1501,7 +1501,14 @@ Int_t XNormedGCSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
          }//if
       }//for_j
       output << endl;
+
+      if (XManager::fgVerbose && i%10000 == 0) {
+         cout << "<" << i+1 << "> records exported...\r" << flush;
+      }//if
    }//for_i
+   if (XManager::fgVerbose) {
+      cout << "<" << nentries << "> records exported." << endl;
+   }//if
 
 //Cleanup
 cleanup:
@@ -1934,8 +1941,8 @@ Int_t XNormedExonSet::ExportExprTrees(Int_t n, TString *names, const char *varli
 // Loop over tree entries and trees
    XIdxString *idxstr = 0;
    Int_t index = 0;
-   Int_t entries = (Int_t)(tree[0]->GetEntries());
-   for (Int_t i=0; i<entries; i++) {
+   Int_t nentries = (Int_t)(tree[0]->GetEntries());
+   for (Int_t i=0; i<nentries; i++) {
       tree[0]->GetEntry(i);
 
       Int_t unitID = expr[0]->GetUnitID();
@@ -1995,7 +2002,14 @@ Int_t XNormedExonSet::ExportExprTrees(Int_t n, TString *names, const char *varli
          }//if
       }//for_j
       output << endl;
+
+      if (XManager::fgVerbose && i%10000 == 0) {
+         cout << "<" << i+1 << "> records exported...\r" << flush;
+      }//if
    }//for_i
+   if (XManager::fgVerbose) {
+      cout << "<" << nentries << "> records exported." << endl;
+   }//if
 
 //Cleanup
 cleanup:

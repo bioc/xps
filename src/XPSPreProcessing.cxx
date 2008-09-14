@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 05/19/2008
+// File created: 08/05/2002                          last modified: 09/06/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -59,6 +59,7 @@
 * Dec 2006 - Implement background class XGCBackground and call class XDABGCall
 *          - Add method AdjustIntensity() to allow different background corrections
 * Aug 2007 - Add support for whole genome arrays, class XGenomeProcesSet
+* Aug 2008 - Add summarization algorithms FARMS and DFW, classes XFARMS, XDFW
 *
 ******************************************************************************/
 
@@ -188,7 +189,7 @@ Int_t XPreProcessManager::Preprocess(const char *setname, const char *method)
       if (!err) err = InitAlgorithm("selector","probe","none", 0, 0);
       if (!err) err = InitAlgorithm("backgrounder","rma","pmonly:epanechnikov", 0, 1,16384);
       if (!err) err = InitAlgorithm("selector","probe","pmonly", 0);
-      if (!err) err = InitAlgorithm("normalizer","quantile","together:none:0", 0, 1,0.0);
+      if (!err) err = InitAlgorithm("normalizer","quantile","transcript:together:none:0", 0, 1,0.0);
       if (!err) err = InitAlgorithm("selector","probe","pmonly", 0);
       if (!err) err = InitAlgorithm("expressor","medianpolish","log2",0,3,10,0.01,1.0);
    } else if (strcmp(smethod.Data(), "mas5") == 0) {
@@ -889,7 +890,7 @@ Int_t XPreProcesSetting::InitExpressor(const char *type, Option_t *options,
    //    - l:       optional tunable parameter, 0<=l<=1 (default is 0.005), and     
    //    - h:       optional parameter (default is -1) for "attenuatebg"
    //
-   // type = "MedianPolish": median polish for RMA, with parameters:
+   // type = "MedianPolish": median polish (multichip algorithm), with parameters:
    //    parameters are: numpars, maxiter, eps, neglog, (nfrac, l, h)
    //    - numpars: number of other parameters as integer, i.e. numpars = 3-5:
    //    - maxiter: maximal number of iterations, default is 10
@@ -899,9 +900,27 @@ Int_t XPreProcesSetting::InitExpressor(const char *type, Option_t *options,
    //    - l:       optional tunable parameter, 0<=l<=1 (default is 0.005), and     
    //    - h:       optional parameter (default is -1) for "attenuatebg"
    //
-   //    filename = "": data for "medianpolish" will be stored as table in RAM  
+   // type = "FARMS": FARMS (multichip algorithm), with parameters:
+   //    parameters are: numpars, weight, mu, scale, tol, cyc, neglog
+   //    - numpars: number of other parameters as integer, i.e. numpars = 5-6:
+   //    - weight:  hyperparameter, default is 8.0
+   //    - mu:      hyperparameter, default is 0.0
+   //    - scale:   scaling parameter, default is 1.5
+   //    - tol:     termination tolerance, default is 0.00001
+   //    - cyc:     maximum number of cycles, default is 0.0
+   //    - neglog:  substitution for logarithm of negative values
+   //
+   // type = "DFW": DFW (multichip algorithm), with parameters:
+   //    parameters are: numpars, m, n, c, neglog,
+   //    - numpars: number of other parameters as integer, i.e. numpars = 3-4:
+   //    - m:       exponent for range WR, default is 3
+   //    - n:       exponent for stdev WSD, default is 1
+   //    - c:       scale parameter, default is 0.01
+   //    - neglog:  substitution for logarithm of negative values
+   //
+   //    filename = "": data for "multichip" algorithms will be stored as table in RAM  
    //             = "tmp": optional filename to create temporary file "tmp_exten",
-   //               where data will be stored temporarily for "medianpolish"
+   //               where data will be stored temporarily
    if(kCS) cout << "------XPreProcesSetting::InitExpressor------" << endl;
 
 // Init (default) expression selector
@@ -935,7 +954,10 @@ Int_t XPreProcesSetting::InitExpressor(const char *type, Option_t *options,
       fExpressor = new XTukeyBiweight(stype.Data(), exten.Data());
    } else if (strcmp(exten.Data(), kExtenExpr[7]) == 0) {
       fExpressor = new XMedianPolish(stype.Data(), exten.Data());
-      if (fExpressor) fExpressor->NewFile(filename, exten.Data());
+   } else if (strcmp(exten.Data(), kExtenExpr[8]) == 0) {
+      fExpressor = new XFARMS(stype.Data(), exten.Data());
+   } else if (strcmp(exten.Data(), kExtenExpr[9]) == 0) {
+      fExpressor = new XDFW(stype.Data(), exten.Data());
    } else {
       cerr << "Error: Expressor <" << type << "> is not known." << endl;
       return errInitSetting;
@@ -943,6 +965,7 @@ Int_t XPreProcesSetting::InitExpressor(const char *type, Option_t *options,
    if (fExpressor == 0) return errInitMemory;
 
    fExpressor->SetOptions(options);
+   fExpressor->NewFile(filename, exten.Data());
 
    return fExpressor->InitParameters(npars, pars);
 }//InitExpressor
@@ -1848,7 +1871,7 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
 
          // informing user
          if (XManager::fgVerbose) {
-            cout << "         filling array <" << treename.Data() << ">..." << endl;
+            cout << "         filling array <" << treename.Data() << ">...        \r" << flush;
          }//if
 
          err = this->FillDataArrays(datatree[k], bgrdtree[k], doBg,
@@ -1858,6 +1881,9 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
          err = fNormalizer->AddArray(size, arrIntx, arrMask, treename);
          if (err != errNoErr) goto cleanup;
       }//for_k
+      if (XManager::fgVerbose) {
+         cout << "         finished filling <" << numdata << "> arrays.           " << endl;
+      }//if
    } else if (numrefs == 1) {
 //////////
 //TO DO: if reftree is not one of datatrees, ev. from different root file
@@ -1964,8 +1990,8 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
 
          // informing user
          if (XManager::fgVerbose) {
-            cout << "         filling tree <" << (treename + "." + exten).Data() << ">..."
-                 << endl;
+            cout << "         filling tree <" << (treename + "." + exten).Data()
+                 << ">...              \r" << flush;
          }//if
 
          arrInty = fNormalizer->GetArray(size, arrInty, arrMask, treename);
@@ -1975,6 +2001,9 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
                              numrows, numcols, arrInty, 0);
          if (datatree[k] == 0) {err = errCreateTree; goto cleanup;}
       }//for_k
+      if (XManager::fgVerbose) {
+         cout << "         finished filling <" << numdata << "> trees.          " << endl;
+      }//if
    } else if ((strcmp(fNormSelector->GetName(),   "probe")    == 0) ||
               ((strcmp(fNormSelector->GetName(),  "rank")     == 0) &&
                (strcmp(fNormSelector->GetOption(),"separate") == 0))) {
@@ -2070,12 +2099,12 @@ Int_t XGCProcesSet::Express(Int_t numdata, TTree **datatree,
 
    Int_t err = errNoErr;
 
-   if (strcmp(fExpressor->GetName(), "medianpolish") == 0) {
+   if (fExpressor->IsMultichip()) {
       if (fExpressor->GetFile()) {
-         err = this->DoMedianPolish(numdata, datatree, numbgrd, bgrdtree,
-                                    fExpressor->GetFile());
+         err = this->DoMultichipExpress(numdata, datatree, numbgrd, bgrdtree,
+                                        fExpressor->GetFile());
       } else {
-         err = this->DoMedianPolish(numdata, datatree, numbgrd, bgrdtree);
+         err = this->DoMultichipExpress(numdata, datatree, numbgrd, bgrdtree);
       }//if
    } else {
       err = this->DoExpress(numdata, datatree, numbgrd, bgrdtree);
@@ -2538,8 +2567,8 @@ Int_t XGCProcesSet::ExportBgrdTrees(Int_t n, TString *names, const char *varlist
    output << endl;
 
 // Loop over tree entries and trees
-   Int_t entries = (Int_t)(tree[0]->GetEntries());
-   for (Int_t i=0; i<entries; i++) {
+   Int_t nentries = (Int_t)(tree[0]->GetEntries());
+   for (Int_t i=0; i<nentries; i++) {
       for (Int_t k=0; k<n; k++) {
          tree[k]->GetEntry(i);
          if (k == 0)  output << cell[k]->GetX() << sep << cell[k]->GetY();
@@ -2547,7 +2576,14 @@ Int_t XGCProcesSet::ExportBgrdTrees(Int_t n, TString *names, const char *varlist
          if (hasStdv) output << sep << cell[k]->GetStdev();
       }//for_k
       output << endl;
+
+      if (XManager::fgVerbose && i%10000 == 0) {
+         cout << "<" << i+1 << "> records exported...\r" << flush;
+      }//if
    }//for_i
+   if (XManager::fgVerbose) {
+      cout << "<" << nentries << "> records exported." << endl;
+   }//if
 
    delete [] cell;
    delete [] tree;
@@ -2624,8 +2660,8 @@ Int_t XGCProcesSet::ExportIntnTrees(Int_t n, TString *names, const char *varlist
    output << endl;
 
 // Loop over tree entries and tree branches
-   Int_t entries = (Int_t)(tree[0]->GetEntries());
-   for (Int_t i=0; i<entries; i++) {
+   Int_t nentries = (Int_t)(tree[0]->GetEntries());
+   for (Int_t i=0; i<nentries; i++) {
       for (Int_t k=0; k<n; k++) {
          tree[k]->GetEntry(i);
          if (k == 0)  output << cell[k]->GetX() << sep << cell[k]->GetY();
@@ -2634,7 +2670,14 @@ Int_t XGCProcesSet::ExportIntnTrees(Int_t n, TString *names, const char *varlist
          if (hasNPix) output << sep << cell[k]->GetNumPixels();
       }//for_k
       output << endl;
+
+      if (XManager::fgVerbose && i%10000 == 0) {
+         cout << "<" << i+1 << "> records exported...\r" << flush;
+      }//if
    }//for_i
+   if (XManager::fgVerbose) {
+      cout << "<" << nentries << "> records exported." << endl;
+   }//if
 
    delete [] cell;
    delete [] tree;
@@ -2843,8 +2886,8 @@ Int_t XGCProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
 // Loop over tree entries and trees
    XIdxString *idxstr = 0;
    Int_t index = 0;
-   Int_t entries = (Int_t)(tree[0]->GetEntries());
-   for (Int_t i=0; i<entries; i++) {
+   Int_t nentries = (Int_t)(tree[0]->GetEntries());
+   for (Int_t i=0; i<nentries; i++) {
       tree[0]->GetEntry(i);
 
       Int_t unitID = expr[0]->GetUnitID();
@@ -2906,7 +2949,14 @@ Int_t XGCProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
          }//if
       }//for_j
       output << endl;
+
+      if (XManager::fgVerbose && i%10000 == 0) {
+         cout << "<" << i+1 << "> records exported...\r" << flush;
+      }//if
    }//for_i
+   if (XManager::fgVerbose) {
+      cout << "<" << nentries << "> records exported." << endl;
+   }//if
 
 //Cleanup
 cleanup:
@@ -3104,8 +3154,8 @@ Int_t XGCProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varlist
 // Loop over tree entries and tree branches
    XIdxString *idxstr = 0;
    Int_t index = 0;
-   Int_t entries = (Int_t)(tree[0]->GetEntries());
-   for (Int_t i=0; i<entries; i++) {
+   Int_t nentries = (Int_t)(tree[0]->GetEntries());
+   for (Int_t i=0; i<nentries; i++) {
       tree[0]->GetEntry(i);
 
       Int_t unitID = call[0]->GetUnitID();
@@ -3163,11 +3213,18 @@ Int_t XGCProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varlist
 
                if (hasCall) {
                   Int_t cl = call[k]->GetCall();
-                  char *ch = "NA";
+/*                  char *ch = "NA";
                   if      (cl == 2) ch = "P";
                   else if (cl == 0) ch = "A";
                   else if (cl == 1) ch = "M";
                   output << sep << ch;
+*/
+                  const char *ch[1];
+                  ch[0] = "NA";
+                  if      (cl == 2) ch[0] = "P";
+                  else if (cl == 0) ch[0] = "A";
+                  else if (cl == 1) ch[0] = "M";
+                  output << sep << ch[0];
                }//if
 
                if (hasPVal) {
@@ -3177,7 +3234,14 @@ Int_t XGCProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varlist
          }//if
       }//for_j
       output << endl;
+
+      if (XManager::fgVerbose && i%10000 == 0) {
+         cout << "<" << i+1 << "> records exported...\r" << flush;
+      }//if
    }//for_i
+   if (XManager::fgVerbose) {
+      cout << "<" << nentries << "> records exported." << endl;
+   }//if
 
 //Cleanup
 cleanup:
@@ -4045,17 +4109,17 @@ cleanup:
 }//DoExpress
 
 //______________________________________________________________________________
-Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
+Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
                     Int_t numbgrd, TTree **bgrdtree)
 {
-   // Compute expression values using mediapolish
+   // Compute expression values using multichip algorithms, e.g. medpol, farms, DFW
    // Intensities from datatrees are stored in one large table in RAM for fast access
    // Note: all trees must have same number of entries (i.e. identical chip types)
-   if(kCS) cout << "------XGCProcesSet::DoMedianPolish(table)------" << endl;
+   if(kCS) cout << "------XGCProcesSet::DoMultichipExpress(table)------" << endl;
 
 // Informing user
    if (XManager::fgVerbose) {
-      cout << "      summarizing with medianpolish..." << endl;
+      cout << "      summarizing with " << fExpressor->GetName() << "..." << endl;
    }//if
 
 //TEST Benchmark
@@ -4153,21 +4217,21 @@ Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 // Init local arrays
    Int_t     *arrMask = 0;
    Int_t     *arrIndx = 0;
-   Double_t  *colmed  = 0;
-   Double_t  *results = 0;
+   Double_t  *level   = 0;
+   Double_t  *stdev   = 0;
    Double_t **table   = 0;
 
 // Create local arrays
    if (!(arrMask = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
    if (!(arrIndx = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
-   if (!(colmed  = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
-   if (!(results = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
+   if (!(level   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
+   if (!(stdev   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
 
    for (Int_t i=0; i<size; i++) {
       arrMask[i] = eINITMASK; 
       arrIndx[i] = 0;
    }//for_i
-   for (Int_t i=0; i<numdata; i++) colmed[i] = results[i] = 0.0; 
+   for (Int_t i=0; i<numdata; i++) level[i] = stdev[i] = 0.0; 
 
 // IMPORTANT NOTE: do not use the following code although it is faster:
 // for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
@@ -4318,8 +4382,8 @@ Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
          continue;
       }//if
 
-      // calculate median polish for PMs of current unitID
-      if ((err = fExpressor->Calculate(numdata, colmed, results, 0))) break;
+      // calculate expression level for PMs of current unitID
+      if ((err = fExpressor->Calculate(numdata, level, stdev, 0))) break;
 
 //////////////////
 // TO DO: return fResiduals for residual-plot!!!! (like affyPLM)
@@ -4330,13 +4394,13 @@ Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
       // fill expression trees
       for (Int_t k=0; k<numdata; k++) {
          // get minimal/maximal expression levels
-         if (results[k] < min) min = results[k];
-         if (results[k] > max) max = results[k];
+         if (level[k] < min) min = level[k];
+         if (level[k] > max) max = level[k];
 
          expr[k]->SetUnitID(unitID);
-         expr[k]->SetLevel(results[k]);
-//??         expr[k]->SetStdev(colmed[k]);
-         expr[k]->SetStdev(TMath::Abs(colmed[k]));
+         expr[k]->SetLevel(level[k]);
+//??         expr[k]->SetStdev(stdev[k]);
+         expr[k]->SetStdev(TMath::Abs(stdev[k]));
          expr[k]->SetNumPairs(numpairs);
          exprtree[k]->Fill();
       }//for_k
@@ -4381,8 +4445,8 @@ cleanup:
    if (table) delete [] table;
 
    // delete arrays
-   if (results) {delete [] results; results = 0;}
-   if (colmed)  {delete [] colmed;  colmed  = 0;}
+   if (stdev)   {delete [] stdev;   stdev   = 0;}
+   if (level)   {delete [] level;   level   = 0;}
    if (arrIndx) {delete [] arrIndx; arrIndx = 0;}
    if (arrMask) {delete [] arrMask; arrMask = 0;}
 
@@ -4395,22 +4459,23 @@ cleanup:
    delete [] bgcell;
 
    return err;
-}//DoMedianPolish
+}//DoMultichipExpress
 
 //______________________________________________________________________________
-Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
+Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
                     Int_t numbgrd, TTree **bgrdtree, TFile *file)
 {
-   // Compute expression values using mediapolish
+   // Compute expression values using multichip algorithms, e.g. medpol, farms, DFW
    // In order to reduce memory consumption intensities from datatrees are
    // stored in the order of the corresponding schemetree entries in temporary 
    // trees in a temporary root file
    // Note: all trees must have same number of entries (i.e. identical chip types)
-   if(kCS) cout << "------XGCProcesSet::DoMedianPolish(file)------" << endl;
+   if(kCS) cout << "------XGCProcesSet::DoMultichipExpress(file)------" << endl;
 
 // Informing user
    if (XManager::fgVerbose) {
-      cout << "      summarizing with medianpolish (using temporary file)..." << endl;
+      cout << "      summarizing with " << fExpressor->GetName() 
+           << " (using temporary file)..." << endl;
    }//if
 
 //TEST
@@ -4511,20 +4576,20 @@ Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    Int_t    *arrMask = 0;
    Int_t    *arrIndx = 0;
    Double_t *arrData = 0;
-   Double_t *colmed  = 0;
-   Double_t *results = 0;
+   Double_t *level   = 0;
+   Double_t *stdev   = 0;
 
 // Create local arrays
    if (!(arrMask = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
    if (!(arrIndx = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
-   if (!(colmed  = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
-   if (!(results = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
+   if (!(level   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
+   if (!(stdev   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
 
    for (Int_t i=0; i<size; i++) {
       arrMask[i] = eINITMASK; 
       arrIndx[i] = 0;
    }//for_i 
-   for (Int_t i=0; i<numdata; i++) colmed[i] = results[i] = 0.0; 
+   for (Int_t i=0; i<numdata; i++) level[i] = stdev[i] = 0.0; 
 
 // IMPORTANT NOTE: do not use the following code although it is faster:
 // for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
@@ -4573,6 +4638,12 @@ Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
       if (tmptree[k] == 0) {err = errCreateTree; goto cleanup;}
       tmptree[k]->Branch("sortBr", &sort, "sort/D");
 
+      // informing user
+      if (XManager::fgVerbose) {
+         cout << "         filling temporary tree <" << tmptree[k]->GetName()
+              << ">...              \r" << flush;
+      }//if
+
       // fill array with (background corrected) intensities
       if ((numbgrd > 0) && (doBg == kTRUE)) {
          idx = 0;
@@ -4616,6 +4687,9 @@ Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
       tmptree[k]->Write();
 //??      tmptree[k]->Write(TObject::kOverwrite);
    }//for_k
+   if (XManager::fgVerbose) {
+      cout << "         finished filling <" << numdata << "> temporary trees.          " << endl;
+   }//if
 //TEST
 //gBenchmark->Show("Bench_tmptree");
 
@@ -4700,8 +4774,8 @@ Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
          continue;
       }//if
 
-      // calculate median polish for PMs of current unitID
-      if ((err = fExpressor->Calculate(numdata, colmed, results, 0))) break;
+      // calculate expression level for PMs of current unitID
+      if ((err = fExpressor->Calculate(numdata, level, stdev, 0))) break;
 
 //////////////////
 // TO DO: return fResiduals for residual-plot!!!! (like affyPLM)
@@ -4712,13 +4786,13 @@ Int_t XGCProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
       // fill expression trees
       for (Int_t k=0; k<numdata; k++) {
          // get minimal/maximal expression levels
-         if (results[k] < min) min = results[k];
-         if (results[k] > max) max = results[k];
+         if (level[k] < min) min = level[k];
+         if (level[k] > max) max = level[k];
 
          expr[k]->SetUnitID(unitID);
-         expr[k]->SetLevel(results[k]);
-//??         expr[k]->SetStdev(colmed[k]);
-         expr[k]->SetStdev(TMath::Abs(colmed[k]));
+         expr[k]->SetLevel(level[k]);
+//??         expr[k]->SetStdev(stdev[k]);
+         expr[k]->SetStdev(TMath::Abs(stdev[k]));
          expr[k]->SetNumPairs(numpairs);
          exprtree[k]->Fill();
       }//for_k
@@ -4763,8 +4837,8 @@ cleanup:
 
    // delete arrays
    if (arrData) {delete [] arrData; arrData = 0;}
-   if (results) {delete [] results; results = 0;}
-   if (colmed)  {delete [] colmed;  colmed  = 0;}
+   if (stdev)   {delete [] stdev;   stdev   = 0;}
+   if (level)   {delete [] level;   level   = 0;}
    if (arrIndx) {delete [] arrIndx; arrIndx = 0;}
    if (arrMask) {delete [] arrMask; arrMask = 0;}
 
@@ -4778,7 +4852,7 @@ cleanup:
    delete [] bgcell;
 
    return err;
-}//DoMedianPolish
+}//DoMultichipExpress
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -5514,17 +5588,17 @@ cleanup:
 }//DoExpress
 
 //______________________________________________________________________________
-Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
+Int_t XGenomeProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
                         Int_t numbgrd, TTree **bgrdtree)
 {
-   // Compute expression values using mediapolish
+   // Compute expression values using multichip algorithms, e.g. medpol, farms, DFW
    // Intensities from datatrees are stored in one large table in RAM for fast access
    // Note: all trees must have same number of entries (i.e. identical chip types)
-   if(kCS) cout << "------XGenomeProcesSet::DoMedianPolish(table)------" << endl;
+   if(kCS) cout << "------XGenomeProcesSet::DoMultichipExpress(table)------" << endl;
 
 // Informing user
    if (XManager::fgVerbose) {
-      cout << "      summarizing with medianpolish..." << endl;
+      cout << "      summarizing with " << fExpressor->GetName() << " ..." << endl;
    }//if
 
 //TEST Benchmark
@@ -5623,9 +5697,9 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    Double_t max = 0;
 
 // Get exon level of annotation
-   Int_t level = 0;
+   Int_t exlevel = 0;
    if (fExprSelector->GetNumParameters() > 0) {
-      level = (Int_t)(fExprSelector->GetParameters())[0];
+      exlevel = (Int_t)(fExprSelector->GetParameters())[0];
    }//if
 
 // Init unit selector
@@ -5636,8 +5710,8 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    Int_t     *arrIndx = 0;
    Int_t     *arrUnit = 0;
    Int_t     *mskUnit = 0;
-   Double_t  *colmed  = 0;
-   Double_t  *results = 0;
+   Double_t  *level   = 0;
+   Double_t  *stdev   = 0;
    Double_t **table   = 0;
 
 // Create local arrays
@@ -5645,12 +5719,12 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    if (!(arrIndx = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
    if (!(arrUnit = new (nothrow) Int_t[numunits]))   {err = errInitMemory; goto cleanup;}
    if (!(mskUnit = new (nothrow) Int_t[numunits]))   {err = errInitMemory; goto cleanup;}
-   if (!(colmed  = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
-   if (!(results = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
+   if (!(level   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
+   if (!(stdev   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
 
    for (Int_t i=0; i<size; i++)    {arrIndx[i] = 0; arrMask[i] = eINITMASK;}
    for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
-   for (Int_t i=0; i<numdata; i++)  colmed[i]  = results[i] = 0.0; 
+   for (Int_t i=0; i<numdata; i++)  level[i]   = stdev[i]   = 0.0; 
 
 // IMPORTANT NOTE: do not use the following code although it is faster:
 // for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
@@ -5658,7 +5732,7 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 // it is safer to get (x,y) coordinates and to use ij = x + y*numcols
 
 // Get mask from scheme tree and store in array 
-   arrMask = this->FillMaskArray(chip, scmtree, scheme, level, size, arrMask);
+   arrMask = this->FillMaskArray(chip, scmtree, scheme, exlevel, size, arrMask);
    if (arrMask == 0) {err = errInitMemory; goto cleanup;}
 
 // Calculate units satisfying mask
@@ -5819,8 +5893,8 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
          continue;
       }//if
 
-      // calculate median polish for PMs of current unitID
-      if ((err = fExpressor->Calculate(numdata, colmed, results, 0))) break;
+      // calculate expression level for PMs of current unitID
+      if ((err = fExpressor->Calculate(numdata, level, stdev, 0))) break;
 
 //////////////////
 // TO DO: return fResiduals for residual-plot!!!! (like affyPLM)
@@ -5831,12 +5905,12 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
       // fill expression trees
       for (Int_t k=0; k<numdata; k++) {
          // get minimal/maximal expression levels
-         if (results[k] < min) min = results[k];
-         if (results[k] > max) max = results[k];
+         if (level[k] < min) min = level[k];
+         if (level[k] > max) max = level[k];
 
          expr[k]->SetUnitID(unitID);
-         expr[k]->SetLevel(results[k]);
-         expr[k]->SetStdev(TMath::Abs(colmed[k]));
+         expr[k]->SetLevel(level[k]);
+         expr[k]->SetStdev(TMath::Abs(stdev[k]));
          expr[k]->SetNumPairs((Int_t)(p / numdata));
          exprtree[k]->Fill();
       }//for_k
@@ -5883,8 +5957,8 @@ cleanup:
    if (table) delete [] table;
 
    // delete arrays
-   if (results) {delete [] results; results = 0;}
-   if (colmed)  {delete [] colmed;  colmed  = 0;}
+   if (stdev)   {delete [] stdev;   stdev   = 0;}
+   if (level)   {delete [] level;   level   = 0;}
    if (mskUnit) {delete [] mskUnit; mskUnit = 0;}
    if (arrUnit) {delete [] arrUnit; arrUnit = 0;}
    if (arrIndx) {delete [] arrIndx; arrIndx = 0;}
@@ -5896,22 +5970,23 @@ cleanup:
    delete [] bgcell;
 
    return err;
-}//DoMedianPolish
+}//DoMultichipExpress
 
 //______________________________________________________________________________
-Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
+Int_t XGenomeProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
                         Int_t numbgrd, TTree **bgrdtree, TFile *file)
 {
-   // Compute expression values using mediapolish
+   // Compute expression values using multichip algorithms, e.g. medpol, farms, DFW
    // In order to reduce memory consumption intensities from datatrees are
    // stored in the order of the corresponding schemetree entries in temporary 
    // trees in a temporary root file
    // Note: all trees must have same number of entries (i.e. identical chip types)
-   if(kCS) cout << "------XGenomeProcesSet::DoMedianPolish(file)------" << endl;
+   if(kCS) cout << "------XGenomeProcesSet::DoMultichipExpress(file)------" << endl;
 
 // Informing user
    if (XManager::fgVerbose) {
-      cout << "      summarizing with medianpolish (using temporary file)..." << endl;
+      cout << "      summarizing with " << fExpressor->GetName() 
+           << " (using temporary file)..." << endl;
    }//if
 
 //TEST Benchmark
@@ -6012,9 +6087,9 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    Double_t max = 0;
 
 // Get exon level of annotation
-   Int_t level = 0;
+   Int_t exlevel = 0;
    if (fExprSelector->GetNumParameters() > 0) {
-      level = (Int_t)(fExprSelector->GetParameters())[0];
+      exlevel = (Int_t)(fExprSelector->GetParameters())[0];
    }//if
 
 // Init unit selector
@@ -6025,8 +6100,8 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    Int_t    *arrIndx = 0;
    Int_t    *arrUnit = 0;
    Int_t    *mskUnit = 0;
-   Double_t *colmed  = 0;
-   Double_t *results = 0;
+   Double_t *level   = 0;
+   Double_t *stdev   = 0;
    Double_t *arrData = 0;
 
 // Create local arrays
@@ -6034,12 +6109,12 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    if (!(arrIndx = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
    if (!(arrUnit = new (nothrow) Int_t[numunits]))   {err = errInitMemory; goto cleanup;}
    if (!(mskUnit = new (nothrow) Int_t[numunits]))   {err = errInitMemory; goto cleanup;}
-   if (!(colmed  = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
-   if (!(results = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
+   if (!(level   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
+   if (!(stdev   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
 
    for (Int_t i=0; i<size; i++)    {arrIndx[i] = 0; arrMask[i] = eINITMASK;}
    for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
-   for (Int_t i=0; i<numdata; i++)  colmed[i]  = results[i] = 0.0; 
+   for (Int_t i=0; i<numdata; i++)  level[i]   = stdev[i]   = 0.0; 
 
 // IMPORTANT NOTE: do not use the following code although it is faster:
 // for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
@@ -6047,7 +6122,7 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 // it is safer to get (x,y) coordinates and to use ij = x + y*numcols
 
 // Get mask from scheme tree and store in array 
-   arrMask = this->FillMaskArray(chip, scmtree, scheme, level, size, arrMask);
+   arrMask = this->FillMaskArray(chip, scmtree, scheme, exlevel, size, arrMask);
    if (arrMask == 0) {err = errInitMemory; goto cleanup;}
 
 // Calculate units satisfying mask
@@ -6230,8 +6305,8 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
          continue;
       }//if
 
-      // calculate median polish for PMs of current unitID
-      if ((err = fExpressor->Calculate(numdata, colmed, results, 0))) break;
+      // calculate expression level for PMs of current unitID
+      if ((err = fExpressor->Calculate(numdata, level, stdev, 0))) break;
 
 //////////////////
 // TO DO: return fResiduals for residual-plot!!!! (like affyPLM)
@@ -6242,12 +6317,12 @@ Int_t XGenomeProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
       // fill expression trees
       for (Int_t k=0; k<numdata; k++) {
          // get minimal/maximal expression levels
-         if (results[k] < min) min = results[k];
-         if (results[k] > max) max = results[k];
+         if (level[k] < min) min = level[k];
+         if (level[k] > max) max = level[k];
 
          expr[k]->SetUnitID(unitID);
-         expr[k]->SetLevel(results[k]);
-         expr[k]->SetStdev(TMath::Abs(colmed[k]));
+         expr[k]->SetLevel(level[k]);
+         expr[k]->SetStdev(TMath::Abs(stdev[k]));
          expr[k]->SetNumPairs((Int_t)(p / numdata));
          exprtree[k]->Fill();
       }//for_k
@@ -6293,8 +6368,8 @@ cleanup:
 
    // delete arrays
    if (arrData) {delete [] arrData; arrData = 0;}
-   if (results) {delete [] results; results = 0;}
-   if (colmed)  {delete [] colmed;  colmed  = 0;}
+   if (stdev)   {delete [] stdev;   stdev   = 0;}
+   if (level)   {delete [] level;   level   = 0;}
    if (mskUnit) {delete [] mskUnit; mskUnit = 0;}
    if (arrUnit) {delete [] arrUnit; arrUnit = 0;}
    if (arrIndx) {delete [] arrIndx; arrIndx = 0;}
@@ -6307,7 +6382,7 @@ cleanup:
    delete [] bgcell;
 
    return err;
-}//DoMedianPolish
+}//DoMultichipExpress
 
 //______________________________________________________________________________
 Int_t *XGenomeProcesSet::FillMaskArray(XDNAChip *chip, TTree *scmtree, XScheme *scheme,
@@ -7157,17 +7232,17 @@ cleanup:
 }//DoExpress
 
 //______________________________________________________________________________
-Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
+Int_t XExonProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
                       Int_t numbgrd, TTree **bgrdtree)
 {
-   // Compute expression values using mediapolish
+   // Compute expression values using multichip algorithms, e.g. medpol, farms, DFW
    // Intensities from datatrees are stored in one large table in RAM for fast access
    // Note: all trees must have same number of entries (i.e. identical chip types)
-   if(kCS) cout << "------XExonProcesSet::DoMedianPolish(table)------" << endl;
+   if(kCS) cout << "------XExonProcesSet::DoMultichipExpress(table)------" << endl;
 
 // Informing user
    if (XManager::fgVerbose) {
-      cout << "      summarizing with medianpolish..." << endl;
+      cout << "      summarizing with " << fExpressor->GetName() << "..." << endl;
    }//if
 
 //TEST Benchmark
@@ -7284,9 +7359,9 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    Double_t max = 0;
 
 // Get exon level of annotation
-   Int_t level = 0;
+   Int_t exlevel = 0;
    if (fExprSelector->GetNumParameters() > 0) {
-      level = (Int_t)(fExprSelector->GetParameters())[0];
+      exlevel = (Int_t)(fExprSelector->GetParameters())[0];
    }//if
 
 // Init unit selector
@@ -7297,8 +7372,8 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    Int_t     *arrIndx = 0;
    Int_t     *arrUnit = 0;
    Int_t     *mskUnit = 0;
-   Double_t  *colmed  = 0;
-   Double_t  *results = 0;
+   Double_t  *level   = 0;
+   Double_t  *stdev   = 0;
    Double_t **table   = 0;
 
 // Create local arrays
@@ -7306,12 +7381,12 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    if (!(arrIndx = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
    if (!(arrUnit = new (nothrow) Int_t[numunits]))   {err = errInitMemory; goto cleanup;}
    if (!(mskUnit = new (nothrow) Int_t[numunits]))   {err = errInitMemory; goto cleanup;}
-   if (!(colmed  = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
-   if (!(results = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
+   if (!(level   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
+   if (!(stdev   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
 
    for (Int_t i=0; i<size; i++)    {arrIndx[i] = 0; arrMask[i] = eINITMASK;}
    for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
-   for (Int_t i=0; i<numdata; i++)  colmed[i]  = results[i] = 0.0; 
+   for (Int_t i=0; i<numdata; i++)  level[i]   = stdev[i]   = 0.0; 
 
 // IMPORTANT NOTE: do not use the following code although it is faster:
 // for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
@@ -7319,7 +7394,7 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 // it is safer to get (x,y) coordinates and to use ij = x + y*numcols
 
 // Get mask for PM from scheme tree and store in array 
-   arrMask = this->FillMaskArray(chip, scmtree, scheme, level, size, arrMask);
+   arrMask = this->FillMaskArray(chip, scmtree, scheme, exlevel, size, arrMask);
    if (arrMask == 0) {err = errInitMemory; goto cleanup;}
 
 // Calculate units satisfying mask
@@ -7477,8 +7552,8 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
          continue;
       }//if
 
-      // calculate median polish for PMs of current unitID
-      if ((err = fExpressor->Calculate(numdata, colmed, results, 0))) break;
+      // calculate expression level for PMs of current unitID
+      if ((err = fExpressor->Calculate(numdata, level, stdev, 0))) break;
 
 //////////////////
 // TO DO: return fResiduals for residual-plot!!!! (like affyPLM)
@@ -7489,12 +7564,12 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
       // fill expression trees
       for (Int_t k=0; k<numdata; k++) {
          // get minimal/maximal expression levels
-         if (results[k] < min) min = results[k];
-         if (results[k] > max) max = results[k];
+         if (level[k] < min) min = level[k];
+         if (level[k] > max) max = level[k];
 
          expr[k]->SetUnitID(unitID);
-         expr[k]->SetLevel(results[k]);
-         expr[k]->SetStdev(TMath::Abs(colmed[k]));
+         expr[k]->SetLevel(level[k]);
+         expr[k]->SetStdev(TMath::Abs(stdev[k]));
          expr[k]->SetNumPairs((Int_t)(p / numdata));
          exprtree[k]->Fill();
       }//for_k
@@ -7538,8 +7613,8 @@ cleanup:
    if (table) delete [] table;
 
    // delete arrays
-   if (results) {delete [] results; results = 0;}
-   if (colmed)  {delete [] colmed;  colmed  = 0;}
+   if (stdev)   {delete [] stdev;   stdev   = 0;}
+   if (level)   {delete [] level;   level   = 0;}
    if (mskUnit) {delete [] mskUnit; mskUnit = 0;}
    if (arrUnit) {delete [] arrUnit; arrUnit = 0;}
    if (arrMask) {delete [] arrMask; arrMask = 0;}
@@ -7551,22 +7626,23 @@ cleanup:
    delete [] bgcell;
 
    return err;
-}//DoMedianPolish
+}//DoMultichipExpress
 
 //______________________________________________________________________________
-Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
+Int_t XExonProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
                       Int_t numbgrd, TTree **bgrdtree, TFile *file)
 {
-   // Compute expression values using mediapolish
+   // Compute expression values using multichip algorithms, e.g. medpol, farms, DFW
    // In order to reduce memory consumption intensities from datatrees are
    // stored in the order of the corresponding schemetree entries in temporary 
    // trees in a temporary root file
    // Note: all trees must have same number of entries (i.e. identical chip types)
-   if(kCS) cout << "------XExonProcesSet::DoMedianPolish(file)------" << endl;
+   if(kCS) cout << "------XExonProcesSet::DoMultichipExpress(file)------" << endl;
 
 // Informing user
    if (XManager::fgVerbose) {
-      cout << "      summarizing with medianpolish (using temporary file)..." << endl;
+      cout << "      summarizing with " << fExpressor->GetName() 
+           << " (using temporary file)..." << endl;
    }//if
 
 //TEST Benchmark
@@ -7685,9 +7761,9 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    Double_t max = 0;
 
 // Get exon level of annotation
-   Int_t level = 0;
+   Int_t exlevel = 0;
    if (fExprSelector->GetNumParameters() > 0) {
-      level = (Int_t)(fExprSelector->GetParameters())[0];
+      exlevel = (Int_t)(fExprSelector->GetParameters())[0];
    }//if
 
 // Init unit selector
@@ -7696,10 +7772,10 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 // Create local arrays
    Int_t    *arrMask = 0;
    Int_t    *arrIndx = 0;
-   Int_t     *arrUnit = 0;
-   Int_t     *mskUnit = 0;
-   Double_t *colmed  = 0;
-   Double_t *results = 0;
+   Int_t    *arrUnit = 0;
+   Int_t    *mskUnit = 0;
+   Double_t *level   = 0;
+   Double_t *stdev   = 0;
    Double_t *arrData = 0;
 
 // Create local arrays
@@ -7707,12 +7783,12 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
    if (!(arrIndx = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
    if (!(arrUnit = new (nothrow) Int_t[numunits]))   {err = errInitMemory; goto cleanup;}
    if (!(mskUnit = new (nothrow) Int_t[numunits]))   {err = errInitMemory; goto cleanup;}
-   if (!(colmed  = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
-   if (!(results = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
+   if (!(level   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
+   if (!(stdev   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
 
    for (Int_t i=0; i<size; i++)    {arrIndx[i] = 0; arrMask[i] = eINITMASK;}
    for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
-   for (Int_t i=0; i<numdata; i++)  colmed[i]  = results[i] = 0.0; 
+   for (Int_t i=0; i<numdata; i++)  level[i]   = stdev[i]   = 0.0; 
 
 // IMPORTANT NOTE: do not use the following code although it is faster:
 // for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
@@ -7720,7 +7796,7 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
 // it is safer to get (x,y) coordinates and to use ij = x + y*numcols
 
 // Get mask for PM from scheme tree and store in array 
-   arrMask = this->FillMaskArray(chip, scmtree, scheme, level, size, arrMask);
+   arrMask = this->FillMaskArray(chip, scmtree, scheme, exlevel, size, arrMask);
    if (arrMask == 0) {err = errInitMemory; goto cleanup;}
 
 // Calculate units satisfying mask
@@ -7903,8 +7979,8 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
          continue;
       }//if
 
-      // calculate median polish for PMs of current unitID
-      if ((err = fExpressor->Calculate(numdata, colmed, results, 0))) break;
+      // calculate expression level for PMs of current unitID
+      if ((err = fExpressor->Calculate(numdata, level, stdev, 0))) break;
 
 //////////////////
 // TO DO: return fResiduals for residual-plot!!!! (like affyPLM)
@@ -7915,12 +7991,12 @@ Int_t XExonProcesSet::DoMedianPolish(Int_t numdata, TTree **datatree,
       // fill expression trees
       for (Int_t k=0; k<numdata; k++) {
          // get minimal/maximal expression levels
-         if (results[k] < min) min = results[k];
-         if (results[k] > max) max = results[k];
+         if (level[k] < min) min = level[k];
+         if (level[k] > max) max = level[k];
 
          expr[k]->SetUnitID(unitID);
-         expr[k]->SetLevel(results[k]);
-         expr[k]->SetStdev(TMath::Abs(colmed[k]));
+         expr[k]->SetLevel(level[k]);
+         expr[k]->SetStdev(TMath::Abs(stdev[k]));
          expr[k]->SetNumPairs((Int_t)(p / numdata));
          exprtree[k]->Fill();
       }//for_k
@@ -7964,8 +8040,8 @@ cleanup:
 
    // delete arrays
    if (arrData) {delete [] arrData; arrData = 0;}
-   if (results) {delete [] results; results = 0;}
-   if (colmed)  {delete [] colmed;  colmed  = 0;}
+   if (stdev)   {delete [] stdev;   stdev   = 0;}
+   if (level)   {delete [] level;   level   = 0;}
    if (mskUnit) {delete [] mskUnit; mskUnit = 0;}
    if (arrUnit) {delete [] arrUnit; arrUnit = 0;}
    if (arrIndx) {delete [] arrIndx; arrIndx = 0;}
@@ -7978,7 +8054,7 @@ cleanup:
    delete [] bgcell;
 
    return err;
-}//DoMedianPolish
+}//DoMultichipExpress
 
 //______________________________________________________________________________
 Int_t XExonProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist,
@@ -8171,8 +8247,8 @@ Int_t XExonProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varli
 // Loop over tree entries and trees
    XIdxString *idxstr = 0;
    Int_t index = 0;
-   Int_t entries = (Int_t)(tree[0]->GetEntries());
-   for (Int_t i=0; i<entries; i++) {
+   Int_t nentries = (Int_t)(tree[0]->GetEntries());
+   for (Int_t i=0; i<nentries; i++) {
       tree[0]->GetEntry(i);
 
       Int_t unitID = expr[0]->GetUnitID();
@@ -8234,7 +8310,14 @@ Int_t XExonProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varli
          }//if
       }//for_j
       output << endl;
+
+      if (XManager::fgVerbose && i%10000 == 0) {
+         cout << "<" << i+1 << "> records exported...\r" << flush;
+      }//if
    }//for_i
+   if (XManager::fgVerbose) {
+      cout << "<" << nentries << "> records exported." << endl;
+   }//if
 
 //Cleanup
 cleanup:
@@ -8432,8 +8515,8 @@ Int_t XExonProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varli
 // Loop over tree entries and tree branches
    XIdxString *idxstr = 0;
    Int_t index = 0;
-   Int_t entries = (Int_t)(tree[0]->GetEntries());
-   for (Int_t i=0; i<entries; i++) {
+   Int_t nentries = (Int_t)(tree[0]->GetEntries());
+   for (Int_t i=0; i<nentries; i++) {
       tree[0]->GetEntry(i);
 
       Int_t unitID = call[0]->GetUnitID();
@@ -8491,11 +8574,18 @@ Int_t XExonProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varli
 
                if (hasCall) {
                   Int_t cl = call[k]->GetCall();
-                  char *ch = "NA";
+/*                  char *ch = "NA";
                   if      (cl == 2) ch = "P";
                   else if (cl == 0) ch = "A";
                   else if (cl == 1) ch = "M";
                   output << sep << ch;
+*/
+                  const char *ch[1];
+                  ch[0] = "NA";
+                  if      (cl == 2) ch[0] = "P";
+                  else if (cl == 0) ch[0] = "A";
+                  else if (cl == 1) ch[0] = "M";
+                  output << sep << ch[0];
                }//if
 
                if (hasPVal) {
@@ -8505,7 +8595,14 @@ Int_t XExonProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varli
          }//if
       }//for_j
       output << endl;
+
+      if (XManager::fgVerbose && i%10000 == 0) {
+         cout << "<" << i+1 << "> records exported...\r" << flush;
+      }//if
    }//for_i
+   if (XManager::fgVerbose) {
+      cout << "<" << nentries << "> records exported." << endl;
+   }//if
 
 //Cleanup
 cleanup:

@@ -2,6 +2,7 @@
 \docType{class}
 \alias{ExprTreeSet-class}
 \alias{ExprTreeSet}
+\alias{attachExpr,ExprTreeSet-method}
 \alias{exprType,ExprTreeSet-method}
 \alias{exprType}
 \alias{exprType<-,ExprTreeSet,character-method}
@@ -13,6 +14,7 @@
 \alias{normType}
 \alias{normType<-,ExprTreeSet,character-method}
 \alias{normType<-}
+\alias{removeExpr,ExprTreeSet-method}
 \alias{se.exprs,ExprTreeSet-method}
 \alias{se.exprs}
 \alias{xpsNormalize,ExprTreeSet-method}
@@ -59,6 +61,8 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
 }
 \section{Methods}{
   \describe{
+    \item{attachExpr}{\code{signature(object = "ExprTreeSet")}: exports expression trees from 
+     \code{\link{ROOT}} expression file and and saves as data.frame \code{data}.}
     \item{exprType}{\code{signature(object = "ExprTreeSet")}: extracts slot \code{exprtype}.}
     \item{exprType<-}{\code{signature(object = "ExprTreeSet", value = "character")}: replaces slot \code{exprtype}.}
     \item{exprs}{\code{signature(object = "ExprTreeSet")}: extracts the expression data.frame.}
@@ -66,6 +70,8 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
     \item{mvaplot}{\code{signature(x = "ExprTreeSet")}: creates an MvA-plot.}
     \item{normType}{\code{signature(object = "ExprTreeSet")}: extracts slot \code{normtype}.}
     \item{normType<-}{\code{signature(object = "ExprTreeSet", value = "character")}: replaces slot \code{normtype}.}
+    \item{removeExpr}{\code{signature(object = "ExprTreeSet")}: replaces data.frame \code{data} 
+     with an empty data.frame of dim(0,0).}
     \item{se.exprs}{\code{signature(object = "ExprTreeSet")}: extracts the standard deviation data.frame.}
     \item{xpsNormalize}{\code{signature(object = "ExprTreeSet")}: applies normalization methods.}
     \item{xpsPreFilter}{\code{signature(object = "ExprTreeSet")}: applies prefiltering methods.}

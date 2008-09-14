@@ -50,6 +50,12 @@ MYHDR      += rwrapper.h $(MAIN)LinkDef.h
 MYOBJ      += rwrapper.$(ObjSuf) $(MAIN)Dict.$(ObjSuf)
 MYSRC      += rwrapper.$(SrcSuf) $(MAIN)Dict.$(SrcSuf)
 
+ifeq ($(PLATFORM),win32)
+MYLIBS = '$(ROOTSYS)/lib/libRIO.lib $(ROOTSYS)/lib/libGed.lib $(ROOTSYS)/lib/libTreePlayer.lib $(ROOTSYS)/lib/libTreeViewer.lib'  
+else
+MYLIBS = -lRIO -lGed -lTreePlayer -lTreeViewer
+endif
+
 MYDLL       = $(MAIN).$(DllSuf)
 ifeq ($(PLATFORM),win32)
 MYLIB       = $(MAIN).lib
@@ -75,7 +81,8 @@ ifeq ($(ARCH),aix5)
 else
 ifeq ($(PLATFORM),macosx)
 # We need to make both the .dylib and the .so
-		$(LD) $(SOFLAGS) $^ $(OutPutOpt) $@ $(GLIBS)
+#		$(LD) $(SOFLAGS) $^ $(OutPutOpt) $@ $(GLIBS)
+		$(LD) $(SOFLAGS) $^ $(GLIBS) $(MYLIBS) $(OutPutOpt) $@ 
 ifeq ($(MACOSX_MINOR),4)
 		ln -sf $@ $(subst .$(DllSuf),.so,$@)
 else
@@ -90,7 +97,8 @@ ifeq ($(PLATFORM),win32)
 		$(LD) $(SOFLAGS) $(LDFLAGS) $^ $*.exp $(LIBS) \
 		   $(OutPutOpt)$@
 else
-		$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(GLIBS)
+#		$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(GLIBS)
+		$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(GLIBS) $(MYLIBS) $(OutPutOpt) $@ 
 endif
 endif
 endif

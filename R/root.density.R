@@ -3,6 +3,7 @@ function(x,
          treename   = "*",
          logbase    = "log2",
          canvasname = "DensityPlot",
+         save.as    = "",
          w          = 540,
          h          = 540) 
 {
@@ -10,6 +11,7 @@ function(x,
 
    rootfile  <- rootFile(x);
    treenames <- treeNames(x);
+   savename  <- rootDrawName(canvasname, save.as);
 
    ## get tree extension
    exten <- unlist(treenames)[1];
@@ -52,7 +54,6 @@ function(x,
    xpsso <- gsub("//", "/", xpsso);
 
    ## need to put character variables in parenthesis
-#   temp       <- as.character("\""); #"
    xpsso      <- paste(dq, xpsso, dq, sep="");
    rootfile   <- paste(dq, rootfile, dq, sep="");
    canvasname <- paste(dq, canvasname, dq, sep="");
@@ -60,13 +61,19 @@ function(x,
    varlist    <- paste(dq, varlist, dq, sep="");
    logbase    <- paste(dq, logbase, dq, sep="");
    option     <- paste(dq, option, dq, sep="");
+   savename   <- paste(dq, savename, dq, sep="");
    w          <- as.integer(w);
    h          <- as.integer(h);
 
    ## call ROOT macro
    macro <- paste(system.file(package="xps"), "rootsrc/macroDrawDensity.C", sep="/");
    macro <- paste(sq, macro, "(", xpsso,",", rootfile,",", canvasname,",",
-                  treename,",", varlist,",", logbase,",", option,",",
+                  treename,",", varlist,",", logbase,",", option,",", savename,",", 
                   w,",", h, ")", sq, sep="");
-   system(paste("root -l", macro));
+
+   if (save.as == "") {
+      system(paste("root -l", macro));
+   } else {
+      system(paste("root -l -q", macro));
+   }#if
 }#root.density

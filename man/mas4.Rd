@@ -9,16 +9,17 @@
 }
 \usage{
 mas4(xps.data,
-    filename   = character(0),
-    filedir    = getwd(),
-    tmpdir     = "",
-    normalize  = FALSE,
-    sc         = 500,
-    option     = "transcript",
-    exonlevel  = "",
-    update     = FALSE,
-    xps.scheme = NULL,
-    verbose    = TRUE)
+     filename   = character(0),
+     filedir    = getwd(),
+     tmpdir     = "",
+     normalize  = FALSE,
+     sc         = 500,
+     option     = "transcript",
+     exonlevel  = "",
+     update     = FALSE,
+     xps.scheme = NULL,
+     add.data   = TRUE,
+     verbose    = TRUE)
 
 xpsMAS4(object, ...)
 }
@@ -35,6 +36,7 @@ xpsMAS4(object, ...)
    exon/genome arrays only.}
   \item{update}{logical. If \code{TRUE} the existing ROOT data file \code{filename} will be updated.}
   \item{xps.scheme}{optional alternative \code{SchemeTreeSet}.}
+  \item{add.data}{logical. If \code{TRUE} expression data will be included as slot \code{data}.}
   \item{verbose}{logical, if \code{TRUE} print status information.}
   \item{object}{object of class \code{DataTreeSet}.}
   \item{\dots}{arguments \code{filename},\code{filedir},\code{tmpdir},\code{option},\code{exonlevel},\code{xps.scheme}.}

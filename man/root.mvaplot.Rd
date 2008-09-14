@@ -5,7 +5,7 @@
   Creates a ROOT M vs A plot for a ROOT tree.
 }
 \usage{
-root.mvaplot(x, treename1 = character(0), treename2 = character(0),logbase = "log2", option = "P", canvasname = "MvAPlot", w = 540, h = 540)
+root.mvaplot(x, treename1 = character(0), treename2 = character(0),logbase = "log2", option = "P", canvasname = "MvAPlot", save.as = "", w = 540, h = 540)
 }
 \arguments{
   \item{x}{object of class \code{\link{ExprTreeSet}} or \code{\link{DataTreeSet}}.}
@@ -14,6 +14,8 @@ root.mvaplot(x, treename1 = character(0), treename2 = character(0),logbase = "lo
   \item{logbase}{usually \dQuote{log2}, or \dQuote{0}, determines if leaf data should be converted to log.}
   \item{option}{ROOT TGraph::PaintGraph option, usually one of \dQuote{P}, \dQuote{*}.}
   \item{canvasname}{name of ROOT canvas}
+  \item{save.as}{gaphics tye for saving canvas, one of \dQuote{ps}, \dQuote{eps}, \dQuote{pdf},
+   \dQuote{jpg}, \dQuote{gif}, \dQuote{png}, \dQuote{tiff}}
   \item{w}{the width of the canvas in pixels.}
   \item{h}{the height of the canvas in pixels.}
 }
@@ -21,10 +23,13 @@ root.mvaplot(x, treename1 = character(0), treename2 = character(0),logbase = "lo
  Creates a ROOT M vs A plot for trees \code{treename1} and \code{treename2} present in \code{rootfile}.
 
  By selecting menu \dQuote{File->Save->canvasname.xxx} you can save the figure as e.g. *gif, *.jpg, *.pdf, *.ps or even as C++ macro.
+
+ Alternatively, you can save the plot by setting \code{save.as}. However, this will close the
+ canvas immediately after opening it.
 }
 \author{Christian Stratowa}
 \note{
-Always select menu item \dQuote{Quit ROOT} from menu \dQuote{File} to close the ROOT browser,
+Always select menu item \dQuote{Quit ROOT} from menu \dQuote{File} to close the ROOT canvas,
 otherwise you are in the CINT C/C++ interpreter from \code{\link{ROOT}}. To exit CINT,
 you need to type \dQuote{.q}.
 }

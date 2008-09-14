@@ -483,7 +483,7 @@ void PreprocessMAS4(char **filename, char **dirname, char **chipname,
    r += manager->Initialize(chiptype[0]);
 
 // temporary files for background and expression algorithms
-   char *tmpfile = "";
+   char *tmpfile = 0;
    if (strcmp(tmpdir[0], "") != 0) {
       tmpfile = new char[strlen(tmpdir[0]) + 22];
       tmpfile = strcpy(tmpfile, tmpdir[0]);
@@ -567,7 +567,7 @@ void PreprocessMAS5(char **filename, char **dirname, char **chipname,
    r += manager->Initialize(chiptype[0]);
 
 // temporary files for background and expression algorithms
-   char *tmpfile = "";
+   char *tmpfile = 0;
    if (strcmp(tmpdir[0], "") != 0) {
       tmpfile = new char[strlen(tmpdir[0]) + 22];
       tmpfile = strcpy(tmpfile, tmpdir[0]);
@@ -652,7 +652,7 @@ void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
    r += manager->Initialize(chiptype[0]);
 
 // temporary file for background
-   char *bgrdfile = "";
+   char *bgrdfile = 0;
    if (strcmp(tmpdir[0], "") != 0) {
       bgrdfile = new char[strlen(tmpdir[0]) + 22];
       bgrdfile = strcpy(bgrdfile, tmpdir[0]);
@@ -824,7 +824,8 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
       bgrdfile = strcpy(bgrdfile, tmpdir[0]);
       bgrdfile = strcat(bgrdfile, "/tmp_bgrd_310151.root");
    } else {
-      bgrdfile = "";
+//      bgrdfile = "";
+      bgrdfile = strcpy(bgrdfile, "\0");
    }//if
 
    char *normfile = new char[strlen(tmpdir[0]) + 14];
@@ -832,7 +833,8 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
       normfile = strcpy(normfile, tmpdir[0]);
       normfile = strcat(normfile, "/tmp_rkq.root");
    } else {
-      normfile = "";
+//      normfile = "";
+      normfile = strcpy(normfile, "\0");
    }//if
 
    char *exprfile = new char[strlen(tmpdir[0]) + 22];
@@ -840,7 +842,8 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
       exprfile = strcpy(exprfile, tmpdir[0]);
       exprfile = strcat(exprfile, "/tmp_expr_310151.root");
    } else {
-      exprfile = "";
+//      exprfile = "";
+      exprfile = strcpy(exprfile, "\0");
    }//if
 
 // initialize backgrounder
@@ -990,7 +993,8 @@ void BgCorrect(char **filename, char **dirname, char **chiptype,
       tmpfile = strcpy(tmpfile, tmpdir[0]);
       tmpfile = strcat(tmpfile, "/tmp_bgrd_310151.root");
    } else {
-      tmpfile = "";
+//      tmpfile = "";
+      tmpfile = strcpy(tmpfile, "\0");
    }//if
 
 // copy parameters
@@ -1113,7 +1117,8 @@ void Normalize(char **filename, char **dirname, char **chiptype,
       tmpfile = strcpy(tmpfile, tmpdir[0]);
       tmpfile = strcat(tmpfile, "/tmp_rkq.root");
    } else {
-      tmpfile = "";
+//      tmpfile = "";
+      tmpfile = strcpy(tmpfile, "\0");
    }//if
 
 // copy parameters
@@ -1205,7 +1210,8 @@ void Summarize(char **filename, char **dirname, char **chipname, char **chiptype
       tmpfile = strcpy(tmpfile, tmpdir[0]);
       tmpfile = strcat(tmpfile, "/tmp_expr_310151.root");
    } else {
-      tmpfile = "";
+//      tmpfile = "";
+      tmpfile = strcpy(tmpfile, "\0");
    }//if
 
 // copy parameters
@@ -1303,7 +1309,8 @@ void Normxpress(char **filename, char **dirname, char **chiptype,
       tmpfile = strcpy(tmpfile, tmpdir[0]);
       tmpfile = strcat(tmpfile, "/tmp_rkq.root");
    } else {
-      tmpfile = "";
+//      tmpfile = "";
+      tmpfile = strcpy(tmpfile, "\0");
    }//if
 
 // copy parameters
@@ -1586,7 +1593,9 @@ void ChipNameType(char **filename, char **nametype)
    XFolder *content = (XFolder*)(file->Get("Content"));
    if (!content) {
       printf("Content for file <%s> not found.", filename[0]);
-      nametype[0] = nametype[1] = "";
+//      nametype[0] = nametype[1] = "";
+      nametype[0] = strcpy(nametype[0], "");
+      nametype[1] = strcpy(nametype[1], "");
       return;
    }//if
 
@@ -1594,7 +1603,9 @@ void ChipNameType(char **filename, char **nametype)
    TString datatype = content->GetTitle();
    if (strcmp(content->GetTitle(), "Schemes") != 0) {
       printf("File <%s> is not a scheme file.", filename[0]);
-      nametype[0] = nametype[1] = "";
+//      nametype[0] = nametype[1] = "";
+      nametype[0] = strcpy(nametype[0], "");
+      nametype[1] = strcpy(nametype[1], "");
       return;
    }//if
 
@@ -1846,7 +1857,8 @@ void GetTreeNames4Exten(char **filename, char **exten, int *gettitle,
    XFolder *content = (XFolder*)(file->Get("Content"));
    if (!content) {
       printf("Content for file <%s> not found.", filename[0]);
-      treenames[0] = "";
+//      treenames[0] = "";
+      treenames[0] = strcpy(treenames[0], "");
       return;
    }//if
 

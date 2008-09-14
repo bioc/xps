@@ -17,6 +17,7 @@ rma(xps.data,
     option     = "transcript",
     exonlevel  = "",
     xps.scheme = NULL,
+    add.data   = TRUE,
     verbose    = TRUE)
 
 
@@ -35,6 +36,7 @@ xpsRMA(object, ...)
   \item{exonlevel}{exon annotation level determining which probes should be used for summarization;
    exon/genome arrays only.}
   \item{xps.scheme}{optional alternative \code{SchemeTreeSet}.}
+  \item{add.data}{logical. If \code{TRUE} expression data will be included as slot \code{data}.}
   \item{verbose}{logical, if \code{TRUE} print status information.}
   \item{object}{object of class \code{DataTreeSet}.}
   \item{\dots}{the arguments described above.}

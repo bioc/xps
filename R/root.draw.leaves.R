@@ -10,6 +10,7 @@
 #         treename   = "*",
 #         logbase    = "log2",
 #         canvasname = "DensityPlot",
+#         save.as    = "",
 #         w          = 540,
 #         h          = 540) 
 #{
@@ -32,6 +33,7 @@
 #                    option     = "AL",
 #                    sortopt    = 0,
 #                    canvasname = canvasname,
+#                    save.as    = save.as,
 #                    w          = w,
 #                    h          = h);
 #}#root.density
@@ -47,6 +49,7 @@ function(x,
          option     = "L",
          sortopt    = 0,
          canvasname = "DrawCanvas",
+         save.as    = "",
          w          = 540,
          h          = 540) 
 {
@@ -60,6 +63,7 @@ function(x,
    rootfile  <- rootFile(x);
    treenames <- treeNames(x);
    varlist   <- leafname;
+   savename  <- rootDrawName(canvasname, save.as);
 
    ## get tree extension
    exten <- unlist(treenames)[1];
@@ -98,7 +102,6 @@ function(x,
    xpsso <- gsub("//", "/", xpsso);
 
    ## need to put character variables in parenthesis
-#   temp       <- as.character("\""); #"
    xpsso      <- paste(dq, xpsso, dq, sep="");
    rootfile   <- paste(dq, rootfile, dq, sep="");
    canvasname <- paste(dq, canvasname, dq, sep="");
@@ -107,6 +110,7 @@ function(x,
    logbase    <- paste(dq, logbase, dq, sep="");
    type       <- paste(dq, type, dq, sep="");
    option     <- paste(dq, option, dq, sep="");
+   savename   <- paste(dq, savename, dq, sep="");
    sortopt    <- as.integer(sortopt);
    w          <- as.integer(w);
    h          <- as.integer(h);
@@ -115,6 +119,11 @@ function(x,
    macro <- paste(system.file(package="xps"), "rootsrc/macroDrawLeaves.C", sep="/");
    macro <- paste(sq, macro, "(", xpsso,",", rootfile,",", canvasname,",",
                   treename,",", varlist,",", logbase,",", type,",", option,",",
-                  sortopt,",", w,",", h, ")", sq, sep="");
-   system(paste("root -l", macro));
+                  savename,",", sortopt,",", w,",", h, ")", sq, sep="");
+
+   if (save.as == "") {
+      system(paste("root -l", macro));
+   } else {
+      system(paste("root -l -q", macro));
+   }#if
 }#root.draw.leaves

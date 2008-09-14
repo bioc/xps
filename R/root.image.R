@@ -4,7 +4,9 @@ function(x,
          leafname   = "fInten",
          logbase    = "log2",
          option     = "COLZ",
+         zlim       = NULL,
          canvasname = "Image",
+         save.as    = "",
          w          = 540,
          h          = 540) 
 {
@@ -17,6 +19,7 @@ function(x,
 
    rootfile <- rootFile(x);
    varlist  <- paste("fX", "fY", leafname, sep=":");
+   savename <- rootDrawName(canvasname, save.as);
 
    ## test for valid treename
    treenames <- getTreeNames(rootfile);
@@ -25,6 +28,15 @@ function(x,
    }#if
    ## need to add ROOT directory in rootfile
    treename <- paste("DataSet", treename, sep="/");
+
+   ## test for zlim
+   if (is.null(zlim)) {
+      minz <- 0.0;
+      maxz <- 0.0;
+   } else {
+      minz <- zlim[1];
+      maxz <- zlim[2];
+   }#if
 
    ## unix vs windows settings
    is.win <- (.Platform$OS.type == "windows");
@@ -42,7 +54,6 @@ function(x,
    xpsso <- gsub("//", "/", xpsso);
 
    ## need to put character variables in parenthesis
-#   temp       <- as.character("\""); #"
    xpsso      <- paste(dq, xpsso, dq, sep="");
    rootfile   <- paste(dq, rootfile, dq, sep="");
    canvasname <- paste(dq, canvasname, dq, sep="");
@@ -50,14 +61,21 @@ function(x,
    varlist    <- paste(dq, varlist, dq, sep="");
    logbase    <- paste(dq, logbase, dq, sep="");
    option     <- paste(dq, option, dq, sep="");
+   savename   <- paste(dq, savename, dq, sep="");
+   minz       <- as.double(minz);
+   maxz       <- as.double(maxz);
    w          <- as.integer(w);
    h          <- as.integer(h);
 
    ## call ROOT macro
    macro <- paste(system.file(package="xps"), "rootsrc/macroDrawImage.C", sep="/");
    macro <- paste(sq, macro, "(", xpsso,",", rootfile,",", canvasname,",",
-                         treename,",", varlist,",", logbase,",", option,",",
-                         w,",", h, ")", sq, sep="");
-   system(paste("root -l", macro));
+                  treename,",", varlist,",", logbase,",", option,",",
+                  savename,",", minz,",", maxz,",", w,",", h, ")", sq, sep="");
 
+   if (save.as == "") {
+      system(paste("root -l", macro));
+   } else {
+      system(paste("root -l -q", macro));
+   }#if
 }#root.image

@@ -34,7 +34,8 @@
 
  Note: If you do not want to replace your current object, create first a copy of type
  \code{ExprTreeSet} by simply writing \code{newobj <- oldobj}, and use \code{newobj} for
- replacement.
+ replacement. This is important since \code{exprs<-} does also update slots \code{treenames}
+ and \code{numtrees} as already mentioned.
 }
 \author{Christian Stratowa}
 \seealso{\code{\link{pvalData}}, \code{\link{presCall}}}

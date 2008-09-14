@@ -15,6 +15,7 @@
 void macroOpenBrowser(const char *xps)
 {
    gSystem->Load("libGui"); //necessary for ROOT version >=5.15/09
+   gSystem->Load("libTreeViewer.so");  //necessary for TParallelCoord
    gSystem->Load(xps);
    gROOT->ProcessLine("TBrowser b;");
 }

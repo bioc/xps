@@ -13,15 +13,15 @@
  (\dQuote{high-level normalization}).
 }
 \usage{
-normalize(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, select = "all", method = "mean", option = "transcript:all", logbase = "0", exonlevel = "", refindex = 0, refmethod = "mean", params = list(0.02, 0), verbose = TRUE)
+normalize(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, select = "all", method = "mean", option = "transcript:all", logbase = "0", exonlevel = "", refindex = 0, refmethod = "mean", params = list(0.02, 0), add.data = TRUE, verbose = TRUE)
 
-normalize.constant(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, method = "mean", logbase = "0", exonlevel = "", refindex = 0, refmethod = "mean", params = list(0.02, 0), verbose = TRUE)
+normalize.constant(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, method = "mean", logbase = "0", exonlevel = "", refindex = 0, refmethod = "mean", params = list(0.02, 0), add.data = TRUE, verbose = TRUE)
 
-normalize.lowess(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, logbase = "log2", exonlevel = "", refindex = 0, refmethod = "mean", params = list(0.67, 3), verbose = TRUE)
+normalize.lowess(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, logbase = "log2", exonlevel = "", refindex = 0, refmethod = "mean", params = list(0.67, 3), add.data = TRUE, verbose = TRUE)
 
-normalize.quantiles(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, exonlevel = "", verbose = TRUE)
+normalize.quantiles(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, exonlevel = "", add.data = TRUE, verbose = TRUE)
 
-normalize.supsmu(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, logbase = "log2", exonlevel = "", refindex = 0, refmethod = "mean", params = list(0.67, 3), verbose = TRUE)
+normalize.supsmu(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, logbase = "log2", exonlevel = "", refindex = 0, refmethod = "mean", params = list(0.67, 3), add.data = TRUE, verbose = TRUE)
 
 xpsNormalize(object, ...)
 }
@@ -42,6 +42,7 @@ xpsNormalize(object, ...)
   \item{refindex}{index of reference tree to use, or 0.}
   \item{refmethod}{for \code{refindex=0}, either trimmed mean or median of trees.}
   \item{params}{vector of parameters for normalization method.}
+  \item{add.data}{logical. If \code{TRUE} expression data will be included as slot \code{data}.}
   \item{verbose}{logical, if \code{TRUE} print status information.}
   \item{object}{object of class \code{DataTreeSet} or \code{\link{ExprTreeSet}}.}
   \item{\dots}{the arguments described above.}

@@ -244,9 +244,11 @@ setGeneric("normType",     function(object) standardGeneric("normType"));
 setGeneric("normType<-",   function(object, value) standardGeneric("normType<-"));
 setGeneric("exprs",        function(object) standardGeneric("exprs"));
 setGeneric("exprs<-",      function(object, ..., value) standardGeneric("exprs<-"));
+setGeneric("se.exprs",     function(object) standardGeneric("se.exprs"));
+setGeneric("attachExpr",   function(object, ...) standardGeneric("attachExpr"));
+setGeneric("removeExpr",   function(object) standardGeneric("removeExpr"));
 setGeneric("xpsPreFilter", function(object, ...) standardGeneric("xpsPreFilter"));
 setGeneric("xpsUniFilter", function(object, ...) standardGeneric("xpsUniFilter"));
-setGeneric("se.exprs",     function(object) standardGeneric("se.exprs"));
 setGeneric("mvaplot",      function(x, ...) standardGeneric("mvaplot"));
 
 
@@ -270,6 +272,10 @@ setGeneric("pvalData<-", function(object, ..., value) standardGeneric("pvalData<
 setGeneric("presCall",   function(object) standardGeneric("presCall"));
 setGeneric("presCall<-", function(object, ..., value) standardGeneric("presCall<-"));
 setGeneric("validCall",  function(object) standardGeneric("validCall"));
+setGeneric("attachCall", function(object, ...) standardGeneric("attachCall"));
+setGeneric("removeCall", function(object) standardGeneric("removeCall"));
+setGeneric("attachPVal", function(object, ...) standardGeneric("attachPVal"));
+setGeneric("removePVal", function(object) standardGeneric("removePVal"));
 setGeneric("callplot",   function(x, ...) standardGeneric("callplot"));
 
 

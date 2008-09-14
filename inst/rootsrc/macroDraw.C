@@ -1,4 +1,4 @@
-// File created: 10/14/2007                          last modified: 10/14/2007
+// File created: 10/14/2007                          last modified: 09/05/2008
 // Author: Christian Stratowa 10/13/2007
 
 /*
@@ -13,7 +13,8 @@
 void macroDraw(const char *xps, const char *filename, const char *canvasname,
                Int_t ntree, const char *treename1, const char *treename2,
                const char *treename3, const char *varlist, const char *logbase,
-               const char *type, const char *option, Int_t width, Int_t height)
+               const char *type, const char *option, const char *savename, 
+               Int_t width, Int_t height)
 {
    gSystem->Load("libGui"); //necessary for ROOT version >=5.15/09
    gSystem->Load(xps);
@@ -33,6 +34,12 @@ void macroDraw(const char *xps, const char *filename, const char *canvasname,
       plotter->Draw("", treename1, treename2, varlist, logbase, type,option);
    } else if (ntree == 3) {
       plotter->Draw("", treename1, treename2, treename3, varlist, logbase, type,option);
+   }//if
+
+// save figure and close canvas
+   if (strcmp(savename, "") != 0) {
+      plotter->SaveAs(savename);
+      plotter->CloseCanvas("");
    }//if
 
 // cleanup

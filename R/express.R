@@ -35,7 +35,8 @@ function(xps.data,
          ## --
          exonlevel  = "",
          xps.scheme = NULL,
-         verbose   = TRUE)
+         add.data   = TRUE,
+         verbose    = TRUE)
 {
 
    if (is(xps.data, "DataTreeSet")) {
@@ -63,6 +64,7 @@ function(xps.data,
                            reference.params  = reference.params,
                            exonlevel         = exonlevel,
                            xps.scheme        = xps.scheme,
+                           add.data          = add.data,
                            verbose           = verbose);
       return(set);
    } else {

@@ -20,6 +20,7 @@ function(xps.data,
          exonlevel  = "",
          params     = list(),
          xps.scheme = NULL,
+         add.data   = TRUE,
          verbose    = TRUE)
 {
    if (is(xps.data, "DataTreeSet")) {
@@ -35,6 +36,7 @@ function(xps.data,
                           exonlevel  = exonlevel,
                           params     = params,
                           xps.scheme = xps.scheme,
+                          add.data   = add.data,
                           verbose    = verbose);
       return(set);
    } else {
@@ -53,6 +55,7 @@ function(xps.data,
          option     = "transcript",
          exonlevel  = "",
          xps.scheme = NULL,
+         add.data   = TRUE,
          verbose    = TRUE)
 {
    set <- summarize(xps.data,
@@ -67,6 +70,7 @@ function(xps.data,
                     exonlevel  = exonlevel,
                     params     = list(3.0),
                     xps.scheme = xps.scheme,
+                    add.data   = add.data,
                     verbose    = verbose);
    return(set);
 }#summarize.mas4
@@ -82,6 +86,7 @@ function(xps.data,
          option     = "transcript",
          exonlevel  = "",
          xps.scheme = NULL,
+         add.data   = TRUE,
          verbose    = TRUE)
 {
    set <- summarize(xps.data,
@@ -96,6 +101,7 @@ function(xps.data,
                     exonlevel  = exonlevel,
                     params     = list(0.03, 10.0, 2^(-20), 5.0, 0.0001, 1.0, 0.5),
                     xps.scheme = xps.scheme,
+                    add.data   = add.data,
                     verbose    = verbose);
    return(set);
 }#summarize.mas5
@@ -111,6 +117,7 @@ function(xps.data,
          option     = "transcript",
          exonlevel  = "",
          xps.scheme = NULL,
+         add.data   = TRUE,
          verbose    = TRUE)
 {
    set <- summarize(xps.data,
@@ -125,6 +132,7 @@ function(xps.data,
                     exonlevel  = exonlevel,
                     params     = list(10, 0.01, 1.0),
                     xps.scheme = xps.scheme,
+                    add.data   = add.data,
                     verbose    = verbose);
    return(set);
 }#summarize.rma

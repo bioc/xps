@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 04/27/2008
+// File created: 08/05/2002                          last modified: 08/31/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -51,6 +51,7 @@
 * Nov 2007 - Save fSchemeName of class XProcesSet, increase ClassDef to 2.
 *          - XProcessManager now inherits from XManager and XProjectHandler
 *          - database methods ProjectInfo() etc are moved to XProjectHandler
+* Aug 2008 - Add summarization algorithms FARMS and DFW, classes XFARMS, XDFW
 *
 ******************************************************************************/
 
@@ -99,7 +100,8 @@ const char *kTypeCNrm[]  = { "mean",
                              ""};
 
 // expression trees after summarization
-const char *kExtenExpr[] = { "amn", "gmn", "wmn", "gcm", "wdf", "adf", "tbw", "mdp", ""};
+const char *kExtenExpr[] = { "amn", "gmn", "wmn", "gcm", "wdf", "adf", "tbw",
+                             "mdp", "frm", "dfw", ""};
 const char *kTypeExpr[]  = { "arithmeticmean",
                              "geometricmean",
                              "weightedmean",
@@ -108,6 +110,8 @@ const char *kTypeExpr[]  = { "arithmeticmean",
                              "avgdiff",
                              "tukeybiweight",
                              "medianpolish",
+                             "farms",
+                             "dfw",
                              ""};
 
 // detection call trees

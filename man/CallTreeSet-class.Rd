@@ -2,11 +2,15 @@
 \docType{class}
 \alias{CallTreeSet-class}
 \alias{CallTreeSet}
+\alias{attachCall,CallTreeSet-method}
+\alias{attachPVal,CallTreeSet-method}
 \alias{callplot,CallTreeSet-method}
 \alias{presCall,CallTreeSet-method}
 \alias{presCall<-,CallTreeSet,data.frame-method}
 \alias{pvalData,CallTreeSet-method}
 \alias{pvalData<-,CallTreeSet,data.frame-method}
+\alias{removeCall,CallTreeSet-method}
+\alias{removePVal,CallTreeSet-method}
 \alias{validCall,CallTreeSet-method}
 \alias{validCall}
 
@@ -48,12 +52,20 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
 }
 \section{Methods}{
   \describe{
+    \item{attachCall}{\code{signature(object = "CallTreeSet")}: exports detection call data from 
+     \code{\link{ROOT}} call file and and saves as data.frame \code{detcall}.}
+    \item{attachPVal}{\code{signature(object = "CallTreeSet")}: exports call p-values from 
+     \code{\link{ROOT}} call file and and saves as data.frame \code{data}.}
     \item{callplot}{\code{signature(x = "CallTreeSet")}: creates a barplot of percent present
      and absent calls.}
     \item{presCall}{\code{signature(object = "CallTreeSet")}: extracts the detection call data.frame.}
     \item{presCall<-}{\code{signature(object = "CallTreeSet", value = "data.frame")}: replaces the detection call data.frame.}
     \item{pvalData}{\code{signature(object = "CallTreeSet")}: extracts the detection p-value data.frame.}
     \item{pvalData<-}{\code{signature(object = "CallTreeSet", value = "data.frame")}: replaces the detection p-value data.frame.}
+    \item{removeCall}{\code{signature(object = "CallTreeSet")}: replaces data.frame \code{detcall} 
+     with an empty data.frame of dim(0,0).}
+    \item{removePVal}{\code{signature(object = "CallTreeSet")}: replaces data.frame \code{data} 
+     with an empty data.frame of dim(0,0).}
     \item{validCall}{\code{signature(object = "CallTreeSet")}: extracts a subset of columns 
      from data.frame \code{detcall}.}
 	 }

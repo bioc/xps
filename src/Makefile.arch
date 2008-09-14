@@ -7,6 +7,7 @@
 # Author: Fons Rademakers, 29/2/2000
 
 ROOTCONFIG   := root-config
+##ROOTCONFIG   := `root-config --libs` lTreeViewer
 
 ARCH         := $(shell $(ROOTCONFIG) --arch)
 PLATFORM     := $(shell $(ROOTCONFIG) --platform)

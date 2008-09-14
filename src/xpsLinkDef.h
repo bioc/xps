@@ -156,6 +156,8 @@
 #pragma link C++ class XAvgDif+;
 #pragma link C++ class XTukeyBiweight+;
 #pragma link C++ class XMedianPolish+;
+#pragma link C++ class XFARMS+;
+#pragma link C++ class XDFW+;
 #pragma link C++ class XNormedSet+;
 #pragma link C++ class XNormedGCSet+;
 #pragma link C++ class XNormedGenomeSet+;

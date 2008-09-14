@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 09/14/2007
+// File created: 08/05/2002                          last modified: 09/13/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -62,6 +62,8 @@ class XHybridizer: public XAlgorithm {
       Double_t   *fStdev2;      //[fLength] Array of StdDevs
       Int_t      *fNPix2;       //[fLength] Array of pixel number/percentage
       Double_t   *fArray;       //[fLength] Array to be used for calculation
+      Int_t       fNDefPar;     //number of default parameters
+      Bool_t      fMultichip;   //TRUE if multichip algorithm
 
    public:
       XHybridizer();
@@ -75,9 +77,11 @@ class XHybridizer: public XAlgorithm {
       Double_t **CreateTable(Int_t nrow, Int_t ncol);
       void       DeleteTable(Double_t **table, Int_t nrow);
 
-      void InitArrays(Int_t length, Double_t *inten1, Double_t *stdev1,
-              Int_t *npix1, Double_t *inten2, Double_t *stdev2, Int_t *npix2);
-      void InitTreeInfo(XTreeInfo *info) {fTreeInfo = info;}
+      void   InitArrays(Int_t length, Double_t *inten1, Double_t *stdev1,
+                Int_t *npix1, Double_t *inten2, Double_t *stdev2, Int_t *npix2);
+      void   InitTreeInfo(XTreeInfo *info) {fTreeInfo = info;}
+
+      Bool_t IsMultichip()          const {return fMultichip;}
 
       ClassDef(XHybridizer,1) //Hybridizer
 };
@@ -158,9 +162,9 @@ class XCallDetector: public XHybridizer {
 class XExpressor: public XHybridizer {
 
    protected:
-      TString     fBgrdOpt;     //option for background subtraction
-      TString     fLogBase;     //logbase: 0, log, log2, log10
-
+      TString    fBgrdOpt;      //option for background subtraction
+      TString    fLogBase;      //logbase: 0, log, log2, log10
+ 
    protected:
       Double_t *Array2Log(Int_t n, Double_t *x, Double_t neglog);
       Double_t *Array2Pow(Int_t n, Double_t *x);
@@ -177,7 +181,8 @@ class XExpressor: public XHybridizer {
 ///////////
 //      virtual Int_t CreateArray(Int_t length);
 
-      virtual void SetOptions(Option_t *opt);
+      virtual Int_t SetArray(Int_t length, Double_t *array);
+      virtual void  SetOptions(Option_t *opt);
 
       void    SetBgrdOption(Option_t *opt) {fBgrdOpt = opt; fBgrdOpt.ToLower();}
       void    SetLogBase(const char *lgb)  {fLogBase = lgb; fLogBase.ToLower();}
@@ -584,14 +589,68 @@ class XMedianPolish: public XExpressor {
       XMedianPolish(const char *name, const char *type);
       virtual ~XMedianPolish();
 
-      virtual Int_t SetArray(Int_t length, Double_t *array);
-
       using XAlgorithm::Calculate;
       virtual Int_t Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk);
 
       Double_t *GetResiduals() {return fResiduals;}
 
       ClassDef(XMedianPolish,1) //MedianPolish
+};
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XFARMS                                                               //
+//                                                                      //
+// Factor Analysis for Robust Microarray Summarization (Hochreiter S)   //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+class XFARMS: public XExpressor {
+
+   protected:
+
+   private:
+      Int_t DoFARMS130(Int_t nrow, Int_t ncol, Double_t *inten, Double_t *x, 
+               Double_t *y, Double_t weight = 8.0, Double_t mu = 0.0, 
+               Double_t scale = 2.0, Double_t tol = 0.00001, Double_t cyc = 0.0);
+      Int_t DoFARMS131(Int_t nrow, Int_t ncol, Double_t *inten, 
+               Double_t *x, Double_t *y, Double_t weight = 0.5, Double_t mu = 0.0, 
+               Double_t scale = 1.0, Double_t tol = 0.00001, Double_t cyc = 0.0,
+               Bool_t weighted = kTRUE);
+
+   public:
+      XFARMS();
+      XFARMS(const char *name, const char *type);
+      virtual ~XFARMS();
+
+      using XAlgorithm::Calculate;
+      virtual Int_t Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk);
+
+      ClassDef(XFARMS,1) //FARMS
+};
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XDFW                                                                 //
+//                                                                      //
+// Distribution Free Weighted Fold Change (Chen Z)                      //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+class XDFW: public XExpressor {
+
+   protected:
+
+   private:
+      Double_t *Weight(Int_t n, const Double_t *arr, Double_t *w);
+
+   public:
+      XDFW();
+      XDFW(const char *name, const char *type);
+      virtual ~XDFW();
+
+      using XAlgorithm::Calculate;
+      virtual Int_t Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk);
+
+      ClassDef(XDFW,1) //DFW
 };
 
 #endif

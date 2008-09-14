@@ -8,6 +8,10 @@
 # presCall:
 # presCall<-:
 # validCall:
+# attachPVal:
+# removePVal:
+# attachCall:
+# removeCall:
 # callplot:
 #==============================================================================#
 
@@ -167,6 +171,79 @@ function(object) {
 }#callCallTreeSet
 
 setMethod("validCall", "CallTreeSet", callCallTreeSet);
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("attachPVal", signature(object="CallTreeSet"),
+   function(object, treenames="*") {
+      if (debug.xps()) print("------attachPVal.CallTreeSet------")
+
+      oldtrees <- object@treenames;
+      treetype <- extenPart(oldtrees);
+      if (treenames[1] == "*") treenames <- oldtrees;
+      if (length(treenames) > 0) {
+         pvalData(object, treenames) <- export(object,
+                                               treenames    = treenames,
+                                               treetype     = treetype,
+                                               varlist      = "fUnitName:fPValue",
+                                               as.dataframe = TRUE,
+                                               verbose      = FALSE);
+         ## necessary since "pvalData<-" updates slots treenames, numtrees
+         object@treenames <- as.list(oldtrees);
+         object@numtrees  <- length(oldtrees);
+      } else {
+         warning("missing data tree names, data will not be added.");
+      }#if
+      return(object);
+   }
+)#attachPVal
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("removePVal", signature(object="CallTreeSet"),
+   function(object) {
+      if (debug.xps()) print("------removePVal.CallTreeSet------")
+
+      object@data  <- data.frame(matrix(nr=0,nc=0));
+      gc(); #????
+      return(object);
+   }
+)#removePVal
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("attachCall", signature(object="CallTreeSet"),
+   function(object, treenames="*") {
+      if (debug.xps()) print("------attachCall.CallTreeSet------")
+
+      oldtrees <- object@treenames;
+      treetype <- extenPart(oldtrees);
+      if (treenames[1] == "*") treenames <- oldtrees;
+      if (length(treenames) > 0) {
+         presCall(object, treenames) <- export(object,
+                                               treenames    = treenames,
+                                               treetype     = treetype,
+                                               varlist      = "fUnitName:fCall",
+                                               as.dataframe = TRUE,
+                                               verbose      = FALSE);
+      } else {
+         warning("missing data tree names, data will not be added.");
+      }#if
+      return(object);
+   }
+)#attachCall
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("removeCall", signature(object="CallTreeSet"),
+   function(object) {
+      if (debug.xps()) print("------removeCall.CallTreeSet------")
+
+      object@data  <- data.frame(matrix(nr=0,nc=0));
+      gc(); #????
+      return(object);
+   }
+)#removeCall
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

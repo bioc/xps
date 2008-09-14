@@ -626,6 +626,7 @@ function(object,
          option     = "transcript",
          exonlevel  = "",
          xps.scheme = NULL,
+         add.data   = TRUE,
          verbose    = TRUE) 
 {
    if (debug.xps()) print("------rma.DataTreeSet------")
@@ -720,42 +721,44 @@ function(object,
    }#if
 
    ## export result to outfile and import as dataframe ds
-   outfile  <- sub(".root", ".txt", rootfile);
-   ## get treename "treeset.treename.treetype"
-   treetype <- "mdp";
-   treename <- paste(setname, "*", treetype, sep=".");
-   numtrees <- 1; # must be one for treename="*"
+   ds <- data.frame(matrix(nr=0,nc=0));
+   if (add.data) {
+      outfile  <- sub(".root", ".txt", rootfile);
+      ## get treename "treeset.treename.treetype"
+      treetype <- "mdp";
+      treename <- paste(setname, "*", treetype, sep=".");
+      numtrees <- 1; # must be one for treename="*"
 
-   r <- .C("ExportData",
-           as.character(rootfile),
-           as.character(schemefile),
-           as.character(chiptype),
-           as.character(settype),
-           as.character(treename),
-           as.integer(numtrees),
-           as.character(treetype),
-           as.character("fUnitName:fLevel"),
-           as.character(outfile),
-           as.character("\t"),
-           as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
+      r <- .C("ExportData",
+              as.character(rootfile),
+              as.character(schemefile),
+              as.character(chiptype),
+              as.character(settype),
+              as.character(treename),
+              as.integer(numtrees),
+              as.character(treetype),
+              as.character("fUnitName:fLevel"),
+              as.character(outfile),
+              as.character("\t"),
+              as.integer(verbose),
+              err=integer(1),
+              PACKAGE="xps")$err;
 
-   if (r != 0) {
-      stop(paste("error in function", sQuote("ExportData")));
-      return(NULL);
+      if (r != 0) {
+         stop(paste("error in function", sQuote("ExportData")));
+         return(NULL);
+      }#if
+
+      if (file.exists(outfile)) {
+         ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
+      } else {
+         warning(paste("could not export results as", sQuote(outfile)));
+      }#if
    }#if
 
    ## get treenames after preprocessing
    treenames <- as.list(getTreeNames(rootfile, "mdp"));
    numtrees  <- length(treenames);
-
-   ds <- data.frame(matrix(nr=0,nc=0));
-   if (file.exists(outfile)) {
-      ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
-   } else {
-      warning(paste("could not export results as", sQuote(outfile)));
-   }#if
 
    ## create new class ExprTreeSet
    set <- new("ExprTreeSet",
@@ -786,6 +789,7 @@ function(object,
          option     = "transcript",
          exonlevel  = "",
          xps.scheme = NULL,
+         add.data   = TRUE,
          verbose    = TRUE)
 {
    if (debug.xps()) print("------mas4.DataTreeSet------")
@@ -863,42 +867,44 @@ function(object,
    }#if
 
    ## export result to outfile and import as dataframe ds
-   outfile  <- sub(".root", ".txt", rootfile);
-   ## get treename "treeset.treename.treetype"
-   treetype <- "adf";
-   treename <- paste(setname, "*", treetype, sep=".");
-   numtrees <- 1; # must be one for treename="*"
+   ds <- data.frame(matrix(nr=0,nc=0));
+   if (add.data) {
+      outfile  <- sub(".root", ".txt", rootfile);
+      ## get treename "treeset.treename.treetype"
+      treetype <- "adf";
+      treename <- paste(setname, "*", treetype, sep=".");
+      numtrees <- 1; # must be one for treename="*"
 
-   r <- .C("ExportData",
-           as.character(rootfile),
-           as.character(schemefile),
-           as.character(chiptype),
-           as.character(settype),
-           as.character(treename),
-           as.integer(numtrees),
-           as.character(treetype),
-           as.character("fUnitName:fLevel"),
-           as.character(outfile),
-           as.character("\t"),
-           as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
+      r <- .C("ExportData",
+              as.character(rootfile),
+              as.character(schemefile),
+              as.character(chiptype),
+              as.character(settype),
+              as.character(treename),
+              as.integer(numtrees),
+              as.character(treetype),
+              as.character("fUnitName:fLevel"),
+              as.character(outfile),
+              as.character("\t"),
+              as.integer(verbose),
+              err=integer(1),
+              PACKAGE="xps")$err;
 
-   if (r != 0) {
-      stop(paste("error in function", sQuote("ExportData")));
-      return(NULL);
+      if (r != 0) {
+         stop(paste("error in function", sQuote("ExportData")));
+         return(NULL);
+      }#if
+
+      if (file.exists(outfile)) {
+         ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
+      } else {
+         warning(paste("error: could not export results as", sQuote(outfile)));
+      }#if
    }#if
 
    ## normalized treenames 
    treenames <- as.list(getTreeNames(rootfile, "adf"));
    numtrees  <- length(treenames);
-
-   ds <- data.frame(matrix(nr=0,nc=0));
-   if (file.exists(outfile)) {
-      ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
-   } else {
-      warning(paste("error: could not export results as", sQuote(outfile)));
-   }#if
 
    ## create new class ExprTreeSet
    set <- new("ExprTreeSet",
@@ -929,6 +935,7 @@ function(object,
          option     = "transcript",
          exonlevel  = "",
          xps.scheme = NULL,
+         add.data   = TRUE,
          verbose    = TRUE)
 {
    if (debug.xps()) print("------mas5.DataTreeSet------")
@@ -1006,42 +1013,44 @@ function(object,
    }#if
 
    ## export result to outfile and import as dataframe ds
-   outfile  <- sub(".root", ".txt", rootfile);
-   ## get treename "treeset.treename.treetype"
-   treetype <- "tbw";
-   treename <- paste(setname, "*", treetype, sep=".");
-   numtrees <- 1; # must be one for treename="*"
+   ds <- data.frame(matrix(nr=0,nc=0));
+   if (add.data) {
+      outfile  <- sub(".root", ".txt", rootfile);
+      ## get treename "treeset.treename.treetype"
+      treetype <- "tbw";
+      treename <- paste(setname, "*", treetype, sep=".");
+      numtrees <- 1; # must be one for treename="*"
 
-   r <- .C("ExportData",
-           as.character(rootfile),
-           as.character(schemefile),
-           as.character(chiptype),
-           as.character(settype),
-           as.character(treename),
-           as.integer(numtrees),
-           as.character(treetype),
-           as.character("fUnitName:fLevel"),
-           as.character(outfile),
-           as.character("\t"),
-           as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
+      r <- .C("ExportData",
+              as.character(rootfile),
+              as.character(schemefile),
+              as.character(chiptype),
+              as.character(settype),
+              as.character(treename),
+              as.integer(numtrees),
+              as.character(treetype),
+              as.character("fUnitName:fLevel"),
+              as.character(outfile),
+              as.character("\t"),
+              as.integer(verbose),
+              err=integer(1),
+              PACKAGE="xps")$err;
 
-   if (r != 0) {
-      stop(paste("error in function", sQuote("ExportData")));
-      return(NULL);
+      if (r != 0) {
+         stop(paste("error in function", sQuote("ExportData")));
+         return(NULL);
+      }#if
+
+      if (file.exists(outfile)) {
+         ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
+      } else {
+         warning(paste("error: could not export results as", sQuote(outfile)));
+      }#if
    }#if
 
    ## normalized treenames 
    treenames <- as.list(getTreeNames(rootfile, "tbw"));
    numtrees  <- length(treenames);
-
-   ds <- data.frame(matrix(nr=0,nc=0));
-   if (file.exists(outfile)) {
-      ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
-   } else {
-      warning(paste("error: could not export results as", sQuote(outfile)));
-   }#if
 
    ## create new class ExprTreeSet
    set <- new("ExprTreeSet",
@@ -1076,6 +1085,7 @@ function(object,
          option           = "transcript",
          exonlevel        = "",
          xps.scheme       = NULL,
+         add.data         = TRUE,
          verbose          = TRUE)
 {
    if (debug.xps()) print("------mas5Call.DataTreeSet------")
@@ -1171,69 +1181,71 @@ function(object,
    }#if
 
    ## export p-value to outfile and import as dataframe ds
-   outfile  <- sub(".root", "_pval.txt", rootfile);
-   ## get treename "treeset.treename.treetype"
-   treetype <- "dc5";
-   treename <- paste(setname, "*", treetype, sep=".");
-   numtrees <- 1; # must be one for treename="*"
-
-   r <- .C("ExportData",
-           as.character(rootfile),
-           as.character(schemefile),
-           as.character(chiptype),
-           as.character(settype),
-           as.character(treename),
-           as.integer(numtrees),
-           as.character(treetype),
-           as.character("fUnitName:fPValue"),
-           as.character(outfile),
-           as.character("\t"),
-           as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
-
-   if (r != 0) {
-      stop(paste("error in function", sQuote("ExportData")));
-      return(NULL);
-   }#if
-
    ds <- data.frame(matrix(nr=0,nc=0));
-   if (file.exists(outfile)) {
-      ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
-   } else {
-      warning(paste("error: could not export results as", sQuote(outfile)));
-   }#if
-
-   ## export detection call to outfile and import as dataframe dc
-   outfile  <- sub(".root", "_call.txt", rootfile);
-   # get treename "treeset.treename.treetype"
-   treename <- paste(setname, "*", treetype, sep=".");
-
-   r <- .C("ExportData",
-           as.character(rootfile),
-           as.character(schemefile),
-           as.character(chiptype),
-           as.character(settype),
-           as.character(treename),
-           as.integer(numtrees),
-           as.character(treetype),
-           as.character("fUnitName:fCall"),
-           as.character(outfile),
-           as.character("\t"),
-           as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
-
-   if (r != 0) {
-      stop(paste("error in function", sQuote("ExportData")));
-      return(NULL);
-   }#if
-
    dc <- data.frame(matrix(nr=0,nc=0));
-   if (file.exists(outfile)) {
-      dc <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
-   } else {
-      warning(paste("error: could not export results as", sQuote(outfile)));
+   if (add.data) {
+      outfile  <- sub(".root", "_pval.txt", rootfile);
+      ## get treename "treeset.treename.treetype"
+      treetype <- "dc5";
+      treename <- paste(setname, "*", treetype, sep=".");
+      numtrees <- 1; # must be one for treename="*"
+
+      r <- .C("ExportData",
+              as.character(rootfile),
+              as.character(schemefile),
+              as.character(chiptype),
+              as.character(settype),
+              as.character(treename),
+              as.integer(numtrees),
+              as.character(treetype),
+              as.character("fUnitName:fPValue"),
+              as.character(outfile),
+              as.character("\t"),
+              as.integer(verbose),
+              err=integer(1),
+              PACKAGE="xps")$err;
+
+      if (r != 0) {
+         stop(paste("error in function", sQuote("ExportData")));
+         return(NULL);
+      }#if
+
+      if (file.exists(outfile)) {
+         ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
+      } else {
+         warning(paste("error: could not export results as", sQuote(outfile)));
+      }#if
+
+      ## export detection call to outfile and import as dataframe dc
+      outfile  <- sub(".root", "_call.txt", rootfile);
+      # get treename "treeset.treename.treetype"
+      treename <- paste(setname, "*", treetype, sep=".");
+
+      r <- .C("ExportData",
+              as.character(rootfile),
+              as.character(schemefile),
+              as.character(chiptype),
+              as.character(settype),
+              as.character(treename),
+              as.integer(numtrees),
+              as.character(treetype),
+              as.character("fUnitName:fCall"),
+              as.character(outfile),
+              as.character("\t"),
+              as.integer(verbose),
+              err=integer(1),
+              PACKAGE="xps")$err;
+
+      if (r != 0) {
+         stop(paste("error in function", sQuote("ExportData")));
+         return(NULL);
+      }#if
+
+      if (file.exists(outfile)) {
+         dc <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
+      } else {
+         warning(paste("error: could not export results as", sQuote(outfile)));
+      }#if
    }#if
 
    ## mas5 call treenames 
@@ -1275,6 +1287,7 @@ function(object,
          option     = "transcript",
          exonlevel  = "",
          xps.scheme = NULL,
+         add.data   = TRUE,
          verbose    = TRUE)
 {
    if (debug.xps()) print("------dabgCall.DataTreeSet------")
@@ -1358,69 +1371,71 @@ function(object,
    }#if
 
    ## export p-value to outfile and import as dataframe ds
-   outfile  <- sub(".root", "_pval.txt", rootfile);
-   ## get treename "treeset.treename.treetype"
-   treetype <- "dab";
-   treename <- paste(setname, "*", treetype, sep=".");
-   numtrees <- 1; # must be one for treename="*"
-
-   r <- .C("ExportData",
-           as.character(rootfile),
-           as.character(schemefile),
-           as.character(chiptype),
-           as.character(settype),
-           as.character(treename),
-           as.integer(numtrees),
-           as.character(treetype),
-           as.character("fUnitName:fPValue"),
-           as.character(outfile),
-           as.character("\t"),
-           as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
-
-   if (r != 0) {
-      stop(paste("error in function", sQuote("ExportData")));
-      return(NULL);
-   }#if
-
    ds <- data.frame(matrix(nr=0,nc=0));
-   if (file.exists(outfile)) {
-      ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
-   } else {
-      warning(paste("error: could not export results as", sQuote(outfile)));
-   }#if
-
-   ## export detection call to outfile and import as dataframe dc
-   outfile  <- sub(".root", "_call.txt", rootfile);
-   ## get treename "treeset.treename.treetype"
-   treename <- paste(setname, "*", treetype, sep=".");
-
-   r <- .C("ExportData",
-           as.character(rootfile),
-           as.character(schemefile),
-           as.character(chiptype),
-           as.character(settype),
-           as.character(treename),
-           as.integer(numtrees),
-           as.character(treetype),
-           as.character("fUnitName:fCall"),
-           as.character(outfile),
-           as.character("\t"),
-           as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
-
-   if (r != 0) {
-      stop(paste("error in function", sQuote("ExportData")));
-      return(NULL);
-   }#if
-
    dc <- data.frame(matrix(nr=0,nc=0));
-   if (file.exists(outfile)) {
-      dc <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
-   } else {
-      warning(paste("error: could not export results as", sQuote(outfile)));
+   if (add.data) {
+      outfile  <- sub(".root", "_pval.txt", rootfile);
+      ## get treename "treeset.treename.treetype"
+      treetype <- "dab";
+      treename <- paste(setname, "*", treetype, sep=".");
+      numtrees <- 1; # must be one for treename="*"
+
+      r <- .C("ExportData",
+              as.character(rootfile),
+              as.character(schemefile),
+              as.character(chiptype),
+              as.character(settype),
+              as.character(treename),
+              as.integer(numtrees),
+              as.character(treetype),
+              as.character("fUnitName:fPValue"),
+              as.character(outfile),
+              as.character("\t"),
+              as.integer(verbose),
+              err=integer(1),
+              PACKAGE="xps")$err;
+
+      if (r != 0) {
+         stop(paste("error in function", sQuote("ExportData")));
+         return(NULL);
+      }#if
+
+      if (file.exists(outfile)) {
+         ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
+      } else {
+         warning(paste("error: could not export results as", sQuote(outfile)));
+      }#if
+
+      ## export detection call to outfile and import as dataframe dc
+      outfile  <- sub(".root", "_call.txt", rootfile);
+      ## get treename "treeset.treename.treetype"
+      treename <- paste(setname, "*", treetype, sep=".");
+
+      r <- .C("ExportData",
+              as.character(rootfile),
+              as.character(schemefile),
+              as.character(chiptype),
+              as.character(settype),
+              as.character(treename),
+              as.integer(numtrees),
+              as.character(treetype),
+              as.character("fUnitName:fCall"),
+              as.character(outfile),
+              as.character("\t"),
+              as.integer(verbose),
+              err=integer(1),
+              PACKAGE="xps")$err;
+
+      if (r != 0) {
+         stop(paste("error in function", sQuote("ExportData")));
+         return(NULL);
+      }#if
+
+      if (file.exists(outfile)) {
+         dc <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
+      } else {
+         warning(paste("error: could not export results as", sQuote(outfile)));
+      }#if
    }#if
 
    ## mas5 call treenames 
@@ -1476,6 +1491,7 @@ function(object,
          reference.params  = list(0.0),
          exonlevel         = "",
          xps.scheme        = NULL,
+         add.data          = TRUE,
          verbose           = TRUE)
 {
    if (debug.xps()) print("------preprocess.DataTreeSet------")
@@ -1573,10 +1589,10 @@ function(object,
    if (is.null(summarize.method)) {
       summarize.method <- "none";
    } else {
-      TYPE <- c("avgdiff", "tukeybiweight", "medianpolish");
+      TYPE <- c("avgdiff", "tukeybiweight", "medianpolish", "farms", "dfw");
       if (is.na(match(summarize.method, TYPE))) {
          stop(paste(sQuote("summarize.method"),
-                    "must be one of <avgdiff,tukeybiweight,medianpolish>"));
+              "must be one of <avgdiff,tukeybiweight,medianpolish,farms,dfw>"));
       }#if
 
       TYPE <- c("pmonly", "mmonly", "both", "all", "none");
@@ -1678,43 +1694,45 @@ function(object,
    }#if
 
    if (summarize.method != "none") {
-      ## export result to outfile and import as dataframe
-      outfile  <- sub(".root", ".txt", rootfile);
-      ## get treename "treeset.treename.treetype"
-      exten <- type2Exten(summarize.method, settype);
-      treename <- paste(setname, "*", exten, sep=".");
-      numtrees <- 1; # must be one for treename="*"
+      ds <- data.frame(matrix(nr=0,nc=0));
+      if (add.data) {
+         ## export result to outfile and import as dataframe
+         outfile  <- sub(".root", ".txt", rootfile);
+         ## get treename "treeset.treename.treetype"
+         exten <- type2Exten(summarize.method, settype);
+         treename <- paste(setname, "*", exten, sep=".");
+         numtrees <- 1; # must be one for treename="*"
 
-      r <- .C("ExportData",
-              as.character(rootfile),
-              as.character(schemefile),
-              as.character(chiptype),
-              as.character(settype),
-              as.character(treename),
-              as.integer(numtrees),
-              as.character(exten),
-              as.character("fUnitName:fLevel"),
-              as.character(outfile),
-              as.character("\t"),
-              as.integer(verbose),
-              err=integer(1),
-              PACKAGE="xps")$err;
+         r <- .C("ExportData",
+                 as.character(rootfile),
+                 as.character(schemefile),
+                 as.character(chiptype),
+                 as.character(settype),
+                 as.character(treename),
+                 as.integer(numtrees),
+                 as.character(exten),
+                 as.character("fUnitName:fLevel"),
+                 as.character(outfile),
+                 as.character("\t"),
+                 as.integer(verbose),
+                 err=integer(1),
+                 PACKAGE="xps")$err;
 
-      if (r != 0) {
-         stop(paste("error in function", sQuote("ExportData")));
-         return(NULL);
+         if (r != 0) {
+            stop(paste("error in function", sQuote("ExportData")));
+            return(NULL);
+         }#if
+
+         if (file.exists(outfile)) {
+            ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
+         } else {
+            warning(paste("could not export results as", sQuote(outfile)));
+         }#if
       }#if
 
       ## expression treenames 
       treenames <- as.list(getTreeNames(rootfile, exten));
       numtrees  <- length(treenames);
-
-      ds <- data.frame(matrix(nr=0,nc=0));
-      if (file.exists(outfile)) {
-         ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
-      } else {
-         warning(paste("could not export results as", sQuote(outfile)));
-      }#if
 
       ## create new class ExprTreeSet
       set <- new("ExprTreeSet",
@@ -1930,6 +1948,7 @@ function(object,
          refindex  = 0,
          refmethod = "mean",
          params    = list(0.02, 0),
+         add.data  = TRUE,
          verbose   = TRUE)
 {
    if (debug.xps()) print("------normalize.DataTreeSet------")
@@ -2041,6 +2060,8 @@ function(object,
       return(NULL);
    }#if
 
+   if (add.data) tmp <- NULL; #dummy only
+
    ## get treenames with extension for method
    treenames <- getTreeNames(rootfile, type2Exten(method, settype), setname);
    numtrees  <- length(treenames);
@@ -2076,6 +2097,7 @@ function(object,
          exonlevel  = "",
          params     = list(),
          xps.scheme = NULL,
+         add.data   = TRUE,
          verbose    = TRUE)
 {
    if (debug.xps()) print("------summarize.DataTreeSet------")
@@ -2120,10 +2142,10 @@ function(object,
    }#if
 
    ## check for valid summarization method
-   TYPE <- c("avgdiff", "tukeybiweight", "medianpolish");
+   TYPE <- c("avgdiff", "tukeybiweight", "medianpolish", "farms", "dfw");
    if (is.na(match(method, TYPE))) {
       stop(paste(sQuote("method"),
-                 "must be one of <avgdiff,tukeybiweight,medianpolish>"));
+           "must be one of <avgdiff,tukeybiweight,medianpolish,farms,dfw>"));
    }#if
 
    ## check for valid option "transcript:logbase"
@@ -2182,42 +2204,44 @@ function(object,
    }#if
 
    ## export result to outfile and import as dataframe
-   outfile  <- sub(".root", ".txt", rootfile);
-   ## get treename "treeset.treename.treetype"
-   exten    <- type2Exten(method, settype);
-   treename <- paste(setname, "*", exten, sep=".");
-   numtrees <- 1; # must be one for treename="*"
+   ds <- data.frame(matrix(nr=0,nc=0));
+      if (add.data) {
+      outfile  <- sub(".root", ".txt", rootfile);
+      ## get treename "treeset.treename.treetype"
+      exten    <- type2Exten(method, settype);
+      treename <- paste(setname, "*", exten, sep=".");
+      numtrees <- 1; # must be one for treename="*"
 
-   r <- .C("ExportData",
-           as.character(rootfile),
-           as.character(schemefile),
-           as.character(chiptype),
-           as.character(settype),
-           as.character(treename),
-           as.integer(numtrees),
-           as.character(exten),
-           as.character("fUnitName:fLevel"),
-           as.character(outfile),
-           as.character("\t"),
-           as.integer(verbose),
-           err=integer(1),
-           PACKAGE="xps")$err;
+      r <- .C("ExportData",
+              as.character(rootfile),
+              as.character(schemefile),
+              as.character(chiptype),
+              as.character(settype),
+              as.character(treename),
+              as.integer(numtrees),
+              as.character(exten),
+              as.character("fUnitName:fLevel"),
+              as.character(outfile),
+              as.character("\t"),
+              as.integer(verbose),
+              err=integer(1),
+              PACKAGE="xps")$err;
 
-   if (r != 0) {
-      stop(paste("error in function", sQuote("ExportData")));
-      return(NULL);
+      if (r != 0) {
+         stop(paste("error in function", sQuote("ExportData")));
+         return(NULL);
+      }#if
+
+      if (file.exists(outfile)) {
+         ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
+      } else {
+         warning(paste("error: could not export results as", sQuote(outfile)));
+      }#if
    }#if
 
    ## expression treenames 
    treenames <- getTreeNames(rootfile, exten, setname);
    numtrees  <- length(treenames);
-
-   ds <- data.frame(matrix(nr=0,nc=0));
-   if (file.exists(outfile)) {
-      ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
-   } else {
-      warning(paste("error: could not export results as", sQuote(outfile)));
-   }#if
 
    ## create new class ExprTreeSet
    set <- new("ExprTreeSet",

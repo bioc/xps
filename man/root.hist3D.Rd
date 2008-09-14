@@ -5,7 +5,7 @@
   Creates a ROOT 3D-histogram for a ROOT tree.
 }
 \usage{
-root.hist3D(x, treename1 = character(0), treename2 = character(0), treename3 = character(0), logbase = "log2", option = "HIST", canvasname = "Histogram3D", w = 540, h = 540)
+root.hist3D(x, treename1 = character(0), treename2 = character(0), treename3 = character(0), logbase = "log2", option = "HIST", canvasname = "Histogram3D", save.as = "", w = 540, h = 540)
 }
 \arguments{
   \item{x}{object of class \code{\link{DataTreeSet}} or \code{\link{ExprTreeSet}}.}
@@ -15,6 +15,8 @@ root.hist3D(x, treename1 = character(0), treename2 = character(0), treename3 = c
   \item{logbase}{usually \dQuote{log2}, or \dQuote{0}, determines if leaf data should be converted to log.}
   \item{option}{ROOT hist TH3 option, usually one of \dQuote{HIST}, \dQuote{SCAT}, \dQuote{BOX}.}
   \item{canvasname}{name of ROOT canvas}
+  \item{save.as}{gaphics tye for saving canvas, one of \dQuote{ps}, \dQuote{eps}, \dQuote{pdf},
+   \dQuote{jpg}, \dQuote{gif}, \dQuote{png}, \dQuote{tiff}}
   \item{w}{the width of the canvas in pixels.}
   \item{h}{the height of the canvas in pixels.}
 }
@@ -24,10 +26,13 @@ root.hist3D(x, treename1 = character(0), treename2 = character(0), treename3 = c
 
  By moving the mouse into the middle of the canvas, the cursor changes and you can rotate the 3D-histogram.
  By selecting menu \dQuote{View->View With->OpenGL} the OpenGL viewer opens, where you can rotate the 3D-histogram interactively.
+
+ Alternatively, you can save the plot by setting \code{save.as}. However, this will close the
+ canvas immediately after opening it.
 }
 \author{Christian Stratowa}
 \note{
-Always select menu item \dQuote{Quit ROOT} from menu \dQuote{File} to close the ROOT browser,
+Always select menu item \dQuote{Quit ROOT} from menu \dQuote{File} to close the ROOT canvas,
 otherwise you are in the CINT C/C++ interpreter from \code{\link{ROOT}}. To exit CINT,
 you need to type \dQuote{.q}.
 }

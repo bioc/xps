@@ -9,7 +9,7 @@ Computes the Detection Above Background Call first implemented for the Exon arra
 \usage{
 dabg.call(xps.data, filename = character(0), filedir = getwd(),
           alpha1 = 0.04, alpha2 = 0.06,
-          option = "transcript", exonlevel = "", xps.scheme = NULL, verbose = TRUE)
+          option = "transcript", exonlevel = "", xps.scheme = NULL, add.data = TRUE, verbose = TRUE)
 
 xpsDABGCall(object, ...)
 }
@@ -23,6 +23,7 @@ xpsDABGCall(object, ...)
    \sQuote{transcript}, \sQuote{exon}, \sQuote{probeset}; exon arrays only.}
   \item{exonlevel}{exon annotation level determining which probes should be used for summarization; exon/genome arrays only.}
   \item{xps.scheme}{optional alternative \code{SchemeTreeSet}.}
+  \item{add.data}{logical. If \code{TRUE} call data will be added to slots \code{data} and \code{detcall}.}
   \item{verbose}{logical, if \code{TRUE} print status information.}
   \item{object}{object of class \code{DataTreeSet}.}
   \item{\dots}{the arguments described above.}
