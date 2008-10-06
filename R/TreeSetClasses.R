@@ -215,6 +215,7 @@ setGeneric("xpsMAS4",       function(object, ...) standardGeneric("xpsMAS4"));
 setGeneric("xpsMAS5",       function(object, ...) standardGeneric("xpsMAS5"));
 setGeneric("xpsMAS5Call",   function(object, ...) standardGeneric("xpsMAS5Call"));
 setGeneric("xpsDABGCall",   function(object, ...) standardGeneric("xpsDABGCall"));
+setGeneric("xpsINICall",    function(object, ...) standardGeneric("xpsINICall"));
 setGeneric("xpsPreprocess", function(object, ...) standardGeneric("xpsPreprocess"));
 setGeneric("xpsBgCorrect",  function(object, ...) standardGeneric("xpsBgCorrect"));
 setGeneric("xpsNormalize",  function(object, ...) standardGeneric("xpsNormalize"));

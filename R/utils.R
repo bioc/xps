@@ -48,7 +48,7 @@
    PRETYPE <- c("int",
                 "sbg", "wbg", "rbg", "gbg",
                 "cmn", "cmd", "clw", "css", "cqu",
-                "dc5", "dab",
+                "dc5", "dab", "ini",
                 "amn", "gmn", "wmn", "wdf", "adf", "tbw", "mdp", "frm", "dfw");
    CALTYPE <- c("dc5", "dab");
    NRMTYPE <- c("tmn", "med", "ksm", "low", "sup", "qua", "mdp");

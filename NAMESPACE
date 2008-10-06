@@ -103,6 +103,7 @@ exportMethods("addData",
               "validBgrd",
               "xpsBgCorrect",
               "xpsDABGCall",
+              "xpsINICall",
               "xpsMAS5Call",
               "xpsMAS5",
               "xpsMAS4",
@@ -183,7 +184,7 @@ exportMethods("filterTreeset",
 export(import.expr.scheme, import.exon.scheme, import.genome.scheme, import.data)
 export(export.scheme, export.data, export.expr, export.call, export.filter, export.root)
 export(rma, mas4, mas5, mas5.call, dabg.call)
-export(dfw, farms)
+export(dfw, farms, ini.call)
 export(bgcorrect, normalize, summarize, express)
 export(bgcorrect.mas4, bgcorrect.mas5, bgcorrect.rma, bgcorrect.gc)
 export(normalize.constant, normalize.quantiles, normalize.lowess, normalize.supsmu)

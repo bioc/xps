@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 09/13/2008
+// File created: 08/05/2002                          last modified: 10/04/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -70,6 +70,7 @@ ClassImp(XMeanDifferenceCall);
 ClassImp(XDetectionCall);
 ClassImp(XMAS4Call);
 ClassImp(XDABGCall);
+ClassImp(XINICall);
 ClassImp(XArithmeticMean);
 ClassImp(XGeometricMean);
 ClassImp(XWeightedMean);
@@ -155,37 +156,6 @@ void XHybridizer::DeleteArray()
 }//DeleteArray
 
 //______________________________________________________________________________
-Double_t **XHybridizer::CreateTable(Int_t nrow, Int_t ncol)
-{
-   // Create table
-   if(kCS) cout << "------XHybridizer::CreateTable------" << endl;
-
-   Double_t **table = 0;
-
-   if (!(table = new (nothrow) Double_t*[nrow])) return 0;
-   for (Int_t k=0; k<nrow; k++) {
-      table[k] = 0;
-      if (!(table[k] = new (nothrow) Double_t[ncol])) return 0; 
-   }//for_i
-
-   return table;
-}//CreateTable
-
-//______________________________________________________________________________
-void XHybridizer::DeleteTable(Double_t **table, Int_t nrow)
-{
-   // Delete table
-   if(kCS) cout << "------XHybridizer::DeleteTable------" << endl;
-
-   if (table == 0) return;
-
-   for (Int_t k=0; k<nrow; k++) {
-      if (table[k]) {delete [] table[k]; table[k] = 0;}
-   }//for_k
-   delete [] table;
-}//DeleteTable
-
-//______________________________________________________________________________
 void XHybridizer::InitArrays(Int_t length, Double_t *inten1, Double_t *stdev1,
                   Int_t *npix1, Double_t *inten2, Double_t *stdev2, Int_t *npix2)
 {
@@ -221,6 +191,65 @@ Int_t XHybridizer::SetArray(Int_t length, Double_t *array)
 
    return errNoErr;
 }//SetArray
+
+//______________________________________________________________________________
+Double_t *XHybridizer::Array2Log(Int_t n, Double_t *x, Double_t neglog, const char *base)
+{
+   // Convert array x to logarithm of base and return converted x
+   // Negative values will not be converted but set to neglog
+   if(kCSa) cout << "------XHybridizer::Array2Log------" << endl;
+
+   if (n == 0 || x == 0) return 0;
+
+   if (strcmp(base, "0") == 0) {
+      return x;
+   } else if (strcmp(base, "log2") == 0) {
+      for (Int_t i=0; i<n; i++) { 
+         x[i] = (x[i] > 0) ? TMath::Log2(x[i]) : neglog;
+      }//for_i
+   } else if (strcmp(base, "log10") == 0) {
+      for (Int_t i=0; i<n; i++) { 
+         x[i] = (x[i] > 0) ? TMath::Log10(x[i]) : neglog;
+      }//for_i
+   } else if (strcmp(base, "log") == 0) {
+      for (Int_t i=0; i<n; i++) { 
+         x[i] = (x[i] > 0) ? TMath::Log(x[i]) : neglog;
+      }//for_i
+   } else {
+      cout << "Warning: LogBase <" << base
+           << "> is not known, using LogBase = 0." << endl;
+      base = "0";
+   }//if
+
+   return x;
+}//Array2Log
+
+//______________________________________________________________________________
+Double_t *XHybridizer::Array2Pow(Int_t n, Double_t *x, const char *base)
+{
+   // Convert array x from logarithm of base and return converted  x
+   if(kCSa) cout << "------XHybridizer::Array2Pow------" << endl;
+
+   if (n == 0 || x == 0) return 0;
+
+   if (strcmp(base, "0") == 0) {
+      return x;
+   } else if (strcmp(base, "log2") == 0) {
+      for (Int_t i=0; i<n; i++) { 
+         x[i] = TMath::Power(2, x[i]);
+      }//for_i
+   } else if (strcmp(base, "log10") == 0) {
+      for (Int_t i=0; i<n; i++) { 
+         x[i] = TMath::Power(10, x[i]);
+      }//for_i
+   } else if (strcmp(base, "log") == 0) {
+      for (Int_t i=0; i<n; i++) { 
+         x[i] = TMath::Power(TMath::E(), x[i]);
+      }//for_i
+   }//if
+
+   return x;
+}//Array2Pow
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -440,7 +469,7 @@ Int_t XExpressor::SetArray(Int_t length, Double_t *array)
 // Get neglog (default = 1.0)
    Double_t neglog = (fNPar > fNDefPar) ? fPars[fNDefPar] : 1.0;
 
-   fArray = Array2Log(fLength, fArray, neglog);
+   fArray = Array2Log(fLength, fArray, neglog, fLogBase);
 
    return err;
 }//SetArray
@@ -466,65 +495,6 @@ void XExpressor::SetOptions(Option_t *opt)
       fLogBase = strtok(NULL, ":");
    }//if
 }//SetOptions
-
-//______________________________________________________________________________
-Double_t *XExpressor::Array2Log(Int_t n, Double_t *x, Double_t neglog)
-{
-   // Convert array x to logarithm of base fLogBase and return converted x
-   // Negative values will not be converted but set to neglog
-   if(kCSa) cout << "------XExpressor::Array2Log------" << endl;
-
-   if (n == 0 || x == 0) return 0;
-
-   if (strcmp(fLogBase, "0") == 0) {
-      return x;
-   } else if (strcmp(fLogBase, "log2") == 0) {
-      for (Int_t i=0; i<n; i++) { 
-         x[i] = (x[i] > 0) ? TMath::Log2(x[i]) : neglog;
-      }//for_i
-   } else if (strcmp(fLogBase, "log10") == 0) {
-      for (Int_t i=0; i<n; i++) { 
-         x[i] = (x[i] > 0) ? TMath::Log10(x[i]) : neglog;
-      }//for_i
-   } else if (strcmp(fLogBase, "log") == 0) {
-      for (Int_t i=0; i<n; i++) { 
-         x[i] = (x[i] > 0) ? TMath::Log(x[i]) : neglog;
-      }//for_i
-   } else {
-      cout << "Warning: LogBase <" << fLogBase
-           << "> is not known, setting LogBase to: LogBase = 0." << endl;
-      fLogBase = "0";
-   }//if
-
-   return x;
-}//Array2Log
-
-//______________________________________________________________________________
-Double_t *XExpressor::Array2Pow(Int_t n, Double_t *x)
-{
-   // Convert array x from logarithm of base fLogBase and return converted  x
-   if(kCSa) cout << "------XExpressor::Array2Pow------" << endl;
-
-   if (n == 0 || x == 0) return 0;
-
-   if (strcmp(fLogBase, "0") == 0) {
-      return x;
-   } else if (strcmp(fLogBase, "log2") == 0) {
-      for (Int_t i=0; i<n; i++) { 
-         x[i] = TMath::Power(2, x[i]);
-      }//for_i
-   } else if (strcmp(fLogBase, "log10") == 0) {
-      for (Int_t i=0; i<n; i++) { 
-         x[i] = TMath::Power(10, x[i]);
-      }//for_i
-   } else if (strcmp(fLogBase, "log") == 0) {
-      for (Int_t i=0; i<n; i++) { 
-         x[i] = TMath::Power(TMath::E(), x[i]);
-      }//for_i
-   }//if
-
-   return x;
-}//Array2Pow
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -2174,6 +2144,600 @@ template <typename T1> T1 XDABGCall::UProb(T1 x)
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
+// XINICall                                                             //
+//                                                                      //
+// Informative call algorithm of FARMS                                  //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+XINICall::XINICall()
+         :XCallDetector()
+{
+   // Default INICall constructor
+   if(kCS) cout << "---XINICall::XINICall(default)------" << endl;
+
+   fNDefPar   = 8;
+   fMultichip = kTRUE;
+}//Constructor
+
+//______________________________________________________________________________
+XINICall::XINICall(const char *name, const char *type)
+         :XCallDetector(name, type)
+{
+   // Normal INICall constructor
+   if(kCS) cout << "---XINICall::XINICall------" << endl;
+
+   fNDefPar   = 8;
+   fMultichip = kTRUE;
+}//Constructor
+
+//______________________________________________________________________________
+XINICall::~XINICall()
+{
+   // INICall destructor
+   if(kCS) cout << "---XINICall::~XINICall------" << endl;
+
+}//Destructor
+
+//______________________________________________________________________________
+Int_t XINICall::SetArray(Int_t length, Double_t *array)
+{
+   // Set size of array for calculation to length doubles and set contents
+   // and convert array to logarithm of base "log2"
+   if(kCSa) cout << "------XINICall::SetArray------" << endl;
+
+   Int_t err = XHybridizer::SetArray(length, array);
+
+   fArray = Array2Log(fLength, fArray, 1.0, "log2");
+
+   return err;
+}//SetArray
+
+//______________________________________________________________________________
+Int_t XINICall::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk)
+{
+   // Calculate Informative/NonInformative call of FARMS
+   // Note: Informative call data will be stored as: 'P'=2, 'M'=1, 'A'=0
+   if(kCSa) cout << "------XINICall::Calculate------" << endl;
+
+   Int_t err  = errNoErr;
+   Int_t nrow = (Int_t)(fLength / n);
+   Int_t ncol = n; 
+
+// Get parameters
+   Int_t    version  = (Int_t)(fPars[0]);  // version of package farms 
+   Double_t weight   = fPars[1];           // hyperparameter
+   Double_t mu       = fPars[2];           // hyperparameter
+   Double_t scale    = fPars[3];           // scaling parameter
+   Double_t tol      = fPars[4];           // termination tolerance of EM
+   Int_t    cyc      = (Int_t)(fPars[5]);  // maximum number of cycles of EM
+   Double_t alpha1   = fPars[6];
+   Double_t alpha2   = fPars[7];
+
+   if (cyc <= 0) cyc = 2*ncol;
+
+   if (version == 131) {
+      err = this->DoFARMS131(nrow, ncol, fArray, x, y, weight, mu, scale, tol, cyc);
+   } else if (version == 130) {
+      err = this->DoFARMS130(nrow, ncol, fArray, x, y, weight, mu, scale, tol, cyc);
+   } else {
+      cerr << "Error: Version <" << version << "> is not supported." << endl;
+      err = errAbort;
+   }//if
+
+// Present call (x)
+   for (Int_t k=0; k<nrow; k++) {
+      if      (y[k] < alpha1) x[k] = 2.0;  //"P"
+      else if (y[k] < alpha2) x[k] = 1.0;  //"M"
+      else                    x[k] = 0.0;  //"A"
+   }//for_k
+   
+   return err;
+}//Calculate
+
+//______________________________________________________________________________
+Int_t XINICall::DoFARMS130(Int_t nrow, Int_t ncol, Double_t *inten, Double_t *x, 
+                Double_t *y, Double_t weight, Double_t mu, Double_t scale, 
+                Double_t tol, Double_t cyc)
+{
+   // Calculate FARMS (Factor Analysis for Robust Microarray Summarization)
+   // Reference: Hochreiter S, et al., Bioinformatics 2006 Apr 15;22(8):943-9.
+   // Note: Adapted from R package farms_1.3: file farms.R (license GNU GPL >= 2)
+   if(kCSa) cout << "------XINICall::DoFARMS130------" << endl;
+
+   Int_t    err    = errNoErr;
+   Double_t sum    = 0.0;
+   Double_t sumL   = 0.0;
+   Double_t alpha  = 0.0;
+   Double_t bbeta  = 0.0;
+   Double_t mean   = 0.0;
+   Double_t a      = 0.0;
+   Double_t ezz    = 0.0;
+//   Double_t lambda = 0.0;
+
+// Initialize local arrays
+   Double_t *xmean  = 0;  // column means
+   Double_t *X      = 0;  // matrix X = x - xmean
+   Double_t *mm     = 0;  // temporary matrix
+   Double_t *XX     = 0;  // matrix (positive definit)
+   Double_t *diagXX = 0;  // diagonale(XX)
+   Double_t *L      = 0;  // factor loadings
+   Double_t *Lold   = 0;  // temporary L
+   Double_t *Ph     = 0;  // diagonal uniqueness matrix
+   Double_t *PsiL   = 0;  // 
+   Double_t *beta   = 0;  // 
+   Double_t *XXbeta = 0;  // 
+   Double_t *TXbeta = 0;  // 
+   Double_t *EZZ    = 0;  //
+//   Double_t *c      = 0;  //
+
+// Initialize memory for local arrays
+   if (!(X  = new (nothrow) Double_t[nrow*ncol])) {err = errInitMemory; goto cleanup;}
+   if (!(mm = new (nothrow) Double_t[nrow*nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(XX = new (nothrow) Double_t[nrow*nrow])) {err = errInitMemory; goto cleanup;}
+
+   if (!(xmean  = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(diagXX = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(L      = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(Lold   = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(Ph     = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(PsiL   = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(beta   = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(XXbeta = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(TXbeta = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(EZZ    = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
+//   if (!(c      = new (nothrow) Double_t[ncol])) {err = errInitMemory; goto cleanup;}
+
+   // row means
+   for (Int_t i=0; i<nrow; i++) {
+      xmean[i] = 0.0;
+      for (Int_t j=0; j<ncol; j++) {
+         xmean[i] += inten[i*ncol + j];
+      }//for_j
+      xmean[i] = xmean[i]/ncol;
+   }//for_i
+
+   // center data: X = x - xmean
+   for (Int_t j=0; j<ncol; j++) {
+      for (Int_t i=0; i<nrow; i++) {
+         X[i*ncol + j] = inten[i*ncol + j] - xmean[i];
+      }//for_i
+   }//for_j
+
+   // mm = t(X)*X/ncol
+   for (Int_t i=0; i<nrow; i++) {
+      for (Int_t k=0; k<nrow; k++) {
+         sum = 0.0;
+         for (Int_t j=0; j<ncol; j++) {
+            sum += X[i*ncol + j]*X[k*ncol + j];
+         }//for_j
+         mm[i*nrow + k] = sum/ncol;
+      }//for_k
+   }//for_i
+
+   // XX = (mm + t(mm))/2 but positive definit
+   for (Int_t i=0; i<nrow; i++) {
+      for (Int_t k=0; k<nrow; k++) {
+         sum = (mm[i*nrow + k] + mm[k*nrow + i])/2.0;
+         XX[i*nrow + k] = (sum > 0.0) ? sum : 0.0;
+      }//for_k
+   }//for_i
+
+   // diagonale of XX
+   mean = 0.0;
+   for (Int_t i=0; i<nrow; i++) {
+      diagXX[i] = XX[i*nrow + i];
+      mean     += diagXX[i];
+   }//for_i
+   mean  = mean/nrow;
+   alpha = weight/mean;
+   bbeta = mu*alpha;
+
+   // factor loadings: L
+   for (Int_t i=0; i<nrow; i++) {
+      L[i]    = 0.8*diagXX[i];
+      Lold[i] = 0.0;
+   }//for_i
+
+   // diagonal uniqueness matrix: Ph
+   for (Int_t i=0; i<nrow; i++) {
+      Ph[i] = 0.05*diagXX[i];
+   }//for_i
+
+//  Expectation-Maximization (EM) algorithm
+   while (cyc >0) {
+   // E step
+      a = 1.0;
+      for (Int_t i=0; i<nrow; i++) {
+         PsiL[i] = L[i]/Ph[i];
+         a      += L[i]*PsiL[i];
+      }//for_i
+
+      for (Int_t i=0; i<nrow; i++) {
+         beta[i] = PsiL[i]/a;
+      }//for_i
+
+      for (Int_t i=0; i<nrow; i++) {
+         sum = 0.0;
+         for (Int_t k=0; k<nrow; k++) {
+            sum += XX[i*nrow + k]*beta[k];
+         }//for_k
+         XXbeta[i] = sum;
+      }//for_i
+
+      sum = 0.0;
+      ezz = 1.0;
+      for (Int_t i=0; i<nrow; i++) {
+         sum += beta[i]*L[i];
+         ezz += beta[i]*XXbeta[i];
+      }//for_i
+      ezz = ezz - sum;
+
+      for (Int_t i=0; i<nrow; i++) {
+         TXbeta[i] = XXbeta[i] + bbeta*Ph[i];
+         EZZ[i]    = ezz       + alpha*Ph[i];
+      }//for_i
+
+   // M step
+      for (Int_t i=0; i<nrow; i++) {
+         L[i] = TXbeta[i]/EZZ[i];
+      }//for_i
+
+      for (Int_t i=0; i<nrow; i++) {
+         Ph[i] = diagXX[i] - XXbeta[i]*L[i] +  alpha*Ph[i]*L[i]*(bbeta - L[i]);
+      }//for_i
+
+      sumL = sum = 0.0;
+      for (Int_t i=0; i<nrow; i++) {
+         sumL += L[i]*L[i];
+         sum  += Lold[i]*Lold[i];
+      }//for_i
+      sumL = TMath::Abs(TMath::Sqrt(sumL) - TMath::Sqrt(sum));
+
+      if (sumL < tol) break;
+
+      for (Int_t i=0; i<nrow; i++) Lold[i] = L[i];
+      cyc--;
+   }//while
+/*
+   for (Int_t j=0; j<ncol; j++) {
+      c[j] = 0.0;
+      for (Int_t i=0; i<nrow; i++) {
+         c[j] += X[i*ncol + j]*beta[i];
+      }//for_i
+   }//for_j
+
+   lambda = mean = 0.0;
+   for (Int_t i=0; i<nrow; i++) {
+      lambda += L[i];
+      mean   += xmean[i];
+   }//for_i
+   lambda = lambda/nrow;
+   mean   = mean/nrow;
+*/
+// Final result x and stdev y
+   for (Int_t j=0; j<ncol; j++) {
+//      x[j] = scale*lambda*c[j] + mean;
+      y[j] = 1.0/a;
+   }//for_j
+/*
+// Convert results
+   x = Array2Pow(ncol, x, fLogBase);
+   y = Array2Pow(ncol, y, fLogBase);
+*/
+
+// Cleanup
+cleanup:
+//   if (c)      {delete [] c;      c      = 0;}
+   if (EZZ)    {delete [] EZZ;    EZZ    = 0;}
+   if (TXbeta) {delete [] TXbeta; TXbeta = 0;}
+   if (XXbeta) {delete [] XXbeta; XXbeta = 0;}
+   if (beta)   {delete [] beta;   beta   = 0;}
+   if (PsiL)   {delete [] PsiL;   PsiL   = 0;}
+   if (Ph)     {delete [] Ph;     Ph     = 0;}
+   if (Lold)   {delete [] Lold;   Lold   = 0;}
+   if (L)      {delete [] L;      L      = 0;}
+   if (diagXX) {delete [] diagXX; diagXX = 0;}
+   if (xmean)  {delete [] xmean;  xmean  = 0;}
+   if (XX)     {delete [] XX;     XX     = 0;}
+   if (mm)     {delete [] mm;     mm     = 0;}
+   if (X)      {delete [] X;      X      = 0;}
+   
+   return err;
+}//DoFARMS130
+
+//______________________________________________________________________________
+Int_t XINICall::DoFARMS131(Int_t nrow, Int_t ncol, Double_t *inten, 
+                Double_t *x, Double_t *y, Double_t weight, Double_t mu, 
+                Double_t scale, Double_t tol, Double_t cyc)
+{
+   // Calculate FARMS (Factor Analysis for Robust Microarray Summarization)
+   // Reference: Hochreiter S, et al., Bioinformatics 2006 Apr 15;22(8):943-9.
+   // Note: Adapted from R package farms_1.3.1: file farms.R (license GNU GPL >= 2)
+   if(kCSa) cout << "------XINICall::DoFARMS131------" << endl;
+
+   Int_t    err    = errNoErr;
+   Double_t sum    = 0.0;
+   Double_t var    = 0.0;
+   Double_t alpha  = 0.0;
+   Double_t bbeta  = 0.0;
+   Double_t mean   = 0.0;
+   Double_t a      = 0.0;
+   Double_t ezz    = 0.0;
+
+// Initialize local arrays
+   Double_t *xmean  = 0;  // column means
+   Double_t *xstdv  = 0;  // standard deviation
+   Double_t *X      = 0;  // matrix X = x - xmean
+   Double_t *mm     = 0;  // temporary matrix
+   Double_t *XX     = 0;  // matrix (positive definit)
+   Double_t *diagXX = 0;  // diagonale(XX)
+   Double_t *L      = 0;  // factor loadings
+   Double_t *Lold   = 0;  // temporary L
+   Double_t *Ph     = 0;  // diagonal uniqueness matrix
+   Double_t *PsiL   = 0;  // 
+   Double_t *beta   = 0;  // 
+   Double_t *arr1   = 0;  // 
+   Double_t *arr2   = 0;  // 
+   Double_t *EZZ    = 0;  //
+   Double_t *c      = 0;  //
+
+// Initialize memory for local arrays
+   if (!(X  = new (nothrow) Double_t[nrow*ncol])) {err = errInitMemory; goto cleanup;}
+   if (!(mm = new (nothrow) Double_t[nrow*nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(XX = new (nothrow) Double_t[nrow*nrow])) {err = errInitMemory; goto cleanup;}
+
+   if (!(xmean  = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(xstdv  = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(diagXX = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(L      = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(Lold   = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(Ph     = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(PsiL   = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(beta   = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(arr1   = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(arr2   = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(EZZ    = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
+   if (!(c      = new (nothrow) Double_t[ncol])) {err = errInitMemory; goto cleanup;}
+
+// Normalize
+   // calculate row means
+   for (Int_t i=0; i<nrow; i++) {
+      xmean[i] = 0.0;
+      for (Int_t j=0; j<ncol; j++) {
+         xmean[i] += inten[i*ncol + j];
+      }//for_j
+      xmean[i] = xmean[i]/ncol;
+   }//for_i
+
+   // center data: XX = inten - xmean
+   for (Int_t j=0; j<ncol; j++) {
+      for (Int_t i=0; i<nrow; i++) {
+         X[i*ncol + j] = inten[i*ncol + j] - xmean[i];
+      }//for_i
+   }//for_j
+
+   // mm = X*t(X)/ncol
+   for (Int_t i=0; i<nrow; i++) {
+      for (Int_t k=0; k<nrow; k++) {
+         sum = 0.0;
+         for (Int_t j=0; j<ncol; j++) {
+            sum += X[i*ncol + j]*X[k*ncol + j];
+         }//for_j
+         mm[i*nrow + k] = sum/ncol;
+      }//for_k
+   }//for_i
+
+   // calculate standard deviation
+   for (Int_t i=0; i<nrow; i++) {
+      xstdv[i] = TMath::Sqrt(mm[i*nrow + i]);
+   }//for_i
+
+   // standardize X to variance 1: X = inten/stdev
+   for (Int_t j=0; j<ncol; j++) {
+      for (Int_t i=0; i<nrow; i++) {
+         X[i*ncol + j] = inten[i*ncol + j]/xstdv[i];
+      }//for_i
+   }//for_j
+
+// XX
+   // row means
+   for (Int_t i=0; i<nrow; i++) {
+      xmean[i] = 0.0;
+      for (Int_t j=0; j<ncol; j++) {
+         xmean[i] += X[i*ncol + j];
+      }//for_j
+      xmean[i] = xmean[i]/ncol;
+   }//for_i
+
+   // center data: X = X - xmean
+   for (Int_t j=0; j<ncol; j++) {
+      for (Int_t i=0; i<nrow; i++) {
+         X[i*ncol + j] = X[i*ncol + j] - xmean[i];
+      }//for_i
+   }//for_j
+
+   // mm = t(X)*X/ncol
+   for (Int_t i=0; i<nrow; i++) {
+      for (Int_t k=0; k<nrow; k++) {
+         sum = 0.0;
+         for (Int_t j=0; j<ncol; j++) {
+            sum += X[i*ncol + j]*X[k*ncol + j];
+         }//for_j
+         mm[i*nrow + k] = sum/ncol;
+      }//for_k
+   }//for_i
+
+   // XX = (mm + t(mm))/2 but positive definit
+   for (Int_t i=0; i<nrow; i++) {
+      for (Int_t k=0; k<nrow; k++) {
+         sum = (mm[i*nrow + k] + mm[k*nrow + i])/2.0;
+         XX[i*nrow + k] = (sum > 0.0) ? sum : 0.0;
+      }//for_k
+   }//for_i
+
+   // diagonale of XX
+   for (Int_t i=0; i<nrow; i++) {
+      diagXX[i] = XX[i*nrow + i];
+   }//for_i
+
+   alpha = weight*nrow;
+   bbeta = mu*alpha;
+
+   // factor loadings: L
+   for (Int_t i=0; i<nrow; i++) {
+      L[i]    = TMath::Sqrt(0.8*diagXX[i]);
+      Lold[i] = 0.0;
+   }//for_i
+
+   // diagonal uniqueness matrix: Ph
+   for (Int_t i=0; i<nrow; i++) {
+      Ph[i] = diagXX[i] - L[i]*L[i];
+   }//for_i
+
+//  Expectation-Maximization (EM) algorithm
+   while (cyc >0) {
+   // E step
+      a = 1.0;
+      for (Int_t i=0; i<nrow; i++) {
+         PsiL[i] = L[i]/Ph[i];
+         a      += L[i]*PsiL[i];
+      }//for_i
+
+      for (Int_t i=0; i<nrow; i++) {
+         beta[i] = PsiL[i]/a;
+      }//for_i
+
+      for (Int_t i=0; i<nrow; i++) {
+         sum = 0.0;
+         for (Int_t k=0; k<nrow; k++) {
+            sum += XX[i*nrow + k]*beta[k];
+         }//for_k
+         arr1[i] = sum;
+      }//for_i
+
+      sum = 0.0;
+      ezz = 1.0;
+      for (Int_t i=0; i<nrow; i++) {
+         sum += beta[i]*L[i];
+         ezz += beta[i]*arr1[i];
+      }//for_i
+      ezz = ezz - sum;
+
+      for (Int_t i=0; i<nrow; i++) {
+         arr2[i] = arr1[i] + bbeta*Ph[i];
+         EZZ[i]  = ezz     + alpha*Ph[i];
+      }//for_i
+
+   // M step
+      for (Int_t i=0; i<nrow; i++) {
+         L[i] = arr2[i]/EZZ[i];
+      }//for_i
+
+      for (Int_t i=0; i<nrow; i++) {
+         Ph[i] = diagXX[i] - arr1[i]*L[i] +  alpha*Ph[i]*L[i]*(bbeta - L[i]);
+      }//for_i
+
+      sum = 0.0;
+      for (Int_t i=0; i<nrow; i++) {
+         Double_t LL = Lold[i] - L[i];
+         sum  += TMath::Sqrt(LL*LL);
+      }//for_i
+      if (sum < tol) break;
+
+      for (Int_t i=0; i<nrow; i++) Lold[i] = L[i];
+      cyc--;
+   }//while
+
+   sum = 0.0;
+   for (Int_t j=0; j<ncol; j++) {
+      c[j] = 0.0;
+      for (Int_t i=0; i<nrow; i++) {
+         c[j] += X[i*ncol + j]*beta[i];
+      }//for_i
+      sum  += c[j];
+   }//for_j
+   mean = sum/ncol;
+
+   var = TStat::StDev(ncol, c, mean);
+
+/*   for (Int_t j=0; j<ncol; j++) {
+      c[j] = c[j]/var;
+   }//for_j
+*/
+   for (Int_t i=0; i<nrow; i++) {
+      L[i] = L[i]*var;
+   }//for_i
+
+   a = 1.0;
+   for (Int_t i=0; i<nrow; i++) {
+      PsiL[i] = L[i]/Ph[i];
+      a      += L[i]*PsiL[i];
+   }//for_i
+
+/*   for (Int_t i=0; i<nrow; i++) {
+      arr1[i] = L[i]*xstdv[i];
+   }//for_i
+
+   for (Int_t i=0; i<nrow; i++) {
+      arr2[i] = xmean[i]*xstdv[i];
+   }//for_i
+
+   if (weighted) {
+      sum = 0.0;
+      for (Int_t i=0; i<nrow; i++) {
+         PsiL[i] = L[i]*L[i]/Ph[i];
+         sum    += PsiL[i];
+      }//for_i
+      for (Int_t i=0; i<nrow; i++) {
+         PsiL[i] = PsiL[i]/sum;
+      }//for_i
+
+      var = 0.0;
+      for (Int_t i=0; i<nrow; i++) {
+         var +=arr1[i]* PsiL[i];
+      }//for_i
+   } else {
+      var  = TStat::Median(nrow, arr1);
+   }//if
+
+   mean = TStat::Mean(nrow, arr2);
+*/
+// Final expression and stdev
+   for (Int_t j=0; j<ncol; j++) {
+//      x[j] = scale*var*c[j] + mean;
+      y[j] = 1.0/a;
+   }//for_j
+/*
+// Convert results
+   x = Array2Pow(ncol, x, fLogBase);
+   y = Array2Pow(ncol, y, fLogBase);
+*/
+// Cleanup
+cleanup:
+   delete [] c;
+   delete [] EZZ;
+   delete [] arr2;
+   delete [] arr1;
+   delete [] beta;
+   delete [] PsiL;
+   delete [] Ph;
+   delete [] Lold;
+   delete [] L;
+   delete [] diagXX;
+   delete [] xstdv;
+   delete [] xmean;
+   delete [] XX;
+   delete [] mm;
+   delete [] X;
+   
+   return err;
+}//DoFARMS131
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
 // XArithmeticMean                                                      //
 //                                                                      //
 // Arithmetic mean expression algorithm                                 //
@@ -2861,8 +3425,8 @@ Int_t XTukeyBiweight::CreateArray(Int_t length)
    }//for_i
 
    // convert PM and MM to log
-   pm = Array2Log(length, pm, neglog);
-   mm = Array2Log(length, mm, neglog);
+   pm = Array2Log(length, pm, neglog, fLogBase);
+   mm = Array2Log(length, mm, neglog, fLogBase);
 
    // subtract PM - MM
    for (Int_t i=0; i<length; i++) {
@@ -2916,10 +3480,10 @@ Int_t XTukeyBiweight::Calculate(Double_t &value1, Double_t &value2, Int_t &num)
    }//for_i
 
 // Compute expression value and variance
-   fArray = Array2Log(fLength, fArray, neglog);
+   fArray = Array2Log(fLength, fArray, neglog, fLogBase);
    ct[0]  = TStat::TukeyBiweight(fLength, fArray, ct[1], c, eps);
 //Problem: convert var or sqrt(var) from log2 back to pow(2,?) ??
-   ct     = Array2Pow(2, ct);
+   ct     = Array2Pow(2, ct, fLogBase);
 
 // Return values
    value1 = ct[0];
@@ -3296,8 +3860,8 @@ Int_t XFARMS::DoFARMS130(Int_t nrow, Int_t ncol, Double_t *inten, Double_t *x,
    }//for_j
 
 // Convert results
-   x = Array2Pow(ncol, x);
-   y = Array2Pow(ncol, y);
+   x = Array2Pow(ncol, x, fLogBase);
+//?   y = Array2Pow(ncol, y, fLogBase);
 
 // Cleanup
 cleanup:
@@ -3583,8 +4147,8 @@ Int_t XFARMS::DoFARMS131(Int_t nrow, Int_t ncol, Double_t *inten,
    }//for_j
 
 // Convert results
-   x = Array2Pow(ncol, x);
-   y = Array2Pow(ncol, y);
+   x = Array2Pow(ncol, x, fLogBase);
+//?   y = Array2Pow(ncol, y, fLogBase);
 
 // Cleanup
 cleanup:
@@ -3731,8 +4295,8 @@ Int_t XDFW::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk)
    }//for_j
 
 // Convert results
-   x = Array2Pow(ncol, x);
-   y = Array2Pow(ncol, y);
+   x = Array2Pow(ncol, x, fLogBase);
+   y = Array2Pow(ncol, y, fLogBase);
 
 // Cleanup
 cleanup:

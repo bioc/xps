@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 04/27/2008
+// File created: 08/05/2002                          last modified: 10/03/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -178,8 +178,6 @@ class XNormedGCSet: public XNormedSet {
 
       virtual Int_t Normalize(const char *method);
 
-//Export!!!
-
       ClassDef(XNormedGCSet,1) //NormedGCSet
 };
 
@@ -214,8 +212,7 @@ class XNormedExonSet: public XNormedGenomeSet {
    protected:
 
    protected:
-      virtual Int_t ExportExprTrees(Int_t n, TString *names, const char *varlist,
-                       ofstream &output, const char *sep);
+      virtual const char *GetTranscriptID(XUnit *unit, XTransAnnotation *annot, Int_t type);
 
    public:
       XNormedExonSet();

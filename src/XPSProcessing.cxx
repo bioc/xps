@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 08/31/2008
+// File created: 08/05/2002                          last modified: 10/04/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -115,11 +115,12 @@ const char *kTypeExpr[]  = { "arithmeticmean",
                              ""};
 
 // detection call trees
-const char *kExtenCall[] = { "mdf", "dc5", "dc4", "dab", ""};
+const char *kExtenCall[] = { "mdf", "dc5", "dc4", "dab", "ini", ""};
 const char *kTypeCall[]  = { "meandifferencecall",
                              "detectioncall",
                              "mas4call",
                              "dabgcall",
+                             "inicall",
                              ""};
 
 //////////////
@@ -1221,6 +1222,22 @@ void XProcesSet::AddExprTreeInfo(TTree *tree, const char *name, Option_t *option
 }//AddExprTreeInfo
 
 //______________________________________________________________________________
+const char *XProcesSet::GetTranscriptID(XTransAnnotation *annot)
+{
+   // Get transcript IDs from annotation tree
+
+   return annot->GetTranscriptID();
+}//GetTranscriptID
+
+//______________________________________________________________________________
+const char *XProcesSet::GetTranscriptID(XUnit *unit, XTransAnnotation *annot, Int_t type)
+{
+   // Get transcript IDs from annotation tree
+
+   return annot->GetTranscriptID();
+}//GetTranscriptID
+
+//______________________________________________________________________________
 Int_t XProcesSet::HandleOption(TTree *tree, Option_t *opt)
 {
    // Handle option
@@ -1424,21 +1441,3 @@ XIdxString *XProcesSet::FindUnitID(THashTable *htable, XExonUnit *unit)
 
    return (XIdxString*)(htable->FindObject(str.Data()));
 }//FindUnitID
-
-//______________________________________________________________________________
-const char *XProcesSet::GetTranscriptID(XTransAnnotation *annot)
-{
-   // Get transcript IDs from annotation tree
-
-   return annot->GetTranscriptID();
-}//GetTranscriptID
-
-//______________________________________________________________________________
-Int_t XProcesSet::GetTranscriptID(XExonUnit *unit, XTransAnnotation *annot, Int_t type)
-{
-   // Get transcript IDs from unit tree
-
-   return (type == eTRANSCRIPT) ? unit->GetSubUnitID()
-                                : ((XProbesetAnnotation*)annot)->GetTranscriptID();
-}//GetTranscriptID
-

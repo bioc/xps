@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 05/05/2008
+// File created: 05/18/2002                          last modified: 09/26/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -363,6 +363,9 @@ class XTreeSet: public TNamed {
       void          Select(const char *name, Int_t id = 0);
       virtual void  PrintInfo() {}
 
+      Double_t    **CreateTable(Int_t nrow, Int_t ncol);
+      void          DeleteTable(Double_t **table, Int_t nrow);
+
       Int_t         WriteTree(TTree *tree, Int_t option = 0, Int_t bufsize = 0);
       Int_t         DeleteTree(const char *name, const char *exten,
                        const char *cycle);
@@ -434,6 +437,9 @@ class XAlgorithm: public TNamed {
       virtual Int_t Calculate(Int_t /*nrow*/, Int_t /*ncol*/, Double_t ** /*table*/)
                                                              {return 0;}
       virtual void  SetOptions(Option_t *opt) {fOption = opt; fOption.ToLower();}
+
+      Double_t **CreateTable(Int_t nrow, Int_t ncol);
+      void       DeleteTable(Double_t **table, Int_t nrow);
 
       TFile    *NewFile(const char *name, const char *exten);
       Int_t     InitParameters(Int_t npar, Double_t *pars);

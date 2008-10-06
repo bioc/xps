@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 02/16/2008
+// File created: 08/05/2002                          last modified: 09/19/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -604,6 +604,8 @@ Int_t XUnitSelector::Calculate(Int_t n, Int_t * /*x*/, Int_t *msk)
    } else if (strcmp(fOption.Data(), "all") == 0) {
       // set all entries of mask array to 1
       for (Int_t i=0; i<n; i++) msk[i] = 1;
+   } else if (strcmp(fOption.Data(), "gene") == 0) {
+      // do not change msk
    } else if (strcmp(fOption.Data(), "genome") == 0) {
       msk = SetGenomeMask(n, msk);
       if (msk == 0) return errInitParameters;

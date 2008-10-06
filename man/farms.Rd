@@ -113,7 +113,7 @@ In order to use an alternative \code{\link{SchemeTreeSet}} set the corresponding
 }
 \author{Christian Stratowa}
 \note{
-The expression measure obtained with DFW is given in linear scale, analogously to the expression 
+The expression measure obtained with FARMS is given in linear scale, analogously to the expression 
 measures computed with \code{\link{mas5}} and \code{\link{rma}}. 
 
 For the analysis of many exon arrays it may be better to define a \code{tmpdir}, since this will

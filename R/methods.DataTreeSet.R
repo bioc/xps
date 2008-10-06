@@ -27,6 +27,7 @@
 # xpsMAS5:
 # xpsMAS5Call:
 # xpsDABGCall:
+# xpsINICall:
 # xpsPreprocess:
 # xpsBgCorrect:
 # xpsNormalize:
@@ -1463,6 +1464,232 @@ function(object,
 }#dabgCall.DataTreeSet
 
 setMethod("xpsDABGCall", "DataTreeSet", dabgCall.DataTreeSet);
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+"iniCall.DataTreeSet" <-
+function(object,
+         filename   = character(),
+         filedir    = getwd(),
+         tmpdir     = "",
+         weight     = 0.5,
+         mu         = 0.0,
+         scale      = 1.0,
+         tol        = 0.00001,
+         cyc        = 100,
+         alpha1     = 0.4,
+         alpha2     = 0.6,
+         version    = "1.3.1",
+         option     = "transcript",
+         exonlevel  = "",
+         xps.scheme = NULL,
+         add.data   = TRUE,
+         verbose    = TRUE)
+{
+   if (debug.xps()) print("------iniCall.DataTreeSet------")
+
+   ## get schemefile and chipname
+   scheme     <- object@scheme;
+   schemefile <- schemeFile(object);
+   chipname   <- chipName(object);
+   chiptype   <- chipType(object);
+
+   ## check for presence of alternative root scheme file
+   if ((!is.null(xps.scheme)) &&
+       is(xps.scheme, "SchemeTreeSet") &&
+       (chipType(xps.scheme) == chiptype) &&
+       (file.exists(rootFile(xps.scheme)))) {
+      scheme     <- xps.scheme;
+      schemefile <- rootFile(xps.scheme);
+      chipname   <- chipName(xps.scheme);
+      chiptype   <- chipType(xps.scheme);
+   }#if
+
+   ## root file /filedir/filename.root
+   rootfile <- rootDirFile(filename, filedir);
+
+   ## check if root file exists (necessary for WinXP to test already here)
+   if (existsROOTFile(rootfile)) {
+      stop(paste("ROOT file", sQuote(rootfile), "does already exist."));
+   }#if
+
+   ## check for presence of temporary directory
+   tmpdir <- validTempDir(tmpdir);
+
+   ## check for valid version
+   version <- as.integer(gsub("\\.","",version));
+   if (!(version == 131 || version == 130)) {
+      stop(paste("wrong version, currently only", dQuote("1.3.1"), "or", dQuote("1.3.0"),
+                 "are allowed"));
+   }#if
+
+   ## check for valid parameters
+   if (!(is.numeric(weight) && is.numeric(mu) && is.numeric(scale) && is.numeric(tol))) {
+      stop("parameters <weight,mu,scale,tol> must be numeric");
+   }#if
+   if (!(is.numeric(cyc) && cyc >= 0)) {
+      stop(paste(sQuote("cyc"), "must be integer >= 0"));
+   }#if
+   cyc <- as.integer(cyc);
+
+   if (!(is.numeric(alpha1) && alpha1 > 0 && alpha1 < 1)) {
+      stop(paste(sQuote("alpha1"), "must be numeric and in range (0,1)"));
+   }#if
+   if (!(is.numeric(alpha2) && alpha2 > 0 && alpha2 < 1)) {
+      stop(paste(sQuote("alpha2"), "must be numeric and in range (0,1)"));
+   }#if
+
+   ## check for presence of valid transcript option
+   transcript <- validTranscriptOption(option);
+
+   ## check for correct exonlevel
+   exlevel <- exonLevel(exonlevel, chiptype);
+
+   ## get treenames as fullnames=/datadir/treenames
+   datafile  <- object@rootfile;
+   setname   <- object@setname;
+   treenames <- as.character(object@treenames);
+   numtrees  <- length(treenames);
+   fullnames <- paste(datafile, setname, treenames, sep="/");
+
+   ## define setname and settype for new treeset
+   setname <- "CallSet";
+   settype <- "preprocess";
+
+   ## Informative call
+   r <- .C("PreprocessINICall",
+           as.character(filename),
+           as.character(filedir),
+           as.character(chipname),
+           as.character(chiptype),
+           as.character(schemefile),
+           as.character(tmpdir),
+           as.character(transcript),
+           as.character(setname),
+           as.character(fullnames),
+           as.integer(numtrees),
+           as.integer(version),
+           as.double(weight),
+           as.double(mu),
+           as.double(scale),
+           as.double(tol),
+           as.integer(cyc),
+           as.double(alpha1),
+           as.double(alpha2),
+           as.integer(exlevel[2]),
+           as.integer(exlevel[3]),
+           as.integer(verbose),
+           result=character(2),
+           PACKAGE="xps")$result;
+
+   ## returned result: saved rootfile and error
+   rootfile <- r[1];
+   error    <- as.integer(r[2]);
+
+   if (error != 0) {
+      stop(paste("error in function", sQuote("PreprocessINICall")));
+      return(NULL);
+   }#if
+
+   ## export p-value to outfile and import as dataframe ds
+   ds <- data.frame(matrix(nr=0,nc=0));
+   dc <- data.frame(matrix(nr=0,nc=0));
+   if (add.data) {
+      outfile  <- sub(".root", "_pval.txt", rootfile);
+      ## get treename "treeset.treename.treetype"
+      treetype <- "ini";
+      treename <- paste(setname, "*", treetype, sep=".");
+      numtrees <- 1; # must be one for treename="*"
+
+      r <- .C("ExportData",
+              as.character(rootfile),
+              as.character(schemefile),
+              as.character(chiptype),
+              as.character(settype),
+              as.character(treename),
+              as.integer(numtrees),
+              as.character(treetype),
+              as.character("fUnitName:fPValue"),
+              as.character(outfile),
+              as.character("\t"),
+              as.integer(verbose),
+              err=integer(1),
+              PACKAGE="xps")$err;
+
+      if (r != 0) {
+         stop(paste("error in function", sQuote("ExportData")));
+         return(NULL);
+      }#if
+
+      if (file.exists(outfile)) {
+         ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
+      } else {
+         warning(paste("error: could not export results as", sQuote(outfile)));
+      }#if
+
+      ## export detection call to outfile and import as dataframe dc
+      outfile  <- sub(".root", "_call.txt", rootfile);
+      # get treename "treeset.treename.treetype"
+      treename <- paste(setname, "*", treetype, sep=".");
+
+      r <- .C("ExportData",
+              as.character(rootfile),
+              as.character(schemefile),
+              as.character(chiptype),
+              as.character(settype),
+              as.character(treename),
+              as.integer(numtrees),
+              as.character(treetype),
+              as.character("fUnitName:fCall"),
+              as.character(outfile),
+              as.character("\t"),
+              as.integer(verbose),
+              err=integer(1),
+              PACKAGE="xps")$err;
+
+      if (r != 0) {
+         stop(paste("error in function", sQuote("ExportData")));
+         return(NULL);
+      }#if
+
+      if (file.exists(outfile)) {
+         dc <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
+      } else {
+         warning(paste("error: could not export results as", sQuote(outfile)));
+      }#if
+   }#if
+
+   ## informative call treenames 
+   treenames <- as.list(getTreeNames(rootfile, "ini"));
+   numtrees  <- length(treenames);
+
+   ## named parameter list
+   params <- list(version = version,
+                  weight  = weight,
+                  mu      = mu,
+                  scale   = scale,
+                  tol     = tol,
+                  cyc     = cyc,
+                  alpha1  = alpha1,
+                  alpha2  = alpha2);
+
+   ## create new class CallTreeSet
+   set <- new("CallTreeSet",
+              setname   = setname,
+              settype   = settype,
+              rootfile  = rootfile,
+              filedir   = filedir,
+              numtrees  = numtrees,
+              treenames = as.list(treenames),
+              scheme    = scheme,
+              data      = ds,
+              params    = params,
+              calltype  = "ini",
+              detcall   = dc);
+   return(set);
+}#iniCall.DataTreeSet
+
+setMethod("xpsINICall", "DataTreeSet", iniCall.DataTreeSet);
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

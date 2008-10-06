@@ -1182,6 +1182,7 @@ class XExonAnnotation: public XGenomeAnnotation {
       void SetExonID(Int_t id)        {fExonID = id;}
 
       Int_t   GetTranscriptID() const {return fTranscriptID;}
+      Int_t   GetTranscriptIX() const {return fTranscriptID;}
       Int_t   GetExonID()       const {return fExonID;}
 
       ClassDef(XExonAnnotation,1) //ExonAnnotation

@@ -26,7 +26,7 @@
 \begin{document}
 
 \title{Introduction to the xps Package: Overview}
-\date{September, 2008}
+\date{October, 2008}
 \author{Christian Stratowa}
 \maketitle
 
@@ -899,6 +899,17 @@ Since the authors of both algorithms recommend to use their summarization method
 normalization but without background correction, methods \Rcode{farms} and \Rcode{dfw} follow 
 these suggestions.  Users wanting to use both methods with a background correction method need 
 to use the general method \Rcode{express} (see \Rcode{?express}). \\
+
+In addition to FARMS as summarization method the authors have also implemented a novel filtering 
+method, called I/NI-calls, to exlcude non-informative genes, see \citep{tallo:etal:2007}. This
+method cannot only be used with FARMS but also together with other methods to compute expression 
+measures such as RMA. \\
+
+To use I/NI-calls you simply do:
+
+<<eval=FALSE>>=
+call.ini <- ini.call(data.test3,"tmp_Test3INI",verbose=FALSE)
+@
 
 {\bf Note:} Although package \Rpackage{farms} is available under the GNU General Public License,
 the authors state on their web site that: "This package (i.e. \Rpackage{farms\_1.x}) is only free 

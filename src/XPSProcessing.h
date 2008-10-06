@@ -279,6 +279,9 @@ class XProcesSet: public XTreeSet {
       virtual void  AddExprTreeInfo(TTree *tree, const char *name, Option_t *option,
                        Int_t nunits, Double_t min, Double_t max);
 
+      virtual const char *GetTranscriptID(XTransAnnotation *anno);
+      virtual const char *GetTranscriptID(XUnit *unit, XTransAnnotation *annot, Int_t type);
+
       Int_t  CopyUnitBranch(TTree *fromtree, TTree *totree, Int_t writeopt = -1);
       TTree *GetUnitTree(XGeneChip *chip, Int_t type);
       TTree *GetAnnotationTree(XGeneChip *chip, Int_t type);
@@ -289,8 +292,6 @@ class XProcesSet: public XTreeSet {
                                 XTransAnnotation *annot, Int_t type);
       XIdxString *FindUnitID(THashTable *htable, XGCUnit *unit);
       XIdxString *FindUnitID(THashTable *htable, XExonUnit *unit);
-      const char *GetTranscriptID(XTransAnnotation *annot);
-      Int_t       GetTranscriptID(XExonUnit *unit, XTransAnnotation *annot, Int_t type);
 
    public:
       XProcesSet();

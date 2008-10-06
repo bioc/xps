@@ -148,6 +148,7 @@
 #pragma link C++ class XDetectionCall+;
 #pragma link C++ class XMAS4Call+;
 #pragma link C++ class XDABGCall+;
+#pragma link C++ class XINICall+;
 #pragma link C++ class XArithmeticMean+;
 #pragma link C++ class XGeometricMean+;
 #pragma link C++ class XWeightedMean+;

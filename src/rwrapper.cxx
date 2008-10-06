@@ -407,7 +407,6 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
          r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *normlevel);
       }//if
 
-//x      r += manager->InitAlgorithm("normalizer", "quantile", "together:none:0", tmpfile, 1, 0.0);
       normopt = strcpy((char*)normopt, exproption[0]);
       normopt = strcat((char*)normopt, ":together:none:0");
       r += manager->InitAlgorithm("normalizer", "quantile", normopt, tmpfile, 1, 0.0);
@@ -665,7 +664,7 @@ void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
       r += manager->InitAlgorithm("selector", "probe", "none", 0, 0);
       r += manager->InitAlgorithm("calldetector", "dc5", "raw", 0, 6, *tau, *alpha1, *alpha2, *ignore, 0, 0); //tau,alpha1,alpha2,ignore,exact,correct
    } else if (strcmp(chiptype[0], "GenomeChip") == 0) {
-      callopt = new char[strlen(calloption[0]) + 9];
+      callopt = new char[strlen(calloption[0]) + 10];
       callopt = strcpy(callopt, calloption[0]);
       callopt = strcat(callopt, ":adjusted");
 
@@ -679,7 +678,7 @@ void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
       r += manager->InitAlgorithm("selector", "probe", "genome", 0, 2, *callevel, -2); //??mm=antigenommic??
       r += manager->InitAlgorithm("calldetector", "dc5", callopt, 0, 6, *tau, *alpha1, *alpha2, *ignore, 0, 0);
    } else if (strcmp(chiptype[0], "ExonChip") == 0) {
-      callopt = new char[strlen(calloption[0]) + 9];
+      callopt = new char[strlen(calloption[0]) + 10];
       callopt = strcpy(callopt, calloption[0]);
       callopt = strcat(callopt, ":adjusted");
 
@@ -789,6 +788,97 @@ void PreprocessDABGCall(char **filename, char **dirname, char **chipname,
    manager->Close();
    delete manager;
 }//PreprocessDABGCall
+
+/*____________________________________________________________________________*/
+void PreprocessINICall(char **filename, char **dirname, char **chipname,
+                       char **chiptype, char **schemefile, char **tmpdir,
+                       char **option, char **treeset, char **treenames,
+                       int *ntrees, int *version, double *weight, double *mu,
+                       double *scale, double *tol, int *cyc, double *alpha1,
+                       double *alpha2, int *normlevel, int *callevel,
+                       int *verbose, char **result)
+{
+// Preprocess trees using INI call
+
+// create new preprocessing manager
+   XPreProcessManager *manager = new XPreProcessManager("PreProcessManager","", *verbose);
+
+// increase default maximum file size from 1.9 GB to 2 TB
+   manager->SetMaxFileSize(2000000000);
+
+// initialize chip type
+   int r = 0;
+   r += manager->Initialize(chiptype[0]);
+
+// temporary files for background and expression algorithms
+   char *tmpfile = 0;
+   if (strcmp(tmpdir[0], "") != 0) {
+      tmpfile = new char[strlen(tmpdir[0]) + 21];
+      tmpfile = strcpy(tmpfile, tmpdir[0]);
+      tmpfile = strcat(tmpfile, "/tmp_ini_310151.root");
+   }//if
+
+// initialize normalizer
+   if (strcmp(chiptype[0], "GeneChip") == 0) {
+      r += manager->InitAlgorithm("selector", "probe", "pmonly", 0);
+   } else if (strcmp(chiptype[0], "GenomeChip") == 0) {
+      r += manager->InitAlgorithm("selector", "probe", "genome", 0, 1, *normlevel);
+   } else if (strcmp(chiptype[0], "ExonChip") == 0) {
+      r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *normlevel);
+   }//if
+
+   const char *normopt = new char[strlen(option[0]) + 17];
+   normopt = strcpy((char*)normopt, option[0]);
+   normopt = strcat((char*)normopt, ":together:none:0");
+   r += manager->InitAlgorithm("normalizer", "quantile", normopt, tmpfile, 1, 0.0);
+
+// initialize call detector
+   if (strcmp(chiptype[0], "GeneChip") == 0) {
+      r += manager->InitAlgorithm("selector", "probe", "none", 0, 0);
+   } else if (strcmp(chiptype[0], "GenomeChip") == 0) {
+      r += manager->InitAlgorithm("selector", "probe", "genome", 0, 2, *callevel, -2); //??mm=antigenommic??
+   } else if (strcmp(chiptype[0], "ExonChip") == 0) {
+      r += manager->InitAlgorithm("selector", "probe", "exon", 0, 2, *callevel, -2); //??mm=antigenommic??
+   }//if
+
+   char *callopt = new char[strlen(option[0]) + 12];
+   callopt = strcpy(callopt, option[0]);
+   callopt = strcat(callopt, ":normalized");
+   r += manager->InitAlgorithm("calldetector", "ini", callopt, tmpfile,
+                               8, *version, *weight, *mu, *scale, *tol, *cyc, *alpha1, *alpha2);
+
+// create new root data file 
+   r += manager->New(filename[0], dirname[0], chiptype[0], "preprocess");
+
+// open root scheme file
+   r += manager->OpenSchemes(schemefile[0], chipname[0]);
+
+// add trees for rma
+   for (int i=0; i<*ntrees; i++) {
+      r += manager->AddTree(treeset[0], treenames[i]);
+   }//for_i
+
+// preprocess expression values and store as trees in new file
+   r += manager->Preprocess(treeset[0], "preprocess");
+
+// result[0]: file name
+   TString file = manager->GetFileName();
+   result[0] = new char[file.Length() + 1];
+   strcpy(result[0], (char*)file.Data());
+
+// result[1]: return error
+   TString err = ""; err += (int)r;
+   result[1] = new char[err.Length() + 1];
+   strcpy(result[1], (char*)err.Data());
+
+// cleanup
+   delete [] callopt;
+   delete [] normopt;
+   if (tmpfile && strcmp(tmpfile, "") != 0) delete [] tmpfile;
+
+   manager->Close();
+   delete manager;
+}//PreprocessINICall
 
 /*____________________________________________________________________________*/
 void Preprocess(char **filename, char **dirname, char **chipname, char **chiptype,

@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 09/06/2008
+// File created: 08/05/2002                          last modified: 10/04/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -901,13 +901,15 @@ Int_t XPreProcesSetting::InitExpressor(const char *type, Option_t *options,
    //    - h:       optional parameter (default is -1) for "attenuatebg"
    //
    // type = "FARMS": FARMS (multichip algorithm), with parameters:
-   //    parameters are: numpars, weight, mu, scale, tol, cyc, neglog
-   //    - numpars: number of other parameters as integer, i.e. numpars = 5-6:
-   //    - weight:  hyperparameter, default is 8.0
+   //    parameters are: numpars,version, weight, mu, scale, tol, cyc, weighted, neglog
+   //    - numpars: number of other parameters as integer, i.e. numpars = 6-8:
+   //    - version: version of farms package, 131 (farms_1.3.1); 130 (farms_1.3)
+   //    - weight:  hyperparameter, default is 0.5
    //    - mu:      hyperparameter, default is 0.0
-   //    - scale:   scaling parameter, default is 1.5
+   //    - scale:   scaling parameter, default is 1.0
    //    - tol:     termination tolerance, default is 0.00001
    //    - cyc:     maximum number of cycles, default is 0.0
+   //    - weighted:weighted mean (for 131 only)
    //    - neglog:  substitution for logarithm of negative values
    //
    // type = "DFW": DFW (multichip algorithm), with parameters:
@@ -1025,6 +1027,18 @@ Int_t XPreProcesSetting::InitCallDetector(const char *type, Option_t *options,
    //    - cut:     cut>1 for Fisher's chi-squared method, 0<=cut<=1 for percentile
    //    - alpha1:  significance level between P and M call, default is 0.01 (t.b.d.)
    //    - alpha2:  significance level between M and A call, default is 0.015 (t.b.d.)
+   //
+   // type = "INICall": Informative call of FARMS (multichip algorithm), with parameters:
+   //    parameters are: numpars,version, weight, mu, scale, tol, cyc, alpha1, alpha2
+   //    - numpars: number of other parameters as integer, i.e. numpars = 6-8:
+   //    - version: version of farms package, 131 (farms_1.3.1); 130 (farms_1.3)
+   //    - weight:  hyperparameter, default is 0.5
+   //    - mu:      hyperparameter, default is 0.0
+   //    - scale:   scaling parameter, default is 1.0
+   //    - tol:     termination tolerance, default is 0.00001
+   //    - cyc:     maximum number of cycles, default is 0.0
+   //    - alpha1:  significance level between P and M call, default is 0.4
+   //    - alpha2:  significance level between M and A call, default is 0.6
    if(kCS) cout << "------XPreProcesSetting::InitCallDetector------" << endl;
 
 // Init (default) call selector
@@ -1050,6 +1064,8 @@ Int_t XPreProcesSetting::InitCallDetector(const char *type, Option_t *options,
       fCaller = new XMAS4Call(stype.Data(), exten.Data());
    } else if (strcmp(exten.Data(), kExtenCall[3]) == 0) {
       fCaller = new XDABGCall(stype.Data(), exten.Data());
+   } else if (strcmp(exten.Data(), kExtenCall[4]) == 0) {
+      fCaller = new XINICall(stype.Data(), exten.Data());
    } else {
       cerr << "Error: Call detector <" << type << "> is not known." << endl;
       return errInitSetting;
@@ -2086,34 +2102,6 @@ cleanup:
 }//Normalize
 
 //______________________________________________________________________________
-Int_t XGCProcesSet::Express(Int_t numdata, TTree **datatree,
-                    Int_t &numbgrd, TTree **bgrdtree)
-{
-   // Convert intensity data to expression levels
-   if(kCS) cout << "------XGCProcesSet::Express------" << endl;
-
-// Informing user
-   if (XManager::fgVerbose) {
-      cout << "   Converting raw data to expression levels..." << endl;
-   }//if
-
-   Int_t err = errNoErr;
-
-   if (fExpressor->IsMultichip()) {
-      if (fExpressor->GetFile()) {
-         err = this->DoMultichipExpress(numdata, datatree, numbgrd, bgrdtree,
-                                        fExpressor->GetFile());
-      } else {
-         err = this->DoMultichipExpress(numdata, datatree, numbgrd, bgrdtree);
-      }//if
-   } else {
-      err = this->DoExpress(numdata, datatree, numbgrd, bgrdtree);
-   }//if
-
-   return err;
-}//Express
-
-//______________________________________________________________________________
 Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
                     Int_t &numbgrd, TTree **bgrdtree)
 {
@@ -2126,8 +2114,59 @@ Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
       cout << "   Calculating detection calls..." << endl;
    }//if
 
-   Int_t err= errNoErr;
-   Int_t  i, j, ij, idx, x, y, start, end;
+   Int_t err = errNoErr;
+
+   if (fCaller->IsMultichip()) {
+      err = this->DoMultichipCall(numdata, datatree, numbgrd, bgrdtree,
+                                  fCaller->GetFile());
+   } else {
+      err = this->DoCall(numdata, datatree, numbgrd, bgrdtree);
+   }//if
+
+   return err;
+}//DetectCall
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::DoCall(Int_t numdata, TTree **datatree,
+                    Int_t &numbgrd, TTree **bgrdtree)
+{
+   // Detect presence call
+   // Note: Present call data will be stored as: 'P'=2, 'M'=1, 'A'=0
+   if(kCS) cout << "------XGCProcesSet::DoCall------" << endl;
+
+   Int_t err   = errNoErr;
+   Int_t level = 0;
+   Int_t idx   = 0;
+   Int_t x     = 0;
+   Int_t y     = 0;
+   Int_t ij, start, end;
+
+// Init local arrays to store data from trees
+   Int_t    *arrUnit  = 0;
+   Int_t    *mskUnit  = 0;
+   Int_t    *arrMask  = 0;
+   Double_t *arrInten = 0;
+   Double_t *arrStdev = 0;
+   Int_t    *arrNPix  = 0;
+   Double_t *arrBgrd  = 0;
+   Double_t *arrBgdev = 0;
+   Double_t *arrPM    = 0; 
+   Double_t *arrMM    = 0;
+   Double_t *arrSP    = 0;
+   Double_t *arrSM    = 0;
+   Int_t    *arrXP    = 0;
+   Int_t    *arrXM    = 0;
+
+   TTree   *scmtree = 0; 
+   TLeaf   *scmleaf = 0;
+   XScheme *scheme  = 0;
+
+   TTree   *idxtree = 0; 
+   XGCUnit *unit    = 0;
+
+   TTree  *calltree = 0;
+   XPCall *call     = 0;
+   Int_t   split    = 99;
 
    fFile->cd();
 
@@ -2146,22 +2185,6 @@ Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
       doBg = kFALSE;
    }//if
 
-// Init local arrays to store data from trees
-   Int_t    *arrMask  = 0;
-   Double_t *arrInten = 0;
-   Double_t *arrStdev = 0;
-   Int_t    *arrNPix  = 0;
-   Double_t *arrPM    = 0; 
-   Double_t *arrMM    = 0;
-   Double_t *arrSP    = 0; 
-   Double_t *arrSM    = 0;
-   Int_t    *arrXP    = 0; 
-   Int_t    *arrXM    = 0;
-
-   TTree  *calltree = 0;
-   XPCall *call     = 0;
-   Int_t   split    = 99;
-
 // Get chip parameters from scheme file (also alternative CDFs)
    if (datatree[0] == 0) return errGetTree;
    if (strcmp(fSchemeName.Data(), "") == 0) {
@@ -2169,110 +2192,94 @@ Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
    } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
       return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
    }//if
+
+// Change directory to scheme file
    if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
 
-   XDNAChip *chip = (XDNAChip*)fSchemes->FindObject(fSchemeName, kTRUE);
+   XGeneChip *chip = (XGeneChip*)fSchemes->FindObject(fSchemeName, kTRUE);
    if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
    Int_t numrows  = chip->GetNumRows();
    Int_t numcols  = chip->GetNumColumns();
-   Int_t numctrls = chip->GetNumControls();
    Int_t numunits = chip->GetNumUnits();
-
-// Get scheme tree for scheme
-   XScheme *scheme = 0;
-   TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
-   if (scmtree == 0) return errGetTree;
-   scmtree->SetBranchAddress("ScmBranch", &scheme);
-
-// Get unit tree for scheme
-   XGCUnit *unit = 0;
-   TTree *idxtree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
-   if (idxtree == 0) return errGetTree;
-   idxtree->SetBranchAddress("IdxBranch", &unit);
-
-// Get maximum number of pairs from tree info for unit tree
-   XUnitTreeInfo *idxinfo = 0;
-   idxinfo = (XUnitTreeInfo*)idxtree->GetUserInfo()->FindObject(idxtree->GetName());
-   if (!idxinfo) {
-      cerr << "Error: Could not get tree info for <" << idxtree->GetName() << ">." << endl;
-      return errGeneral;
-   }//if
-   Int_t maxnumpairs = (Int_t)idxinfo->GetValue("fMaxNPairs");
-
-// Get exon level of annotation
-   Int_t level = 0;
-   if (fCallSelector->GetNumParameters() > 0) {
-      level = (Int_t)(fCallSelector->GetParameters())[0];
-   }//if
-
-// Initialize memory for data arrays
    Int_t size     = numrows*numcols;
-   Int_t nentries = scmtree->GetEntries();
+
+// Get scheme tree  and unit tree for scheme
+   idxtree = this->UnitTree(fCaller, &unit, numunits); 
+   if (idxtree == 0) return errGetTree;
+
+   scmtree = this->SchemeTree(fCaller, &scheme, &scmleaf); 
+   if (scmtree == 0) return errGetTree;
+
+// Get maximum number of pairs/cells
+   Int_t maxnumcells = this->MaxNumberCells(idxtree);
+   if (maxnumcells <= 0) return errGeneral;
+
+// Init unit selector
+   XUnitSelector *unitSelector = new XUnitSelector(kTypeSlct[3], kExtenSlct[3]);
+   unitSelector->SetOption((this->ChipType(fTitle)).Data());
+   err = unitSelector->InitParameters(fCallSelector->GetNumParameters(),
+                                      fCallSelector->GetParameters());
+   if (err != errNoErr) goto cleanup;
+
+// Initialize memory for unit arrays
+   if (!(arrUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
+   if (!(mskUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
+
+   for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
+
+// Get mask from scheme tree and store in array 
+   arrUnit = this->FillUnitArray(idxtree, unit, numunits, arrUnit, mskUnit);
+   if (arrUnit == 0) {err = errInitMemory; goto cleanup;}
+
+// Calculate units satisfying mask
+   err = unitSelector->Calculate(numunits, arrUnit, mskUnit);
+   if (err != errNoErr) goto cleanup;
+
+// Initialize memory for scheme arrays
    if (!(arrMask  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
    if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
    if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
    if (!(arrNPix  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
+   if (!(arrBgrd  = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+   if (!(arrBgdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
 
-   for (i=0; i<size; i++) {
-      arrMask[i]  = eINITMASK;  //not =0,since msk=1 and msk=0 must be determined!
-      arrInten[i] = arrStdev[i] = 0.0;
-      arrNPix[i]  = 0;
+   for (Int_t i=0; i<size; i++) {
+      arrMask[i]  = eINITMASK;  //init mask
+      arrInten[i] = arrStdev[i] = 0.0; 
+      arrNPix[i]  = 0; 
+      arrBgrd[i]  = arrBgdev[i] = 0.0;
    }//for_i
 
-// Get mask for PM/MM from scheme tree and store in array 
-//?0?   arrMask = this->FillMaskArray(chip, scmtree, scheme, 0, size, arrMask);
-   arrMask = this->FillMaskArray(chip, scmtree, scheme, level, size, arrMask);
+// Get exon level of annotation
+   if (fCallSelector->GetNumParameters() > 0) {
+      level = (Int_t)(fCallSelector->GetParameters())[0];
+   }//if
 
-// Calculate mask for detection call
-   err = fCallSelector->Calculate(nentries, 0, 0, arrMask);
+// Get mask for PM/MM from scheme tree and store in array 
+   arrMask = this->FillMaskArray(chip, scmtree, scheme, level, size, arrMask);
+   if (arrMask == 0) {err = errInitMemory; goto cleanup;}
+
+// Calculate mask for detection call (set arrMask to 1 or 0)
+   err = fCallSelector->Calculate(size, 0, 0, arrMask);
    if (err != errNoErr) goto cleanup;
 
 // For DABG only, fill arrMask with GC content (GC>=0 for PM)
-// for PM set GC >= 0 , i.e. GC = 0...kProbeLength,
-// for MM set GC < eINITMASK, i.e. GC = eINITMASK - (1...kProbeLength+1)
-   if (doGC) {
-      // get probe tree for scheme
-      XGCProbe *probe = 0;
-      TTree *probetree = (TTree*)gDirectory->Get(chip->GetProbeTree()); 
-      if (probetree == 0) {err = errGetTree; goto cleanup;}
-      probetree->SetBranchAddress("PrbBranch", &probe);
+   if (doGC) if ((err = this->MaskArray2GC(chip, arrMask))) goto cleanup;
 
-      // get GC content from probe tree and store in array
-      for (i=0; i<size; i++) {
-         probetree->GetEntry(i);
+// Initialize maximum memory for PM/MM arrays (maxnumcells+1 to avoid potential buffer overflow)
+   if (!(arrPM = new (nothrow) Double_t[maxnumcells+1])) {err = errInitMemory; goto cleanup;}
+   if (!(arrMM = new (nothrow) Double_t[maxnumcells+1])) {err = errInitMemory; goto cleanup;}
+   if (!(arrSP = new (nothrow) Double_t[maxnumcells+1])) {err = errInitMemory; goto cleanup;}
+   if (!(arrSM = new (nothrow) Double_t[maxnumcells+1])) {err = errInitMemory; goto cleanup;}
+   if (!(arrXP = new (nothrow) Int_t[maxnumcells+1]))    {err = errInitMemory; goto cleanup;}
+   if (!(arrXM = new (nothrow) Int_t[maxnumcells+1]))    {err = errInitMemory; goto cleanup;}
 
-         x  = probe->GetX();
-         y  = probe->GetY();
-         ij = XY2Index(x, y, numcols);
-
-// IMPORTANT NOTE: do not use the following code although it is faster:
-// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
-// Every tree contains the (x,y) coordinates as unique identifier, thus
-// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
-
-         if (arrMask[ij] == 1) {
-            arrMask[ij] = probe->GetNumberGC();
-         } else if (arrMask[ij] == 0) {
-            //need to use (numberGC + 1) to avoid setting arrMask=eINITMASK for GC=0!!
-            arrMask[ij] = eINITMASK - (probe->GetNumberGC() + 1);
-//no!!            arrMask[ij] = eINITMASK - probe->GetNumberGC();
-         }//if
-      }//for_i
-   }//if
-
+// Change directory to data file
    if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
-
-// Initialize maximum memory for PM/MM arrays (maxnumpairs+1 to avoid potential buffer overflow)
-   if (!(arrPM = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
-   if (!(arrMM = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
-   if (!(arrSP = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
-   if (!(arrSM = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
-   if (!(arrXP = new (nothrow) Int_t[maxnumpairs+1]))    {err = errInitMemory; goto cleanup;}
-   if (!(arrXM = new (nothrow) Int_t[maxnumpairs+1]))    {err = errInitMemory; goto cleanup;}
 
 // Calculate detection call
    for (Int_t k=0; k<numdata; k++) {
-      if (datatree[k] == 0) return errGetTree;
+      if (datatree[k] == 0) {err = errGetTree; goto cleanup;}
 
    // Informing user
       TString name = datatree[k]->GetName();
@@ -2294,16 +2301,13 @@ Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
       Double_t minpval = 1.0;
       Double_t maxpval = 0.0;
 
-   // Get data from datatree and store in arrays
-      err = this->FillDataArrays(datatree[k], bgrdtree[k], doBg,
-                       numrows, numcols, arrInten, arrStdev, arrNPix);
+   // Get data from datatree and bgrdtree and store in arrays
+      err = this->FillDataArrays(datatree[k], bgrdtree[k], doBg, numrows, numcols,
+                                 arrInten, arrStdev, arrNPix, arrBgrd, arrBgdev);
       if (err != errNoErr) goto cleanup;
 
-   // For DABG only
-      if (doGC) {
-         // get intensities and save in table sorted for GC-content
-         if ((err = fCaller->Calculate(size, arrInten, arrMask))) goto cleanup;
-      }//if
+   // For DABG only get intensities and save in table sorted for GC-content
+      if (doGC) if ((err = fCaller->Calculate(size, arrInten, arrMask))) goto cleanup;
 
    // Create new tree calltree
       name = Path2Name(datatree[k]->GetName(), dSEP, ".") + "." + fCaller->GetTitle();
@@ -2319,10 +2323,10 @@ Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
       for (Int_t id=0; id<numunits; id++) { 
          idxtree->GetEntry(id);
 
-         Int_t unitID   = id - numctrls;
+         Int_t unitID   = unit->GetUnitID();
          Int_t numcells = unit->GetNumCells();
-         // skip negative unit entries (controls)
-         if (unit->GetUnitID() < 0) {
+         // skip masked unit entries
+         if (mskUnit[id] <= 0) {
             start += numcells;
             end = start;
             continue;
@@ -2331,10 +2335,10 @@ Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
          Int_t p = 0;
          Int_t m = 0;
          end += numcells;
-         for (j=start; j<end; j++) {
+         for (Int_t j=start; j<end; j++) {
             scmtree->GetEntry(j);
 
-            if ((scheme->GetUnitID()) != unitID) {
+            if ((Int_t)(scmleaf->GetValue()) != unitID) {
                cerr << "Error: unitID is not equal to: " << unitID << endl;
                err = errAbort;
                goto cleanup;
@@ -2345,31 +2349,19 @@ Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
             ij = XY2Index(x, y, numcols);
 
             if (doGC) {
-               if (arrMask[ij] >= 0) {
-                  if (p == 0) idx++;  //count number of units
-                  arrPM[p] = arrInten[ij];
-                  arrSP[p] = arrStdev[ij];
-                  arrXP[p] = arrMask[ij];
-                  p++;
-               }//if
+               this->FillProbeSets(p, idx,
+                                   arrPM, arrSP, arrXP,
+                                   arrMask[ij], arrInten[ij], arrStdev[ij]);
             } else {
-               if (arrMask[ij] == 1) {
-                  if (p == 0) idx++;  //count number of units
-                  arrPM[p] = arrInten[ij];
-                  arrSP[p] = arrStdev[ij];
-                  arrXP[p] = arrNPix[ij];
-                  p++;
-               } else if (arrMask[ij] == 0) {
-                  arrMM[m] = arrInten[ij];
-                  arrSM[m] = arrStdev[ij];
-                  arrXM[p] = arrNPix[ij];
-                  m++;
-               }//if
+               this->FillProbeSets(p, m, idx,
+                                   arrPM, arrMM, arrSP, arrSM, arrXP, arrXM, 
+                                   arrMask[ij], arrInten[ij], arrStdev[ij],
+                                   arrBgrd[ij], arrBgdev[ij], arrNPix[ij]);
             }//if
 
-            if (p > maxnumpairs || m > maxnumpairs) {
-               cerr << "Error: unitID <" << unitID << "> exceeds maximum number of pairs <"
-                    << maxnumpairs << ">. Buffer overflow!" << endl;
+            if (p > maxnumcells || m > maxnumcells) {
+               cerr << "Error: unitID <" << unitID << "> exceeds maximum number of cells <"
+                    << maxnumcells << ">. Buffer overflow!" << endl;
                err = errAbort;
                goto cleanup;
             }//if
@@ -2409,12 +2401,13 @@ Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
          call->SetPValue(pvalue);
          calltree->Fill();
 
-         if (XManager::fgVerbose && id%1000 == 0) {
-            cout << "      <" << id+1 << "> of <" << numunits << "> calls processed...\r" << flush;
+         if (XManager::fgVerbose && id%5000 == 0) {
+            cout << "      <" << idx << "> of <" << numunits << "> calls processed...\r" << flush;
          }//if
       }//for_id
+
       if (XManager::fgVerbose) {
-         cout << "      <" << numunits << "> calls processed." << endl;
+         cout << "      <" << idx << "> of <" << numunits << "> calls processed...Finished" << endl;
       }//if
 
       if (XManager::fgVerbose) {
@@ -2428,37 +2421,1395 @@ Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
 
    // Add tree info to tree
       AddCallTreeInfo(calltree, calltree->GetName(), fCaller->GetOption(),
-                      numunits-numctrls, numabsent, numarginal, numpresent,
-                      minpval, maxpval);
+                      idx, numabsent, numarginal, numpresent, minpval, maxpval);
 
    // Write call tree to file 
       if ((err = WriteTree(calltree, TObject::kOverwrite)) == errNoErr) {
-//?      if ((err = WriteTree(calltree, 0)) == errNoErr) {
          // add tree header to list
          AddTreeHeader(calltree->GetName(), "Call", 0, fCaller->GetNumParameters(),
                        fCaller->GetParameters());
       }//if
 
+//?? needed later?
+      SafeDelete(call);
       if (err != errNoErr) break;
    }//for_k
 
+// Cleanup
 cleanup:
+   SafeDelete(unitSelector);
+   SafeDelete(unit);
+   SafeDelete(scheme);
+
    // delete arrays
-   if (arrPM)    {delete [] arrPM;    arrPM    = 0;}
-   if (arrMM)    {delete [] arrMM;    arrMM    = 0;}
-   if (arrSP)    {delete [] arrSP;    arrSP    = 0;}
-   if (arrSM)    {delete [] arrSM;    arrSM    = 0;}
-   if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
    if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
+   if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
+   if (arrSM)    {delete [] arrSM;    arrSM    = 0;}
+   if (arrSP)    {delete [] arrSP;    arrSP    = 0;}
+   if (arrMM)    {delete [] arrMM;    arrMM    = 0;}
+   if (arrPM)    {delete [] arrPM;    arrPM    = 0;}
+   if (arrBgdev) {delete [] arrBgdev; arrBgdev = 0;}
+   if (arrBgrd)  {delete [] arrBgrd;  arrBgrd  = 0;}
    if (arrNPix)  {delete [] arrNPix;  arrNPix  = 0;}
    if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
    if (arrInten) {delete [] arrInten; arrInten = 0;}
    if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
-//??   // delete scheme tree from RAM
-//??   if (scmtree)  {scmtree->Delete(""); scmtree = 0;}
+   if (mskUnit)  {delete [] mskUnit;  mskUnit  = 0;}
+   if (arrUnit)  {delete [] arrUnit;  arrUnit  = 0;}
 
    return err;
-}//DetectCall
+}//DoCall
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
+                    Int_t &numbgrd, TTree **bgrdtree, TFile *file)
+{
+   // Detect presence call
+   // Note: Present call data will be stored as: 'P'=2, 'M'=1, 'A'=0
+   if(kCS) cout << "------XGCProcesSet::DoMultichipCall------" << endl;
+
+   Int_t err = errNoErr;
+   Int_t idx = 0;
+   Int_t x   = 0;
+   Int_t y   = 0;
+   Int_t ij, start, end, id, entry;
+
+   Int_t numsels = 0;  //number of selected entries
+   Int_t exlevel = 0;
+
+// Init min/max p-values
+   Int_t numabsent  = 0;
+   Int_t numarginal = 0;
+   Int_t numpresent = 0;
+   Double_t minpval = 1.0;
+   Double_t maxpval = 0.0;
+
+// Init 
+   Int_t     *arrMask  = 0;
+   Int_t     *arrIndx  = 0;
+   Int_t     *arrUnit  = 0;
+   Int_t     *mskUnit  = 0;
+   Double_t  *prescall = 0;
+   Double_t  *pvalue   = 0;
+
+   Double_t **table   = 0;
+   Double_t  *arrData = 0;
+
+   TTree   *scmtree = 0; 
+   TLeaf   *scmleaf = 0;
+   XScheme *scheme  = 0;
+
+   TTree   *idxtree = 0; 
+   XGCUnit *unit    = 0;
+
+   XGCCell **gccell = 0;
+   XBgCell **bgcell = 0;
+
+   TTree  **tmptree  = 0;
+   TTree  **calltree = 0;
+   XPCall **call     = 0;
+   Int_t    split    = 99;
+   Double_t sort;
+
+   fFile->cd();
+
+// Get chip parameters from scheme file (also alternative CDFs)
+   if (datatree[0] == 0) return errGetTree;
+   if (strcmp(fSchemeName.Data(), "") == 0) {
+      fSchemeName = datatree[0]->GetTitle();
+   } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
+      return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
+   }//if
+
+// Change directory to scheme file
+   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
+
+   XGeneChip *chip = (XGeneChip*)fSchemes->FindObject(fSchemeName, kTRUE);
+   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
+   Int_t numrows  = chip->GetNumRows();
+   Int_t numcols  = chip->GetNumColumns();
+   Int_t numunits = chip->GetNumUnits();
+   Int_t size     = numrows*numcols;
+
+// Get scheme tree  and unit tree for scheme
+   idxtree = this->UnitTree(fCaller, &unit, numunits); 
+   if (idxtree == 0) return errGetTree;
+
+   scmtree = this->SchemeTree(fCaller, &scheme, &scmleaf); 
+   if (scmtree == 0) return errGetTree;
+
+// Get maximum number of pairs/cells
+   Int_t maxnumcells = this->MaxNumberCells(idxtree);
+   if (maxnumcells <= 0) return errGeneral;
+
+// Get parameters for background subtraction
+   Bool_t doBg = this->BackgroundParameters(fCaller, fCaller->GetBgrdOption());
+
+// Check for equal number of data tree entries
+   for (Int_t k=0; k<numdata; k++) {
+      if (datatree[k] == 0) return errGetTree;
+
+      if ((Int_t)(datatree[k]->GetEntries()) != size) {
+            TString str = ""; str += size;
+            return fManager->HandleError(errNumTreeEntries, datatree[k]->GetName(), str);
+      }//if
+   }//for_k
+
+// Check for equal number of background tree entries
+   if (numbgrd > 0) {
+      for (Int_t k=0; k<numdata; k++) {
+         if (bgrdtree[k] == 0) return errGetTree;
+
+         if ((Int_t)(bgrdtree[k]->GetEntries()) != size) {
+            TString str = ""; str += size;
+            return fManager->HandleError(errNumTreeEntries, bgrdtree[k]->GetName(), str);
+         }//if
+      }//for_k
+//?   } else if (subbgrd || corbgrd) {
+   } else if (doBg == kTRUE) {
+      cout << "Warning: No background trees available for background subtraction."
+           << endl;
+      doBg = kFALSE;
+   } else {
+      // to prevent subtraction of background in FillDataArrays()
+      // e.g. AdjustBackground() creates bgrdtrees but sets numbgrd=0 !!
+      doBg = kFALSE;
+   }//if
+
+// Init unit selector
+   XUnitSelector *unitSelector = new XUnitSelector(kTypeSlct[3], kExtenSlct[3]);
+   unitSelector->SetOption((this->ChipType(fTitle)).Data());
+   err = unitSelector->InitParameters(fCallSelector->GetNumParameters(),
+                                      fCallSelector->GetParameters());
+   if (err != errNoErr) goto cleanup;
+
+// Initialize memory for unit arrays
+   if (!(arrUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
+   if (!(mskUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
+
+   for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
+
+// Get mask from scheme tree and store in array 
+   arrUnit = this->FillUnitArray(idxtree, unit, numunits, arrUnit, mskUnit);
+   if (arrUnit == 0) {err = errInitMemory; goto cleanup;}
+
+// Calculate units satisfying mask
+   err = unitSelector->Calculate(numunits, arrUnit, mskUnit); //arrUnit to prevent compile error
+   if (err != errNoErr) goto cleanup;
+
+// Create local arrays
+   if (!(arrMask  = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
+   if (!(arrIndx  = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
+   if (!(prescall = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
+   if (!(pvalue   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
+
+   for (Int_t i=0; i<size; i++) {
+      arrMask[i] = eINITMASK; 
+      arrIndx[i] = 0;
+   }//for_i
+   for (Int_t i=0; i<numdata; i++) {
+      prescall[i] = 0.0; 
+      pvalue[i]   = 1.0; 
+   }//for_i
+
+// Get exon level of annotation
+   if (fCallSelector->GetNumParameters() > 0) {
+      exlevel = (Int_t)(fCallSelector->GetParameters())[0];
+   }//if
+
+// Get mask for PM from scheme tree and store in array 
+   arrMask = this->FillMaskArray(chip, scmtree, scheme, exlevel, size, arrMask);
+   if (arrMask == 0) {err = errInitMemory; goto cleanup;}
+
+// Calculate mask for expression
+   err = fCallSelector->Calculate(size, 0, 0, arrMask);
+   if (err != errNoErr) goto cleanup;
+
+// Init branch addresses
+   gccell = new XGCCell*[numdata];
+   bgcell = new XBgCell*[numdata];
+   for (Int_t k=0; k<numdata; k++) {
+      gccell[k] = 0;
+      bgcell[k] = 0;
+      datatree[k]->SetBranchAddress("DataBranch", &gccell[k]);
+      if (numbgrd > 0) bgrdtree[k]->SetBranchAddress("BgrdBranch", &bgcell[k]);
+   }//for_k
+
+// Get entry index from datatree
+   idx = 0;
+   for (Int_t i=0; i<size; i++) {
+      datatree[0]->GetEntry(i);
+
+      x  = gccell[0]->GetX();
+      y  = gccell[0]->GetY();
+      ij = XY2Index(x, y, numcols);
+
+      if (arrMask[ij] == 1) {
+         arrIndx[ij] = idx++;
+      }//if
+   }//for_i
+
+// Get number of selected entries
+   for (Int_t i=0; i<size; i++) {
+      numsels = (arrMask[i] == 1) ? ++numsels : numsels;
+   }//for_i
+
+// Get data from datatrees (and bgrdtrees) and store in table or array
+   if (file == 0) {
+      // create table
+      if (!(table = CreateTable(numdata, numsels))) {err = errInitMemory; goto cleanup;}
+
+      // fill table with selected intensities of all datatrees
+      if ((numbgrd > 0) && (doBg == kTRUE)) {
+         for (Int_t k=0; k<numdata; k++) {
+            idx = 0;
+            for (Int_t i=0; i<size; i++) {
+               datatree[k]->GetEntry(i);
+               bgrdtree[k]->GetEntry(i);
+//unsafe?? use arrInten[ij] and arrBgrd[ij] ??
+
+               // subtract background from intensity
+               if (arrMask[i] == 1) {
+                  table[k][idx++] = this->AdjustIntensity(gccell[k]->GetIntensity(),
+                                                          bgcell[k]->GetBackground(),
+                                                          bgcell[k]->GetStdev());
+               }//if
+            }//for_i
+         }//for_k
+      } else {
+         for (Int_t k=0; k<numdata; k++) {
+            idx = 0;
+            for (Int_t i=0; i<size; i++) {
+               datatree[k]->GetEntry(i);
+
+               if (arrMask[i] == 1) {
+                  table[k][idx++] = gccell[k]->GetIntensity();
+               }//if
+            }//for_i
+         }//for_k
+      }//if
+   } else {
+      // create array to store selected intensities
+      if (!(arrData = new (nothrow) Double_t[numsels])) {err = errInitMemory; goto cleanup;}
+      for (Int_t i=0; i<numsels;  i++) arrData[i] = 0.0;
+
+      // change directory to temporary file
+      if (!file->cd()) {err = errGetDir; goto cleanup;}
+
+      // get data from datatrees (and bgrdtrees) and store in temporary file
+      tmptree  = new TTree*[numdata];
+      for (Int_t k=0; k<numdata; k++) {
+         // create temporary tree
+         tmptree[k] = new TTree(datatree[k]->GetName(), "temporary tree");
+         if (tmptree[k] == 0) {err = errCreateTree; goto cleanup;}
+         tmptree[k]->Branch("sort", &sort, "sort/D");
+
+         // informing user
+         if (XManager::fgVerbose) {
+            cout << "         filling temporary tree <" << tmptree[k]->GetName()
+                 << ">...              \r" << flush;
+         }//if
+
+         // fill array with (background corrected) intensities
+         if ((numbgrd > 0) && (doBg == kTRUE)) {
+            idx = 0;
+            for (Int_t i=0; i<size; i++) {
+               datatree[k]->GetEntry(i);
+               bgrdtree[k]->GetEntry(i);
+
+               // subtract background from intensity
+               if (arrMask[i] == 1) {
+                  arrData[idx++] = this->AdjustIntensity(gccell[k]->GetIntensity(),
+                                                         bgcell[k]->GetBackground(),
+                                                         bgcell[k]->GetStdev());
+               }//if
+            }//for_i
+         } else {
+            idx = 0;
+            for (Int_t i=0; i<size; i++) {
+               datatree[k]->GetEntry(i);
+
+               if (arrMask[i] == 1) {
+                  arrData[idx++] = gccell[k]->GetIntensity();
+               }//if
+            }//for_i
+         }//if
+
+         // fill tmptree with array in the order of scheme tree entries for (x,y)
+         start = 0;
+         end   = 0;
+         for (id=0; id<numunits; id++) { 
+            idxtree->GetEntry(id);
+
+            Int_t unitID   = unit->GetUnitID();
+            Int_t numcells = unit->GetNumCells();
+            // skip masked unit entries
+            if (mskUnit[id] <= 0) {
+               start += numcells;
+               end = start;
+               continue;
+            }//if
+
+            end += numcells;
+            for (Int_t j=start; j<end; j++) {
+               scmtree->GetEntry(j);
+
+               if ((Int_t)(scmleaf->GetValue()) != unitID) {
+                  cerr << "Error: unitID is not equal to: " << unitID << endl;
+                  err = errAbort;
+                  goto cleanup;
+               }//if
+
+               x  = scheme->GetX();
+               y  = scheme->GetY();
+               ij = XY2Index(x, y, numcols);
+
+               if (arrMask[ij] == 1) {
+                  sort = arrData[arrIndx[ij]];
+                  tmptree[k]->Fill();
+               }//if
+            }//for_j
+            start += numcells;
+         }//for_id
+
+         // write tmptree to temporary file
+         tmptree[k]->Write();
+//??         tmptree[k]->Write(TObject::kOverwrite);
+      }//for_k
+
+      if (XManager::fgVerbose) {
+         cout << "         finished filling <" << numdata << "> temporary trees.          " << endl;
+      }//if
+   }//if
+
+// Change directory to current directory for treeset in main file
+   if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
+
+// Create new trees calltree
+   calltree = new TTree*[numdata];
+   call     = new XPCall*[numdata];
+
+   for (Int_t k=0; k<numdata; k++) {
+      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
+      TString callname = dataname + "." + fCaller->GetTitle();
+      calltree[k] = new TTree(callname, fSchemeName);
+      if (calltree[k] == 0) {err = errCreateTree; goto cleanup;}
+
+      call[k] = new XPCall();
+      calltree[k]->Branch("CallBranch", "XPCall", &call[k], 64000, split);
+   }//for_k
+
+// Calculate detection call values
+   start = 0;
+   end   = 0;
+   idx   = 0;
+   entry = 0;
+   for (id=0; id<numunits; id++) { 
+      idxtree->GetEntry(id);
+
+      Int_t unitID   = unit->GetUnitID();
+      Int_t numcells = unit->GetNumCells();
+      // skip masked unit entries
+      if (mskUnit[id] <= 0) {
+         start += numcells;
+         end = start;
+         continue;
+      }//if
+
+//TO DO
+//Better above: arrPM = new Double_t[maxnumcells*numdata]; 
+      // create array to store PM values for all probes with current unitID
+      Int_t  numatoms = unit->GetNumAtoms();
+      Double_t *arrPM = new Double_t[numatoms*numdata]; 
+
+      // fill arrPM with PM values of current unitID
+      Int_t p = 0;
+      end += numcells;
+      for (Int_t j=start; j<end; j++) {
+         scmtree->GetEntry(j);
+
+         if ((Int_t)(scmleaf->GetValue()) != unitID) {
+            cerr << "Error: unitID is not equal to: " << unitID << endl;
+            err = errAbort;
+            goto cleanup;
+         }//if
+
+         x  = scheme->GetX();
+         y  = scheme->GetY();
+         ij = XY2Index(x, y, numcols);
+
+         if (arrMask[ij] == 1) {
+            if (p == 0) idx++;  //count number of units to be summarized
+
+            if (file == 0) {
+               for (Int_t k=0; k<numdata; k++) {
+                  arrPM[p] = table[k][arrIndx[ij]];
+                  p++;
+               }//for_k
+            } else {
+               for (Int_t k=0; k<numdata; k++) {
+                  tmptree[k]->GetEntry(entry);
+                  arrPM[p] = sort;
+                  p++;
+               }//for_k
+            }//if
+
+            entry++;
+         }//if
+      }//for_j
+      start += numcells;
+
+      // fill arrPM or continue if it is not filled
+      if ((err = fCaller->SetArray(p, arrPM)) != errNoErr) {
+         delete [] arrPM;
+         continue;
+      }//if
+
+      // calculate detection call for PMs of current unitID
+      if ((err = fCaller->Calculate(numdata, prescall, pvalue, 0))) break;
+
+      // fill call trees
+      for (Int_t k=0; k<numdata; k++) {
+         // number of present/absent calls
+         if      (prescall[k] == 2.0) numpresent++;
+         else if (prescall[k] == 1.0) numarginal++;
+         else if (prescall[k] == 0.0) numabsent++;
+
+         // minimal/maximal detection call p-value
+         if      (pvalue[k] < minpval) minpval = pvalue[k];
+         else if (pvalue[k] > maxpval) maxpval = pvalue[k];
+
+         call[k]->SetUnitID(unitID);
+         call[k]->SetCall((Short_t)prescall[k]);
+         call[k]->SetPValue(pvalue[k]);
+         calltree[k]->Fill();
+      }//for_k
+
+      delete [] arrPM;
+
+      if (XManager::fgVerbose && id%10000 == 0) {
+         cout << "      calculating detection call for <" << idx << "> of <"
+              << numunits << "> units...\r" << flush;
+      }//if
+   }//for_id
+
+   if (XManager::fgVerbose) {
+      cout << "      calculating detection call for <" << idx << "> of <"
+           << numunits << "> units...Finished." << endl;
+   }//if
+
+   if (XManager::fgVerbose) {
+      cout << "      detection call statistics: " << endl;
+      cout << "         minimum detection p-value = " << minpval << endl;
+      cout << "         maximum detection p-value = " << maxpval << endl;
+      cout << "         P: <" << numpresent*100.0/idx << "> percent units present."  << endl;
+      cout << "         M: <" << numarginal*100.0/idx << "> percent units marginal." << endl;
+      cout << "         A: <" << numabsent*100.0/idx  << "> percent units absent."   << endl;
+   }//if
+
+// Write call trees to file 
+   for (Int_t k=0; k<numdata; k++) {
+   // Add tree info to tree
+      AddCallTreeInfo(calltree[k], calltree[k]->GetName(), fCaller->GetOption(),
+                      idx, numabsent, numarginal, numpresent, minpval, maxpval);
+//need to do:
+//                      idx, numabsent[k], numarginal[k], numpresent[k], minpval[k], maxpval[k]);
+
+      if ((err = WriteTree(calltree[k], TObject::kOverwrite)) == errNoErr) {
+         // add tree header to list
+         AddTreeHeader(calltree[k]->GetName(), "Call", 0, fCaller->GetNumParameters(),
+                       fCaller->GetParameters());
+      } else {
+         break;
+      }//if
+   }//for_k
+
+// Cleanup
+cleanup:
+   SafeDelete(unitSelector);
+   SafeDelete(unit);
+   SafeDelete(scheme);
+
+   // delete table
+   DeleteTable(table, numdata);
+
+   // delete temporary trees
+   if (tmptree) {
+      for (Int_t k=0; k<numdata; k++) {
+         tmptree[k]->Delete(""); tmptree[k] = 0;
+      }//for_k
+      delete [] tmptree;
+   }//if
+   // delete arrays
+   if (arrData)  {delete [] arrData;  arrData  = 0;}
+   if (pvalue)   {delete [] pvalue;   pvalue   = 0;}
+   if (prescall) {delete [] prescall; prescall = 0;}
+   if (arrIndx)  {delete [] arrIndx;  arrIndx  = 0;}
+   if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
+   if (mskUnit)  {delete [] mskUnit;  mskUnit  = 0;}
+   if (arrUnit)  {delete [] arrUnit;  arrUnit  = 0;}
+
+   // delete scheme tree from RAM
+//?   if (scmtree)  {scmtree->Delete(""); scmtree = 0;}
+
+   delete [] call;
+   delete [] calltree;
+   delete [] gccell;
+   delete [] bgcell;
+
+   return err;
+}//DoMultichipCall
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::Express(Int_t numdata, TTree **datatree,
+                    Int_t &numbgrd, TTree **bgrdtree)
+{
+   // Convert intensity data to expression levels
+   if(kCS) cout << "------XGCProcesSet::Express------" << endl;
+
+// Informing user
+   if (XManager::fgVerbose) {
+      cout << "   Converting raw data to expression levels..." << endl;
+      cout << "      summarizing with <" << fExpressor->GetName() << ">..." << endl;
+   }//if
+
+   Int_t err = errNoErr;
+
+   if (fExpressor->IsMultichip()) {
+      err = this->DoMultichipExpress(numdata, datatree, numbgrd, bgrdtree,
+                                     fExpressor->GetFile());
+   } else {
+      err = this->DoExpress(numdata, datatree, numbgrd, bgrdtree);
+   }//if
+
+   return err;
+}//Express
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
+                    Int_t numbgrd, TTree **bgrdtree)
+{
+   // Condense data from  datatrees to expression values
+   if(kCS) cout << "------XGCProcesSet::DoExpress------" << endl;
+
+   Int_t err   = errNoErr;
+   Int_t level = 0;
+   Int_t idx   = 0;
+   Int_t x     = 0;
+   Int_t y     = 0;
+   Int_t ij, start, end;
+
+// Init local arrays to store data from trees
+   Int_t    *arrUnit  = 0;
+   Int_t    *mskUnit  = 0;
+   Int_t    *arrMask  = 0;
+   Double_t *arrInten = 0;
+   Double_t *arrStdev = 0;
+   Int_t    *arrNPix  = 0;
+   Double_t *arrBgrd  = 0;
+   Double_t *arrBgdev = 0;
+   Double_t *arrPM    = 0; 
+   Double_t *arrMM    = 0;
+   Double_t *arrSP    = 0;
+   Double_t *arrSM    = 0;
+   Int_t    *arrXP    = 0;
+   Int_t    *arrXM    = 0;
+
+   TTree   *scmtree = 0; 
+   TLeaf   *scmleaf = 0;
+   XScheme *scheme  = 0;
+
+   TTree   *idxtree = 0; 
+   XGCUnit *unit    = 0;
+
+   TTree  *exprtree    = 0;
+   XGCExpression *expr = 0;
+   Int_t   split       = 99;
+
+   fFile->cd();
+
+// Get parameters for background subtraction
+   Bool_t doBg = this->BackgroundParameters(fExpressor, fExpressor->GetBgrdOption());
+
+// Check for presence of background trees
+   if (numbgrd == 0) {
+      if (doBg == kTRUE) {
+         cout << "Warning: No background trees available for background subtraction."
+              << endl;
+      }//if
+      // to prevent subtraction of background in FillDataArrays()
+      // e.g. AdjustBackground() creates bgrdtrees but sets numbgrd=0 !!
+      doBg = kFALSE;
+   }//if
+
+// Get chip parameters from scheme file (also alternative CDFs)
+   if (datatree[0] == 0) return errGetTree;
+   if (strcmp(fSchemeName.Data(), "") == 0) {
+      fSchemeName = datatree[0]->GetTitle();
+   } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
+      return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
+   }//if
+
+// Change directory to scheme file
+   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
+
+   XGeneChip *chip = (XGeneChip*)fSchemes->FindObject(fSchemeName, kTRUE);
+   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
+   Int_t numrows  = chip->GetNumRows();
+   Int_t numcols  = chip->GetNumColumns();
+   Int_t numunits = chip->GetNumUnits();
+   Int_t size     = numrows*numcols;
+
+// Get scheme tree  and unit tree for scheme
+   idxtree = this->UnitTree(fExpressor, &unit, numunits); 
+   if (idxtree == 0) return errGetTree;
+
+   scmtree = this->SchemeTree(fExpressor, &scheme, &scmleaf); 
+   if (scmtree == 0) return errGetTree;
+
+// Get maximum number of pairs/cells
+   Int_t maxnumcells = this->MaxNumberCells(idxtree);
+   if (maxnumcells <= 0) return errGeneral;
+
+// Init unit selector
+   XUnitSelector *unitSelector = new XUnitSelector(kTypeSlct[3], kExtenSlct[3]);
+   unitSelector->SetOption((this->ChipType(fTitle)).Data());
+   err = unitSelector->InitParameters(fExprSelector->GetNumParameters(),
+                                      fExprSelector->GetParameters());
+   if (err != errNoErr) goto cleanup;
+
+// Initialize memory for unit arrays
+   if (!(arrUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
+   if (!(mskUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
+
+   for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
+
+// Get mask from scheme tree and store in array 
+   arrUnit = this->FillUnitArray(idxtree, unit, numunits, arrUnit, mskUnit);
+   if (arrUnit == 0) {err = errInitMemory; goto cleanup;}
+
+// Calculate units satisfying mask
+   err = unitSelector->Calculate(numunits, arrUnit, mskUnit);
+   if (err != errNoErr) goto cleanup;
+
+// Initialize memory for scheme arrays
+   if (!(arrMask  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
+   if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+   if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+   if (!(arrNPix  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
+   if (!(arrBgrd  = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+   if (!(arrBgdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+
+   for (Int_t i=0; i<size; i++) {
+      arrMask[i]  = eINITMASK;  //init mask
+      arrInten[i] = arrStdev[i] = 0.0; 
+      arrNPix[i]  = 0; 
+      arrBgrd[i]  = arrBgdev[i] = 0.0;
+   }//for_i
+
+// Get exon level of annotation
+   if (fExprSelector->GetNumParameters() > 0) {
+      level = (Int_t)(fExprSelector->GetParameters())[0];
+   }//if
+
+// Get mask for PM/MM from scheme tree and store in array 
+   arrMask = this->FillMaskArray(chip, scmtree, scheme, level, size, arrMask);
+   if (arrMask == 0) {err = errInitMemory; goto cleanup;}
+
+// Calculate mask for expression
+   err = fExprSelector->Calculate(size, 0, 0, arrMask);
+   if (err != errNoErr) goto cleanup;
+
+// Initialize maximum memory for PM/MM arrays (maxnumpairs+1 to avoid potential buffer overflow)
+   if (!(arrPM = new (nothrow) Double_t[maxnumcells+1])) {err = errInitMemory; goto cleanup;}
+   if (!(arrMM = new (nothrow) Double_t[maxnumcells+1])) {err = errInitMemory; goto cleanup;}
+   if (!(arrSP = new (nothrow) Double_t[maxnumcells+1])) {err = errInitMemory; goto cleanup;}
+   if (!(arrSM = new (nothrow) Double_t[maxnumcells+1])) {err = errInitMemory; goto cleanup;}
+   if (!(arrXP = new (nothrow) Int_t[maxnumcells+1]))    {err = errInitMemory; goto cleanup;}
+   if (!(arrXM = new (nothrow) Int_t[maxnumcells+1]))    {err = errInitMemory; goto cleanup;}
+
+// Change directory to data file
+   if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
+
+// Calculate expression
+   for (Int_t k=0; k<numdata; k++) {
+      if (datatree[k] == 0) {err = errGetTree; goto cleanup;}
+
+   // Informing user
+      TString name = datatree[k]->GetName();
+      if (XManager::fgVerbose) {
+         cout << "      summarizing <" << name.Data() << ">..." << endl;
+      }//if
+
+   // Get tree info for datatree name.exten
+      XDataTreeInfo *info = 0;
+      info = (XDataTreeInfo*)datatree[k]->GetUserInfo()->FindObject(name);
+      if (!info) {
+         cerr << "Error: Could not get tree info for <" << name.Data() << ">." << endl;
+         err = errGeneral;
+         break;
+      }//if
+
+   // Init min/max expression levels
+      Double_t min = DBL_MAX;  //defined in float.h
+      Double_t max = 0;
+
+   // Get data from datatree and bgrdtree and store in arrays
+      err = this->FillDataArrays(datatree[k], bgrdtree[k], doBg, numrows, numcols,
+                                 arrInten, arrStdev, arrNPix, arrBgrd, arrBgdev);
+      if (err != errNoErr) goto cleanup;
+
+   // Create new tree exprtree
+      name = Path2Name(datatree[k]->GetName(), dSEP, ".") + "." + fExpressor->GetTitle();
+      exprtree = new TTree(name, fSchemeName);
+      if (exprtree == 0) {err = errCreateTree; goto cleanup;}
+      expr = new XGCExpression();
+      exprtree->Branch("ExprBranch", "XGCExpression", &expr, 64000, split);
+
+   // Calculate expression values
+      start = 0;
+      end   = 0;
+      idx   = 0;
+      for (Int_t id=0; id<numunits; id++) { 
+         idxtree->GetEntry(id);
+
+         Int_t unitID   = unit->GetUnitID();
+         Int_t numcells = unit->GetNumCells();
+         // skip masked unit entries
+         if (mskUnit[id] <= 0) {
+            start += numcells;
+            end = start;
+            continue;
+         }//if
+
+         Int_t p = 0;
+         Int_t m = 0;
+         end += numcells;
+         for (Int_t j=start; j<end; j++) {
+            scmtree->GetEntry(j);
+
+            if ((Int_t)(scmleaf->GetValue()) != unitID) {
+               cerr << "Error: unitID is not equal to: " << unitID << endl;
+               err = errAbort;
+               goto cleanup;
+            }//if
+
+            x  = scheme->GetX();
+            y  = scheme->GetY();
+            ij = XY2Index(x, y, numcols);
+
+            this->FillProbeSets(p, m, idx,
+                                arrPM, arrMM, arrSP, arrSM, arrXP, arrXM, 
+                                arrMask[ij], arrInten[ij], arrStdev[ij],
+                                arrBgrd[ij], arrBgdev[ij], arrNPix[ij]);
+
+            if (p > maxnumcells || m > maxnumcells) {
+               cerr << "Error: unitID <" << unitID << "> exceeds maximum number of cells <"
+                    << maxnumcells << ">. Buffer overflow!" << endl;
+               err = errAbort;
+               goto cleanup;
+            }//if
+         }//for_j
+         start += numcells;
+
+         // continue if arrays arrPM etc are not filled
+         if (p == 0) continue;
+         if (p != m) {
+            cerr << "Error: UnitID <" << unitID << "> has different numbers of PM <"
+                 << p << "> and MM <" << m << "> data." << endl;
+//            continue;
+            err = errAbort;
+            goto cleanup;
+         }//if
+
+         // calculate mean expression level
+         Int_t    arrlen = 0;
+         Double_t mean   = 0;
+         Double_t var    = 0;
+         fExpressor->InitTreeInfo(info);
+         fExpressor->InitArrays(p, arrPM, arrSP, arrXP, arrMM, arrSM, arrXM);
+         if ((err = fExpressor->CreateArray(p)))               goto cleanup;
+         if ((err = fExpressor->Calculate(mean, var, arrlen))) goto cleanup;
+         fExpressor->DeleteArray();
+
+         // get minimal/maximal expression levels
+         if (mean < min) min = mean;
+         if (mean > max) max = mean;
+
+         // fill expression tree
+         expr->SetUnitID(unitID);
+         expr->SetLevel(mean);
+         expr->SetStdev(TMath::Sqrt(var));
+         expr->SetNumPairs(arrlen);
+         exprtree->Fill();
+
+         if (XManager::fgVerbose && id%5000 == 0) {
+            cout << "      <" << idx << "> of <" << numunits << "> calls processed...\r" << flush;
+         }//if
+      }//for_id
+
+      if (XManager::fgVerbose) {
+         cout << "      <" << idx << "> of <" << numunits << "> calls processed...Finished" << endl;
+      }//if
+
+      if (XManager::fgVerbose) {
+         cout << "      expression statistics: " << endl;
+         cout << "         minimal expression level is <" << min << ">." << endl;
+         cout << "         maximal expression level is <" << max << ">." << endl;
+      }//if
+
+   // Add tree info to tree
+      AddExprTreeInfo(exprtree, exprtree->GetName(), fExpressor->GetOption(), idx, min, max);
+
+   // Write expression tree to file 
+      if ((err = WriteTree(exprtree, TObject::kOverwrite)) == errNoErr) {
+         // add tree header to list
+         AddTreeHeader(exprtree->GetName(), "Expr", 0, fExpressor->GetNumParameters(),
+                       fExpressor->GetParameters());
+      }//if
+
+//needed later?      SafeDelete(expr);
+      if (err != errNoErr) break;
+   }//for_k
+
+cleanup:
+   SafeDelete(unitSelector);
+   SafeDelete(unit);
+   SafeDelete(scheme);
+
+   // delete arrays
+   if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
+   if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
+   if (arrSM)    {delete [] arrSM;    arrSM    = 0;}
+   if (arrSP)    {delete [] arrSP;    arrSP    = 0;}
+   if (arrMM)    {delete [] arrMM;    arrMM    = 0;}
+   if (arrPM)    {delete [] arrPM;    arrPM    = 0;}
+   if (arrBgdev) {delete [] arrBgdev; arrBgdev = 0;}
+   if (arrBgrd)  {delete [] arrBgrd;  arrBgrd  = 0;}
+   if (arrNPix)  {delete [] arrNPix;  arrNPix  = 0;}
+   if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
+   if (arrInten) {delete [] arrInten; arrInten = 0;}
+   if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
+   if (mskUnit)  {delete [] mskUnit;  mskUnit  = 0;}
+   if (arrUnit)  {delete [] arrUnit;  arrUnit  = 0;}
+//?   // delete scheme tree from RAM
+//?   if (scmtree)  {scmtree->Delete(""); scmtree = 0;}
+   // Note: do not remove exprtree and expr from RAM, needed later
+
+   return err;
+}//DoExpress
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
+                    Int_t numbgrd, TTree **bgrdtree, TFile *file)
+{
+   // Compute expression values using multichip algorithms, e.g. medpol, farms, DFW
+   // Intensities from datatrees are stored:
+   // either in one large table in RAM for fast access
+   // or in temporary trees in a temporary root file in order to reduce memory consumption
+   // Note: all trees must have same number of entries (i.e. identical chip types)
+   if(kCS) cout << "------XGCProcesSet::DoMultichipExpress------" << endl;
+
+//TEST Benchmark
+//gBenchmark->Reset(); 
+//gBenchmark->Start("Bench_MedianPolish");
+
+   Int_t err = errNoErr;
+   Int_t idx = 0;
+   Int_t x   = 0;
+   Int_t y   = 0;
+   Int_t ij, start, end, id, entry;
+
+   Int_t numsels = 0;  //number of selected entries
+   Int_t exlevel = 0;
+
+// Init min/max expression levels
+   Double_t min = DBL_MAX;  //defined in float.h
+   Double_t max = 0;
+
+// Init 
+   Int_t     *arrMask = 0;
+   Int_t     *arrIndx = 0;
+   Int_t     *arrUnit = 0;
+   Int_t     *mskUnit = 0;
+   Double_t  *level   = 0;
+   Double_t  *stdev   = 0;
+
+   Double_t **table   = 0;
+   Double_t  *arrData = 0;
+
+   TTree   *scmtree = 0; 
+   TLeaf   *scmleaf = 0;
+   XScheme *scheme  = 0;
+
+   TTree   *idxtree = 0; 
+   XGCUnit *unit    = 0;
+
+   XGCCell **gccell = 0;
+   XBgCell **bgcell = 0;
+
+   TTree     **tmptree  = 0;
+   TTree     **exprtree = 0;
+   XGCExpression **expr = 0;
+   Int_t    split = 99;
+   Double_t sort;
+
+   fFile->cd();
+
+// Get chip parameters from scheme file (also alternative CDFs)
+   if (datatree[0] == 0) return errGetTree;
+   if (strcmp(fSchemeName.Data(), "") == 0) {
+      fSchemeName = datatree[0]->GetTitle();
+   } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
+      return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
+   }//if
+
+// Change directory to scheme file
+   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
+
+   XGeneChip *chip = (XGeneChip*)fSchemes->FindObject(fSchemeName, kTRUE);
+   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
+   Int_t numrows  = chip->GetNumRows();
+   Int_t numcols  = chip->GetNumColumns();
+   Int_t numunits = chip->GetNumUnits();
+   Int_t size     = numrows*numcols;
+
+// Get scheme tree  and unit tree for scheme
+   idxtree = this->UnitTree(fExpressor, &unit, numunits); 
+   if (idxtree == 0) return errGetTree;
+
+   scmtree = this->SchemeTree(fExpressor, &scheme, &scmleaf); 
+   if (scmtree == 0) return errGetTree;
+
+// Get maximum number of pairs/cells
+   Int_t maxnumcells = this->MaxNumberCells(idxtree);
+   if (maxnumcells <= 0) return errGeneral;
+
+// Get parameters for background subtraction
+   Bool_t doBg = this->BackgroundParameters(fExpressor, fExpressor->GetBgrdOption());
+
+// Check for equal number of data tree entries
+   for (Int_t k=0; k<numdata; k++) {
+      if (datatree[k] == 0) return errGetTree;
+
+      if ((Int_t)(datatree[k]->GetEntries()) != size) {
+            TString str = ""; str += size;
+            return fManager->HandleError(errNumTreeEntries, datatree[k]->GetName(), str);
+      }//if
+   }//for_k
+
+// Check for equal number of background tree entries
+   if (numbgrd > 0) {
+      for (Int_t k=0; k<numdata; k++) {
+         if (bgrdtree[k] == 0) return errGetTree;
+
+         if ((Int_t)(bgrdtree[k]->GetEntries()) != size) {
+            TString str = ""; str += size;
+            return fManager->HandleError(errNumTreeEntries, bgrdtree[k]->GetName(), str);
+         }//if
+      }//for_k
+//?   } else if (subbgrd || corbgrd) {
+   } else if (doBg == kTRUE) {
+      cout << "Warning: No background trees available for background subtraction."
+           << endl;
+      doBg = kFALSE;
+   } else {
+      // to prevent subtraction of background in FillDataArrays()
+      // e.g. AdjustBackground() creates bgrdtrees but sets numbgrd=0 !!
+      doBg = kFALSE;
+   }//if
+
+// Init unit selector
+   XUnitSelector *unitSelector = new XUnitSelector(kTypeSlct[3], kExtenSlct[3]);
+   unitSelector->SetOption((this->ChipType(fTitle)).Data());
+   err = unitSelector->InitParameters(fExprSelector->GetNumParameters(),
+                                      fExprSelector->GetParameters());
+   if (err != errNoErr) goto cleanup;
+
+// Initialize memory for unit arrays
+   if (!(arrUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
+   if (!(mskUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
+
+   for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
+
+// Get mask from scheme tree and store in array 
+   arrUnit = this->FillUnitArray(idxtree, unit, numunits, arrUnit, mskUnit);
+   if (arrUnit == 0) {err = errInitMemory; goto cleanup;}
+
+// Calculate units satisfying mask
+   err = unitSelector->Calculate(numunits, arrUnit, mskUnit); //arrUnit to prevent compile error
+   if (err != errNoErr) goto cleanup;
+
+// Create local arrays
+   if (!(arrMask = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
+   if (!(arrIndx = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
+   if (!(level   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
+   if (!(stdev   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
+
+   for (Int_t i=0; i<size; i++) {
+      arrMask[i] = eINITMASK; 
+      arrIndx[i] = 0;
+   }//for_i
+   for (Int_t i=0; i<numdata; i++) level[i] = stdev[i] = 0.0; 
+
+// Get exon level of annotation
+   if (fExprSelector->GetNumParameters() > 0) {
+      exlevel = (Int_t)(fExprSelector->GetParameters())[0];
+   }//if
+
+// Get mask for PM from scheme tree and store in array 
+   arrMask = this->FillMaskArray(chip, scmtree, scheme, exlevel, size, arrMask);
+   if (arrMask == 0) {err = errInitMemory; goto cleanup;}
+
+// Calculate mask for expression
+   err = fExprSelector->Calculate(size, 0, 0, arrMask);
+   if (err != errNoErr) goto cleanup;
+
+// Init branch addresses
+   gccell = new XGCCell*[numdata];
+   bgcell = new XBgCell*[numdata];
+   for (Int_t k=0; k<numdata; k++) {
+      gccell[k] = 0;
+      bgcell[k] = 0;
+      datatree[k]->SetBranchAddress("DataBranch", &gccell[k]);
+      if (numbgrd > 0) bgrdtree[k]->SetBranchAddress("BgrdBranch", &bgcell[k]);
+   }//for_k
+
+// Get entry index from datatree
+   idx = 0;
+   for (Int_t i=0; i<size; i++) {
+      datatree[0]->GetEntry(i);
+
+      x  = gccell[0]->GetX();
+      y  = gccell[0]->GetY();
+      ij = XY2Index(x, y, numcols);
+
+      if (arrMask[ij] == 1) {
+         arrIndx[ij] = idx++;
+      }//if
+   }//for_i
+
+// Get number of selected entries
+   for (Int_t i=0; i<size; i++) {
+      numsels = (arrMask[i] == 1) ? ++numsels : numsels;
+   }//for_i
+
+//TEST
+//gBenchmark->Start("Bench_fill");
+// Get data from datatrees (and bgrdtrees) and store in table or array
+   if (file == 0) {
+      // create table
+      if (!(table = CreateTable(numdata, numsels))) {err = errInitMemory; goto cleanup;}
+
+      // fill table with selected intensities of all datatrees
+      if ((numbgrd > 0) && (doBg == kTRUE)) {
+         for (Int_t k=0; k<numdata; k++) {
+            idx = 0;
+            for (Int_t i=0; i<size; i++) {
+               datatree[k]->GetEntry(i);
+               bgrdtree[k]->GetEntry(i);
+//unsafe?? use arrInten[ij] and arrBgrd[ij] ??
+
+               // subtract background from intensity
+               if (arrMask[i] == 1) {
+                  table[k][idx++] = this->AdjustIntensity(gccell[k]->GetIntensity(),
+                                                          bgcell[k]->GetBackground(),
+                                                          bgcell[k]->GetStdev());
+               }//if
+            }//for_i
+         }//for_k
+      } else {
+         for (Int_t k=0; k<numdata; k++) {
+            idx = 0;
+            for (Int_t i=0; i<size; i++) {
+               datatree[k]->GetEntry(i);
+
+               if (arrMask[i] == 1) {
+                  table[k][idx++] = gccell[k]->GetIntensity();
+               }//if
+            }//for_i
+         }//for_k
+      }//if
+   } else {
+      // create array to store selected intensities
+      if (!(arrData = new (nothrow) Double_t[numsels])) {err = errInitMemory; goto cleanup;}
+      for (Int_t i=0; i<numsels;  i++) arrData[i] = 0.0;
+
+      // change directory to temporary file
+      if (!file->cd()) {err = errGetDir; goto cleanup;}
+
+      // get data from datatrees (and bgrdtrees) and store in temporary file
+      tmptree  = new TTree*[numdata];
+      for (Int_t k=0; k<numdata; k++) {
+         // create temporary tree
+         tmptree[k] = new TTree(datatree[k]->GetName(), "temporary tree");
+         if (tmptree[k] == 0) {err = errCreateTree; goto cleanup;}
+         tmptree[k]->Branch("sort", &sort, "sort/D");
+
+         // informing user
+         if (XManager::fgVerbose) {
+            cout << "         filling temporary tree <" << tmptree[k]->GetName()
+                 << ">...              \r" << flush;
+         }//if
+
+         // fill array with (background corrected) intensities
+         if ((numbgrd > 0) && (doBg == kTRUE)) {
+            idx = 0;
+            for (Int_t i=0; i<size; i++) {
+               datatree[k]->GetEntry(i);
+               bgrdtree[k]->GetEntry(i);
+
+               // subtract background from intensity
+               if (arrMask[i] == 1) {
+                  arrData[idx++] = this->AdjustIntensity(gccell[k]->GetIntensity(),
+                                                         bgcell[k]->GetBackground(),
+                                                         bgcell[k]->GetStdev());
+               }//if
+            }//for_i
+         } else {
+            idx = 0;
+            for (Int_t i=0; i<size; i++) {
+               datatree[k]->GetEntry(i);
+
+               if (arrMask[i] == 1) {
+                  arrData[idx++] = gccell[k]->GetIntensity();
+               }//if
+            }//for_i
+         }//if
+
+         // fill tmptree with array in the order of scheme tree entries for (x,y)
+         start = 0;
+         end   = 0;
+         for (id=0; id<numunits; id++) { 
+            idxtree->GetEntry(id);
+
+            Int_t unitID   = unit->GetUnitID();
+            Int_t numcells = unit->GetNumCells();
+            // skip masked unit entries
+            if (mskUnit[id] <= 0) {
+               start += numcells;
+               end = start;
+               continue;
+            }//if
+
+            end += numcells;
+            for (Int_t j=start; j<end; j++) {
+               scmtree->GetEntry(j);
+
+               if ((Int_t)(scmleaf->GetValue()) != unitID) {
+                  cerr << "Error: unitID is not equal to: " << unitID << endl;
+                  err = errAbort;
+                  goto cleanup;
+               }//if
+
+               x  = scheme->GetX();
+               y  = scheme->GetY();
+               ij = XY2Index(x, y, numcols);
+
+               if (arrMask[ij] == 1) {
+                  sort = arrData[arrIndx[ij]];
+                  tmptree[k]->Fill();
+               }//if
+            }//for_j
+            start += numcells;
+         }//for_id
+
+         // write tmptree to temporary file
+         tmptree[k]->Write();
+//??         tmptree[k]->Write(TObject::kOverwrite);
+      }//for_k
+
+      if (XManager::fgVerbose) {
+         cout << "         finished filling <" << numdata << "> temporary trees.          " << endl;
+      }//if
+   }//if
+//TEST Benchmark
+//gBenchmark->Show("Bench_table");
+
+// Change directory to current directory for treeset in main file
+   if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
+
+// Create new trees exprtree
+   exprtree = new TTree*[numdata];
+   expr     = new XGCExpression*[numdata];
+
+   for (Int_t k=0; k<numdata; k++) {
+      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
+      TString exprname = dataname + "." + fExpressor->GetTitle();
+      exprtree[k] = new TTree(exprname, fSchemeName);
+      if (exprtree[k] == 0) {err = errCreateTree; goto cleanup;}
+
+      expr[k] = new XGCExpression();
+      exprtree[k]->Branch("ExprBranch", "XGCExpression", &expr[k], 64000, split);
+   }//for_k
+
+//TEST
+//gBenchmark->Show("Bench_MedianPolish");
+//gBenchmark->Reset();
+//gBenchmark->Start("Bench_Loop");
+
+// Calculate expression values
+   start = 0;
+   end   = 0;
+   idx   = 0;
+   entry = 0;
+   for (id=0; id<numunits; id++) { 
+      idxtree->GetEntry(id);
+
+      Int_t unitID   = unit->GetUnitID();
+      Int_t numcells = unit->GetNumCells();
+      // skip masked unit entries
+      if (mskUnit[id] <= 0) {
+         start += numcells;
+         end = start;
+         continue;
+      }//if
+
+//TO DO
+//Better above: arrPM = new Double_t[maxnumcells*numdata]; 
+      // create array to store PM values for all probes with current unitID
+      Int_t  numatoms = unit->GetNumAtoms();
+      Double_t *arrPM = new Double_t[numatoms*numdata]; 
+
+      // fill arrPM with PM values of current unitID
+      Int_t p = 0;
+      end += numcells;
+      for (Int_t j=start; j<end; j++) {
+         scmtree->GetEntry(j);
+
+         if ((Int_t)(scmleaf->GetValue()) != unitID) {
+            cerr << "Error: unitID is not equal to: " << unitID << endl;
+            err = errAbort;
+            goto cleanup;
+         }//if
+
+         x  = scheme->GetX();
+         y  = scheme->GetY();
+         ij = XY2Index(x, y, numcols);
+
+         if (arrMask[ij] == 1) {
+            if (p == 0) idx++;  //count number of units to be summarized
+
+            if (file == 0) {
+               for (Int_t k=0; k<numdata; k++) {
+                  arrPM[p] = table[k][arrIndx[ij]];
+                  p++;
+               }//for_k
+            } else {
+               for (Int_t k=0; k<numdata; k++) {
+                  tmptree[k]->GetEntry(entry);
+                  arrPM[p] = sort;
+                  p++;
+               }//for_k
+            }//if
+
+            entry++;
+         }//if
+      }//for_j
+      start += numcells;
+
+      // fill arrPM or continue if it is not filled
+      if ((err = fExpressor->SetArray(p, arrPM)) != errNoErr) {
+         delete [] arrPM;
+         continue;
+      }//if
+
+      // calculate expression level for PMs of current unitID
+      if ((err = fExpressor->Calculate(numdata, level, stdev, 0))) break;
+
+//////////////////
+// TO DO: return fResiduals for residual-plot!!!! (like affyPLM)
+//      residuals = fExpressor->GetResiduals();
+// store as residuals tree??
+//////////////////
+
+      // fill expression trees
+      for (Int_t k=0; k<numdata; k++) {
+         // get minimal/maximal expression levels
+         if (level[k] < min) min = level[k];
+         if (level[k] > max) max = level[k];
+
+         expr[k]->SetUnitID(unitID);
+         expr[k]->SetLevel(level[k]);
+//??         expr[k]->SetStdev(stdev[k]);
+         expr[k]->SetStdev(TMath::Abs(stdev[k]));
+         expr[k]->SetNumPairs(numatoms);
+         exprtree[k]->Fill();
+      }//for_k
+
+      delete [] arrPM;
+
+      if (XManager::fgVerbose && id%10000 == 0) {
+         cout << "      calculating expression for <" << idx << "> of <"
+              << numunits << "> units...\r" << flush;
+      }//if
+   }//for_id
+
+   if (XManager::fgVerbose) {
+      cout << "      calculating expression for <" << idx << "> of <"
+           << numunits << "> units...Finished." << endl;
+   }//if
+
+   if (XManager::fgVerbose) {
+      cout << "      expression statistics: " << endl;
+      cout << "         minimal expression level is <" << min << ">" << endl;
+      cout << "         maximal expression level is <" << max << ">" << endl;
+   }//if
+//TEST
+//gBenchmark->Show("Bench_Loop");
+
+// Write expression trees to file 
+   for (Int_t k=0; k<numdata; k++) {
+   // Add tree info to tree
+      AddExprTreeInfo(exprtree[k], exprtree[k]->GetName(), fExpressor->GetOption(),
+                      idx, min, max);
+//need to do:
+//                      idx, min[k], max[k]);
+
+      if ((err = WriteTree(exprtree[k], TObject::kOverwrite)) == errNoErr) {
+         // add tree header to list
+         AddTreeHeader(exprtree[k]->GetName(), "Expr", 0, fExpressor->GetNumParameters(),
+                       fExpressor->GetParameters());
+      } else {
+         break;
+      }//if
+   }//for_k
+
+// Cleanup
+cleanup:
+   SafeDelete(unitSelector);
+   SafeDelete(unit);
+   SafeDelete(scheme);
+
+   // delete table
+   DeleteTable(table, numdata);
+
+   // delete temporary trees
+   if (tmptree) {
+      for (Int_t k=0; k<numdata; k++) {
+         tmptree[k]->Delete(""); tmptree[k] = 0;
+      }//for_k
+      delete [] tmptree;
+   }//if
+   // delete arrays
+   if (arrData) {delete [] arrData; arrData = 0;}
+   if (stdev)   {delete [] stdev;   stdev   = 0;}
+   if (level)   {delete [] level;   level   = 0;}
+   if (arrIndx) {delete [] arrIndx; arrIndx = 0;}
+   if (arrMask) {delete [] arrMask; arrMask = 0;}
+   if (mskUnit) {delete [] mskUnit; mskUnit = 0;}
+   if (arrUnit) {delete [] arrUnit; arrUnit = 0;}
+
+   // delete scheme tree from RAM
+//?   if (scmtree)  {scmtree->Delete(""); scmtree = 0;}
+
+   delete [] expr;
+   delete [] exprtree;
+   delete [] gccell;
+   delete [] bgcell;
+
+   return err;
+}//DoMultichipExpress
 
 //______________________________________________________________________________
 Int_t XGCProcesSet::ExportTreeType(const char *exten, Int_t n, TString *names, 
@@ -2776,9 +4127,8 @@ Int_t XGCProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
            : hasData);
 
 // Get trees
-   TTree       **tree = new TTree*[n];
-   XExpression **expr = new XExpression*[n];
-
+   TTree         **tree = new TTree*[n];
+   XGCExpression **expr = new XGCExpression*[n];
    if (fTrees->GetSize() == 0) {
    // Get trees from names
       for (Int_t k=0; k<n; k++) {
@@ -2829,7 +4179,7 @@ Int_t XGCProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
 
 // Get unit tree for scheme (needed for annotation)
    XGCUnit *unit   = 0;
-//   XExonUnit *unit = 0;
+//?   XExonUnit *unit = 0;
    TTree *unittree = this->GetUnitTree(chip, type);
    if (unittree == 0) return errGetTree;
    unittree->SetBranchAddress("IdxBranch", &unit);
@@ -2847,7 +4197,7 @@ Int_t XGCProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
    THashTable *htable = 0;
    if (!(htable = new THashTable(2*numannot))) return errInitMemory;
 
-   htable = this->FillHashTable(htable, anntree, annot);
+   htable = this->FillHashTable(htable, anntree, annot, type);
 
 // Output header
    output << "UNIT_ID";
@@ -2886,6 +4236,7 @@ Int_t XGCProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
 // Loop over tree entries and trees
    XIdxString *idxstr = 0;
    Int_t index = 0;
+   Int_t cnt   = 0;
    Int_t nentries = (Int_t)(tree[0]->GetEntries());
    for (Int_t i=0; i<nentries; i++) {
       tree[0]->GetEntry(i);
@@ -2914,7 +4265,7 @@ Int_t XGCProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
             idxstr = FindUnitID(htable, unit);
             if (idxstr) {
                anntree->GetEntry(idxstr->GetIndex());
-               if (hasTrans  == j) output << sep << this->GetTranscriptID(annot);
+               if (hasTrans  == j) output << sep << this->GetTranscriptID(unit, annot, type);
                if (hasName   == j) output << sep << annot->GetName();
                if (hasSymbol == j) output << sep << annot->GetSymbol();
                if (hasAccess == j) output << sep << annot->GetAccession();
@@ -2943,19 +4294,20 @@ Int_t XGCProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
             for (Int_t k=0; k<n; k++) {
                tree[k]->GetEntry(i);
                if (hasLevel)  output << sep << expr[k]->GetLevel();
-               if (hasStdev)  output << sep << ((XGCExpression*)expr[k])->GetStdev();
-               if (hasNPairs) output << sep << ((XGCExpression*)expr[k])->GetNumPairs();
+               if (hasStdev)  output << sep << expr[k]->GetStdev();
+               if (hasNPairs) output << sep << expr[k]->GetNumPairs();
             }//for_k
          }//if
       }//for_j
       output << endl;
 
-      if (XManager::fgVerbose && i%10000 == 0) {
-         cout << "<" << i+1 << "> records exported...\r" << flush;
+      cnt++;
+      if (XManager::fgVerbose && cnt%10000 == 0) {
+         cout << "<" << cnt << "> records exported...\r" << flush;
       }//if
    }//for_i
    if (XManager::fgVerbose) {
-      cout << "<" << nentries << "> records exported." << endl;
+      cout << "<" << cnt << "> of " << "<" << nentries << "> records exported." << endl;
    }//if
 
 //Cleanup
@@ -3099,7 +4451,7 @@ Int_t XGCProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varlist
 
 // Get unit tree for scheme (needed for annotation)
    XGCUnit *unit   = 0;
-//   XExonUnit *unit = 0;
+//?   XExonUnit *unit = 0;
    TTree *unittree = this->GetUnitTree(chip, type);
    if (unittree == 0) return errGetTree;
    unittree->SetBranchAddress("IdxBranch", &unit);
@@ -3117,7 +4469,7 @@ Int_t XGCProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varlist
    THashTable *htable = 0;
    if (!(htable = new THashTable(2*numannot))) return errInitMemory;
 
-   htable = this->FillHashTable(htable, anntree, annot);
+   htable = this->FillHashTable(htable, anntree, annot, type);
 
 // Output header
    output << "UNIT_ID";
@@ -3154,6 +4506,7 @@ Int_t XGCProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varlist
 // Loop over tree entries and tree branches
    XIdxString *idxstr = 0;
    Int_t index = 0;
+   Int_t cnt   = 0;
    Int_t nentries = (Int_t)(tree[0]->GetEntries());
    for (Int_t i=0; i<nentries; i++) {
       tree[0]->GetEntry(i);
@@ -3182,7 +4535,7 @@ Int_t XGCProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varlist
             idxstr = FindUnitID(htable, unit);
             if (idxstr) {
                anntree->GetEntry(idxstr->GetIndex());
-               if (hasTrans  == j) output << sep << this->GetTranscriptID(annot);
+               if (hasTrans  == j) output << sep << this->GetTranscriptID(unit, annot, type);
                if (hasName   == j) output << sep << annot->GetName();
                if (hasSymbol == j) output << sep << annot->GetSymbol();
                if (hasAccess == j) output << sep << annot->GetAccession();
@@ -3235,12 +4588,13 @@ Int_t XGCProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varlist
       }//for_j
       output << endl;
 
-      if (XManager::fgVerbose && i%10000 == 0) {
-         cout << "<" << i+1 << "> records exported...\r" << flush;
+      cnt++;
+      if (XManager::fgVerbose && cnt%10000 == 0) {
+         cout << "<" << cnt << "> records exported...\r" << flush;
       }//if
    }//for_i
    if (XManager::fgVerbose) {
-      cout << "<" << nentries << "> records exported." << endl;
+      cout << "<" << cnt << "> of " << "<" << nentries << "> records exported." << endl;
    }//if
 
 //Cleanup
@@ -3314,6 +4668,123 @@ Int_t *XGCProcesSet::FillMaskArray(XDNAChip *chip, TTree *scmtree, XScheme *sche
 }//FillMaskArray
 
 //______________________________________________________________________________
+Int_t *XGCProcesSet::FillUnitArray(TTree *idxtree, XGCUnit *unit,
+                     Int_t n, Int_t *arr, Int_t *msk)
+{
+   // Fill array arr with unitID and array msk with unittype
+   if(kCS) cout << "------XGCProcesSet::FillUnitArray------" << endl;
+
+   for (Int_t i=0; i<n; i++) {
+      idxtree->GetEntry(i);
+
+      arr[i] = unit->GetUnitID();
+      msk[i] = unit->GetUnitType();
+   }//for_i
+
+   return arr;
+}//FillUnitArray
+
+//______________________________________________________________________________
+void XGCProcesSet::FillProbeSets(Int_t &p, Int_t &m, Int_t &idx, Double_t *pm, 
+                   Double_t *mm, Double_t *sp, Double_t *sm, Int_t *xp, 
+                   Int_t *xm, Int_t msk, Double_t inten, Double_t stdev,
+                   Double_t bgrd, Double_t bgdev, Int_t npix)
+{
+   // Fill PM and MM probesets
+   if(kCSa) cout << "------XGCProcesSet::FillProbeSets------" << endl;
+
+   if (msk == 1) {
+      if (p == 0) idx++;  //count number of units
+      pm[p] = inten;
+      sp[p] = stdev;
+      xp[p] = npix;
+      p++;
+   } else if (msk == 0) {
+      mm[m] = inten;
+      sm[m] = stdev;
+      xm[m] = npix;
+      m++;
+   }//if
+}//FillProbeSets
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::MaxNumberCells(TTree *idxtree)
+{
+   // Get maximum number of pairs from tree info for unit tree
+   if(kCS) cout << "------XGCProcesSet::MaxNumberCells------" << endl;
+
+   XUnitTreeInfo *idxinfo = 0;
+   idxinfo = (XUnitTreeInfo*)idxtree->GetUserInfo()->FindObject(idxtree->GetName());
+   if (!idxinfo) {
+      cerr << "Error: Could not get tree info for <" << idxtree->GetName() << ">."
+           << endl;
+      return errGeneral;
+   }//if
+
+   return (Int_t)idxinfo->GetValue("fMaxNPairs");
+}//MaxNumberCells
+
+//______________________________________________________________________________
+TTree *XGCProcesSet::SchemeTree(XAlgorithm *algorithm, void *scheme, TLeaf **scmleaf)
+{
+   // Get scheme tree for scheme
+   if(kCS) cout << "------XGCProcesSet::SchemeTree------" << endl;
+
+
+   XGeneChip *chip = (XGeneChip*)fSchemes->FindObject(fSchemeName, kTRUE);
+   if (!chip) return 0;
+
+   TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
+   if (scmtree == 0) return 0;
+   scmtree->SetBranchAddress("ScmBranch", scheme);
+
+   TLeaf *leaf = scmtree->FindLeaf("fUnitID");
+   *scmleaf = leaf;
+
+   return scmtree;
+}//SchemeTree
+
+//______________________________________________________________________________
+TTree *XGCProcesSet::UnitTree(XAlgorithm *algorithm, void *unit, Int_t &numunits)
+{
+   // Get unit tree for scheme
+   if(kCS) cout << "------XGCProcesSet::UnitTree------" << endl;
+
+
+   XGeneChip *chip = (XGeneChip*)fSchemes->FindObject(fSchemeName, kTRUE);
+   if (!chip) return 0;
+   numunits = chip->GetNumUnits();
+
+   TTree *idxtree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
+   if (idxtree == 0) return 0;
+   idxtree->SetBranchAddress("IdxBranch", unit);
+
+   return idxtree;
+}//UnitTree
+
+//______________________________________________________________________________
+Double_t XGCProcesSet::AdjustIntensity(Double_t inten, Double_t bgrd, Double_t stdv)
+{
+   // Adjust intensity based on fOption
+   if(kCSa) cout << "------XGCProcesSet::AdjustIntensity------" << endl;
+
+   if ((Int_t)fBgPars[0] == 0) { //"none"
+      return inten;
+   } else if ((Int_t)fBgPars[0] == 1) { //"subtractbg"
+      inten = inten - bgrd;
+   } else if ((Int_t)fBgPars[0] == 2) { //"correctbg"
+      inten = inten - bgrd;
+      inten = TMath::Max(inten, fBgPars[1]*stdv);
+   } else if ((Int_t)fBgPars[0] == 3) { //"attenuatebg"
+      Double_t hh = (fBgPars[2] < 0) ? 4*inten*bgrd*fBgPars[1] : fBgPars[2];
+      Double_t xx = inten - bgrd;
+      inten = (xx + TMath::Sqrt(TMath::Power(xx, 2) + hh))/2.0;
+   }//if
+
+   return inten;
+}//AdjustIntensity
+
+//______________________________________________________________________________
 Bool_t XGCProcesSet::BackgroundParameters(XAlgorithm *algorithm, const char *option)
 {
    // Get parameters fBgPars for background subtraction for the following options
@@ -3381,26 +4852,95 @@ Bool_t XGCProcesSet::BackgroundParameters(XAlgorithm *algorithm, const char *opt
 }//BackgroundParameters
 
 //______________________________________________________________________________
-Double_t XGCProcesSet::AdjustIntensity(Double_t inten, Double_t bgrd, Double_t stdv)
+TString XGCProcesSet::ChipType(const char *type)
 {
-   // Adjust intensity based on fOption
-   if(kCSa) cout << "------XGCProcesSet::AdjustIntensity------" << endl;
+   // Convert ChipType to option type for e.g. XSelector
+   if(kCS) cout << "------XGCProcesSet::ChipType------" << endl;
 
-   if ((Int_t)fBgPars[0] == 0) { //"none"
-      return inten;
-   } else if ((Int_t)fBgPars[0] == 1) { //"subtractbg"
-      inten = inten - bgrd;
-   } else if ((Int_t)fBgPars[0] == 2) { //"correctbg"
-      inten = inten - bgrd;
-      inten = TMath::Max(inten, fBgPars[1]*stdv);
-   } else if ((Int_t)fBgPars[0] == 3) { //"attenuatebg"
-      Double_t hh = (fBgPars[2] < 0) ? 4*inten*bgrd*fBgPars[1] : fBgPars[2];
-      Double_t xx = inten - bgrd;
-      inten = (xx + TMath::Sqrt(TMath::Power(xx, 2) + hh))/2.0;
+   TString chiptype = "none";
+
+   if (strcmp(type,"GeneChip") == 0) {
+      chiptype = "gene";
+   } else if (strcmp(type,"SNPChip") == 0) {
+      chiptype = "snp";
+   } else if (strcmp(type,"GenomeChip") == 0) {
+      chiptype = "genome";
+   } else if (strcmp(type,"ExonChip") == 0) {
+      chiptype = "exon";
+   } else if (strcmp(type,"GenePix") == 0) {
+      chiptype = "gene";
    }//if
 
-   return inten;
-}//AdjustIntensity
+   return chiptype;
+}//ChipType
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::FillDataArrays(TTree *datatree, TTree *bgrdtree, Bool_t doBg,
+                    Int_t nrow, Int_t ncol, Double_t *inten, Double_t *stdev,
+                    Int_t *npix, Double_t *bgrd, Double_t *bgdev)
+{
+   // Fill arrays inten, stdev, npix with data from datatree.
+   // If bgrdtree != 0 fill arrays bgrd, bgdev with data from bgrdtree
+   // If bgrdtree != 0 and doBg == kTRUE then subtract background from intensity
+   if(kCS) cout << "------XGCProcesSet::FillDataArrays------" << endl;
+
+// Init datatree
+   XGCCell *gccell = 0;
+   datatree->SetBranchAddress("DataBranch", &gccell);
+
+// Get data from datatree and store in arrays
+   Int_t size = datatree->GetEntries();
+   // compare entries with number of entries in data tree
+   if (size != nrow*ncol) {
+      TString str = ""; str += nrow*ncol;
+      return fManager->HandleError(errNumTreeEntries, datatree->GetName(), str);
+   }//if
+
+   Int_t x, y, ij;
+   for (Int_t i=0; i<size; i++) {
+      datatree->GetEntry(i);
+
+      x  = gccell->GetX();
+      y  = gccell->GetY();
+      ij = XY2Index(x, y, ncol);
+
+      if (inten) inten[ij] = gccell->GetIntensity();
+      if (stdev) stdev[ij] = gccell->GetStdev();
+      if (npix)  npix[ij]  = gccell->GetNumPixels();
+   }//for_i
+
+// Get background from bgrdtree and subtract optionally from intensity
+   if (bgrdtree) {
+      // init background tree
+      XBgCell *bgcell = 0;
+      bgrdtree->SetBranchAddress("BgrdBranch", &bgcell);
+
+      // compare entries with number of entries in data tree
+      Int_t numentries = (Int_t)(bgrdtree->GetEntries());
+      if (numentries != size) {
+         TString str = ""; str += size;
+         return fManager->HandleError(errNumTreeEntries, bgrdtree->GetName(), str);
+      }//if
+
+      for (Int_t i=0; i<size; i++) {
+         bgrdtree->GetEntry(i);
+
+         x  = bgcell->GetX();
+         y  = bgcell->GetY();
+         ij = XY2Index(x, y, ncol);
+
+         if (bgrd)  bgrd[ij]  = bgcell->GetBackground();
+         if (bgdev) bgdev[ij] = bgcell->GetStdev();
+
+         // subtract background from intensity
+         if (inten && doBg) {
+            inten[ij] = this->AdjustIntensity(inten[ij], bgcell->GetBackground(), bgcell->GetStdev());
+         }//if
+      }//for_i
+   }//if
+
+   return errNoErr;
+}//FillDataArrays
 
 //______________________________________________________________________________
 Int_t XGCProcesSet::FillDataArrays(TTree *datatree, TTree *bgrdtree, Bool_t doBg,
@@ -3423,6 +4963,12 @@ Int_t XGCProcesSet::FillDataArrays(TTree *datatree, TTree *bgrdtree, Bool_t doBg
 // Get data from datatree and store in arrays
 //   Int_t size = nrow*ncol;
    Int_t size = datatree->GetEntries();
+   // compare entries with number of entries in probe tree
+   if (size != nrow*ncol) {
+      TString str = ""; str += nrow*ncol;
+      return fManager->HandleError(errNumTreeEntries, datatree->GetName(), str);
+   }//if
+
    Int_t x, y, ij;
    for (Int_t i=0; i<size; i++) {
       datatree->GetEntry(i);
@@ -3476,8 +5022,13 @@ Int_t XGCProcesSet::FillDataArrays(TTree *datatree, Int_t nrow, Int_t ncol,
    datatree->SetBranchAddress("DataBranch", &gccell);
 
 // Get data from datatree and store in arrays
-//   Int_t size = nrow*ncol;
    Int_t size = datatree->GetEntries();
+   // compare entries with number of entries in probe tree
+   if (size != nrow*ncol) {
+      TString str = ""; str += nrow*ncol;
+      return fManager->HandleError(errNumTreeEntries, datatree->GetName(), str);
+   }//if
+
    Int_t x, y, ij;
    for (Int_t i=0; i<size; i++) {
       datatree->GetEntry(i);
@@ -3752,6 +5303,62 @@ Int_t XGCProcesSet::FillMaskTree(const char *name, XAlgorithm *algorithm,
 }//FillMaskTree
 
 //______________________________________________________________________________
+void XGCProcesSet::FillProbeSets(Int_t &p, Int_t &idx, Double_t *pm, Double_t *sp,
+                   Int_t *xp, Int_t msk, Double_t inten, Double_t stdev)
+{
+   // Fill probesets (DABG calls only)
+   if(kCSa) cout << "------XGCProcesSet::FillProbeSets------" << endl;
+
+   if (msk >= 0) {
+      if (p == 0) idx++;  //count number of units
+      pm[p] = inten;
+      sp[p] = stdev;
+      xp[p] = msk;
+      p++;
+   }//if
+}//FillProbeSets
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::MaskArray2GC(XDNAChip *chip, Int_t *msk)
+{
+   // For DABG only, fill arrMask with GC content (GC>=0 for PM)
+   // for PM set GC >= 0 , i.e. GC = 0...kProbeLength,
+   // for MM set GC < eINITMASK, i.e. GC = eINITMASK - (1...kProbeLength+1)
+   if(kCS) cout << "------XGCProcesSet::MaskArray2GC------" << endl;
+
+// Get mask for PM/MM from scheme tree and store in array 
+   Int_t x, y, ij;
+   Int_t nrow = chip->GetNumRows();
+   Int_t ncol = chip->GetNumColumns();
+   Int_t size = nrow*ncol;
+
+// Get probe tree for scheme
+   XGCProbe *probe = 0;
+   TTree *probetree = (TTree*)gDirectory->Get(chip->GetProbeTree()); 
+   if (probetree == 0) return errGetTree;
+   probetree->SetBranchAddress("PrbBranch", &probe);
+
+// Get GC content from probe tree and store in array
+   for (Int_t i=0; i<size; i++) {
+      probetree->GetEntry(i);
+
+      x  = probe->GetX();
+      y  = probe->GetY();
+      ij = XY2Index(x, y, ncol);
+
+      if (msk[ij] == 1) {
+         msk[ij] = probe->GetNumberGC();
+      } else if (msk[ij] == 0) {
+         //need to use (numberGC + 1) to avoid setting arrMask=eINITMASK for GC=0!!
+         msk[ij] = eINITMASK - (probe->GetNumberGC() + 1);
+//no         msk[ij] = eINITMASK - probe->GetNumberGC();
+      }//if
+   }//for_i
+
+   return errNoErr;
+}//MaskArray2GC
+
+//______________________________________________________________________________
 Int_t XGCProcesSet::MeanReference(Int_t numdata, TTree **datatree, Int_t numbgrd,
                     TTree **bgrdtree, Int_t nrow, Int_t ncol, Double_t *arr, Bool_t doBg)
 {
@@ -3836,1024 +5443,6 @@ Int_t XGCProcesSet::MedianReference(Int_t numdata, TTree **datatree, Int_t numbg
    return this->MeanReference(numdata, datatree, numbgrd, bgrdtree,  nrow, ncol, arr, doBg);
 }//MedianReference
 
-//______________________________________________________________________________
-Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
-                    Int_t numbgrd, TTree **bgrdtree)
-{
-   // Condense data from  datatrees to expression values
-   if(kCS) cout << "------XGCProcesSet::DoExpress------" << endl;
-
-   Int_t err = errNoErr;
-   Int_t split = 99;
-   Int_t i, j, ij, x, y, start, end;
-
-// Get parameters for background subtraction
-   Bool_t doBg = this->BackgroundParameters(fExpressor, fExpressor->GetBgrdOption());
-
-// Check for presence of background trees
-   if (numbgrd == 0) {
-      if (doBg == kTRUE) {
-         cout << "Warning: No background trees available for background subtraction."
-              << endl;
-      }//if
-      // to prevent subtraction of background in FillDataArrays()
-      // e.g. AdjustBackground() creates bgrdtrees but sets numbgrd=0 !!
-      doBg = kFALSE;
-   }//if
-
-// Init local arrays to store data from trees
-   Int_t    *arrMask  = 0;
-   Double_t *arrInten = 0;
-   Double_t *arrStdev = 0;
-   Int_t    *arrNPix  = 0;
-   Double_t *arrPM    = 0; 
-   Double_t *arrMM    = 0;
-   Double_t *arrSP    = 0; 
-   Double_t *arrSM    = 0;
-   Int_t    *arrXP    = 0; 
-   Int_t    *arrXM    = 0;
-
-// Get chip parameters from scheme file (also alternative CDFs)
-   if (datatree[0] == 0) return errGetTree;
-   if (strcmp(fSchemeName.Data(), "") == 0) {
-      fSchemeName = datatree[0]->GetTitle();
-   } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
-      return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
-   }//if
-   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
-
-   XDNAChip *chip = (XDNAChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
-   Int_t numrows  = chip->GetNumRows();
-   Int_t numcols  = chip->GetNumColumns();
-   Int_t numctrls = chip->GetNumControls();
-   Int_t numunits = chip->GetNumUnits();
-
-// Get scheme tree for scheme
-   XScheme *scheme = 0;
-   TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
-   if (scmtree == 0) return errGetTree;
-   scmtree->SetBranchAddress("ScmBranch", &scheme);
-
-// Get unit tree for scheme
-   XGCUnit *unit = 0;
-   TTree *idxtree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
-   if (idxtree == 0) return errGetTree;
-   idxtree->SetBranchAddress("IdxBranch", &unit);
-
-// Get maximum number of pairs from tree info for unit tree
-   XUnitTreeInfo *idxinfo = 0;
-   idxinfo = (XUnitTreeInfo*)idxtree->GetUserInfo()->FindObject(idxtree->GetName());
-   if (!idxinfo) {
-      cerr << "Error: Could not get tree info for <" << idxtree->GetName() << ">." << endl;
-      return errGeneral;
-   }//if
-   Int_t maxnumpairs = (Int_t)idxinfo->GetValue("fMaxNPairs");
-
-// Initialize memory for data arrays
-   Int_t size = numrows*numcols;
-   if (!(arrMask  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-   if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-   if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-   if (!(arrNPix  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-
-   for (i=0; i<size; i++) {
-      arrMask[i]  = eINITMASK;  //init mask
-      arrInten[i] = arrStdev[i] = 0.0;
-      arrNPix[i]  = 0;
-   }//for_i
-
-// Get mask for PM/MM from scheme tree and store in array 
-   arrMask = this->FillMaskArray(chip, scmtree, scheme, 0, size, arrMask); //level=0?
-
-// Calculate mask for expression
-   err = fExprSelector->Calculate(size, 0, 0, arrMask);
-   if (err != errNoErr) goto cleanup;
-
-// Initialize maximum memory for PM/MM arrays (maxnumpairs+1 to avoid potential buffer overflow)
-   if (!(arrPM = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
-   if (!(arrMM = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
-   if (!(arrSP = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
-   if (!(arrSM = new (nothrow) Double_t[maxnumpairs+1])) {err = errInitMemory; goto cleanup;}
-   if (!(arrXP = new (nothrow) Int_t[maxnumpairs+1]))    {err = errInitMemory; goto cleanup;}
-   if (!(arrXM = new (nothrow) Int_t[maxnumpairs+1]))    {err = errInitMemory; goto cleanup;}
-
-   if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
-
-// Calculate expression
-   for (Int_t k=0; k<numdata; k++) {
-      if (datatree[k] == 0) {err = errGetTree; break;}
-
-   // Informing user
-      TString name = datatree[k]->GetName();
-      if (XManager::fgVerbose) {
-         cout << "      summarizing <" << name.Data() << ">..." << endl;
-      }//if
-
-   // Get tree info from datatree
-//      fDataFile->cd();
-
-      XDataTreeInfo *info = 0;
-      info = (XDataTreeInfo*)datatree[k]->GetUserInfo()->FindObject(name);
-      if (!info) {
-         cerr << "Error: Could not get tree info for <" << name.Data() << ">." << endl;
-         err = errGeneral;
-         break;
-      }//if
-
-   // Init min/max expression levels
-      Double_t min = DBL_MAX;  //defined in float.h
-      Double_t max = 0;
-
-   // Get data from datatree and store in arrays
-      err = this->FillDataArrays(datatree[k], bgrdtree[k], doBg,
-                       numrows, numcols, arrInten, arrStdev, arrNPix);
-      if (err != errNoErr) goto cleanup;
-
-   // Create new tree exprtree
-      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
-      TString exprname = dataname + "." + fExpressor->GetTitle();
-      TTree  *exprtree = new TTree(exprname, fSchemeName);
-      if (exprtree == 0) {err = errCreateTree; break;}
-
-      XGCExpression *expr = 0;
-      expr = new XGCExpression();
-      exprtree->Branch("ExprBranch", "XGCExpression", &expr, 64000, split);
-
-   // Calculate expression values
-      start = 0;
-      end   = 0;
-      for (Int_t id=0; id<numunits; id++) { 
-         idxtree->GetEntry(id);
-
-         Int_t unitID   = id - numctrls;
-         Int_t numcells = unit->GetNumCells();
-         // skip negative unit entries (controls)
-         if (unit->GetUnitID() < 0) {
-            start += numcells;
-            end = start;
-            continue;
-         }//if
-
-         Int_t p = 0;
-         Int_t m = 0;
-         end += numcells;
-         for (j=start; j<end; j++) {
-            scmtree->GetEntry(j);
-
-            if ((scheme->GetUnitID()) != unitID) {
-               cerr << "Error: unitID is not equal to: " << unitID << endl;
-               err = errAbort;
-               goto cleanup;
-            }//if
-
-            x  = scheme->GetX();
-            y  = scheme->GetY();
-            ij = XY2Index(x, y, numcols);
-
-// IMPORTANT NOTE: do not use the following code although it is faster:
-// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
-// Every tree contains the (x,y) coordinates as unique identifier, thus
-// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
-
-            if (arrMask[ij] == 1) {
-               arrPM[p] = arrInten[ij];
-               arrSP[p] = arrStdev[ij];
-               arrXP[p] = arrNPix[ij];
-               p++;
-            } else if (arrMask[ij] == 0) {
-               arrMM[m] = arrInten[ij];
-               arrSM[m] = arrStdev[ij];
-               arrXM[m] = arrNPix[ij];
-               m++;
-            }//if
-
-            if (p > maxnumpairs || m > maxnumpairs) {
-               cerr << "Error: unitID <" << unitID << "> exceeds maximum number of pairs <"
-                    << maxnumpairs << ">. Buffer overflow!" << endl;
-               err = errAbort;
-               goto cleanup;
-            }//if
-         }//for_j
-         start += numcells;
-
-         // continue if arrays arrPM etc are not filled
-         if (p == 0) continue;
-         if (p != m) {
-            cout << "Warning: Skipping unitID <" << unitID
-                 << "> with different numbers of PM and MM data." << endl;
-//            continue;
-            err = errAbort;
-            goto cleanup;
-         }//if
-
-         // calculate mean expression level
-         Int_t    arrlen = 0;
-         Double_t mean   = 0;
-         Double_t var    = 0;
-         fExpressor->InitTreeInfo(info);
-         fExpressor->InitArrays(p, arrPM, arrSP, arrXP, arrMM, arrSM, arrXM);
-         if ((err = fExpressor->CreateArray(p)))               goto cleanup;
-         if ((err = fExpressor->Calculate(mean, var, arrlen))) goto cleanup;
-         fExpressor->DeleteArray();
-
-         // get minimal/maximal expression levels
-         if (mean < min) min = mean;
-         if (mean > max) max = mean;
-
-         // fill expression tree
-         expr->SetUnitID(unitID);
-         expr->SetLevel(mean);
-         expr->SetStdev(TMath::Sqrt(var));
-         expr->SetNumPairs(arrlen);
-         exprtree->Fill();
-      }//for_id
-
-      if (XManager::fgVerbose) {
-         cout << "      expression statistics: " << endl;
-         cout << "         minimal expression level is <" << min << ">." << endl;
-         cout << "         maximal expression level is <" << max << ">." << endl;
-      }//if
-
-   // Add tree info to tree
-      AddExprTreeInfo(exprtree, exprtree->GetName(), fExpressor->GetOption(),
-                      numunits-numctrls, min, max);
-
-   // Write expression tree to file 
-      if ((err = WriteTree(exprtree, TObject::kOverwrite)) == errNoErr) {
-         // add tree header to list
-         AddTreeHeader(exprtree->GetName(), "Expr", 0, fExpressor->GetNumParameters(),
-                       fExpressor->GetParameters());
-      }//if
-
-      if (err != errNoErr) break;
-   }//for_k
-
-cleanup:
-   // delete arrays
-   if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
-   if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
-   if (arrSM)    {delete [] arrSM;    arrSM    = 0;}
-   if (arrSP)    {delete [] arrSP;    arrSP    = 0;}
-   if (arrMM)    {delete [] arrMM;    arrMM    = 0;}
-   if (arrPM)    {delete [] arrPM;    arrPM    = 0;}
-   if (arrNPix)  {delete [] arrNPix;  arrNPix  = 0;}
-   if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
-   if (arrInten) {delete [] arrInten; arrInten = 0;}
-   if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
-//?   // delete scheme tree from RAM
-//?   if (scmtree)  {scmtree->Delete(""); scmtree = 0;}
-   // Note: do not remove exprtree and expr from RAM, needed later
-
-   return err;
-}//DoExpress
-
-//______________________________________________________________________________
-Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
-                    Int_t numbgrd, TTree **bgrdtree)
-{
-   // Compute expression values using multichip algorithms, e.g. medpol, farms, DFW
-   // Intensities from datatrees are stored in one large table in RAM for fast access
-   // Note: all trees must have same number of entries (i.e. identical chip types)
-   if(kCS) cout << "------XGCProcesSet::DoMultichipExpress(table)------" << endl;
-
-// Informing user
-   if (XManager::fgVerbose) {
-      cout << "      summarizing with " << fExpressor->GetName() << "..." << endl;
-   }//if
-
-//TEST Benchmark
-//gBenchmark->Reset(); 
-//gBenchmark->Start("Bench_MedianPolish");
-
-   Int_t x, y, ij, start, end, id;
-   Int_t idx = 0;
-   Int_t err = errNoErr;
-
-// Get parameters for background subtraction
-   Bool_t doBg = this->BackgroundParameters(fExpressor, fExpressor->GetBgrdOption());
-
-// Get chip parameters from scheme file (also alternative CDFs)
-   if (datatree[0] == 0) return errGetTree;
-   if (strcmp(fSchemeName.Data(), "") == 0) {
-      fSchemeName = datatree[0]->GetTitle();
-   } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
-      return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
-   }//if
-   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
-
-   XDNAChip *chip = (XDNAChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
-   Int_t numrows  = chip->GetNumRows();
-   Int_t numcols  = chip->GetNumColumns();
-   Int_t numctrls = chip->GetNumControls();
-   Int_t numunits = chip->GetNumUnits();
-
-// Get scheme tree for scheme
-   XScheme *scheme = 0;
-   TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
-   if (scmtree == 0) return errGetTree;
-   scmtree->SetBranchAddress("ScmBranch", &scheme);
-
-// Get unit tree for scheme
-   XGCUnit *unit = 0;
-   TTree *idxtree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
-   if (idxtree == 0) return errGetTree;
-   idxtree->SetBranchAddress("IdxBranch", &unit);
-
-// Init size of arrays
-   Int_t size     = numrows*numcols;
-   Int_t numsels  = 0;  //number of selected entries
-
-// Check for equal number of data tree entries
-   for (Int_t k=0; k<numdata; k++) {
-      if (datatree[k] == 0) return errGetTree;
-
-      if ((Int_t)(datatree[k]->GetEntries()) != size) {
-            TString str = ""; str += size;
-            return fManager->HandleError(errNumTreeEntries, datatree[k]->GetName(), str);
-      }//if
-   }//for_k
-
-// Check for equal number of background tree entries
-   if (numbgrd > 0) {
-      for (Int_t k=0; k<numdata; k++) {
-         if (bgrdtree[k] == 0) return errGetTree;
-
-         if ((Int_t)(bgrdtree[k]->GetEntries()) != size) {
-            TString str = ""; str += size;
-            return fManager->HandleError(errNumTreeEntries, bgrdtree[k]->GetName(), str);
-         }//if
-      }//for_k
-   } else if (doBg == kTRUE) {
-      cout << "Warning: No background trees available for background subtraction."
-           << endl;
-      doBg = kFALSE;
-   } else {
-      // to prevent subtraction of background in FillDataArrays()
-      // e.g. AdjustBackground() creates bgrdtrees but sets numbgrd=0 !!
-      doBg = kFALSE;
-   }//if
-
-// Init branch addresses
-   XBgCell **bgcell = new XBgCell*[numdata];
-   XGCCell **gccell = new XGCCell*[numdata];
-   for (Int_t k=0; k<numdata; k++) {
-      bgcell[k] = 0;
-      gccell[k] = 0;
-      datatree[k]->SetBranchAddress("DataBranch", &gccell[k]);
-      if (numbgrd > 0) bgrdtree[k]->SetBranchAddress("BgrdBranch", &bgcell[k]);
-   }//for_k
-
-// Init expression trees
-   Int_t  split = 99;
-   TTree     **exprtree = new TTree*[numdata];
-   XGCExpression **expr = new XGCExpression*[numdata];
-
-// Init min/max expression levels
-   Double_t min = DBL_MAX;  //defined in float.h
-   Double_t max = 0;
-
-// Init local arrays
-   Int_t     *arrMask = 0;
-   Int_t     *arrIndx = 0;
-   Double_t  *level   = 0;
-   Double_t  *stdev   = 0;
-   Double_t **table   = 0;
-
-// Create local arrays
-   if (!(arrMask = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
-   if (!(arrIndx = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
-   if (!(level   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
-   if (!(stdev   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
-
-   for (Int_t i=0; i<size; i++) {
-      arrMask[i] = eINITMASK; 
-      arrIndx[i] = 0;
-   }//for_i
-   for (Int_t i=0; i<numdata; i++) level[i] = stdev[i] = 0.0; 
-
-// IMPORTANT NOTE: do not use the following code although it is faster:
-// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
-// Every tree contains the (x,y) coordinates as unique identifier, thus
-// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
-
-// Get mask for PM from scheme tree and store in array 
-   arrMask = this->FillMaskArray(chip, scmtree, scheme, 0, size, arrMask);
-
-// Calculate mask for expression
-   err = fExprSelector->Calculate(size, 0, 0, arrMask);
-   if (err != errNoErr) goto cleanup;
-
-// Get entry index from datatree
-   idx = 0;
-   for (Int_t i=0; i<size; i++) {
-      datatree[0]->GetEntry(i);
-
-      x  = gccell[0]->GetX();
-      y  = gccell[0]->GetY();
-      ij = XY2Index(x, y, numcols);
-
-      if (arrMask[ij] == 1) {
-         arrIndx[ij] = idx++;
-      }//if
-   }//for_i
-
-// Get number of selected entries
-   for (Int_t i=0; i<size; i++) {
-      numsels = (arrMask[i] == 1) ? ++numsels : numsels;
-   }//for_i
-
-// Create table to store selected intensities of all datatrees
-   if (!(table = new (nothrow) Double_t*[numdata])) {err = errInitMemory; goto cleanup;} 
-   for (Int_t k=0; k<numdata; k++) {
-      table[k] = 0;
-      if (!(table[k] = new (nothrow) Double_t[numsels])) {err = errInitMemory; goto cleanup;} 
-   }//for_i
-
-//TEST
-//gBenchmark->Start("Bench_table");
-// Get data from datatrees (and bgrdtrees) and store in table
-   if ((numbgrd > 0) && (doBg == kTRUE)) {
-      for (Int_t k=0; k<numdata; k++) {
-         idx = 0;
-         for (Int_t i=0; i<size; i++) {
-            datatree[k]->GetEntry(i);
-            bgrdtree[k]->GetEntry(i);
-//unsafe?? use arrInten[ij] and arrBgrd[ij] ??
-
-            // subtract background from intensity
-            if (arrMask[i] == 1) {
-               table[k][idx++] = this->AdjustIntensity(gccell[k]->GetIntensity(),
-                                                       bgcell[k]->GetBackground(),
-                                                       bgcell[k]->GetStdev());
-            }//if
-         }//for_i
-      }//for_k
-   } else {
-      for (Int_t k=0; k<numdata; k++) {
-         idx = 0;
-         for (Int_t i=0; i<size; i++) {
-            datatree[k]->GetEntry(i);
-
-            if (arrMask[i] == 1) {
-               table[k][idx++] = gccell[k]->GetIntensity();
-            }//if
-         }//for_i
-      }//for_k
-   }//if
-//TEST Benchmark
-//gBenchmark->Show("Bench_table");
-
-// Create new trees exprtree
-   if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
-
-   for (Int_t k=0; k<numdata; k++) {
-      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
-      TString exprname = dataname + "." + fExpressor->GetTitle();
-      exprtree[k] = new TTree(exprname, fSchemeName);
-      if (exprtree[k] == 0) {err = errCreateTree; goto cleanup;}
-
-      expr[k] = new XGCExpression();
-      exprtree[k]->Branch("ExprBranch", "XGCExpression", &expr[k], 64000, split);
-   }//for_k
-
-//TEST
-//gBenchmark->Show("Bench_MedianPolish");
-//gBenchmark->Reset();
-//gBenchmark->Start("Bench_Loop");
-
-// Calculate expression values
-   start = 0;
-   end   = 0;
-   idx   = 0;
-   for (id=0; id<numunits; id++) { 
-      idxtree->GetEntry(id);
-
-      Int_t unitID   = id - numctrls;
-      Int_t numcells = unit->GetNumCells();
-      // skip negative unit entries (controls)
-      if (unit->GetUnitID() < 0) {
-         start += numcells;
-         end = start;
-         continue;
-      }//if
-
-      // create array to store PM values for all probes with current unitID
-      Int_t  numpairs = (Int_t)(numcells / 2);
-      Double_t *arrPM = new Double_t[numpairs*numdata]; 
-      for (Int_t i=0; i<numpairs*numdata;  i++) arrPM[i] = 0.0;
-
-      // fill arrPM with PM values of current unitID
-      Int_t p = 0;
-      end += numcells;
-      for (Int_t j=start; j<end; j++) {
-         scmtree->GetEntry(j);
-
-         if ((scheme->GetUnitID()) != unitID) {
-            cerr << "Error: unitID is not equal to: " << unitID << endl;
-            err = errAbort;
-            goto cleanup;
-         }//if
-
-         x  = scheme->GetX();
-         y  = scheme->GetY();
-         ij = XY2Index(x, y, numcols);
-
-         if (arrMask[ij] == 1) {
-            if (p == 0) idx++;  //count number of units to be summarized
-
-            for (Int_t k=0; k<numdata; k++) {
-               arrPM[p] = table[k][arrIndx[ij]];
-               p++;
-            }//for_k
-         }//if
-      }//for_j
-      start += numcells;
-
-      if (XManager::fgVerbose && id%10000 == 0) {
-         cout << "      calculating expression for <" << idx << "> of <"
-              << numunits << "> units...\r" << flush;
-      }//if
-
-      // fill arrPM or continue if it is not filled
-      if ((err = fExpressor->SetArray(p, arrPM)) != errNoErr) {
-         delete [] arrPM;
-         continue;
-      }//if
-
-      // calculate expression level for PMs of current unitID
-      if ((err = fExpressor->Calculate(numdata, level, stdev, 0))) break;
-
-//////////////////
-// TO DO: return fResiduals for residual-plot!!!! (like affyPLM)
-//      residuals = fExpressor->GetResiduals();
-// store as residuals tree??
-//////////////////
-
-      // fill expression trees
-      for (Int_t k=0; k<numdata; k++) {
-         // get minimal/maximal expression levels
-         if (level[k] < min) min = level[k];
-         if (level[k] > max) max = level[k];
-
-         expr[k]->SetUnitID(unitID);
-         expr[k]->SetLevel(level[k]);
-//??         expr[k]->SetStdev(stdev[k]);
-         expr[k]->SetStdev(TMath::Abs(stdev[k]));
-         expr[k]->SetNumPairs(numpairs);
-         exprtree[k]->Fill();
-      }//for_k
-
-      delete [] arrPM;
-   }//for_id
-   if (XManager::fgVerbose) {
-      cout << "      calculating expression for <" << idx << "> of <"
-           << numunits << "> units...Finished." << endl;
-   }//if
-
-   if (XManager::fgVerbose) {
-      cout << "      expression statistics: " << endl;
-      cout << "         minimal expression level is <" << min << ">." << endl;
-      cout << "         maximal expression level is <" << max << ">." << endl;
-   }//if
-//TEST
-//gBenchmark->Show("Bench_Loop");
-
-// Write expression trees to file 
-   for (Int_t k=0; k<numdata; k++) {
-   // Add tree info to tree
-      AddExprTreeInfo(exprtree[k], exprtree[k]->GetName(), fExpressor->GetOption(),
-                      idx, min, max);
-
-      if ((err = WriteTree(exprtree[k], TObject::kOverwrite)) == errNoErr) {
-//      if ((err = WriteTree(exprtree[k], 0)) == errNoErr) {
-         // add tree header to list
-         AddTreeHeader(exprtree[k]->GetName(), "Expr", 0, fExpressor->GetNumParameters(),
-                       fExpressor->GetParameters());
-      } else {
-         break;
-      }//if
-   }//for_k
-
-// Cleanup
-cleanup:
-   // delete table
-   for (Int_t k=0; k<numdata; k++) {
-      if (table[k]) {delete [] table[k]; table[k] = 0;}
-   }//for_k
-   if (table) delete [] table;
-
-   // delete arrays
-   if (stdev)   {delete [] stdev;   stdev   = 0;}
-   if (level)   {delete [] level;   level   = 0;}
-   if (arrIndx) {delete [] arrIndx; arrIndx = 0;}
-   if (arrMask) {delete [] arrMask; arrMask = 0;}
-
-   // delete scheme tree from RAM
-//?   if (scmtree)  {scmtree->Delete(""); scmtree = 0;}
-
-   delete [] expr;
-   delete [] exprtree;
-   delete [] gccell;
-   delete [] bgcell;
-
-   return err;
-}//DoMultichipExpress
-
-//______________________________________________________________________________
-Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
-                    Int_t numbgrd, TTree **bgrdtree, TFile *file)
-{
-   // Compute expression values using multichip algorithms, e.g. medpol, farms, DFW
-   // In order to reduce memory consumption intensities from datatrees are
-   // stored in the order of the corresponding schemetree entries in temporary 
-   // trees in a temporary root file
-   // Note: all trees must have same number of entries (i.e. identical chip types)
-   if(kCS) cout << "------XGCProcesSet::DoMultichipExpress(file)------" << endl;
-
-// Informing user
-   if (XManager::fgVerbose) {
-      cout << "      summarizing with " << fExpressor->GetName() 
-           << " (using temporary file)..." << endl;
-   }//if
-
-//TEST
-//gBenchmark->Reset(); 
-//gBenchmark->Start("Bench_MedianPolish");
-
-   Int_t x, y, ij, start, end, id, entry;
-   Int_t idx = 0;
-   Int_t err = errNoErr;
-
-// Get parameters for background subtraction
-   Bool_t doBg = this->BackgroundParameters(fExpressor, fExpressor->GetBgrdOption());
-
-// Get chip parameters from scheme file (also alternative CDFs)
-   if (datatree[0] == 0) return errGetTree;
-   if (strcmp(fSchemeName.Data(), "") == 0) {
-      fSchemeName = datatree[0]->GetTitle();
-   } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
-      return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
-   }//if
-   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
-
-   XDNAChip *chip = (XDNAChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
-   Int_t numrows  = chip->GetNumRows();
-   Int_t numcols  = chip->GetNumColumns();
-   Int_t numctrls = chip->GetNumControls();
-   Int_t numunits = chip->GetNumUnits();
-
-// Get scheme tree for scheme
-   XScheme *scheme = 0;
-   TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
-   if (scmtree == 0) return errGetTree;
-   scmtree->SetBranchAddress("ScmBranch", &scheme);
-
-// Get unit tree for scheme
-   XGCUnit *unit = 0;
-   TTree *idxtree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
-   if (idxtree == 0) return errGetTree;
-   idxtree->SetBranchAddress("IdxBranch", &unit);
-
-// Init size of arrays
-   Int_t size     = numrows*numcols;
-   Int_t numsels  = 0;  //number of selected entries
-
-// Check for equal number of data tree entries
-   for (Int_t k=0; k<numdata; k++) {
-      if (datatree[k] == 0) return errGetTree;
-
-      if ((Int_t)(datatree[k]->GetEntries()) != size) {
-            TString str = ""; str += size;
-            return fManager->HandleError(errNumTreeEntries, datatree[k]->GetName(), str);
-      }//if
-   }//for_k
-
-// Check for equal number of background tree entries
-   if (numbgrd > 0) {
-      for (Int_t k=0; k<numdata; k++) {
-         if (bgrdtree[k] == 0) return errGetTree;
-
-         if ((Int_t)(bgrdtree[k]->GetEntries()) != size) {
-            TString str = ""; str += size;
-            return fManager->HandleError(errNumTreeEntries, bgrdtree[k]->GetName(), str);
-         }//if
-      }//for_k
-   } else if (doBg == kTRUE) {
-      cout << "Warning: No background trees available for background subtraction."
-           << endl;
-      doBg = kFALSE;
-   } else {
-      // to prevent subtraction of background in FillDataArrays()
-      // e.g. AdjustBackground() creates bgrdtrees but sets numbgrd=0 !!
-      doBg = kFALSE;
-   }//if
-
-// Init branch addresses
-   XBgCell **bgcell = new XBgCell*[numdata];
-   XGCCell **gccell = new XGCCell*[numdata];
-   for (Int_t k=0; k<numdata; k++) {
-      bgcell[k] = 0;
-      gccell[k] = 0;
-      datatree[k]->SetBranchAddress("DataBranch", &gccell[k]);
-      if (numbgrd > 0) bgrdtree[k]->SetBranchAddress("BgrdBranch", &bgcell[k]);
-   }//for_k
-
-// Init temporary trees and expression trees
-   Int_t    split = 99;
-   Double_t sort  = 0.0;
-   TTree     **tmptree  = new TTree*[numdata];
-   TTree     **exprtree = new TTree*[numdata];
-   XGCExpression **expr = new XGCExpression*[numdata];
-
-// Init min/max expression levels
-   Double_t min = DBL_MAX;  //defined in float.h
-   Double_t max = 0;
-
-// Init local arrays
-   Int_t    *arrMask = 0;
-   Int_t    *arrIndx = 0;
-   Double_t *arrData = 0;
-   Double_t *level   = 0;
-   Double_t *stdev   = 0;
-
-// Create local arrays
-   if (!(arrMask = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
-   if (!(arrIndx = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
-   if (!(level   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
-   if (!(stdev   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
-
-   for (Int_t i=0; i<size; i++) {
-      arrMask[i] = eINITMASK; 
-      arrIndx[i] = 0;
-   }//for_i 
-   for (Int_t i=0; i<numdata; i++) level[i] = stdev[i] = 0.0; 
-
-// IMPORTANT NOTE: do not use the following code although it is faster:
-// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
-// Every tree contains the (x,y) coordinates as unique identifier, thus
-// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
-
-// Get mask for PM from scheme tree and store in array 
-   arrMask = this->FillMaskArray(chip, scmtree, scheme, 0, size, arrMask);
-
-// Calculate mask for expression
-   err = fExprSelector->Calculate(size, 0, 0, arrMask);
-   if (err != errNoErr) goto cleanup;
-
-// Get entry index from datatree
-   idx = 0;
-   for (Int_t i=0; i<size; i++) {
-      datatree[0]->GetEntry(i);
-
-      x  = gccell[0]->GetX();
-      y  = gccell[0]->GetY();
-      ij = XY2Index(x, y, numcols);
-
-      if (arrMask[ij] == 1) {
-         arrIndx[ij] = idx++;
-      }//if
-   }//for_i
-
-// Get number of selected entries
-   for (Int_t i=0; i<size; i++) {
-      numsels = (arrMask[i] == 1) ? ++numsels : numsels;
-   }//for_i
-
-// Create array to store selected intensities
-   if (!(arrData = new (nothrow) Double_t[numsels])) {err = errInitMemory; goto cleanup;}
-   for (Int_t i=0; i<numsels;  i++) arrData[i] = 0.0;
-
-//TEST
-//gBenchmark->Start("Bench_tmptree");
-// Change directory to temporary file
-   if (!file->cd()) {err = errGetDir; goto cleanup;}
-
-// Get data from datatrees (and bgrdtrees) and store in temporary file
-   for (Int_t k=0; k<numdata; k++) {
-      // create temporary tree
-      tmptree[k] = new TTree(datatree[k]->GetName(), "temporary tree");
-      if (tmptree[k] == 0) {err = errCreateTree; goto cleanup;}
-      tmptree[k]->Branch("sortBr", &sort, "sort/D");
-
-      // informing user
-      if (XManager::fgVerbose) {
-         cout << "         filling temporary tree <" << tmptree[k]->GetName()
-              << ">...              \r" << flush;
-      }//if
-
-      // fill array with (background corrected) intensities
-      if ((numbgrd > 0) && (doBg == kTRUE)) {
-         idx = 0;
-         for (Int_t i=0; i<size; i++) {
-            datatree[k]->GetEntry(i);
-            bgrdtree[k]->GetEntry(i);
-
-            // subtract background from intensity
-            if (arrMask[i] == 1) {
-               arrData[idx++] = this->AdjustIntensity(gccell[k]->GetIntensity(),
-                                                      bgcell[k]->GetBackground(),
-                                                      bgcell[k]->GetStdev());
-            }//if
-         }//for_i
-      } else {
-         idx = 0;
-         for (Int_t i=0; i<size; i++) {
-            datatree[k]->GetEntry(i);
-
-            if (arrMask[i] == 1) {
-               arrData[idx++] = gccell[k]->GetIntensity();
-            }//if
-         }//for_i
-      }//if
-
-      // fill tmptree with array in the order of scheme tree entries for (x,y)
-      for (Int_t i=0; i<size; i++) {
-         scmtree->GetEntry(i);
-
-         x  = scheme->GetX();
-         y  = scheme->GetY();
-         ij = XY2Index(x, y, numcols);
-
-         if (arrMask[ij] == 1) {
-            sort = arrData[arrIndx[ij]];
-            tmptree[k]->Fill();
-         }//if
-      }//for_i
-
-      // write tmptree to temporary file
-      tmptree[k]->Write();
-//??      tmptree[k]->Write(TObject::kOverwrite);
-   }//for_k
-   if (XManager::fgVerbose) {
-      cout << "         finished filling <" << numdata << "> temporary trees.          " << endl;
-   }//if
-//TEST
-//gBenchmark->Show("Bench_tmptree");
-
-// Change directory to current directory for treeset in main file
-   if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
-
-// Create new trees exprtree
-   for (Int_t k=0; k<numdata; k++) {
-      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
-      TString exprname = dataname + "." + fExpressor->GetTitle();
-      exprtree[k] = new TTree(exprname, fSchemeName);
-      if (exprtree[k] == 0) {err = errCreateTree; goto cleanup;}
-
-      expr[k] = new XGCExpression();
-      exprtree[k]->Branch("ExprBranch", "XGCExpression", &expr[k], 64000, split);
-   }//for_k
-
-//TEST
-//gBenchmark->Show("Bench_MedianPolish");
-//gBenchmark->Reset();
-//gBenchmark->Start("Bench_Loop");
-
-// Calculate expression values
-   start = 0;
-   end   = 0;
-   idx   = 0;
-   entry = 0;
-   for (id=0; id<numunits; id++) { 
-      idxtree->GetEntry(id);
-
-      Int_t unitID   = id - numctrls;
-      Int_t numcells = unit->GetNumCells();
-      // skip negative unit entries (controls)
-      if (unit->GetUnitID() < 0) {
-         start += numcells;
-         end = start;
-         continue;
-      }//if
-
-      // create array to store PM values for all probes with current unitID
-      Int_t  numpairs = (Int_t)(numcells / 2);
-      Double_t *arrPM = new Double_t[numpairs*numdata]; 
-
-      // fill arrPM with PM values of current unitID
-      Int_t p = 0;
-      end += numcells;
-      for (Int_t j=start; j<end; j++) {
-         scmtree->GetEntry(j);
-
-         if ((scheme->GetUnitID()) != unitID) {
-            cerr << "Error: unitID is not equal to: " << unitID << endl;
-            err = errAbort;
-            goto cleanup;
-         }//if
-
-         x  = scheme->GetX();
-         y  = scheme->GetY();
-         ij = XY2Index(x, y, numcols);
-
-         if (arrMask[ij] == 1) {
-            if (p == 0) idx++;  //count number of units to be summarized
-
-            for (Int_t k=0; k<numdata; k++) {
-               tmptree[k]->GetEntry(entry);
-               arrPM[p] = sort;
-               p++;
-            }//for_k
-
-            entry++;
-         }//if
-      }//for_j
-      start += numcells;
-
-      if (XManager::fgVerbose && id%10000 == 0) {
-         cout << "      calculating expression for <" << idx << "> of <"
-              << numunits << "> units...\r" << flush;
-      }//if
-
-      // fill arrPM or continue if it is not filled
-      if ((err = fExpressor->SetArray(p, arrPM)) != errNoErr) {
-         delete [] arrPM;
-         continue;
-      }//if
-
-      // calculate expression level for PMs of current unitID
-      if ((err = fExpressor->Calculate(numdata, level, stdev, 0))) break;
-
-//////////////////
-// TO DO: return fResiduals for residual-plot!!!! (like affyPLM)
-//      residuals = fExpressor->GetResiduals();
-// store as residuals tree??
-//////////////////
-
-      // fill expression trees
-      for (Int_t k=0; k<numdata; k++) {
-         // get minimal/maximal expression levels
-         if (level[k] < min) min = level[k];
-         if (level[k] > max) max = level[k];
-
-         expr[k]->SetUnitID(unitID);
-         expr[k]->SetLevel(level[k]);
-//??         expr[k]->SetStdev(stdev[k]);
-         expr[k]->SetStdev(TMath::Abs(stdev[k]));
-         expr[k]->SetNumPairs(numpairs);
-         exprtree[k]->Fill();
-      }//for_k
-
-      delete [] arrPM;
-   }//for_id
-   if (XManager::fgVerbose) {
-      cout << "      calculating expression for <" << idx << "> of <"
-           << numunits << "> units...Finished." << endl;
-   }//if
-
-   if (XManager::fgVerbose) {
-      cout << "      expression statistics: " << endl;
-      cout << "         minimal expression level is <" << min << ">." << endl;
-      cout << "         maximal expression level is <" << max << ">." << endl;
-   }//if
-//TEST Benchmark
-//gBenchmark->Show("Bench_Loop");
-
-// Write expression trees to file 
-   for (Int_t k=0; k<numdata; k++) {
-   // Add tree info to tree
-      AddExprTreeInfo(exprtree[k], exprtree[k]->GetName(), fExpressor->GetOption(),
-                      idx, min, max);
-
-      if ((err = WriteTree(exprtree[k], TObject::kOverwrite)) == errNoErr) {
-//      if ((err = WriteTree(exprtree[k], 0)) == errNoErr) {
-         // add tree header to list
-         AddTreeHeader(exprtree[k]->GetName(), "Expr", 0, fExpressor->GetNumParameters(),
-                       fExpressor->GetParameters());
-      } else {
-         break;
-      }//if
-   }//for_k
-
-// Cleanup
-cleanup:
-   // delete temporary trees
-   for (Int_t k=0; k<numdata; k++) {
-      tmptree[k]->Delete(""); tmptree[k] = 0;
-   }//for_k
-
-   // delete arrays
-   if (arrData) {delete [] arrData; arrData = 0;}
-   if (stdev)   {delete [] stdev;   stdev   = 0;}
-   if (level)   {delete [] level;   level   = 0;}
-   if (arrIndx) {delete [] arrIndx; arrIndx = 0;}
-   if (arrMask) {delete [] arrMask; arrMask = 0;}
-
-   // delete scheme tree from RAM
-//?   if (scmtree)  {scmtree->Delete(""); scmtree = 0;}
-
-   delete [] expr;
-   delete [] exprtree;
-   delete [] tmptree;
-   delete [] gccell;
-   delete [] bgcell;
-
-   return err;
-}//DoMultichipExpress
-
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
@@ -4888,1501 +5477,6 @@ XGenomeProcesSet::~XGenomeProcesSet()
    if(kCS) cout << "---XGenomeProcesSet::~XGenomeProcesSet------" << endl;
 
 }//Destructor
-
-//______________________________________________________________________________
-Int_t XGenomeProcesSet::DetectCall(Int_t numdata, TTree **datatree,
-                        Int_t &numbgrd, TTree **bgrdtree)
-{
-   // Detect presence call
-   // Note: Present call data will be stored as: 'P'=2, 'M'=1, 'A'=0
-   if(kCS) cout << "------XGenomeProcesSet::DetectCall------" << endl;
-
-// Informing user
-   if (XManager::fgVerbose) {
-      cout << "   Calculating detection calls..." << endl;
-   }//if
-
-   Int_t err = errNoErr;
-   Int_t  ij, idx, x, y, start, end;
-
-   fFile->cd();
-
-   Bool_t doGC = (Bool_t)(strcmp(fCaller->GetName(), "dabgcall") == 0);
-
-// Init local arrays to store data from trees
-   Int_t    *arrUnit  = 0;
-   Int_t    *mskUnit  = 0;
-   Int_t    *arrMask  = 0;
-   Double_t *arrInten = 0;
-   Double_t *arrStdev = 0;  //not needed for current fCaller
-   Int_t    *arrNPix  = 0;  //not needed for current fCaller
-   Double_t *arrBgrd  = 0;
-   Double_t *arrBgdev = 0;  //not needed for current fCaller
-   Double_t *arrPM    = 0; 
-   Double_t *arrMM    = 0;
-   Double_t *arrSP    = 0;  //not needed for current fCaller
-   Double_t *arrSM    = 0;  //not needed for current fCaller
-   Int_t    *arrXP    = 0;  //not needed for current fCaller
-   Int_t    *arrXM    = 0;  //not needed for current fCaller
-
-   TTree  *calltree = 0;
-   XPCall *call     = 0;
-   Int_t   split    = 99;
-
-// Get chip parameters from scheme file (also alternative CDFs)
-   if (datatree[0] == 0) return errGetTree;
-   if (strcmp(fSchemeName.Data(), "") == 0) {
-      fSchemeName = datatree[0]->GetTitle();
-   } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
-      return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
-   }//if
-   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
-
-   XGeneChip *chip = (XGeneChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
-   Int_t numrows  = chip->GetNumRows();
-   Int_t numcols  = chip->GetNumColumns();
-   Int_t numctrls = chip->GetNumControls();
-   Int_t numunits = chip->GetNumUnits();
-   Int_t size     = numrows*numcols;
-
-// Get scheme tree for scheme
-   XScheme *scheme = 0;
-   TLeaf *scmleaf = 0;
-   TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
-   if (scmtree == 0) return errGetTree;
-   scmtree->SetBranchAddress("ScmBranch", &scheme);
-
-// Get unit tree for scheme
-   XGCUnit *unit = 0;
-   TTree *idxtree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
-   if (idxtree == 0) return errGetTree;
-   idxtree->SetBranchAddress("IdxBranch", &unit);
-
-// Get maximum number of cells from tree info for unit tree
-   XGenomeTreeInfo *idxinfo = 0;
-   idxinfo = (XGenomeTreeInfo*)idxtree->GetUserInfo()->FindObject(idxtree->GetName());
-   if (!idxinfo) {
-      cerr << "Error: Could not get tree info for <" << idxtree->GetName() << ">." << endl;
-      return errGeneral;
-   }//if
-   Int_t maxnumcells = (Int_t)idxinfo->GetValue("fMaxNCells");
-
-// Get exon level of annotation
-   Int_t level = 0;
-   if (fCallSelector->GetNumParameters() > 0) {
-      level = (Int_t)(fCallSelector->GetParameters())[0];
-   }//if
-
-// Init unit selector
-   XUnitSelector *unitSelector = 0;
-
-// Initialize memory for unit arrays
-   if (!(arrUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
-   if (!(mskUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
-
-   for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
-
-// Initialize memory for data arrays (uncomment when needed in fCaller)
-   if (!(arrMask  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-   if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-//   if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-//   if (!(arrNPix  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-
-   for (Int_t i=0; i<size; i++) {
-      arrMask[i]  = eINITMASK;  //init mask
-      arrInten[i] = 0.0;
-   }//for_i
-
-// Get mask from scheme tree and store in array 
-   arrMask = this->FillMaskArray(chip, scmtree, scheme, level, size, arrMask);
-   if (arrMask == 0) {err = errInitMemory; goto cleanup;}
-
-// Calculate units satisfying mask
-   unitSelector = new XUnitSelector(kTypeSlct[3], kExtenSlct[3]);
-   unitSelector->SetOption("genome");
-   err = unitSelector->InitParameters(fCallSelector->GetNumParameters(),
-                                      fCallSelector->GetParameters());
-   if (err != errNoErr) goto cleanup;
-
-// Get mask from scheme tree and store in array 
-   arrUnit = this->FillUnitArray(idxtree, unit, numunits, arrUnit, mskUnit);
-
-   err = unitSelector->Calculate(numunits, arrUnit, mskUnit);
-   if (err != errNoErr) goto cleanup;
-
-// Calculate mask for detection call (set arrMask to 1 or 0)
-   err = fCallSelector->Calculate(size, 0, 0, arrMask);
-   if (err != errNoErr) goto cleanup;
-
-// For DABG only, fill arrMask with GC content (GC>=0 for PM)
-// for PM set GC >= 0 , i.e. GC = 0...kProbeLength,
-// for MM set GC < eINITMASK, i.e. GC = eINITMASK - (1...kProbeLength+1)
-   if (doGC) {
-   // Get probe tree for scheme
-      XGCProbe *probe = 0;
-      TTree *probetree = (TTree*)gDirectory->Get(chip->GetProbeTree()); 
-      if (probetree == 0) {err = errGetTree; goto cleanup;}
-      probetree->SetBranchAddress("PrbBranch", &probe);
-
-   // Get GC content from probe tree and store in array
-      for (Int_t i=0; i<size; i++) {
-         probetree->GetEntry(i);
-
-         x  = probe->GetX();
-         y  = probe->GetY();
-         ij = XY2Index(x, y, numcols);
-
-// IMPORTANT NOTE: do not use the following code although it is faster:
-// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
-// Every tree contains the (x,y) coordinates as unique identifier, thus
-// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
-
-         if (arrMask[ij] == 1) {
-            arrMask[ij] = probe->GetNumberGC();
-         } else if (arrMask[ij] == 0) {
-            //need to use (numberGC + 1) to avoid setting arrMask=eINITMASK for GC=0!!
-            arrMask[ij] = eINITMASK - (probe->GetNumberGC() + 1);
-//no            arrMask[ij] = eINITMASK - probe->GetNumberGC();
-         }//if
-      }//for_i
-   } else {
-   // Need to get background data for MM values!
-      if (!(arrBgrd  = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-//      if (!(arrBgdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-
-      for (Int_t i=0; i<size; i++) arrBgrd[i] = 0.0;
-   }//if
-
-   if (!fFile->cd(fName)) return errGetDir;
-
-// Initialize memory for PM/MM arrays (uncomment when needed in fCaller)
-   if (!(arrPM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-   if (!(arrMM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-//   if (!(arrSP = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-//   if (!(arrSM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-   if (!(arrXP = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
-//   if (!(arrXM = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
-
-   for (Int_t i=0; i<maxnumcells; i++) {
-      arrPM[i] = arrMM[i] = 0.0; 
-      arrXP[i] = 0;
-   }//for_i
-
-// Calculate detection call
-   for (Int_t k=0; k<numdata; k++) {
-      if (datatree[k] == 0) return errGetTree;
-
-   // Informing user
-      TString name = datatree[k]->GetName();
-      if (XManager::fgVerbose) {
-         cout << "      calculating present call for <" << name.Data() << ">..." << endl;
-      }//if
-
-   // Get tree info for datatree
-      XDataTreeInfo *info = 0;
-      info = (XDataTreeInfo*)datatree[k]->GetUserInfo()->FindObject(name);
-      if (!info) {
-         cerr << "Error: Could not get tree info for <" << name.Data() << ">." << endl;
-         return errGeneral;
-      }//if
-
-      Int_t numabsent  = 0;
-      Int_t numarginal = 0;
-      Int_t numpresent = 0;
-      Double_t minpval = 1.0;
-      Double_t maxpval = 0.0;
-
-   // Get data from datatree and store in arrays
-      err = FillDataArrays(datatree[k], numrows, numcols, arrInten, arrStdev, arrNPix);
-      if (err != errNoErr) goto cleanup;
-
-   // For DABG only
-      if (doGC) {
-         // get intensities and save in table sorted for GC-content
-         if ((err = fCaller->Calculate(size, arrInten, arrMask))) goto cleanup;
-      } else {
-         if (bgrdtree[k] != 0) {
-           // get data from bgrdtree and store in arrays
-//            err = FillBgrdArrays(bgrdtree[k], numrows, numcols, arrBgrd, arrBgdev);
-            err = FillBgrdArrays(bgrdtree[k], numrows, numcols, arrBgrd, 0);
-            if (err != errNoErr) goto cleanup;
-         }//if
-      }//if
-
-   // Create new tree calltree
-      name = Path2Name(datatree[k]->GetName(), dSEP, ".") + "." + fCaller->GetTitle();
-      calltree = new TTree(name, fSchemeName);
-      if (calltree == 0) return errCreateTree;
-      call = new XPCall();
-      calltree->Branch("CallBranch", "XPCall", &call, 64000, split);
-
-   // Calculate detection call values
-      start = 0;
-      end   = 0;
-      idx   = 0;
-      for (Int_t id=0; id<numunits; id++) { 
-         idxtree->GetEntry(id);
-
-         Int_t unitID   = unit->GetUnitID();
-         Int_t numcells = unit->GetNumCells();
-         // skip masked unit entries
-         if (mskUnit[id] <= 0) {
-            start += numcells;
-            end = start;
-            continue;
-         }//if
-
-         Int_t p = 0;
-         Int_t m = 0;
-         end += numcells;
-         for (Int_t j=start; j<end; j++) {
-            scmtree->GetEntry(j);
-
-            if ((scheme->GetUnitID()) != unitID) {
-               cerr << "Error: unitID is not equal to: " << unitID << endl;
-               err = errAbort;
-               goto cleanup;
-            }//if
-
-            x  = scheme->GetX();
-            y  = scheme->GetY();
-            ij = XY2Index(x, y, numcols);
-
-            if (doGC) {
-               if (arrMask[ij] >= 0) {
-                  if (p == 0) idx++;  //count number of units
-                  arrPM[p] = arrInten[ij];
-                  arrXP[p] = arrMask[ij];
-                  p++;
-               }//if
-            } else {
-//               if (arrMask[ij] >= 0) {
-               if (arrMask[ij] == 1) {
-                  if (p == 0) idx++;  //count number of units
-                  arrPM[p] = arrInten[ij];
-//no                  arrSP[p] = arrStdev[ij];
-//no                  arrXP[p] = arrNPix[ij];
-                  p++;
-
-               // set MM values to background data
-                  arrMM[m] = arrBgrd[ij];
-//no                  arrSM[m] = arrBgdev[ij];
-//no                  arrXM[p] = arrNPix[ij];
-                  m++;
-               }//if
-            }//if
-
-            if (p > maxnumcells || m > maxnumcells) {
-               cerr << "Error: unitID <" << unitID << "> exceeds maximum number of cells <"
-                    << maxnumcells << ">. Buffer overflow!" << endl;
-               err = errAbort;
-               goto cleanup;
-            }//if
-         }//for_j
-         start += numcells;
-
-         // continue if arrays arrPM etc are not filled
-         if (p == 0) continue;
-         if (!doGC && (p != m)) {
-            cout << "Warning: Skipping unitID <" << unitID
-                 << "> with different numbers of PM and MM data." << endl;
-//            continue;
-            err = errAbort;
-            goto cleanup;
-         }//if
-
-         if (XManager::fgVerbose && id%10000 == 0) {
-            cout << "      <" << idx << "> of <" << numunits << "> calls processed...\r" << flush;
-         }//if
-
-         // calculate detection call
-         Int_t    dummy    = 0;
-         Double_t prescall = 0.0;
-         Double_t pvalue   = 1.0;
-         fCaller->InitTreeInfo(info);
-         fCaller->InitArrays(p, arrPM, arrSP, arrXP, arrMM, arrSM, arrXM);
-         if ((err = fCaller->Calculate(prescall, pvalue, dummy))) goto cleanup;
-
-         // number of present/absent calls
-         if      (prescall == 2.0) numpresent++;
-         else if (prescall == 1.0) numarginal++;
-         else if (prescall == 0.0) numabsent++;
-
-         // minimal/maximal detection call p-value
-         if      (pvalue < minpval) minpval = pvalue;
-         else if (pvalue > maxpval) maxpval = pvalue;
-
-         // fill call tree
-         call->SetUnitID(unitID);
-         call->SetCall((Short_t)prescall);
-         call->SetPValue(pvalue);
-         calltree->Fill();
-      }//for_id
-
-      if (XManager::fgVerbose) {
-         cout << "      <" << idx << "> of <" << numunits << "> calls processed...Finished" << endl;
-      }//if
-
-      if (XManager::fgVerbose) {
-         cout << "      detection call statistics: " << endl;
-         cout << "         minimum detection p-value = " << minpval << endl;
-         cout << "         maximum detection p-value = " << maxpval << endl;
-         cout << "         P: <" << numpresent*100.0/idx << "> percent units present."  << endl;
-         cout << "         M: <" << numarginal*100.0/idx << "> percent units marginal." << endl;
-         cout << "         A: <" << numabsent*100.0/idx  << "> percent units absent."   << endl;
-      }//if
-
-   // Add tree info to tree
-      AddCallTreeInfo(calltree, calltree->GetName(), fCaller->GetOption(),
-                      numunits-numctrls, numabsent, numarginal, numpresent,
-                      minpval, maxpval);
-
-   // Write call tree to file 
-      if ((err = WriteTree(calltree, TObject::kOverwrite)) == errNoErr) {
-         // add tree header to list
-         AddTreeHeader(calltree->GetName(), "Call", 0, fCaller->GetNumParameters(),
-                       fCaller->GetParameters());
-      }//if
-
-      if (err != errNoErr) break;
-   }//for_k
-
-// Cleanup
-cleanup:
-   // delete arrays
-   if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
-   if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
-   if (arrSM)    {delete [] arrSM;    arrSM    = 0;}
-   if (arrSP)    {delete [] arrSP;    arrSP    = 0;}
-   if (arrMM)    {delete [] arrMM;    arrMM    = 0;}
-   if (arrPM)    {delete [] arrPM;    arrPM    = 0;}
-   if (arrBgdev) {delete [] arrBgdev; arrBgdev = 0;}
-   if (arrBgrd)  {delete [] arrBgrd;  arrBgrd  = 0;}
-   if (arrNPix)  {delete [] arrNPix;  arrNPix  = 0;}
-   if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
-   if (arrInten) {delete [] arrInten; arrInten = 0;}
-   if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
-   if (mskUnit)  {delete [] mskUnit;  mskUnit  = 0;}
-   if (arrUnit)  {delete [] arrUnit;  arrUnit  = 0;}
-
-   return err;
-}//DetectCall
-
-//______________________________________________________________________________
-Int_t XGenomeProcesSet::DoExpress(Int_t numdata, TTree **datatree,
-                        Int_t numbgrd, TTree **bgrdtree)
-{
-   // Condense data from  datatrees to expression values
-   if(kCS) cout << "------XGenomeProcesSet::DoExpress------" << endl;
-
-   Int_t err = errNoErr;
-   Int_t split = 99;
-
-   Int_t ij, idx, x, y, start, end;
-   Int_t    arrlen = 0;
-   Double_t mean   = 0;
-   Double_t var    = 0;
-
-// Init local arrays to store data from trees
-   Int_t    *arrUnit  = 0;
-   Int_t    *mskUnit  = 0;
-   Int_t    *arrMask  = 0;
-   Double_t *arrInten = 0;
-   Double_t *arrStdev = 0;
-   Int_t    *arrNPix  = 0;
-   Double_t *arrBgrd  = 0;
-   Double_t *arrBgdev = 0;
-   Double_t *arrPM    = 0; 
-   Double_t *arrMM    = 0;
-   Double_t *arrSP    = 0; 
-   Double_t *arrSM    = 0;
-   Int_t    *arrXP    = 0; 
-   Int_t    *arrXM    = 0;
-
-// Get chip parameters from scheme file (also alternative CDFs)
-   if (datatree[0] == 0) return errGetTree;
-   if (strcmp(fSchemeName.Data(), "") == 0) {
-      fSchemeName = datatree[0]->GetTitle();
-   } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
-      return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
-   }//if
-   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
-
-   XGeneChip *chip = (XGeneChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
-   Int_t numrows  = chip->GetNumRows();
-   Int_t numcols  = chip->GetNumColumns();
-   Int_t numctrls = chip->GetNumControls();
-   Int_t numunits = chip->GetNumUnits();
-   Int_t size     = numrows*numcols;
-
-// Get scheme tree for scheme
-   XScheme *scheme = 0;
-   TLeaf *scmleaf = 0;
-   TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
-   if (scmtree == 0) return errGetTree;
-   scmtree->SetBranchAddress("ScmBranch", &scheme);
-   scmleaf = scmtree->FindLeaf("fUnitID"); 
-
-// Get unit tree for scheme
-   XGCUnit *unit = 0;
-   TTree *idxtree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
-   if (idxtree == 0) return errGetTree;
-   idxtree->SetBranchAddress("IdxBranch", &unit);
-
-// Get maximum number of cells from tree info for unit tree
-   XGenomeTreeInfo *idxinfo = 0;
-   idxinfo = (XGenomeTreeInfo*)idxtree->GetUserInfo()->FindObject(idxtree->GetName());
-   if (!idxinfo) {
-      cerr << "Error: Could not get tree info for <" << idxtree->GetName() << ">." << endl;
-      return errGeneral;
-   }//if
-   Int_t maxnumcells = (Int_t)idxinfo->GetValue("fMaxNCells");
-
-// Get exon level of annotation
-   Int_t level = 0;
-   if (fExprSelector->GetNumParameters() > 0) {
-      level = (Int_t)(fExprSelector->GetParameters())[0];
-   }//if
-
-// Init unit selector
-   XUnitSelector *unitSelector = 0;
-
-// Initialize memory for unit arrays
-   if (!(arrUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
-   if (!(mskUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
-
-   for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
-
-// Initialize memory for scheme arrays
-   if (!(arrMask  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-   if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-   if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-   if (!(arrNPix  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-   if (!(arrBgrd  = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-   if (!(arrBgdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-
-   for (Int_t i=0; i<size; i++) {
-      arrMask[i]  = eINITMASK;  //init mask
-      arrInten[i] = arrStdev[i] = 0.0; 
-      arrNPix[i]  = 0; 
-      arrBgrd[i]  = arrBgdev[i] = 0.0;
-   }//for_i
-
-// Get mask from scheme tree and store in array 
-   arrMask = this->FillMaskArray(chip, scmtree, scheme, level, size, arrMask);
-   if (arrMask == 0) {err = errInitMemory; goto cleanup;}
-
-// Calculate units satisfying mask
-   unitSelector = new XUnitSelector(kTypeSlct[3], kExtenSlct[3]);
-   unitSelector->SetOption("genome");
-   err = unitSelector->InitParameters(fExprSelector->GetNumParameters(),
-                                      fExprSelector->GetParameters());
-   if (err != errNoErr) goto cleanup;
-
-// Get mask from scheme tree and store in array 
-   arrUnit = this->FillUnitArray(idxtree, unit, numunits, arrUnit, mskUnit);
-
-   err = unitSelector->Calculate(numunits, arrUnit, mskUnit);
-   if (err != errNoErr) goto cleanup;
-
-// Calculate mask for expression
-   err = fExprSelector->Calculate(size, 0, 0, arrMask);
-   if (err != errNoErr) goto cleanup;
-
-// Initialize memory for PM/MM arrays
-   if (!(arrPM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-   if (!(arrMM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-   if (!(arrSP = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-   if (!(arrSM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-   if (!(arrXP = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
-   if (!(arrXM = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
-
-   for (Int_t i=0; i<maxnumcells; i++) {
-      arrPM[i] = arrMM[i] = 0.0; 
-      arrSP[i] = arrSM[i] = 0.0; 
-      arrXP[i] = arrXM[i] = 0; 
-   }//for_i
-
-   if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
-
-// Calculate expression
-   for (Int_t k=0; k<numdata; k++) {
-      if (datatree[k] == 0) return errGetTree;
-      if (bgrdtree[k] == 0) {
-         cerr << "Error: Could not get background tree for <"
-              << fExpressor->GetName() << ">." << endl;
-         return errGetTree;
-      }//if
-
-   // Informing user
-      TString name = datatree[k]->GetName();
-      if (XManager::fgVerbose) {
-         cout << "      summarizing <" << name.Data() << "> using <" << fExpressor->GetName()
-              << ">..." << endl;
-      }//if
-
-      XDataTreeInfo *info = 0;
-      info = (XDataTreeInfo*)datatree[k]->GetUserInfo()->FindObject(name);
-      if (!info) {
-         cerr << "Error: Could not get tree info for <" << name.Data() << ">." << endl;
-         return errGeneral;
-      }//if
-
-   // Init min/max expression levels
-      Double_t min = DBL_MAX;  //defined in float.h
-      Double_t max = 0;
-
-   // Create new tree exprtree
-      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
-      TString exprname = dataname + "." + fExpressor->GetTitle();
-      TTree  *exprtree = new TTree(exprname, fSchemeName);
-      if (exprtree == 0) return errCreateTree;
-
-      XGCExpression *expr = 0;
-      expr = new XGCExpression();
-      exprtree->Branch("ExprBranch", "XGCExpression", &expr, 64000, split);
-
-   // Get data from datatree and bgrdtree and store in arrays
-      err = FillDataArrays(datatree[k], numrows, numcols, arrInten, arrStdev, arrNPix);
-      if (err != errNoErr) goto cleanup;
-      err = FillBgrdArrays(bgrdtree[k], numrows, numcols, arrBgrd, arrBgdev);
-      if (err != errNoErr) goto cleanup;
-
-   // Calculate expression values
-      start = 0;
-      end   = 0;
-      idx   = 0;
-      for (Int_t id=0; id<numunits; id++) { 
-         idxtree->GetEntry(id);
-
-         Int_t unitID   = unit->GetUnitID();
-         Int_t numcells = unit->GetNumCells();
-         // skip masked unit entries
-         if (mskUnit[id] <= 0) {
-            start += numcells;
-            end = start;
-            continue;
-         }//if
-
-         Int_t p = 0;
-         Int_t m = 0;
-         end += numcells;
-         for (Int_t j=start; j<end; j++) {
-            scmtree->GetEntry(j);
-
-            if ((Int_t)(scmleaf->GetValue()) != unitID) {
-               cerr << "Error: unitID is not equal to: " << unitID << endl;
-               err = errAbort;
-               goto cleanup;
-            }//if
-
-            x  = scheme->GetX();
-            y  = scheme->GetY();
-            ij = XY2Index(x, y, numcols);
-
-// IMPORTANT NOTE: do not use the following code although it is faster:
-// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
-// Every tree contains the (x,y) coordinates as unique identifier, thus
-// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
-
-            if (arrMask[ij] == 1) {
-               if (p == 0) idx++;  //count number of units to be summarized
-               arrPM[p] = arrInten[ij];
-               arrSP[p] = arrStdev[ij];
-               arrXP[p] = arrNPix[ij];
-               p++;
-
-               // set MM values to background data
-               arrMM[m] = arrBgrd[ij];
-               arrSM[m] = arrBgdev[ij];
-               arrXM[m] = arrNPix[ij]; //use numpix from datatree
-               m++;
-            }//if
-         }//for_j
-         start += numcells;
-
-         if (XManager::fgVerbose && id%10000 == 0) {
-            cout << "      calculating expression for <" << idx << "> of <"
-                 << numunits << "> units...\r" << flush;
-         }//if
-
-         // continue if arrays arrPM etc are not filled
-         if (p == 0) continue;
-         if (p != m) {
-            cout << "Warning: Skipping unitID <" << unitID
-                 << "> with different numbers of PM and MM data." << endl;
-            continue;
-//?            err = errAbort;
-//?            goto cleanup;
-         }//if
-
-         // calculate mean expression level
-         arrlen = 0;
-         mean   = 0;
-         var    = 0;
-         fExpressor->InitTreeInfo(info);
-         fExpressor->InitArrays(p, arrPM, arrSP, arrXP, arrMM, arrSM, arrXM);
-         if ((err = fExpressor->CreateArray(p)))               goto cleanup;
-         if ((err = fExpressor->Calculate(mean, var, arrlen))) goto cleanup;
-         fExpressor->DeleteArray();
-
-         // get minimal/maximal expression levels
-         if (mean < min) min = mean;
-         if (mean > max) max = mean;
-
-         // fill expression tree
-         expr->SetUnitID(unitID);
-         expr->SetLevel(mean);
-         expr->SetStdev(TMath::Sqrt(var));
-         expr->SetNumPairs(arrlen);
-         exprtree->Fill();
-      }//for_id
-
-      if (XManager::fgVerbose) {
-         cout << "      calculating expression for <" << idx << "> of <" << numunits
-              << "> units...Finished." << endl;
-      }//if
-
-      if (XManager::fgVerbose) {
-         cout << "      expression statistics: " << endl;
-         cout << "         minimal expression level is <" << min << ">." << endl;
-         cout << "         maximal expression level is <" << max << ">." << endl;
-      }//if
-
-   // Add tree info to tree
-      AddExprTreeInfo(exprtree, exprtree->GetName(), fExpressor->GetOption(),
-                      numunits-numctrls, min, max);
-
-   // Write expression tree to file 
-      if ((err = WriteTree(exprtree, TObject::kOverwrite)) == errNoErr) {
-         // add tree header to list
-         AddTreeHeader(exprtree->GetName(), "Expr", 0, fExpressor->GetNumParameters(),
-                       fExpressor->GetParameters());
-      }//if
-
-      if (err != errNoErr) break;
-   }//for_k
-
-// Cleanup
-cleanup:
-   // delete arrays
-   if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
-   if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
-   if (arrSM)    {delete [] arrSM;    arrSM    = 0;}
-   if (arrSP)    {delete [] arrSP;    arrSP    = 0;}
-   if (arrMM)    {delete [] arrMM;    arrMM    = 0;}
-   if (arrPM)    {delete [] arrPM;    arrPM    = 0;}
-   if (arrBgdev) {delete [] arrBgdev; arrBgdev = 0;}
-   if (arrBgrd)  {delete [] arrBgrd;  arrBgrd  = 0;}
-   if (arrNPix)  {delete [] arrNPix;  arrNPix  = 0;}
-   if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
-   if (arrInten) {delete [] arrInten; arrInten = 0;}
-   if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
-   if (mskUnit)  {delete [] mskUnit;  mskUnit  = 0;}
-   if (arrUnit)  {delete [] arrUnit;  arrUnit  = 0;}
-   // Note: do not remove exprtree and expr from RAM, needed later!
-
-   return err;
-}//DoExpress
-
-//______________________________________________________________________________
-Int_t XGenomeProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
-                        Int_t numbgrd, TTree **bgrdtree)
-{
-   // Compute expression values using multichip algorithms, e.g. medpol, farms, DFW
-   // Intensities from datatrees are stored in one large table in RAM for fast access
-   // Note: all trees must have same number of entries (i.e. identical chip types)
-   if(kCS) cout << "------XGenomeProcesSet::DoMultichipExpress(table)------" << endl;
-
-// Informing user
-   if (XManager::fgVerbose) {
-      cout << "      summarizing with " << fExpressor->GetName() << " ..." << endl;
-   }//if
-
-//TEST Benchmark
-//gBenchmark->Reset(); 
-//gBenchmark->Start("Bench_MedianPolish");
-
-   Int_t ij, start, end, id;
-   Int_t x   = 0;
-   Int_t y   = 0;
-   Int_t idx = 0;
-   Int_t err = errNoErr;
-
-// Get parameters for background subtraction
-   Bool_t doBg = this->BackgroundParameters(fExpressor, fExpressor->GetBgrdOption());
-
-// Get chip parameters from scheme file (also alternative CDFs)
-   if (datatree[0] == 0) return errGetTree;
-   if (strcmp(fSchemeName.Data(), "") == 0) {
-      fSchemeName = datatree[0]->GetTitle();
-   } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
-      return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
-   }//if
-   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
-
-   XGeneChip *chip = (XGeneChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
-   Int_t numrows  = chip->GetNumRows();
-   Int_t numcols  = chip->GetNumColumns();
-   Int_t numunits = chip->GetNumUnits();
-
-// Get scheme tree for scheme
-   XScheme *scheme = 0;
-   TLeaf *scmleaf = 0;
-   TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
-   if (scmtree == 0) return errGetTree;
-   scmtree->SetBranchAddress("ScmBranch", &scheme);
-   scmleaf = scmtree->FindLeaf("fUnitID");      
-
- // Get unit tree for scheme
-   XGCUnit *unit = 0;
-   TTree *idxtree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
-   if (idxtree == 0) return errGetTree;
-   idxtree->SetBranchAddress("IdxBranch", &unit);
-
-// Init size of arrays
-   Int_t size    = numrows*numcols;
-   Int_t numsels = 0;  //number of selected entries
-
-// Check for equal number of data tree entries
-   for (Int_t k=0; k<numdata; k++) {
-      if (datatree[k] == 0) return errGetTree;
-
-      if ((Int_t)(datatree[k]->GetEntries()) != size) {
-            TString str = ""; str += size;
-            return fManager->HandleError(errNumTreeEntries, datatree[k]->GetName(), str);
-      }//if
-   }//for_k
-
-// Check for equal number of background tree entries
-   if (numbgrd > 0) {
-      for (Int_t k=0; k<numdata; k++) {
-         if (bgrdtree[k] == 0) return errGetTree;
-
-         if ((Int_t)(bgrdtree[k]->GetEntries()) != size) {
-            TString str = ""; str += size;
-            return fManager->HandleError(errNumTreeEntries, bgrdtree[k]->GetName(), str);
-         }//if
-      }//for_k
-   } else if (doBg == kTRUE) {
-      cout << "Warning: No background trees available for background subtraction."
-           << endl;
-      doBg = kFALSE;
-   } else {
-      // to prevent subtraction of background in FillDataArrays()
-      // e.g. AdjustBackground() creates bgrdtrees but sets numbgrd=0 !!
-      doBg = kFALSE;
-   }//if
-
-// Init branch addresses
-   XBgCell **bgcell = new XBgCell*[numdata];
-   XGCCell **gccell = new XGCCell*[numdata];
-   for (Int_t k=0; k<numdata; k++) {
-      bgcell[k] = 0;
-      gccell[k] = 0;
-      datatree[k]->SetBranchAddress("DataBranch", &gccell[k]);
-      if (numbgrd > 0) bgrdtree[k]->SetBranchAddress("BgrdBranch", &bgcell[k]);
-   }//for_k
-
-// Init expression trees
-   Int_t  split = 99;
-   TTree     **exprtree = new TTree*[numdata];
-   XGCExpression **expr = new XGCExpression*[numdata];
-
-// Init min/max expression levels
-   Double_t min = DBL_MAX;  //defined in float.h
-   Double_t max = 0;
-
-// Get exon level of annotation
-   Int_t exlevel = 0;
-   if (fExprSelector->GetNumParameters() > 0) {
-      exlevel = (Int_t)(fExprSelector->GetParameters())[0];
-   }//if
-
-// Init unit selector
-   XUnitSelector *unitSelector = 0;
-
-// Init 
-   Int_t     *arrMask = 0;
-   Int_t     *arrIndx = 0;
-   Int_t     *arrUnit = 0;
-   Int_t     *mskUnit = 0;
-   Double_t  *level   = 0;
-   Double_t  *stdev   = 0;
-   Double_t **table   = 0;
-
-// Create local arrays
-   if (!(arrMask = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
-   if (!(arrIndx = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
-   if (!(arrUnit = new (nothrow) Int_t[numunits]))   {err = errInitMemory; goto cleanup;}
-   if (!(mskUnit = new (nothrow) Int_t[numunits]))   {err = errInitMemory; goto cleanup;}
-   if (!(level   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
-   if (!(stdev   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
-
-   for (Int_t i=0; i<size; i++)    {arrIndx[i] = 0; arrMask[i] = eINITMASK;}
-   for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
-   for (Int_t i=0; i<numdata; i++)  level[i]   = stdev[i]   = 0.0; 
-
-// IMPORTANT NOTE: do not use the following code although it is faster:
-// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
-// Every tree contains the (x,y) coordinates as unique identifier, thus
-// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
-
-// Get mask from scheme tree and store in array 
-   arrMask = this->FillMaskArray(chip, scmtree, scheme, exlevel, size, arrMask);
-   if (arrMask == 0) {err = errInitMemory; goto cleanup;}
-
-// Calculate units satisfying mask
-   unitSelector = new XUnitSelector(kTypeSlct[3], kExtenSlct[3]);
-   unitSelector->SetOption("genome");
-   err = unitSelector->InitParameters(fExprSelector->GetNumParameters(),
-                                      fExprSelector->GetParameters());
-   if (err != errNoErr) goto cleanup;
-
-// Get units and mask from unit tree and store in array 
-   arrUnit = this->FillUnitArray(idxtree, unit, numunits, arrUnit, mskUnit);
-
-   err = unitSelector->Calculate(numunits, arrUnit, mskUnit);
-   if (err != errNoErr) goto cleanup;
-
-// Calculate mask for expression
-   err = fExprSelector->Calculate(size, 0, 0, arrMask);
-   if (err != errNoErr) goto cleanup;
-
-// Get entry index from datatree
-   idx = 0;
-   for (Int_t i=0; i<size; i++) {
-      datatree[0]->GetEntry(i);
-
-      x  = gccell[0]->GetX();
-      y  = gccell[0]->GetY();
-      ij = XY2Index(x, y, numcols);
-
-      if (arrMask[ij] == 1) {
-         arrIndx[ij] = idx++;
-      }//if
-   }//for_i
-
-// Get number of selected entries
-   for (Int_t i=0; i<size; i++) {
-      numsels = (arrMask[i] == 1) ? ++numsels : numsels;
-   }//for_i
-
-// Create table to store intensities of all datatrees
-   if (!(table = new (nothrow) Double_t*[numdata])) {err = errInitMemory; goto cleanup;} 
-   for (Int_t k=0; k<numdata; k++) {
-      table[k] = 0;
-      if (!(table[k] = new (nothrow) Double_t[numsels])) {err = errInitMemory; goto cleanup;} 
-   }//for_k
-
-//TEST Benchmark
-//gBenchmark->Start("Bench_table");
-// Get data from datatrees (and bgrdtrees) and store in table
-   if ((numbgrd > 0) && (doBg == kTRUE)) {
-      for (Int_t k=0; k<numdata; k++) {
-         idx = 0;
-         for (Int_t i=0; i<size; i++) {
-            datatree[k]->GetEntry(i);
-            bgrdtree[k]->GetEntry(i);
-//unsafe?? use arrInten[ij] and arrBgrd[ij] ??
-
-            // subtract background from intensity
-            if (arrMask[i] == 1) {
-               table[k][idx++] = this->AdjustIntensity(gccell[k]->GetIntensity(),
-                                                       bgcell[k]->GetBackground(),
-                                                       bgcell[k]->GetStdev());
-            }//if
-         }//for_i
-      }//for_k
-   } else {
-      for (Int_t k=0; k<numdata; k++) {
-         idx = 0;
-         for (Int_t i=0; i<size; i++) {
-            datatree[k]->GetEntry(i);
-
-            if (arrMask[i] == 1) {
-               table[k][idx++] = gccell[k]->GetIntensity();
-//??               table[k][arrIndx[i]] = gccell[k]->GetIntensity();
-            }//if
-         }//for_i
-      }//for_k
-   }//if
-//TEST Benchmark
-//gBenchmark->Show("Bench_table");
-
-// Create new trees exprtree
-   if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
-
-   for (Int_t k=0; k<numdata; k++) {
-      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
-      TString exprname = dataname + "." + fExpressor->GetTitle();
-      exprtree[k] = new TTree(exprname, fSchemeName);
-      if (exprtree[k] == 0) {err = errCreateTree; goto cleanup;}
-
-      expr[k] = new XGCExpression();
-      exprtree[k]->Branch("ExprBranch", "XGCExpression", &expr[k], 64000, split);
-   }//for_k
-
-//TEST Benchmark
-//gBenchmark->Show("Bench_MedianPolish");
-//gBenchmark->Reset();
-//gBenchmark->Start("Bench_Loop");
-
-// Calculate expression values
-   start = 0;
-   end   = 0;
-   idx   = 0;
-   for (id=0; id<numunits; id++) { 
-      idxtree->GetEntry(id);
-
-      Int_t unitID   = unit->GetUnitID();
-      Int_t numcells = unit->GetNumCells();
-      // skip masked unit entries
-      if (mskUnit[id] <= 0) {
-         start += numcells;
-         end = start;
-         continue;
-      }//if
-
-///////////////////////////
-//TO DO
-//Better above: arrPM = new Double_t[maxnumcells*numdata]; 
-///////////////////////////
-      // create array to store PM values for all probes with current unitID
-      Int_t  numatoms = unit->GetNumAtoms();
-      Double_t *arrPM = new Double_t[numatoms*numdata]; 
-
-      // fill arrPM with PM values of current unitID
-      Int_t p = 0;
-      end += numcells;
-      for (Int_t j=start; j<end; j++) {
-         scmtree->GetEntry(j);
-
-         if ((Int_t)(scmleaf->GetValue()) != unitID) {
-            cerr << "Error: unitID is not equal to: " << unitID << endl;
-            err = errAbort;
-            goto cleanup;
-         }//if
-
-         x  = scheme->GetX();
-         y  = scheme->GetY();
-         ij = XY2Index(x, y, numcols);
-
-         if (arrMask[ij] == 1) {
-            if (p == 0) idx++;  //count number of units to be summarized
-
-            for (Int_t k=0; k<numdata; k++) {
-               arrPM[p] = table[k][arrIndx[ij]];
-               p++;
-            }//for_k
-         }//if
-      }//for_j
-      start += numcells;
-
-      if (XManager::fgVerbose && id%10000 == 0) {
-         cout << "      calculating expression for <" << idx << "> of <" << numunits
-              << "> units...\r" << flush;
-      }//if
-
-      // fill arrPM or continue if it is not filled
-      if ((err = fExpressor->SetArray(p, arrPM)) != errNoErr) {
-         delete [] arrPM;
-         continue;
-      }//if
-
-      // calculate expression level for PMs of current unitID
-      if ((err = fExpressor->Calculate(numdata, level, stdev, 0))) break;
-
-//////////////////
-// TO DO: return fResiduals for residual-plot!!!! (like affyPLM)
-//      residuals = fExpressor->GetResiduals();
-// store as residuals tree??
-//////////////////
-
-      // fill expression trees
-      for (Int_t k=0; k<numdata; k++) {
-         // get minimal/maximal expression levels
-         if (level[k] < min) min = level[k];
-         if (level[k] > max) max = level[k];
-
-         expr[k]->SetUnitID(unitID);
-         expr[k]->SetLevel(level[k]);
-         expr[k]->SetStdev(TMath::Abs(stdev[k]));
-         expr[k]->SetNumPairs((Int_t)(p / numdata));
-         exprtree[k]->Fill();
-      }//for_k
-
-      delete [] arrPM;
-   }//for_id
-
-   if (XManager::fgVerbose) {
-      cout << "      calculating expression for <" << idx << "> of <"
-           << numunits << "> units...Finished." << endl;
-   }//if
-
-   if (XManager::fgVerbose) {
-      cout << "      expression statistics: " << endl;
-      cout << "         minimal expression level is <" << min << ">." << endl;
-      cout << "         maximal expression level is <" << max << ">." << endl;
-   }//if
-//TEST Benchmark
-//gBenchmark->Show("Bench_Loop");
-
-// Write expression trees to file 
-   for (Int_t k=0; k<numdata; k++) {
-   // Add tree info to tree
-      AddExprTreeInfo(exprtree[k], exprtree[k]->GetName(), fExpressor->GetOption(),
-                      idx, min, max);
-
-      if ((err = WriteTree(exprtree[k], TObject::kOverwrite)) == errNoErr) {
-         // add tree header to list
-         AddTreeHeader(exprtree[k]->GetName(), "Expr", 0, fExpressor->GetNumParameters(),
-                       fExpressor->GetParameters());
-      } else {
-         break;
-      }//if
-   }//for_k
-
-// Cleanup
-cleanup:
-   SafeDelete(unitSelector);
-
-   // delete table
-   for (Int_t k=0; k<numdata; k++) {
-      if (table[k]) {delete [] table[k]; table[k] = 0;}
-   }//for_k
-   if (table) delete [] table;
-
-   // delete arrays
-   if (stdev)   {delete [] stdev;   stdev   = 0;}
-   if (level)   {delete [] level;   level   = 0;}
-   if (mskUnit) {delete [] mskUnit; mskUnit = 0;}
-   if (arrUnit) {delete [] arrUnit; arrUnit = 0;}
-   if (arrIndx) {delete [] arrIndx; arrIndx = 0;}
-   if (arrMask) {delete [] arrMask; arrMask = 0;}
-
-   delete [] expr;
-   delete [] exprtree;
-   delete [] gccell;
-   delete [] bgcell;
-
-   return err;
-}//DoMultichipExpress
-
-//______________________________________________________________________________
-Int_t XGenomeProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
-                        Int_t numbgrd, TTree **bgrdtree, TFile *file)
-{
-   // Compute expression values using multichip algorithms, e.g. medpol, farms, DFW
-   // In order to reduce memory consumption intensities from datatrees are
-   // stored in the order of the corresponding schemetree entries in temporary 
-   // trees in a temporary root file
-   // Note: all trees must have same number of entries (i.e. identical chip types)
-   if(kCS) cout << "------XGenomeProcesSet::DoMultichipExpress(file)------" << endl;
-
-// Informing user
-   if (XManager::fgVerbose) {
-      cout << "      summarizing with " << fExpressor->GetName() 
-           << " (using temporary file)..." << endl;
-   }//if
-
-//TEST Benchmark
-//gBenchmark->Reset(); 
-//gBenchmark->Start("Bench_MedianPolish");
-
-   Int_t ij, start, end, id, entry;
-   Int_t x   = 0;
-   Int_t y   = 0;
-   Int_t idx = 0;
-   Int_t err = errNoErr;
-
-// Get parameters for background subtraction
-   Bool_t doBg = this->BackgroundParameters(fExpressor, fExpressor->GetBgrdOption());
-
-// Get chip parameters from scheme file (also alternative CDFs)
-   if (datatree[0] == 0) return errGetTree;
-   if (strcmp(fSchemeName.Data(), "") == 0) {
-      fSchemeName = datatree[0]->GetTitle();
-   } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
-      return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
-   }//if
-   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
-
-   XGeneChip *chip = (XGeneChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
-   Int_t numrows  = chip->GetNumRows();
-   Int_t numcols  = chip->GetNumColumns();
-   Int_t numunits = chip->GetNumUnits();
-
-// Get scheme tree for scheme
-   XScheme *scheme = 0;
-   TLeaf *scmleaf = 0;
-   TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
-   if (scmtree == 0) return errGetTree;
-   scmtree->SetBranchAddress("ScmBranch", &scheme);
-   scmleaf = scmtree->FindLeaf("fUnitID");      
-
- // Get unit tree for scheme
-   XGCUnit *unit = 0;
-   TTree *idxtree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
-   if (idxtree == 0) return errGetTree;
-   idxtree->SetBranchAddress("IdxBranch", &unit);
-
-// Init size of arrays
-   Int_t size    = numrows*numcols;
-   Int_t numsels = 0;  //number of selected entries
-
-// Check for equal number of data tree entries
-   for (Int_t k=0; k<numdata; k++) {
-      if (datatree[k] == 0) return errGetTree;
-
-      if ((Int_t)(datatree[k]->GetEntries()) != size) {
-            TString str = ""; str += size;
-            return fManager->HandleError(errNumTreeEntries, datatree[k]->GetName(), str);
-      }//if
-   }//for_k
-
-// Check for equal number of background tree entries
-   if (numbgrd > 0) {
-      for (Int_t k=0; k<numdata; k++) {
-         if (bgrdtree[k] == 0) return errGetTree;
-
-         if ((Int_t)(bgrdtree[k]->GetEntries()) != size) {
-            TString str = ""; str += size;
-            return fManager->HandleError(errNumTreeEntries, bgrdtree[k]->GetName(), str);
-         }//if
-      }//for_k
-   } else if (doBg == kTRUE) {
-      cout << "Warning: No background trees available for background subtraction."
-           << endl;
-      doBg = kFALSE;
-   } else {
-      // to prevent subtraction of background in FillDataArrays()
-      // e.g. AdjustBackground() creates bgrdtrees but sets numbgrd=0 !!
-      doBg = kFALSE;
-   }//if
-
-// Init branch addresses
-   XBgCell **bgcell = new XBgCell*[numdata];
-   XGCCell **gccell = new XGCCell*[numdata];
-   for (Int_t k=0; k<numdata; k++) {
-      bgcell[k] = 0;
-      gccell[k] = 0;
-      datatree[k]->SetBranchAddress("DataBranch", &gccell[k]);
-      if (numbgrd > 0) bgrdtree[k]->SetBranchAddress("BgrdBranch", &bgcell[k]);
-   }//for_k
-
-// Init temporary trees and expression trees
-   Int_t    split = 99;
-   Double_t sort  = 0.0;
-   TTree     **tmptree  = new TTree*[numdata];
-   TTree     **exprtree = new TTree*[numdata];
-   XGCExpression **expr = new XGCExpression*[numdata];
-
-// Init min/max expression levels
-   Double_t min = DBL_MAX;  //defined in float.h
-   Double_t max = 0;
-
-// Get exon level of annotation
-   Int_t exlevel = 0;
-   if (fExprSelector->GetNumParameters() > 0) {
-      exlevel = (Int_t)(fExprSelector->GetParameters())[0];
-   }//if
-
-// Init unit selector
-   XUnitSelector *unitSelector = 0;
-
-// Create local arrays
-   Int_t    *arrMask = 0;
-   Int_t    *arrIndx = 0;
-   Int_t    *arrUnit = 0;
-   Int_t    *mskUnit = 0;
-   Double_t *level   = 0;
-   Double_t *stdev   = 0;
-   Double_t *arrData = 0;
-
-// Create local arrays
-   if (!(arrMask = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
-   if (!(arrIndx = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
-   if (!(arrUnit = new (nothrow) Int_t[numunits]))   {err = errInitMemory; goto cleanup;}
-   if (!(mskUnit = new (nothrow) Int_t[numunits]))   {err = errInitMemory; goto cleanup;}
-   if (!(level   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
-   if (!(stdev   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
-
-   for (Int_t i=0; i<size; i++)    {arrIndx[i] = 0; arrMask[i] = eINITMASK;}
-   for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
-   for (Int_t i=0; i<numdata; i++)  level[i]   = stdev[i]   = 0.0; 
-
-// IMPORTANT NOTE: do not use the following code although it is faster:
-// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
-// Every tree contains the (x,y) coordinates as unique identifier, thus
-// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
-
-// Get mask from scheme tree and store in array 
-   arrMask = this->FillMaskArray(chip, scmtree, scheme, exlevel, size, arrMask);
-   if (arrMask == 0) {err = errInitMemory; goto cleanup;}
-
-// Calculate units satisfying mask
-   unitSelector = new XUnitSelector(kTypeSlct[3], kExtenSlct[3]);
-   unitSelector->SetOption("genome");
-   err = unitSelector->InitParameters(fExprSelector->GetNumParameters(),
-                                      fExprSelector->GetParameters());
-   if (err != errNoErr) goto cleanup;
-
-// Get mask from scheme tree and store in array 
-   arrUnit = this->FillUnitArray(idxtree, unit, numunits, arrUnit, mskUnit);
-
-   err = unitSelector->Calculate(numunits, arrUnit, mskUnit);
-   if (err != errNoErr) goto cleanup;
-
-// Calculate mask for expression
-   err = fExprSelector->Calculate(size, 0, 0, arrMask);
-   if (err != errNoErr) goto cleanup;
-
-// Get entry index from datatree
-   idx = 0;
-   for (Int_t i=0; i<size; i++) {
-      datatree[0]->GetEntry(i);
-
-      x  = gccell[0]->GetX();
-      y  = gccell[0]->GetY();
-      ij = XY2Index(x, y, numcols);
-
-      if (arrMask[ij] == 1) {
-         arrIndx[ij] = idx++;
-      }//if
-   }//for_i
-
-// Get number of selected entries
-   for (Int_t i=0; i<size; i++) {
-      numsels = (arrMask[i] == 1) ? ++numsels : numsels;
-   }//for_i
-
-// Create array to store selected intensities
-   if (!(arrData = new Double_t[numsels])) {err = errInitMemory; goto cleanup;}
-   for (Int_t i=0; i<numsels; i++) arrData[i] = 0.0;
-
-//TEST Benchmark
-//gBenchmark->Start("Bench_tmptree");
-// Change directory to temporary file
-   if (!file->cd()) {err = errGetDir; goto cleanup;}
-
-// Get data from datatrees (and bgrdtrees) and store in temporary file
-   for (Int_t k=0; k<numdata; k++) {
-      // create temporary tree
-      tmptree[k] = new TTree(datatree[k]->GetName(), "temporary tree");
-      if (tmptree[k] == 0) {err = errCreateTree; goto cleanup;}
-      tmptree[k]->Branch("sortBr", &sort, "sort/D");
-
-      // fill array with (background corrected) intensities
-      if ((numbgrd > 0) && (doBg == kTRUE)) {
-         idx = 0;
-         for (Int_t i=0; i<size; i++) {
-            datatree[k]->GetEntry(i);
-            bgrdtree[k]->GetEntry(i);
-
-            // subtract background from intensity
-            if (arrMask[i] == 1) {
-               arrData[idx++] = this->AdjustIntensity(gccell[k]->GetIntensity(),
-                                                      bgcell[k]->GetBackground(),
-                                                      bgcell[k]->GetStdev());
-            }//if
-         }//for_i
-      } else {
-         idx = 0;
-         for (Int_t i=0; i<size; i++) {
-            datatree[k]->GetEntry(i);
-
-            if (arrMask[i] == 1) {
-               arrData[idx++] = gccell[k]->GetIntensity();
-            }//if
-         }//for_i
-      }//if
-
-      // fill tmptree with array in the order of scheme tree entries for (x,y)
-      for (Int_t i=0; i<size; i++) {
-         scmtree->GetEntry(i);
-
-         x  = scheme->GetX();
-         y  = scheme->GetY();
-         ij = XY2Index(x, y, numcols);
-
-         if (arrMask[ij] == 1) {
-            sort = arrData[arrIndx[ij]];
-            tmptree[k]->Fill();
-         }//if
-      }//for_i
-
-      // write tmptree to temporary file
-      tmptree[k]->Write();
-//TEST??      tmptree[k]->Write(TObject::kOverwrite);
-   }//for_k
-//TEST Benchmark
-//gBenchmark->Show("Bench_tmptree");
-
-// Change directory to current directory for treeset in main file
-   if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
-
-// Create new trees exprtree
-   for (Int_t k=0; k<numdata; k++) {
-      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
-      TString exprname = dataname + "." + fExpressor->GetTitle();
-      exprtree[k] = new TTree(exprname, fSchemeName);
-      if (exprtree[k] == 0) {err = errCreateTree; goto cleanup;}
-
-      expr[k] = new XGCExpression();
-      exprtree[k]->Branch("ExprBranch", "XGCExpression", &expr[k], 64000, split);
-   }//for_k
-
-//TEST Benchmark
-//gBenchmark->Show("Bench_MedianPolish");
-//gBenchmark->Reset();
-//gBenchmark->Start("Bench_Loop");
-
-// Calculate expression values
-   start = 0;
-   end   = 0;
-   idx   = 0;
-   entry = 0;
-   for (id=0; id<numunits; id++) { 
-      idxtree->GetEntry(id);
-
-      Int_t unitID   = unit->GetUnitID();
-      Int_t numcells = unit->GetNumCells();
-      // skip masked unit entries
-      if (mskUnit[id] <= 0) {
-         start += numcells;
-         end = start;
-         continue;
-      }//if
-
-//Better above: arrPM = new Double_t[maxnumcells*numdata]; 
-      // create array to store PM values for all probes with current unitID
-      Int_t numatoms = unit->GetNumAtoms();
-      Double_t *arrPM = new Double_t[numatoms*numdata]; 
-
-      // fill arrPM with PM values of current unitID
-      Int_t p = 0;
-      end += numcells;
-      for (Int_t j=start; j<end; j++) {
-         scmtree->GetEntry(j);
-
-         if ((Int_t)(scmleaf->GetValue()) != unitID) {
-            cerr << "Error: unitID is not equal to: " << unitID << endl;
-            err = errAbort;
-            goto cleanup;
-         }//if
-
-         x  = scheme->GetX();
-         y  = scheme->GetY();
-         ij = XY2Index(x, y, numcols);
-
-         if (arrMask[ij] == 1) {
-            if (p == 0) idx++;  //count number of units to be summarized
-
-            for (Int_t k=0; k<numdata; k++) {
-               tmptree[k]->GetEntry(entry);
-               arrPM[p] = sort;
-               p++;
-            }//for_k
-
-            entry++;
-         }//if
-      }//for_j
-      start += numcells;
-
-      if (XManager::fgVerbose && id%100000 == 0) {
-         cout << "      calculating expression for <" << idx << "> of <"
-              << numunits << "> units...\r" << flush;
-      }//if
-
-      // fill arrPM or continue if it is not filled
-      if ((err = fExpressor->SetArray(p, arrPM)) != errNoErr) {
-         delete [] arrPM;
-         continue;
-      }//if
-
-      // calculate expression level for PMs of current unitID
-      if ((err = fExpressor->Calculate(numdata, level, stdev, 0))) break;
-
-//////////////////
-// TO DO: return fResiduals for residual-plot!!!! (like affyPLM)
-//      residuals = fExpressor->GetResiduals();
-// store as residuals tree??
-//////////////////
-
-      // fill expression trees
-      for (Int_t k=0; k<numdata; k++) {
-         // get minimal/maximal expression levels
-         if (level[k] < min) min = level[k];
-         if (level[k] > max) max = level[k];
-
-         expr[k]->SetUnitID(unitID);
-         expr[k]->SetLevel(level[k]);
-         expr[k]->SetStdev(TMath::Abs(stdev[k]));
-         expr[k]->SetNumPairs((Int_t)(p / numdata));
-         exprtree[k]->Fill();
-      }//for_k
-
-      delete [] arrPM;
-   }//for_id
-   if (XManager::fgVerbose) {
-      cout << "      calculating expression for <" << idx << "> of <"
-           << numunits << "> units...Finished." << endl;
-   }//if
-
-   if (XManager::fgVerbose) {
-      cout << "      expression statistics: " << endl;
-      cout << "         minimal expression level is <" << min << ">." << endl;
-      cout << "         maximal expression level is <" << max << ">." << endl;
-   }//if
-//TEST Benchmark
-//gBenchmark->Show("Bench_Loop");
-
-// Write expression trees to file 
-   for (Int_t k=0; k<numdata; k++) {
-   // Add tree info to tree
-      AddExprTreeInfo(exprtree[k], exprtree[k]->GetName(), fExpressor->GetOption(),
-                      idx, min, max);
-
-      if ((err = WriteTree(exprtree[k], TObject::kOverwrite)) == errNoErr) {
-         // add tree header to list
-         AddTreeHeader(exprtree[k]->GetName(), "Expr", 0, fExpressor->GetNumParameters(),
-                       fExpressor->GetParameters());
-      } else {
-         break;
-      }//if
-   }//for_k
-
-// Cleanup
-cleanup:
-   SafeDelete(unitSelector);
-
-   // delete temporary trees
-   for (Int_t k=0; k<numdata; k++) {
-      tmptree[k]->Delete(""); tmptree[k] = 0;
-   }//for_k
-
-   // delete arrays
-   if (arrData) {delete [] arrData; arrData = 0;}
-   if (stdev)   {delete [] stdev;   stdev   = 0;}
-   if (level)   {delete [] level;   level   = 0;}
-   if (mskUnit) {delete [] mskUnit; mskUnit = 0;}
-   if (arrUnit) {delete [] arrUnit; arrUnit = 0;}
-   if (arrIndx) {delete [] arrIndx; arrIndx = 0;}
-   if (arrMask) {delete [] arrMask; arrMask = 0;}
-
-   delete [] expr;
-   delete [] exprtree;
-   delete [] tmptree;
-   delete [] gccell;
-   delete [] bgcell;
-
-   return err;
-}//DoMultichipExpress
 
 //______________________________________________________________________________
 Int_t *XGenomeProcesSet::FillMaskArray(XDNAChip *chip, TTree *scmtree, XScheme *scheme,
@@ -6441,6 +5535,30 @@ Int_t *XGenomeProcesSet::FillMaskArray(XDNAChip *chip, TTree *scmtree, XScheme *
 }//FillMaskArray
 
 //______________________________________________________________________________
+void XGenomeProcesSet::FillProbeSets(Int_t &p, Int_t &m, Int_t &idx, Double_t *pm, 
+                       Double_t *mm, Double_t *sp, Double_t *sm, Int_t *xp, 
+                       Int_t *xm, Int_t msk, Double_t inten, Double_t stdev,
+                       Double_t bgrd, Double_t bgdev, Int_t npix)
+{
+   // Fill PM probesets and set MM probesets to background
+   if(kCSa) cout << "------XGenomeProcesSet::FillProbeSets------" << endl;
+
+   if (msk == 1) {
+      if (p == 0) idx++;  //count number of units
+      pm[p] = inten;
+      sp[p] = stdev;
+      xp[p] = npix;
+      p++;
+
+      // set MM values to background data
+      mm[m] = bgrd;
+      sm[m] = bgdev;
+      xm[m] = npix; //use numpix from datatree
+      m++;
+   }//if
+}//FillProbeSets
+
+//______________________________________________________________________________
 Int_t *XGenomeProcesSet::FillUnitArray(TTree *idxtree, XGCUnit *unit,
                          Int_t n, Int_t *arr, Int_t *msk)
 {
@@ -6459,6 +5577,23 @@ Int_t *XGenomeProcesSet::FillUnitArray(TTree *idxtree, XGCUnit *unit,
 
    return arr;
 }//FillUnitArray
+
+//______________________________________________________________________________
+Int_t XGenomeProcesSet::MaxNumberCells(TTree *idxtree)
+{
+   // Get maximum number of cells from tree info for unit tree
+   if(kCS) cout << "------XGenomeProcesSet::MaxNumberCells------" << endl;
+
+   XGenomeTreeInfo *idxinfo = 0;
+   idxinfo = (XGenomeTreeInfo*)idxtree->GetUserInfo()->FindObject(idxtree->GetName());
+   if (!idxinfo) {
+      cerr << "Error: Could not get tree info for <" << idxtree->GetName() << ">."
+           << endl;
+      return errGeneral;
+   }//if
+
+   return (Int_t)idxinfo->GetValue("fMaxNCells");
+}//MaxNumberCells
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -6496,2129 +5631,6 @@ XExonProcesSet::~XExonProcesSet()
 }//Destructor
 
 //______________________________________________________________________________
-Int_t XExonProcesSet::DetectCall(Int_t numdata, TTree **datatree,
-                      Int_t &numbgrd, TTree **bgrdtree)
-{
-   // Detect presence call
-   // Note: Present call data will be stored as: 'P'=2, 'M'=1, 'A'=0
-   if(kCS) cout << "------XExonProcesSet::DetectCall------" << endl;
-
-// Informing user
-   if (XManager::fgVerbose) {
-      cout << "   Calculating detection calls..." << endl;
-   }//if
-
-   Int_t err = errNoErr;
-   Int_t  ij, idx, x, y, start, end;
-
-   fFile->cd();
-
-   Bool_t doGC = (Bool_t)(strcmp(fCaller->GetName(), "dabgcall") == 0);
-
-// Init local arrays to store data from trees
-   Int_t    *arrUnit  = 0;
-   Int_t    *mskUnit  = 0;
-   Int_t    *arrMask  = 0;
-   Double_t *arrInten = 0;
-   Double_t *arrStdev = 0;  //not needed for current fCaller
-   Int_t    *arrNPix  = 0;  //not needed for current fCaller
-   Double_t *arrBgrd  = 0;
-   Double_t *arrBgdev = 0;  //not needed for current fCaller
-   Double_t *arrPM    = 0; 
-   Double_t *arrMM    = 0;
-   Double_t *arrSP    = 0;  //not needed for current fCaller
-   Double_t *arrSM    = 0;  //not needed for current fCaller
-   Int_t    *arrXP    = 0;  //not needed for current fCaller
-   Int_t    *arrXM    = 0;  //not needed for current fCaller
-
-   TTree  *calltree = 0;
-   XPCall *call     = 0;
-   Int_t   split    = 99;
-
-// Get chip parameters from scheme file (also alternative CDFs)
-   if (datatree[0] == 0) return errGetTree;
-   if (strcmp(fSchemeName.Data(), "") == 0) {
-      fSchemeName = datatree[0]->GetTitle();
-   } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
-      return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
-   }//if
-   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
-
-   XExonChip *chip = (XExonChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
-   Int_t numrows  = chip->GetNumRows();
-   Int_t numcols  = chip->GetNumColumns();
-   Int_t numctrls = chip->GetNumControls();
-   Int_t size     = numrows*numcols;
-
-// Get scheme tree for scheme
-   XExonScheme *scheme = 0;
-   TLeaf *scmleaf = 0;
-   TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
-   if (scmtree == 0) return errGetTree;
-   scmtree->SetBranchAddress("ScmBranch", &scheme);
-
-// Get unit tree for scheme
-   XGCUnit *unit    = 0;
-   TTree   *idxtree = 0; 
-   Int_t   numunits = 0;
-   if (strcmp(fCaller->GetOption(), "exon") == 0) { 
-      idxtree  = (TTree*)gDirectory->Get(chip->GetExonUnitTree()); //tree.exn
-      if (idxtree == 0) return errGetTree;
-
-      numunits = chip->GetNumExonUnits();
-      scmleaf  = scmtree->FindLeaf("fExonID");      
-   } else if (strcmp(fCaller->GetOption(), "probeset") == 0) {
-      idxtree  = (TTree*)gDirectory->Get(chip->GetProbesetUnitTree()); //tree.pbs
-      if (idxtree == 0) return errGetTree;
-
-      numunits = idxtree->GetEntries();
-      scmleaf  = scmtree->FindLeaf("fProbesetID");      
-   } else {
-      idxtree  = (TTree*)gDirectory->Get(chip->GetUnitTree());     //tree.idx
-      if (idxtree == 0) return errGetTree;
-
-      numunits = chip->GetNumUnits();
-      scmleaf  = scmtree->FindLeaf("fUnitID");      
-   }//if
-   idxtree->SetBranchAddress("IdxBranch", &unit);
-
-// Get maximum number of cells from tree info for unit tree
-   XGenomeTreeInfo *idxinfo = 0;
-   idxinfo = (XGenomeTreeInfo*)idxtree->GetUserInfo()->FindObject(idxtree->GetName());
-   if (!idxinfo) {
-      cerr << "Error: Could not get tree info for <" << idxtree->GetName() << ">." << endl;
-      return errGeneral;
-   }//if
-   Int_t maxnumcells = (Int_t)idxinfo->GetValue("fMaxNCells");
-
-// Get exon level of annotation
-   Int_t level = 0;
-   if (fCallSelector->GetNumParameters() > 0) {
-      level = (Int_t)(fCallSelector->GetParameters())[0];
-   }//if
-
-// Init unit selector
-   XUnitSelector *unitSelector = 0;
-
-// Initialize memory for unit arrays
-   if (!(arrUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
-   if (!(mskUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
-
-   for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
-
-// Initialize memory for data arrays (uncomment when needed in fCaller)
-   if (!(arrMask  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-   if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-//   if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-//   if (!(arrNPix  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-
-   for (Int_t i=0; i<size; i++) {
-      arrMask[i]  = eINITMASK;  //init mask
-      arrInten[i] = 0.0; 
-   }//for_i
-
-// Get mask for PM/MM from scheme tree and store in array 
-   arrMask = this->FillMaskArray(chip, scmtree, scheme, 0, size, arrMask);
-   if (arrMask == 0) {err = errInitMemory; goto cleanup;}
-
-// Calculate units satisfying mask
-   unitSelector = new XUnitSelector(kTypeSlct[3], kExtenSlct[3]);
-   unitSelector->SetOption("exon");
-   err = unitSelector->InitParameters(fCallSelector->GetNumParameters(),
-                                      fCallSelector->GetParameters());
-   if (err != errNoErr) goto cleanup;
-
-// Get mask from scheme tree and store in array 
-   arrUnit = this->FillUnitArray(idxtree, unit, numunits, arrUnit, mskUnit);
-
-   err = unitSelector->Calculate(numunits, arrUnit, mskUnit);
-   if (err != errNoErr) goto cleanup;
-
-// Calculate mask for detection call
-   err = fCallSelector->Calculate(size, 0, 0, arrMask);
-   if (err != errNoErr) goto cleanup;
-
-// For DABG only, fill arrMask with GC content (GC>=0 for PM)
-// for PM set GC >= 0 , i.e. GC = 0...kProbeLength,
-// for MM set GC < eINITMASK, i.e. GC = eINITMASK - (1...kProbeLength+1)
-   if (doGC) {
-   // Get probe tree for scheme
-      XGCProbe *probe = 0;
-      TTree *probetree = (TTree*)gDirectory->Get(chip->GetProbeTree()); 
-      if (probetree == 0) {err = errGetTree; goto cleanup;}
-      probetree->SetBranchAddress("PrbBranch", &probe);
-
-   // Get GC content from probe tree and store in array
-      for (Int_t i=0; i<size; i++) {
-         probetree->GetEntry(i);
-
-         x  = probe->GetX();
-         y  = probe->GetY();
-         ij = XY2Index(x, y, numcols);
-
-// IMPORTANT NOTE: do not use the following code although it is faster:
-// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
-// Every tree contains the (x,y) coordinates as unique identifier, thus
-// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
-
-         if (arrMask[ij] == 1) {
-            arrMask[ij] = probe->GetNumberGC();
-         } else if (arrMask[ij] == 0) {
-            //need to use (numberGC + 1) to avoid setting arrMask=eINITMASK for GC=0!!
-            arrMask[ij] = eINITMASK - (probe->GetNumberGC() + 1);
-//no            arrMask[ij] = eINITMASK - probe->GetNumberGC();
-         }//if
-      }//for_i
-   } else {
-      if (!(arrBgrd  = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-//      if (!(arrBgdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-
-      for (Int_t i=0; i<size; i++) arrBgrd[i] = 0.0;
-   }//if
-
-   if (!fFile->cd(fName)) return errGetDir;
-
-// Initialize memory for PM/MM arrays (uncomment when needed in fCaller)
-   if (!(arrPM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-   if (!(arrMM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-//   if (!(arrSP = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-//   if (!(arrSM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-   if (!(arrXP = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
-//   if (!(arrXM = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
-
-   for (Int_t i=0; i<maxnumcells; i++) {
-      arrPM[i] = arrMM[i] = 0.0; 
-      arrXP[i] = 0; 
-   }//for_i
-
-// Calculate detection call
-   for (Int_t k=0; k<numdata; k++) {
-      if (datatree[k] == 0) return errGetTree;
-
-   // Informing user
-      TString name = datatree[k]->GetName();
-      if (XManager::fgVerbose) {
-         cout << "      calculating present call for <" << name.Data() << ">..." << endl;
-      }//if
-
-   // Get tree info for datatree
-      XDataTreeInfo *info = 0;
-      info = (XDataTreeInfo*)datatree[k]->GetUserInfo()->FindObject(name);
-      if (!info) {
-         cerr << "Error: Could not get tree info for <" << name.Data() << ">." << endl;
-         return errGeneral;
-      }//if
-
-      Int_t    numabsent  = 0;
-      Int_t    numarginal = 0;
-      Int_t    numpresent = 0;
-      Double_t minpval    = 1.0;
-      Double_t maxpval    = 0.0;
-
-   // Get data from datatree and store in arrays
-      err = FillDataArrays(datatree[k], numrows, numcols, arrInten, arrStdev, arrNPix);
-      if (err != errNoErr) goto cleanup;
-
-   // For DABG only
-      if (doGC) {
-         // get intensities and save in table sorted for GC-content
-         if ((err = fCaller->Calculate(size, arrInten, arrMask))) goto cleanup;
-      } else {
-      // Need to get background data for MM values!
-         if (bgrdtree[k] == 0) {
-            cerr << "Error: Could not get background tree for <" << fCaller->GetName() << ">."
-                 << endl;
-            err = errGetTree; goto cleanup;
-         }//if
-
-        // get data from bgrdtree and store in arrays
-//         err = FillBgrdArrays(bgrdtree[k], numrows, numcols, arrBgrd, arrBgdev);
-         err = FillBgrdArrays(bgrdtree[k], numrows, numcols, arrBgrd, 0);
-         if (err != errNoErr) goto cleanup;
-      }//if
-
-   // Create new tree calltree
-      name = Path2Name(datatree[k]->GetName(), dSEP, ".") + "." + fCaller->GetTitle();
-      calltree = new TTree(name, fSchemeName);
-      if (calltree == 0) return errCreateTree;
-      call = new XPCall();
-      calltree->Branch("CallBranch", "XPCall", &call, 64000, split);
-
-   // Calculate detection call values
-      start = 0;
-      end   = 0;
-      idx   = 0;
-      for (Int_t id=0; id<numunits; id++) { 
-         idxtree->GetEntry(id);
-
-         Int_t unitID   = unit->GetUnitID();
-         Int_t numcells = unit->GetNumCells();
-         // skip masked unit entries
-         if (mskUnit[id] <= 0) {
-            start += numcells;
-            end = start;
-            continue;
-         }//if
-
-         Int_t p = 0;
-         Int_t m = 0;
-         end += numcells;
-         for (Int_t j=start; j<end; j++) {
-            scmtree->GetEntry(j);
-
-            if ((Int_t)(scmleaf->GetValue()) != unitID) {
-               cerr << "Error: unitID is not equal to: " << unitID << endl;
-               err = errAbort;
-               goto cleanup;
-            }//if
-
-            x  = scheme->GetX();
-            y  = scheme->GetY();
-            ij = XY2Index(x, y, numcols);
-
-            if (doGC) {
-               if (arrMask[ij] >= 0) {
-                  if (p == 0) idx++;  //count number of units
-                  arrPM[p] = arrInten[ij];
-                  arrXP[p] = arrMask[ij];
-                  p++;
-               }//if
-            } else {
-               if (arrMask[ij] == 1) {
-                  if (p == 0) idx++;  //count number of units
-                  arrPM[p] = arrInten[ij];
-//no                  arrSP[p] = arrStdev[ij];
-//no                  arrXP[p] = arrNPix[ij];
-                  p++;
-
-               // set MM values to background data
-                  arrMM[m] = arrBgrd[ij];
-//no                  arrSM[m] = arrBgdev[ij];
-//no                  arrXM[p] = arrNPix[ij];
-                  m++;
-               }//if
-            }//if
-
-            if (p > maxnumcells || m > maxnumcells) {
-               cerr << "Error: unitID <" << unitID << "> exceeds maximum number of cells <"
-                    << maxnumcells << ">. Buffer overflow!" << endl;
-               err = errAbort;
-               goto cleanup;
-            }//if
-         }//for_j
-         start += numcells;
-
-         // continue if arrays arrPM etc are not filled
-         if (p == 0) continue;
-         if (!doGC && (p != m)) {
-            cout << "Warning: Skipping unitID <" << unitID
-                 << "> with different numbers of PM and MM data." << endl;
-//            continue;
-            err = errAbort;
-            goto cleanup;
-         }//if
-
-         if (XManager::fgVerbose && id%10000 == 0) {
-            cout << "      <" << idx << "> of <" << numunits << "> calls processed...\r" << flush;
-         }//if
-
-         // calculate detection call
-         Int_t    dummy    = 0;
-         Double_t prescall = 0.0;
-         Double_t pvalue   = 1.0;
-         fCaller->InitTreeInfo(info);
-         fCaller->InitArrays(p, arrPM, arrSP, arrXP, arrMM, arrSM, arrXM);
-         if ((err = fCaller->Calculate(prescall, pvalue, dummy))) goto cleanup;
-
-         // number of present/absent calls
-         if      (prescall == 2.0) numpresent++;
-         else if (prescall == 1.0) numarginal++;
-         else if (prescall == 0.0) numabsent++;
-
-         // minimal/maximal detection call p-value
-         if      (pvalue < minpval) minpval = pvalue;
-         else if (pvalue > maxpval) maxpval = pvalue;
-
-         // fill call tree
-         call->SetUnitID(unitID);
-         call->SetCall((Short_t)prescall);
-         call->SetPValue(pvalue);
-         calltree->Fill();
-      }//for_id
-
-      if (XManager::fgVerbose) {
-         cout << "      <" << idx << "> of <" << numunits << "> calls processed...Finished" << endl;
-      }//if
-
-      if (XManager::fgVerbose) {
-         cout << "      detection call statistics: " << endl;
-         cout << "         minimum detection p-value = " << minpval << endl;
-         cout << "         maximum detection p-value = " << maxpval << endl;
-         cout << "         P: <" << numpresent*100.0/idx << "> percent units present."  << endl;
-         cout << "         M: <" << numarginal*100.0/idx << "> percent units marginal." << endl;
-         cout << "         A: <" << numabsent*100.0/idx  << "> percent units absent."   << endl;
-      }//if
-
-   // Add tree info to tree
-      AddCallTreeInfo(calltree, calltree->GetName(), fCaller->GetOption(),
-                      numunits-numctrls, numabsent, numarginal, numpresent,
-                      minpval, maxpval);
-
-   // Write call tree to file 
-      if ((err = WriteTree(calltree, TObject::kOverwrite)) == errNoErr) {
-         // add tree header to list
-         AddTreeHeader(calltree->GetName(), "Call", 0, fCaller->GetNumParameters(),
-                       fCaller->GetParameters());
-      }//if
-
-      if (err != errNoErr) break;
-   }//for_k
-
-// Cleanup
-cleanup:
-   // delete arrays
-   if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
-   if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
-   if (arrSM)    {delete [] arrSM;    arrSM    = 0;}
-   if (arrSP)    {delete [] arrSP;    arrSP    = 0;}
-   if (arrMM)    {delete [] arrMM;    arrMM    = 0;}
-   if (arrPM)    {delete [] arrPM;    arrPM    = 0;}
-   if (arrBgdev) {delete [] arrBgdev; arrBgdev = 0;}
-   if (arrBgrd)  {delete [] arrBgrd;  arrBgrd  = 0;}
-   if (arrNPix)  {delete [] arrNPix;  arrNPix  = 0;}
-   if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
-   if (arrInten) {delete [] arrInten; arrInten = 0;}
-   if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
-   if (mskUnit)  {delete [] mskUnit;  mskUnit  = 0;}
-   if (arrUnit)  {delete [] arrUnit;  arrUnit  = 0;}
-
-   return err;
-}//DetectCall
-
-//______________________________________________________________________________
-Int_t XExonProcesSet::DoExpress(Int_t numdata, TTree **datatree,
-                      Int_t numbgrd, TTree **bgrdtree)
-{
-   // Condense data from  datatrees to expression values
-   if(kCS) cout << "------XExonProcesSet::DoExpress------" << endl;
-
-   Int_t err = errNoErr;
-   Int_t split = 99;
-
-   Int_t ij, idx, x, y, start, end;
-   Int_t    arrlen = 0;
-   Double_t mean   = 0;
-   Double_t var    = 0;
-
-// Init local arrays to store data from trees
-   Int_t    *arrUnit  = 0;
-   Int_t    *mskUnit  = 0;
-   Int_t    *arrMask  = 0;
-   Double_t *arrInten = 0;
-   Double_t *arrStdev = 0;
-   Int_t    *arrNPix  = 0;
-   Double_t *arrBgrd  = 0;
-   Double_t *arrBgdev = 0;
-   Double_t *arrPM    = 0; 
-   Double_t *arrMM    = 0;
-   Double_t *arrSP    = 0; 
-   Double_t *arrSM    = 0;
-   Int_t    *arrXP    = 0; 
-   Int_t    *arrXM    = 0;
-
-// Get chip parameters from scheme file (also alternative CDFs)
-   if (datatree[0] == 0) return errGetTree;
-   if (strcmp(fSchemeName.Data(), "") == 0) {
-      fSchemeName = datatree[0]->GetTitle();
-   } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
-      return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
-   }//if
-   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
-
-   XExonChip *chip = (XExonChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
-   Int_t numrows  = chip->GetNumRows();
-   Int_t numcols  = chip->GetNumColumns();
-   Int_t numctrls = chip->GetNumControls();
-   Int_t size     = numrows*numcols;
-
-// Get scheme tree for scheme
-   XExonScheme *scheme = 0;
-   TLeaf *scmleaf = 0;
-   TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
-   if (scmtree == 0) return errGetTree;
-   scmtree->SetBranchAddress("ScmBranch", &scheme);
-
-// Get unit tree for scheme
-   XGCUnit *unit    = 0;
-   TTree   *idxtree = 0; 
-   Int_t   numunits = 0;
-   if (strcmp(fExpressor->GetOption(), "exon") == 0) { 
-      idxtree  = (TTree*)gDirectory->Get(chip->GetExonUnitTree()); //tree.exn
-      if (idxtree == 0) return errGetTree;
-
-      numunits = chip->GetNumExonUnits();
-      scmleaf  = scmtree->FindLeaf("fExonID");      
-   } else if (strcmp(fExpressor->GetOption(), "probeset") == 0) {
-      idxtree  = (TTree*)gDirectory->Get(chip->GetProbesetUnitTree()); //tree.pbs
-      if (idxtree == 0) return errGetTree;
-
-      numunits = idxtree->GetEntries();
-      scmleaf  = scmtree->FindLeaf("fProbesetID");      
-   } else {
-      idxtree  = (TTree*)gDirectory->Get(chip->GetUnitTree());     //tree.idx
-      if (idxtree == 0) return errGetTree;
-
-      numunits = chip->GetNumUnits();
-      scmleaf  = scmtree->FindLeaf("fUnitID");      
-   }//if
-   idxtree->SetBranchAddress("IdxBranch", &unit);
-
-// Get maximum number of cells from tree info for unit tree
-   XGenomeTreeInfo *idxinfo = 0;
-   idxinfo = (XGenomeTreeInfo*)idxtree->GetUserInfo()->FindObject(idxtree->GetName());
-   if (!idxinfo) {
-      cerr << "Error: Could not get tree info for <" << idxtree->GetName() << ">." << endl;
-      return errGeneral;
-   }//if
-   Int_t maxnumcells = (Int_t)idxinfo->GetValue("fMaxNCells");
-
-// Get exon level of annotation
-   Int_t level = 0;
-   if (fExprSelector->GetNumParameters() > 0) {
-      level = (Int_t)(fExprSelector->GetParameters())[0];
-   }//if
-
-// Init unit selector
-   XUnitSelector *unitSelector = 0;
-
-// Initialize memory for unit arrays
-   if (!(arrUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
-   if (!(mskUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
-
-   for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
-
-// Initialize memory for local arrays
-   if (!(arrMask  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-   if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-   if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-   if (!(arrNPix  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
-   if (!(arrBgrd  = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-   if (!(arrBgdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-
-   for (Int_t i=0; i<size; i++) {
-      arrMask[i]  = eINITMASK;  //init mask
-      arrInten[i] = arrStdev[i] = 0.0; 
-      arrNPix[i]  = 0; 
-      arrBgrd[i]  = arrBgdev[i] = 0.0;
-   }//for_i
-
-// Get mask for PM/MM from scheme tree and store in array 
-   arrMask = this->FillMaskArray(chip, scmtree, scheme, 0, size, arrMask);
-   if (arrMask == 0) {err = errInitMemory; goto cleanup;}
-
-// Calculate units satisfying mask
-   unitSelector = new XUnitSelector(kTypeSlct[3], kExtenSlct[3]);
-   unitSelector->SetOption("exon");
-   err = unitSelector->InitParameters(fExprSelector->GetNumParameters(),
-                                      fExprSelector->GetParameters());
-   if (err != errNoErr) goto cleanup;
-
-// Get mask from scheme tree and store in array 
-   arrUnit = this->FillUnitArray(idxtree, unit, numunits, arrUnit, mskUnit);
-
-   err = unitSelector->Calculate(numunits, arrUnit, mskUnit);
-   if (err != errNoErr) goto cleanup;
-
-// Calculate mask for expression
-   err = fExprSelector->Calculate(size, 0, 0, arrMask);
-   if (err != errNoErr) goto cleanup;
-
-// Initialize memory for PM/MM arrays
-   if (!(arrPM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-   if (!(arrMM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-   if (!(arrSP = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-   if (!(arrSM = new (nothrow) Double_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
-   if (!(arrXP = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
-   if (!(arrXM = new (nothrow) Int_t[maxnumcells]))    {err = errInitMemory; goto cleanup;}
-
-   for (Int_t i=0; i<maxnumcells; i++) {
-      arrPM[i] = arrMM[i] = 0.0; 
-      arrSP[i] = arrSM[i] = 0.0; 
-      arrXP[i] = arrXM[i] = 0; 
-   }//for_i
-
-   if (!fFile->cd(fName)) return errGetDir;
-
-// Calculate expression
-   for (Int_t k=0; k<numdata; k++) {
-      if (datatree[k] == 0) return errGetTree;
-      if (bgrdtree[k] == 0) {
-         cerr << "Error: Could not get background tree for <"
-              << fExpressor->GetName() << ">." << endl;
-         return errGetTree;
-      }//if
-
-   // Informing user
-      TString name = datatree[k]->GetName();
-      if (XManager::fgVerbose) {
-         cout << "      summarizing <" << name.Data() << "> using <" << fExpressor->GetName()
-              << ">..." << endl;
-      }//if
-
-      XDataTreeInfo *info = 0;
-      info = (XDataTreeInfo*)datatree[k]->GetUserInfo()->FindObject(name);
-      if (!info) {
-         cerr << "Error: Could not get tree info for <" << name.Data() << ">." << endl;
-         return errGeneral;
-      }//if
-
-   // Init min/max expression levels
-      Double_t min = DBL_MAX;  //defined in float.h
-      Double_t max = 0;
-
-   // Create new tree exprtree
-      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
-      TString exprname = dataname + "." + fExpressor->GetTitle();
-      TTree  *exprtree = new TTree(exprname, fSchemeName);
-      if (exprtree == 0) return errCreateTree;
-
-      XGCExpression *expr = 0;
-      expr = new XGCExpression();
-      exprtree->Branch("ExprBranch", "XGCExpression", &expr, 64000, split);
-
-   // Get data from datatree and bgrdtree and store in arrays
-      err = FillDataArrays(datatree[k], numrows, numcols, arrInten, arrStdev, arrNPix);
-      if (err != errNoErr) goto cleanup;
-      err = FillBgrdArrays(bgrdtree[k], numrows, numcols, arrBgrd, arrBgdev);
-      if (err != errNoErr) goto cleanup;
-
-   // Calculate expression values
-      start = 0;
-      end   = 0;
-      idx   = 0;
-      for (Int_t id=0; id<numunits; id++) { 
-         idxtree->GetEntry(id);
-
-         Int_t unitID   = unit->GetUnitID();
-         Int_t numcells = unit->GetNumCells();
-         // skip masked unit entries
-         if (mskUnit[id] <= 0) {
-            start += numcells;
-            end = start;
-            continue;
-         }//if
-
-         Int_t p = 0;
-         Int_t m = 0;
-         end += numcells;
-         for (Int_t j=start; j<end; j++) {
-            scmtree->GetEntry(j);
-
-            if ((Int_t)(scmleaf->GetValue()) != unitID) {
-               cerr << "Error: unitID is not equal to: " << unitID << endl;
-               err = errAbort;
-               goto cleanup;
-            }//if
-
-            x  = scheme->GetX();
-            y  = scheme->GetY();
-            ij = XY2Index(x, y, numcols);
-
-// IMPORTANT NOTE: do not use the following code although it is faster:
-// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
-// Every tree contains the (x,y) coordinates as unique identifier, thus
-// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
-
-            if (arrMask[ij] == 1) {
-               if (p == 0) idx++;  //count number of units to be summarized
-               arrPM[p] = arrInten[ij];
-               arrSP[p] = arrStdev[ij];
-               arrXP[p] = arrNPix[ij];
-               p++;
-
-               // set MM values to background data
-               arrMM[m] = arrBgrd[ij];
-               arrSM[m] = arrBgdev[ij];
-               arrXM[m] = arrNPix[ij]; //use numpix from datatree
-               m++;
-            }//if
-         }//for_j
-         start += numcells;
-
-         if (XManager::fgVerbose && id%100000 == 0) {
-            cout << "      calculating expression for <" << idx << "> of <"
-                 << numunits << "> units...\r" << flush;
-         }//if
-
-         // continue if arrays arrPM etc are not filled
-         if (p == 0) continue;
-         if (p != m) {
-            cout << "Warning: Skipping unitID <" << unitID
-                 << "> with different numbers of PM and MM data." << endl;
-            continue;
-//?            err = errAbort;
-//?            goto cleanup;
-         }//if
-
-         // calculate mean expression level
-         arrlen = 0;
-         mean   = 0;
-         var    = 0;
-         fExpressor->InitTreeInfo(info);
-         fExpressor->InitArrays(p, arrPM, arrSP, arrXP, arrMM, arrSM, arrXM);
-         if ((err = fExpressor->CreateArray(p)))               goto cleanup;
-         if ((err = fExpressor->Calculate(mean, var, arrlen))) goto cleanup;
-         fExpressor->DeleteArray();
-
-         // get minimal/maximal expression levels
-         if (mean < min) min = mean;
-         if (mean > max) max = mean;
-
-         // fill expression tree
-         expr->SetUnitID(unitID);
-         expr->SetLevel(mean);
-         expr->SetStdev(TMath::Sqrt(var));
-         expr->SetNumPairs(arrlen);
-         exprtree->Fill();
-      }//for_id
-
-      if (XManager::fgVerbose) {
-         cout << "      calculating expression for <" << idx << "> of <" << numunits
-              << "> units...Finished." << endl;
-      }//if
-
-      if (XManager::fgVerbose) {
-         cout << "      expression statistics: " << endl;
-         cout << "         minimal expression level is <" << min << ">." << endl;
-         cout << "         maximal expression level is <" << max << ">." << endl;
-      }//if
-
-   // Add tree info to tree
-      AddExprTreeInfo(exprtree, exprtree->GetName(), fExpressor->GetOption(),
-                      numunits-numctrls, min, max);
-
-   // Write expression tree to file 
-      if ((err = WriteTree(exprtree, TObject::kOverwrite)) == errNoErr) {
-         // add tree header to list
-         AddTreeHeader(exprtree->GetName(), "Expr", 0, fExpressor->GetNumParameters(),
-                       fExpressor->GetParameters());
-      }//if
-
-      if (err != errNoErr) break;
-   }//for_k
-
-// Cleanup
-cleanup:
-   // delete arrays
-   if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
-   if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
-   if (arrSM)    {delete [] arrSM;    arrSM    = 0;}
-   if (arrSP)    {delete [] arrSP;    arrSP    = 0;}
-   if (arrMM)    {delete [] arrMM;    arrMM    = 0;}
-   if (arrPM)    {delete [] arrPM;    arrPM    = 0;}
-   if (arrBgdev) {delete [] arrBgdev; arrBgdev = 0;}
-   if (arrBgrd)  {delete [] arrBgrd;  arrBgrd  = 0;}
-   if (arrNPix)  {delete [] arrNPix;  arrNPix  = 0;}
-   if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
-   if (arrInten) {delete [] arrInten; arrInten = 0;}
-   if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
-   if (mskUnit)  {delete [] mskUnit;  mskUnit  = 0;}
-   if (arrUnit)  {delete [] arrUnit;  arrUnit  = 0;}
-   // Note: do not remove exprtree and expr from RAM, needed later!
-
-   return err;
-}//DoExpress
-
-//______________________________________________________________________________
-Int_t XExonProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
-                      Int_t numbgrd, TTree **bgrdtree)
-{
-   // Compute expression values using multichip algorithms, e.g. medpol, farms, DFW
-   // Intensities from datatrees are stored in one large table in RAM for fast access
-   // Note: all trees must have same number of entries (i.e. identical chip types)
-   if(kCS) cout << "------XExonProcesSet::DoMultichipExpress(table)------" << endl;
-
-// Informing user
-   if (XManager::fgVerbose) {
-      cout << "      summarizing with " << fExpressor->GetName() << "..." << endl;
-   }//if
-
-//TEST Benchmark
-//gBenchmark->Reset(); 
-//gBenchmark->Start("Bench_MedianPolish");
-
-   Int_t ij, start, end, id;
-   Int_t x   = 0;
-   Int_t y   = 0;
-   Int_t idx = 0;
-   Int_t err = errNoErr;
-
-// Get parameters for background subtraction
-   Bool_t doBg = this->BackgroundParameters(fExpressor, fExpressor->GetBgrdOption());
-
-// Get chip parameters from scheme file (also alternative CDFs)
-   if (datatree[0] == 0) return errGetTree;
-   if (strcmp(fSchemeName.Data(), "") == 0) {
-      fSchemeName = datatree[0]->GetTitle();
-   } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
-      return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
-   }//if
-   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
-
-   XExonChip *chip = (XExonChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
-   Int_t numrows  = chip->GetNumRows();
-   Int_t numcols  = chip->GetNumColumns();
-
-// Get scheme tree for scheme
-   XExonScheme *scheme = 0;
-   TLeaf *scmleaf = 0;
-   TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
-   if (scmtree == 0) return errGetTree;
-   scmtree->SetBranchAddress("ScmBranch", &scheme);
-
-// Get unit tree for scheme
-   XGCUnit *unit    = 0;
-   TTree   *idxtree = 0; 
-   Int_t   numunits = 0;
-   if (strcmp(fExpressor->GetOption(), "exon") == 0) { 
-      idxtree  = (TTree*)gDirectory->Get(chip->GetExonUnitTree()); //tree.exn
-      if (idxtree == 0) return errGetTree;
-
-      numunits = chip->GetNumExonUnits();
-      scmleaf  = scmtree->FindLeaf("fExonID");      
-   } else if (strcmp(fExpressor->GetOption(), "probeset") == 0) {
-      idxtree  = (TTree*)gDirectory->Get(chip->GetProbesetUnitTree()); //tree.pbs
-      if (idxtree == 0) return errGetTree;
-
-      numunits = idxtree->GetEntries();
-      scmleaf  = scmtree->FindLeaf("fProbesetID");      
-   } else {
-      idxtree  = (TTree*)gDirectory->Get(chip->GetUnitTree());     //tree.idx
-      if (idxtree == 0) return errGetTree;
-
-      numunits = chip->GetNumUnits();
-      scmleaf  = scmtree->FindLeaf("fUnitID");      
-   }//if
-   idxtree->SetBranchAddress("IdxBranch", &unit);
-
-// Init size of arrays
-   Int_t size    = numrows*numcols;
-   Int_t numsels = 0;  //number of selected entries
-
-// Check for equal number of data tree entries
-   for (Int_t k=0; k<numdata; k++) {
-      if (datatree[k] == 0) return errGetTree;
-
-      if ((Int_t)(datatree[k]->GetEntries()) != size) {
-            TString str = ""; str += size;
-            return fManager->HandleError(errNumTreeEntries, datatree[k]->GetName(), str);
-      }//if
-   }//for_k
-
-// Check for equal number of background tree entries
-   if (numbgrd > 0) {
-      for (Int_t k=0; k<numdata; k++) {
-         if (bgrdtree[k] == 0) return errGetTree;
-
-         if ((Int_t)(bgrdtree[k]->GetEntries()) != size) {
-            TString str = ""; str += size;
-            return fManager->HandleError(errNumTreeEntries, bgrdtree[k]->GetName(), str);
-         }//if
-      }//for_k
-//   } else if (subbgrd || corbgrd) {
-   } else if (doBg == kTRUE) {
-      cout << "Warning: No background trees available for background subtraction."
-           << endl;
-      doBg = kFALSE;
-   } else {
-      // to prevent subtraction of background in FillDataArrays()
-      // e.g. AdjustBackground() creates bgrdtrees but sets numbgrd=0 !!
-      doBg = kFALSE;
-   }//if
-
-// Init branch addresses
-   XBgCell **bgcell = new XBgCell*[numdata];
-   XGCCell **gccell = new XGCCell*[numdata];
-   for (Int_t k=0; k<numdata; k++) {
-      bgcell[k] = 0;
-      gccell[k] = 0;
-      datatree[k]->SetBranchAddress("DataBranch", &gccell[k]);
-      if (numbgrd > 0) bgrdtree[k]->SetBranchAddress("BgrdBranch", &bgcell[k]);
-   }//for_k
-
-// Init expression trees
-   Int_t  split = 99;
-   TTree     **exprtree = new TTree*[numdata];
-   XGCExpression **expr = new XGCExpression*[numdata];
-
-// Init min/max expression levels
-   Double_t min = DBL_MAX;  //defined in float.h
-   Double_t max = 0;
-
-// Get exon level of annotation
-   Int_t exlevel = 0;
-   if (fExprSelector->GetNumParameters() > 0) {
-      exlevel = (Int_t)(fExprSelector->GetParameters())[0];
-   }//if
-
-// Init unit selector
-   XUnitSelector *unitSelector = 0;
-
-// Init 
-   Int_t     *arrMask = 0;
-   Int_t     *arrIndx = 0;
-   Int_t     *arrUnit = 0;
-   Int_t     *mskUnit = 0;
-   Double_t  *level   = 0;
-   Double_t  *stdev   = 0;
-   Double_t **table   = 0;
-
-// Create local arrays
-   if (!(arrMask = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
-   if (!(arrIndx = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
-   if (!(arrUnit = new (nothrow) Int_t[numunits]))   {err = errInitMemory; goto cleanup;}
-   if (!(mskUnit = new (nothrow) Int_t[numunits]))   {err = errInitMemory; goto cleanup;}
-   if (!(level   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
-   if (!(stdev   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
-
-   for (Int_t i=0; i<size; i++)    {arrIndx[i] = 0; arrMask[i] = eINITMASK;}
-   for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
-   for (Int_t i=0; i<numdata; i++)  level[i]   = stdev[i]   = 0.0; 
-
-// IMPORTANT NOTE: do not use the following code although it is faster:
-// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
-// Every tree contains the (x,y) coordinates as unique identifier, thus
-// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
-
-// Get mask for PM from scheme tree and store in array 
-   arrMask = this->FillMaskArray(chip, scmtree, scheme, exlevel, size, arrMask);
-   if (arrMask == 0) {err = errInitMemory; goto cleanup;}
-
-// Calculate units satisfying mask
-   unitSelector = new XUnitSelector(kTypeSlct[3], kExtenSlct[3]);
-   unitSelector->SetOption("exon");
-   err = unitSelector->InitParameters(fExprSelector->GetNumParameters(),
-                                      fExprSelector->GetParameters());
-   if (err != errNoErr) goto cleanup;
-
-// Get units and mask from unit tree and store in array 
-   arrUnit = FillUnitArray(idxtree, unit, numunits, arrUnit, mskUnit);
-
-   err = unitSelector->Calculate(numunits, arrUnit, mskUnit);
-   if (err != errNoErr) goto cleanup;
-
-// Calculate mask for expression
-   err = fExprSelector->Calculate(size, 0, 0, arrMask);
-   if (err != errNoErr) goto cleanup;
-
-// Get entry index from datatree
-   idx = 0;
-   for (Int_t i=0; i<size; i++) {
-      datatree[0]->GetEntry(i);
-
-      x  = gccell[0]->GetX();
-      y  = gccell[0]->GetY();
-      ij = XY2Index(x, y, numcols);
-
-      if (arrMask[ij] == 1) {
-         arrIndx[ij] = idx++;
-      }//if
-   }//for_i
-
-// Get number of selected entries
-   for (Int_t i=0; i<size; i++) {
-      numsels = (arrMask[i] == 1) ? ++numsels : numsels;
-   }//for_i
-
-// Create table to store intensities of all datatrees
-   if (!(table = new (nothrow) Double_t*[numdata])) {err = errInitMemory; goto cleanup;} 
-   for (Int_t k=0; k<numdata; k++) {
-      table[k] = 0;
-      if (!(table[k] = new (nothrow) Double_t[numsels])) {err = errInitMemory; goto cleanup;} 
-   }//for_k
-
-//TEST Benchmark
-//gBenchmark->Start("Bench_table");
-// Get data from datatrees (and bgrdtrees) and store in table
-   if ((numbgrd > 0) && (doBg == kTRUE)) {
-      for (Int_t k=0; k<numdata; k++) {
-         idx = 0;
-         for (Int_t i=0; i<size; i++) {
-            datatree[k]->GetEntry(i);
-            bgrdtree[k]->GetEntry(i);
-//unsafe?? use arrInten[ij] and arrBgrd[ij] ??
-
-            // subtract background from intensity
-            if (arrMask[i] == 1) {
-               table[k][idx++] = this->AdjustIntensity(gccell[k]->GetIntensity(),
-                                                       bgcell[k]->GetBackground(),
-                                                       bgcell[k]->GetStdev());
-            }//if
-         }//for_i
-      }//for_k
-   } else {
-      for (Int_t k=0; k<numdata; k++) {
-         idx = 0;
-         for (Int_t i=0; i<size; i++) {
-            datatree[k]->GetEntry(i);
-
-            if (arrMask[i] == 1) {
-               table[k][idx++] = gccell[k]->GetIntensity();
-            }//if
-         }//for_i
-      }//for_k
-   }//if
-//TEST Benchmark
-//gBenchmark->Show("Bench_table");
-
-// Create new trees exprtree
-   if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
-
-   for (Int_t k=0; k<numdata; k++) {
-      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
-      TString exprname = dataname + "." + fExpressor->GetTitle();
-      exprtree[k] = new TTree(exprname, fSchemeName);
-      if (exprtree[k] == 0) {err = errCreateTree; goto cleanup;}
-
-      expr[k] = new XGCExpression();
-      exprtree[k]->Branch("ExprBranch", "XGCExpression", &expr[k], 64000, split);
-   }//for_k
-
-//TEST Benchmark
-//gBenchmark->Show("Bench_MedianPolish");
-//gBenchmark->Reset();
-//gBenchmark->Start("Bench_Loop");
-
-// Calculate expression values
-   start = 0;
-   end   = 0;
-   idx   = 0;
-   for (id=0; id<numunits; id++) { 
-      idxtree->GetEntry(id);
-
-      Int_t unitID   = unit->GetUnitID();
-      Int_t numcells = unit->GetNumCells();
-      // skip masked unit entries
-      if (mskUnit[id] <= 0) {
-         start += numcells;
-         end = start;
-         continue;
-      }//if
-
-//TO DO
-//Better above: arrPM = new Double_t[maxnumcells*numdata]; 
-      // create array to store PM values for all probes with current unitID
-      Int_t  numatoms = unit->GetNumAtoms();
-      Double_t *arrPM = new Double_t[numatoms*numdata]; 
-
-      // fill arrPM with PM values of current unitID
-      Int_t p = 0;
-      end += numcells;
-      for (Int_t j=start; j<end; j++) {
-         scmtree->GetEntry(j);
-
-         if ((Int_t)(scmleaf->GetValue()) != unitID) {
-            cerr << "Error: unitID is not equal to: " << unitID << endl;
-            err = errAbort;
-            goto cleanup;
-         }//if
-
-         x  = scheme->GetX();
-         y  = scheme->GetY();
-         ij = XY2Index(x, y, numcols);
-
-         if (arrMask[ij] == 1) {
-            if (p == 0) idx++;  //count number of units to be summarized
-
-            for (Int_t k=0; k<numdata; k++) {
-               arrPM[p] = table[k][arrIndx[ij]];
-               p++;
-            }//for_k
-         }//if
-      }//for_j
-      start += numcells;
-
-      if (XManager::fgVerbose && id%100000 == 0) {
-         cout << "      calculating expression for <" << idx << "> of <" << numunits
-              << "> units...\r" << flush;
-      }//if
-
-      // fill arrPM or continue if it is not filled
-      if ((err = fExpressor->SetArray(p, arrPM)) != errNoErr) {
-         delete [] arrPM;
-         continue;
-      }//if
-
-      // calculate expression level for PMs of current unitID
-      if ((err = fExpressor->Calculate(numdata, level, stdev, 0))) break;
-
-//////////////////
-// TO DO: return fResiduals for residual-plot!!!! (like affyPLM)
-//      residuals = fExpressor->GetResiduals();
-// store as residuals tree??
-//////////////////
-
-      // fill expression trees
-      for (Int_t k=0; k<numdata; k++) {
-         // get minimal/maximal expression levels
-         if (level[k] < min) min = level[k];
-         if (level[k] > max) max = level[k];
-
-         expr[k]->SetUnitID(unitID);
-         expr[k]->SetLevel(level[k]);
-         expr[k]->SetStdev(TMath::Abs(stdev[k]));
-         expr[k]->SetNumPairs((Int_t)(p / numdata));
-         exprtree[k]->Fill();
-      }//for_k
-
-      delete [] arrPM;
-   }//for_id
-   if (XManager::fgVerbose) {
-      cout << "      calculating expression for <" << idx << "> of <"
-           << numunits << "> units...Finished." << endl;
-   }//if
-
-   if (XManager::fgVerbose) {
-      cout << "      expression statistics: " << endl;
-      cout << "         minimal expression level is <" << min << ">." << endl;
-      cout << "         maximal expression level is <" << max << ">." << endl;
-   }//if
-//TEST Benchmark
-//gBenchmark->Show("Bench_Loop");
-
-// Write expression trees to file 
-   for (Int_t k=0; k<numdata; k++) {
-   // Add tree info to tree
-      AddExprTreeInfo(exprtree[k], exprtree[k]->GetName(), fExpressor->GetOption(),
-                      idx, min, max);
-
-      if ((err = WriteTree(exprtree[k], TObject::kOverwrite)) == errNoErr) {
-         // add tree header to list
-         AddTreeHeader(exprtree[k]->GetName(), "Expr", 0, fExpressor->GetNumParameters(),
-                       fExpressor->GetParameters());
-      } else {
-         break;
-      }//if
-   }//for_k
-
-// Cleanup
-cleanup:
-   // delete table
-   for (Int_t k=0; k<numdata; k++) {
-      if (table[k]) {delete [] table[k]; table[k] = 0;}
-   }//for_k
-   if (table) delete [] table;
-
-   // delete arrays
-   if (stdev)   {delete [] stdev;   stdev   = 0;}
-   if (level)   {delete [] level;   level   = 0;}
-   if (mskUnit) {delete [] mskUnit; mskUnit = 0;}
-   if (arrUnit) {delete [] arrUnit; arrUnit = 0;}
-   if (arrMask) {delete [] arrMask; arrMask = 0;}
-   if (arrIndx) {delete [] arrIndx; arrIndx = 0;}
-
-   delete [] expr;
-   delete [] exprtree;
-   delete [] gccell;
-   delete [] bgcell;
-
-   return err;
-}//DoMultichipExpress
-
-//______________________________________________________________________________
-Int_t XExonProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
-                      Int_t numbgrd, TTree **bgrdtree, TFile *file)
-{
-   // Compute expression values using multichip algorithms, e.g. medpol, farms, DFW
-   // In order to reduce memory consumption intensities from datatrees are
-   // stored in the order of the corresponding schemetree entries in temporary 
-   // trees in a temporary root file
-   // Note: all trees must have same number of entries (i.e. identical chip types)
-   if(kCS) cout << "------XExonProcesSet::DoMultichipExpress(file)------" << endl;
-
-// Informing user
-   if (XManager::fgVerbose) {
-      cout << "      summarizing with " << fExpressor->GetName() 
-           << " (using temporary file)..." << endl;
-   }//if
-
-//TEST Benchmark
-//gBenchmark->Reset(); 
-//gBenchmark->Start("Bench_MedianPolish");
-
-   Int_t ij, start, end, id, entry;
-   Int_t x   = 0;
-   Int_t y   = 0;
-   Int_t idx = 0;
-   Int_t err = errNoErr;
-
-// Get parameters for background subtraction
-   Bool_t doBg = this->BackgroundParameters(fExpressor, fExpressor->GetBgrdOption());
-
-// Get chip parameters from scheme file (also alternative CDFs)
-   if (datatree[0] == 0) return errGetTree;
-   if (strcmp(fSchemeName.Data(), "") == 0) {
-      fSchemeName = datatree[0]->GetTitle();
-   } else if (!fSchemeName.Contains(datatree[0]->GetTitle())) {
-      return fManager->HandleError(errSchemeDerived, fSchemeName, datatree[0]->GetTitle());
-   }//if
-   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
-
-   XExonChip *chip = (XExonChip*)fSchemes->FindObject(fSchemeName, kTRUE);
-   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
-   Int_t numrows  = chip->GetNumRows();
-   Int_t numcols  = chip->GetNumColumns();
-
-// Get scheme tree for scheme
-   XExonScheme *scheme = 0;
-   TLeaf *scmleaf = 0;
-   TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
-   if (scmtree == 0) return errGetTree;
-   scmtree->SetBranchAddress("ScmBranch", &scheme);
-
-// Get unit tree for scheme
-   XGCUnit *unit  = 0;
-   TTree *idxtree = 0; 
-   Int_t numunits = 0;
-   if (strcmp(fExpressor->GetOption(), "exon") == 0) { 
-      idxtree  = (TTree*)gDirectory->Get(chip->GetExonUnitTree()); //tree.exn
-      if (idxtree == 0) return errGetTree;
-
-      numunits = chip->GetNumExonUnits();
-      scmleaf  = scmtree->FindLeaf("fExonID");      
-   } else if (strcmp(fExpressor->GetOption(), "probeset") == 0) {
-      idxtree  = (TTree*)gDirectory->Get(chip->GetProbesetUnitTree()); //tree.pbs
-      if (idxtree == 0) return errGetTree;
-
-      numunits = idxtree->GetEntries();
-      scmleaf  = scmtree->FindLeaf("fProbesetID");      
-   } else {
-      idxtree  = (TTree*)gDirectory->Get(chip->GetUnitTree());     //tree.idx
-      if (idxtree == 0) return errGetTree;
-
-      numunits = chip->GetNumUnits();
-      scmleaf  = scmtree->FindLeaf("fUnitID");      
-   }//if
-   idxtree->SetBranchAddress("IdxBranch", &unit);
-
-// Init size of arrays
-   Int_t size    = numrows*numcols;
-   Int_t numsels = 0;  //number of selected entries
-
-// Check for equal number of data tree entries
-   for (Int_t k=0; k<numdata; k++) {
-      if (datatree[k] == 0) return errGetTree;
-
-      if ((Int_t)(datatree[k]->GetEntries()) != size) {
-            TString str = ""; str += size;
-            return fManager->HandleError(errNumTreeEntries, datatree[k]->GetName(), str);
-      }//if
-   }//for_k
-
-// Check for equal number of background tree entries
-   if (numbgrd > 0) {
-      for (Int_t k=0; k<numdata; k++) {
-         if (bgrdtree[k] == 0) return errGetTree;
-
-         if ((Int_t)(bgrdtree[k]->GetEntries()) != size) {
-            TString str = ""; str += size;
-            return fManager->HandleError(errNumTreeEntries, bgrdtree[k]->GetName(), str);
-         }//if
-      }//for_k
-//   } else if (subbgrd || corbgrd) {
-   } else if (doBg == kTRUE) {
-      cout << "Warning: No background trees available for background subtraction."
-           << endl;
-      doBg = kFALSE;
-   } else {
-      // to prevent subtraction of background in FillDataArrays()
-      // e.g. AdjustBackground() creates bgrdtrees but sets numbgrd=0 !!
-      doBg = kFALSE;
-   }//if
-
-// Init branch addresses
-   XBgCell **bgcell = new XBgCell*[numdata];
-   XGCCell **gccell = new XGCCell*[numdata];
-   for (Int_t k=0; k<numdata; k++) {
-      bgcell[k] = 0;
-      gccell[k] = 0;
-      datatree[k]->SetBranchAddress("DataBranch", &gccell[k]);
-      if (numbgrd > 0) bgrdtree[k]->SetBranchAddress("BgrdBranch", &bgcell[k]);
-   }//for_k
-
-// Init temporary trees and expression trees
-   Int_t    split = 99;
-   Double_t sort  = 0.0;
-   TTree     **tmptree  = new TTree*[numdata];
-   TTree     **exprtree = new TTree*[numdata];
-   XGCExpression **expr = new XGCExpression*[numdata];
-
-// Init min/max expression levels
-   Double_t min = DBL_MAX;  //defined in float.h
-   Double_t max = 0;
-
-// Get exon level of annotation
-   Int_t exlevel = 0;
-   if (fExprSelector->GetNumParameters() > 0) {
-      exlevel = (Int_t)(fExprSelector->GetParameters())[0];
-   }//if
-
-// Init unit selector
-   XUnitSelector *unitSelector = 0;
-
-// Create local arrays
-   Int_t    *arrMask = 0;
-   Int_t    *arrIndx = 0;
-   Int_t    *arrUnit = 0;
-   Int_t    *mskUnit = 0;
-   Double_t *level   = 0;
-   Double_t *stdev   = 0;
-   Double_t *arrData = 0;
-
-// Create local arrays
-   if (!(arrMask = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
-   if (!(arrIndx = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
-   if (!(arrUnit = new (nothrow) Int_t[numunits]))   {err = errInitMemory; goto cleanup;}
-   if (!(mskUnit = new (nothrow) Int_t[numunits]))   {err = errInitMemory; goto cleanup;}
-   if (!(level   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
-   if (!(stdev   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
-
-   for (Int_t i=0; i<size; i++)    {arrIndx[i] = 0; arrMask[i] = eINITMASK;}
-   for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
-   for (Int_t i=0; i<numdata; i++)  level[i]   = stdev[i]   = 0.0; 
-
-// IMPORTANT NOTE: do not use the following code although it is faster:
-// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
-// Every tree contains the (x,y) coordinates as unique identifier, thus
-// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
-
-// Get mask for PM from scheme tree and store in array 
-   arrMask = this->FillMaskArray(chip, scmtree, scheme, exlevel, size, arrMask);
-   if (arrMask == 0) {err = errInitMemory; goto cleanup;}
-
-// Calculate units satisfying mask
-   unitSelector = new XUnitSelector(kTypeSlct[3], kExtenSlct[3]);
-   unitSelector->SetOption("exon");
-   err = unitSelector->InitParameters(fExprSelector->GetNumParameters(),
-                                      fExprSelector->GetParameters());
-   if (err != errNoErr) goto cleanup;
-
-// Get units and mask from unit tree and store in array 
-   arrUnit = FillUnitArray(idxtree, unit, numunits, arrUnit, mskUnit);
-
-   err = unitSelector->Calculate(numunits, arrUnit, mskUnit);
-   if (err != errNoErr) goto cleanup;
-
-// Calculate mask for expression
-   err = fExprSelector->Calculate(size, 0, 0, arrMask);
-   if (err != errNoErr) goto cleanup;
-
-// Get entry index from datatree
-   idx = 0;
-   for (Int_t i=0; i<size; i++) {
-      datatree[0]->GetEntry(i);
-
-      x  = gccell[0]->GetX();
-      y  = gccell[0]->GetY();
-      ij = XY2Index(x, y, numcols);
-
-      if (arrMask[ij] == 1) {
-         arrIndx[ij] = idx++;
-      }//if
-   }//for_i
-
-// Get number of selected entries
-   for (Int_t i=0; i<size; i++) {
-      numsels = (arrMask[i] == 1) ? ++numsels : numsels;
-   }//for_i
-
-// Create array to store selected intensities
-   if (!(arrData = new Double_t[numsels])) {err = errInitMemory; goto cleanup;}
-   for (Int_t i=0; i<numsels; i++) arrData[i] = 0.0;
-
-//TEST Benchmark
-//gBenchmark->Start("Bench_tmptree");
-// Change directory to temporary file
-   if (!file->cd()) {err = errGetDir; goto cleanup;}
-
-// Get data from datatrees (and bgrdtrees) and store in temporary file
-   for (Int_t k=0; k<numdata; k++) {
-      // create temporary tree
-      tmptree[k] = new TTree(datatree[k]->GetName(), "temporary tree");
-      if (tmptree[k] == 0) {err = errCreateTree; goto cleanup;}
-      tmptree[k]->Branch("sortBr", &sort, "sort/D");
-
-      // fill array with (background corrected) intensities
-      if ((numbgrd > 0) && (doBg == kTRUE)) {
-         idx = 0;
-         for (Int_t i=0; i<size; i++) {
-            datatree[k]->GetEntry(i);
-            bgrdtree[k]->GetEntry(i);
-
-            // subtract background from intensity
-            if (arrMask[i] == 1) {
-               arrData[idx++] = this->AdjustIntensity(gccell[k]->GetIntensity(),
-                                                      bgcell[k]->GetBackground(),
-                                                      bgcell[k]->GetStdev());
-            }//if
-         }//for_i
-      } else {
-         idx = 0;
-         for (Int_t i=0; i<size; i++) {
-            datatree[k]->GetEntry(i);
-
-            if (arrMask[i] == 1) {
-               arrData[idx++] = gccell[k]->GetIntensity();
-            }//if
-         }//for_i
-      }//if
-
-      // fill tmptree with array in the order of scheme tree entries for (x,y)
-      for (Int_t i=0; i<size; i++) {
-         scmtree->GetEntry(i);
-
-         x  = scheme->GetX();
-         y  = scheme->GetY();
-         ij = XY2Index(x, y, numcols);
-
-         if (arrMask[ij] == 1) {
-            sort = arrData[arrIndx[ij]];
-            tmptree[k]->Fill();
-         }//if
-      }//for_i
-
-      // write tmptree to temporary file
-      tmptree[k]->Write();
-//TEST??      tmptree[k]->Write(TObject::kOverwrite);
-   }//for_k
-//TEST Benchmark
-//gBenchmark->Show("Bench_tmptree");
-
-// Change directory to current directory for treeset in main file
-   if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
-
-// Create new trees exprtree
-   for (Int_t k=0; k<numdata; k++) {
-      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
-      TString exprname = dataname + "." + fExpressor->GetTitle();
-      exprtree[k] = new TTree(exprname, fSchemeName);
-      if (exprtree[k] == 0) {err = errCreateTree; goto cleanup;}
-
-      expr[k] = new XGCExpression();
-      exprtree[k]->Branch("ExprBranch", "XGCExpression", &expr[k], 64000, split);
-   }//for_k
-
-//TEST Benchmark
-//gBenchmark->Show("Bench_MedianPolish");
-//gBenchmark->Reset();
-//gBenchmark->Start("Bench_Loop");
-
-// Calculate expression values
-   start = 0;
-   end   = 0;
-   idx   = 0;
-   entry = 0;
-   for (id=0; id<numunits; id++) { 
-      idxtree->GetEntry(id);
-
-      Int_t unitID   = unit->GetUnitID();
-      Int_t numcells = unit->GetNumCells();
-      // skip masked unit entries
-      if (mskUnit[id] <= 0) {
-         start += numcells;
-         end = start;
-         continue;
-      }//if
-
-//Better above: arrPM = new Double_t[maxnumcells*numdata]; 
-      // create array to store PM values for all probes with current unitID
-      Int_t numatoms = unit->GetNumAtoms();
-      Double_t *arrPM = new Double_t[numatoms*numdata]; 
-
-      // fill arrPM with PM values of current unitID
-      Int_t p = 0;
-      end += numcells;
-      for (Int_t j=start; j<end; j++) {
-         scmtree->GetEntry(j);
-
-         if ((Int_t)(scmleaf->GetValue()) != unitID) {
-            cerr << "Error: unitID is not equal to: " << unitID << endl;
-            err = errAbort;
-            goto cleanup;
-         }//if
-
-         x  = scheme->GetX();
-         y  = scheme->GetY();
-         ij = XY2Index(x, y, numcols);
-
-         if (arrMask[ij] == 1) {
-            if (p == 0) idx++;  //count number of units to be summarized
-
-            for (Int_t k=0; k<numdata; k++) {
-               tmptree[k]->GetEntry(entry);
-               arrPM[p] = sort;
-               p++;
-            }//for_k
-
-            entry++;
-         }//if
-      }//for_j
-      start += numcells;
-
-      if (XManager::fgVerbose && id%100000 == 0) {
-         cout << "      calculating expression for <" << idx << "> of <" << numunits
-              << "> units...\r" << flush;
-      }//if
-
-      // fill arrPM or continue if it is not filled
-      if ((err = fExpressor->SetArray(p, arrPM)) != errNoErr) {
-         delete [] arrPM;
-         continue;
-      }//if
-
-      // calculate expression level for PMs of current unitID
-      if ((err = fExpressor->Calculate(numdata, level, stdev, 0))) break;
-
-//////////////////
-// TO DO: return fResiduals for residual-plot!!!! (like affyPLM)
-//      residuals = fExpressor->GetResiduals();
-// store as residuals tree??
-//////////////////
-
-      // fill expression trees
-      for (Int_t k=0; k<numdata; k++) {
-         // get minimal/maximal expression levels
-         if (level[k] < min) min = level[k];
-         if (level[k] > max) max = level[k];
-
-         expr[k]->SetUnitID(unitID);
-         expr[k]->SetLevel(level[k]);
-         expr[k]->SetStdev(TMath::Abs(stdev[k]));
-         expr[k]->SetNumPairs((Int_t)(p / numdata));
-         exprtree[k]->Fill();
-      }//for_k
-
-      delete [] arrPM;
-   }//for_id
-   if (XManager::fgVerbose) {
-      cout << "      calculating expression for <" << idx << "> of <"
-           << numunits << "> units...Finished." << endl;
-   }//if
-
-   if (XManager::fgVerbose) {
-      cout << "      expression statistics: " << endl;
-      cout << "         minimal expression level is <" << min << ">." << endl;
-      cout << "         maximal expression level is <" << max << ">." << endl;
-   }//if
-//TEST Benchmark
-//gBenchmark->Show("Bench_Loop");
-
-// Write expression trees to file 
-   for (Int_t k=0; k<numdata; k++) {
-   // Add tree info to tree
-      AddExprTreeInfo(exprtree[k], exprtree[k]->GetName(), fExpressor->GetOption(),
-                      idx, min, max);
-
-      if ((err = WriteTree(exprtree[k], TObject::kOverwrite)) == errNoErr) {
-         // add tree header to list
-         AddTreeHeader(exprtree[k]->GetName(), "Expr", 0, fExpressor->GetNumParameters(),
-                       fExpressor->GetParameters());
-      } else {
-         break;
-      }//if
-   }//for_k
-
-// Cleanup
-cleanup:
-   // delete temporary trees
-   for (Int_t k=0; k<numdata; k++) {
-      tmptree[k]->Delete(""); tmptree[k] = 0;
-   }//for_k
-
-   // delete arrays
-   if (arrData) {delete [] arrData; arrData = 0;}
-   if (stdev)   {delete [] stdev;   stdev   = 0;}
-   if (level)   {delete [] level;   level   = 0;}
-   if (mskUnit) {delete [] mskUnit; mskUnit = 0;}
-   if (arrUnit) {delete [] arrUnit; arrUnit = 0;}
-   if (arrIndx) {delete [] arrIndx; arrIndx = 0;}
-   if (arrMask) {delete [] arrMask; arrMask = 0;}
-
-   delete [] expr;
-   delete [] exprtree;
-   delete [] tmptree;
-   delete [] gccell;
-   delete [] bgcell;
-
-   return err;
-}//DoMultichipExpress
-
-//______________________________________________________________________________
-Int_t XExonProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist,
-                      ofstream &output, const char *sep)
-{
-   // Export variables from varlist for expression tree(s) to file output
-   if(kCS) cout << "------XExonProcesSet::ExportExprTrees------" << endl;
-
-   Int_t err = errNoErr;
-
-// Decompose varlist
-   Short_t hasUnit   = 0;  //unit name
-   Short_t hasTrans  = 0;  //transcript_id
-   Short_t hasName   = 0;  //gene name
-   Short_t hasSymbol = 0;  //gens symbol
-   Short_t hasAccess = 0;  //mRNA accession
-   Short_t hasEntrez = 0;  //entrez ID
-   Short_t hasChromo = 0;  //chromosome
-   Short_t hasStart  = 0;  //start position
-   Short_t hasStop   = 0;  //stop position
-   Short_t hasStrand = 0;  //strand
-   Short_t hasCyto   = 0;  //cytoband
-   Short_t hasLevel  = 0;  //expression level
-   Short_t hasStdev  = 0;  //standard deviation
-   Short_t hasNPairs = 0;  //number of pairs; number of atoms
-
-   Short_t hasAnnot  = 0;  //annotation
-   Short_t hasData   = 0;  //data
-
-   Short_t idx = 0;
-   if (strcmp(varlist,"*")  == 0) {
-      hasUnit   = ++idx;
-      hasTrans  = ++idx;
-      hasName   = ++idx;
-      hasSymbol = ++idx;
-      hasAccess = ++idx;
-      hasEntrez = ++idx;
-      hasChromo = ++idx;
-      hasStart  = ++idx;
-      hasStop   = ++idx;
-      hasStrand = ++idx;
-      hasCyto   = ++idx;
-      hasLevel  = ++idx;
-      hasStdev  = ++idx;
-      hasNPairs = ++idx;
-   } else {
-      char *name  = new char[strlen(varlist) + 1];
-      char *dname = name;
-      name = strtok(strcpy(name,varlist),":");
-      while(name) {
-         if (strcmp(name,"fUnitName")     == 0) {hasUnit   = ++idx;}
-         if (strcmp(name,"fTranscriptID") == 0) {hasTrans  = ++idx;}
-         if (strcmp(name,"fName")         == 0) {hasName   = ++idx;}
-         if (strcmp(name,"fSymbol")       == 0) {hasSymbol = ++idx;}
-         if (strcmp(name,"fAccession")    == 0) {hasAccess = ++idx;}
-         if (strcmp(name,"fEntrezID")     == 0) {hasEntrez = ++idx;}
-         if (strcmp(name,"fChromosome")   == 0) {hasChromo = ++idx;}
-         if (strcmp(name,"fStart")        == 0) {hasStart  = ++idx;}
-         if (strcmp(name,"fStop")         == 0) {hasStop   = ++idx;}
-         if (strcmp(name,"fStrand")       == 0) {hasStrand = ++idx;}
-         if (strcmp(name,"fCytoBand")     == 0) {hasCyto   = ++idx;}
-         if (strcmp(name,"fLevel")        == 0) {hasLevel  = ++idx;}
-         if (strcmp(name,"fStdev")        == 0) {hasStdev  = ++idx;}
-         if (strcmp(name,"fNPairs")       == 0) {hasNPairs = ++idx;}
-         name = strtok(NULL, ":");
-         if (name == 0) break;
-      }//while
-      delete [] dname;
-   }//if
-
-   // check for presence of at least one annotation variable
-   hasAnnot = (hasTrans + hasName  + hasSymbol + hasAccess + hasEntrez
-            + hasChromo + hasStart + hasStop   + hasStrand + hasCyto);
-   // check for presence of at least one of fLevel, fStdev, fNPairs
-   hasData = (hasStdev > 0 
-           ? (hasStdev <= hasNPairs ? hasStdev : (hasNPairs > 0 ? hasNPairs : hasStdev))
-           : hasNPairs);
-   hasData = (hasLevel > 0 
-           ? (hasLevel <= hasData ? hasLevel : (hasData > 0 ? hasData : hasLevel))
-           : hasData);
-
-// Get trees
-   TTree       **tree = new TTree*[n];
-   XExpression **expr = new XExpression*[n];
-
-   if (fTrees->GetSize() == 0) {
-   // Get trees from names
-      for (Int_t k=0; k<n; k++) {
-         expr[k] = 0;
-         tree[k] = (TTree*)gDirectory->Get((names[k]).Data());
-         if (!tree[k]) return errGetTree;
-
-         tree[k]->SetBranchAddress("ExprBranch", &expr[k]);
-      }//for_k
-   } else {
-   // Get trees from list fTrees
-      for (Int_t k=0; k<n; k++) {
-         expr[k] = 0;
-         tree[k] = (TTree*)fTrees->At(k);
-         if (!tree[k]) return errGetTree;
-
-         tree[k]->SetBranchAddress("ExprBranch", &expr[k]);
-      }//for_k
-   }//if
-
-// Get treeinfo and its option for selection of unittree and anntree
-   XTreeInfo *info   = (XTreeInfo*)tree[0]->GetUserInfo()->At(0);
-   Option_t  *option = info->GetOption();
-
-   Int_t type = eTRANSCRIPT;
-   if      (strcmp(option, "exon")     == 0) type = eEXONTYPE; 
-   else if (strcmp(option, "probeset") == 0) type = ePROBESET; 
-
-// Get scheme name (also for alternative CDFs)
-   if (strcmp(fSchemeName.Data(), "") == 0) {
-      fSchemeName = tree[0]->GetTitle();
-   } else if (!fSchemeName.Contains(tree[0]->GetTitle())) {
-      cerr << "Error: Scheme <" << fSchemeName.Data() << "> is not derived from <"
-           << tree[0]->GetTitle() << ">." << endl;
-      return errAbort;
-   }//if
-
-// Get chip from scheme file
-   if (fSchemeFile == 0) return errGetScheme;
-   fSchemeFile->cd();
-   XFolder *schemes = (XFolder*)(fSchemeFile->Get(kContent));
-   if (!schemes) {
-      return fManager->HandleError(errMissingContent, "Scheme", kContent);
-   }//if
-
-   XGeneChip *chip = (XGeneChip*)schemes->FindObject(fSchemeName, kTRUE);
-   if (chip == 0) return errAbort;
-
-// Get unit tree for scheme (needed for annotation)
-//   XGCUnit *unit   = 0;
-   XExonUnit *unit = 0;
-   TTree *unittree = this->GetUnitTree(chip, type);
-   if (unittree == 0) return errGetTree;
-   unittree->SetBranchAddress("IdxBranch", &unit);
-
-// Get annotation tree for scheme
-   XTransAnnotation *annot = 0;
-   TTree *anntree = this->GetAnnotationTree(chip, type);
-   if (anntree == 0) return errGetTree;
-   anntree->SetBranchAddress("AnnBranch", &annot);
-
-   Int_t numunits = (Int_t)(unittree->GetEntries());
-   Int_t numannot = (Int_t)(anntree->GetEntries());
-
-// Create hash table to store unit names from anntree
-   THashTable *htable = 0;
-   if (!(htable = new THashTable(2*numannot))) return errInitMemory;
-
-   htable = this->FillHashTable(htable, anntree, annot, type);
-
-// Output header
-   output << "UNIT_ID";
-   for (Short_t j=1; j<=idx; j++) {
-      if (hasUnit == j) output << sep << "UnitName";
-
-      if (hasAnnot > 0) {
-         if (hasTrans  == j) output << sep << "TranscriptID";
-         if (hasName   == j) output << sep << "GeneName";
-         if (hasSymbol == j) output << sep << "GeneSymbol";
-         if (hasAccess == j) output << sep << "GeneAccession";
-         if (hasEntrez == j) output << sep << "EntrezID";
-         if (hasChromo == j) output << sep << "Chromosome";
-         if (hasStart  == j) output << sep << "Start";
-         if (hasStop   == j) output << sep << "Stop";
-         if (hasStrand == j) output << sep << "Strand";
-         if (hasCyto   == j) output << sep << "Cytoband";
-      }//if
-
-      if (hasData == j) {
-         if (n == 1) {
-            if (hasLevel)  output << sep << "LEVEL";
-            if (hasStdev)  output << sep << "STDEV";
-            if (hasNPairs) output << sep << "NPAIRS";
-         } else {
-            for (Int_t k=0; k<n; k++) {
-               if (hasLevel)  output << sep << (names[k] + "_LEVEL").Data();
-               if (hasStdev)  output << sep << (names[k] + "_STDEV").Data();
-               if (hasNPairs) output << sep << (names[k] + "_NPAIRS").Data();
-            }//for_k
-         }//if
-      }//if
-   }//for_j
-   output << endl;
-
-// Loop over tree entries and trees
-   XIdxString *idxstr = 0;
-   Int_t index = 0;
-   Int_t nentries = (Int_t)(tree[0]->GetEntries());
-   for (Int_t i=0; i<nentries; i++) {
-      tree[0]->GetEntry(i);
-
-      Int_t unitID = expr[0]->GetUnitID();
-      output << unitID;
-
-      unittree->GetEntry(index++);
-      while (unitID != unit->GetUnitID()) {
-         if (index == numunits) {
-           cerr << "Error: UnitID <" << unitID << "> not found." << endl;
-           err = errAbort; goto cleanup;
-         }//if
-
-         unittree->GetEntry(index++);
-      }//while
-
-      for (Short_t j=1; j<=idx; j++) {
-         // export unitname
-         if (hasUnit == j) {
-            output << sep << unit->GetUnitName();
-         }//if
-
-         // export annotation
-         if (hasAnnot > 0) {
-            idxstr = FindUnitID(htable, unit);
-            if (idxstr) {
-               anntree->GetEntry(idxstr->GetIndex());
-               if (hasTrans  == j) output << sep << this->GetTranscriptID(unit, annot, type);
-               if (hasName   == j) output << sep << annot->GetName();
-               if (hasSymbol == j) output << sep << annot->GetSymbol();
-               if (hasAccess == j) output << sep << annot->GetAccession();
-               if (hasEntrez == j) output << sep << annot->GetEntrezID();
-               if (hasChromo == j) output << sep << annot->GetChromosome();
-               if (hasStart  == j) output << sep << annot->GetStart();
-               if (hasStop   == j) output << sep << annot->GetStop();
-               if (hasStrand == j) output << sep << annot->GetStrand();
-               if (hasCyto   == j) output << sep << annot->GetCytoBand();
-            } else {
-               if (hasTrans  == j) output << sep << "NA";
-               if (hasName   == j) output << sep << "NA";
-               if (hasSymbol == j) output << sep << "NA";
-               if (hasAccess == j) output << sep << "NA";
-               if (hasEntrez == j) output << sep << "NA";
-               if (hasChromo == j) output << sep << "NA";
-               if (hasStart  == j) output << sep << "-1";
-               if (hasStop   == j) output << sep << "-1";
-               if (hasStrand == j) output << sep << "?";
-               if (hasCyto   == j) output << sep << "NA";
-            }//if
-         }//if
-
-         // export data
-         if (hasData == j) {
-            for (Int_t k=0; k<n; k++) {
-               tree[k]->GetEntry(i);
-               if (hasLevel)  output << sep << expr[k]->GetLevel();
-               if (hasStdev)  output << sep << ((XGCExpression*)expr[k])->GetStdev();
-               if (hasNPairs) output << sep << ((XGCExpression*)expr[k])->GetNumPairs();
-            }//for_k
-         }//if
-      }//for_j
-      output << endl;
-
-      if (XManager::fgVerbose && i%10000 == 0) {
-         cout << "<" << i+1 << "> records exported...\r" << flush;
-      }//if
-   }//for_i
-   if (XManager::fgVerbose) {
-      cout << "<" << nentries << "> records exported." << endl;
-   }//if
-
-//Cleanup
-cleanup:
-   // remove trees from RAM
-   if (anntree)  {anntree->Delete("");  anntree  = 0;}
-   if (unittree) {unittree->Delete(""); unittree = 0;}
-   if (htable)   {htable->Delete(); delete htable; htable = 0;}
-   SafeDelete(schemes);
-
-   delete [] expr;
-   delete [] tree;
-
-   return err;
-}//ExportExprTrees
-
-//______________________________________________________________________________
-Int_t XExonProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varlist,
-                      ofstream &output, const char *sep)
-{
-   // Export data stored in call tree to file output
-   if(kCS) cout << "------XExonProcesSet::ExportCallTrees------" << endl;
-
-   Int_t err = errNoErr;
-
-// Decompose varlist
-   Short_t hasUnit   = 0;  //unit name
-   Short_t hasTrans  = 0;  //transcript_id
-   Short_t hasName   = 0;  //gene name
-   Short_t hasSymbol = 0;  //gens symbol
-   Short_t hasAccess = 0;  //mRNA accession
-   Short_t hasEntrez = 0;  //entrez ID
-   Short_t hasChromo = 0;  //chromosome
-   Short_t hasStart  = 0;  //start position
-   Short_t hasStop   = 0;  //stop position
-   Short_t hasStrand = 0;  //strand
-   Short_t hasCyto   = 0;  //cytoband
-   Short_t hasCall   = 0;  //detection call
-   Short_t hasPVal   = 0;  //detection p-value
-
-   Short_t hasAnnot  = 0;  //annotation
-   Short_t hasData   = 0;  //data
-
-   Short_t idx = 0;
-   if (strcmp(varlist,"*")  == 0) {
-      hasUnit   = ++idx;
-      hasTrans  = ++idx;
-      hasName   = ++idx;
-      hasSymbol = ++idx;
-      hasAccess = ++idx;
-      hasEntrez = ++idx;
-      hasChromo = ++idx;
-      hasStart  = ++idx;
-      hasStop   = ++idx;
-      hasStrand = ++idx;
-      hasCyto   = ++idx;
-      hasCall   = ++idx;
-      hasPVal   = ++idx;
-   } else {
-      char *name  = new char[strlen(varlist) + 1];
-      char *dname = name;
-      name = strtok(strcpy(name,varlist),":");
-      while (name) {
-         if (strcmp(name,"fUnitName")     == 0) {hasUnit   = ++idx;}
-         if (strcmp(name,"fTranscriptID") == 0) {hasTrans  = ++idx;}
-         if (strcmp(name,"fName")         == 0) {hasName   = ++idx;}
-         if (strcmp(name,"fSymbol")       == 0) {hasSymbol = ++idx;}
-         if (strcmp(name,"fAccession")    == 0) {hasAccess = ++idx;}
-         if (strcmp(name,"fEntrezID")     == 0) {hasEntrez = ++idx;}
-         if (strcmp(name,"fChromosome")   == 0) {hasChromo = ++idx;}
-         if (strcmp(name,"fStart")        == 0) {hasStart  = ++idx;}
-         if (strcmp(name,"fStop")         == 0) {hasStop   = ++idx;}
-         if (strcmp(name,"fStrand")       == 0) {hasStrand = ++idx;}
-         if (strcmp(name,"fCytoBand")     == 0) {hasCyto   = ++idx;}
-         if (strcmp(name,"fCall")         == 0) {hasCall   = ++idx;}
-         if (strcmp(name,"fPValue")       == 0) {hasPVal   = ++idx;}
-         name = strtok(NULL, ":");
-         if (name == 0) break;
-      }//while
-      delete [] dname;
-   }//if
-
-   // check for presence of at least one annotation variable
-   hasAnnot = (hasTrans + hasName  + hasSymbol + hasAccess + hasEntrez
-            + hasChromo + hasStart + hasStop   + hasStrand + hasCyto);
-   // check for presence of at least one of fCall, fPValue
-   hasData = (hasCall > 0 
-           ? (hasCall <= hasPVal ? hasCall : (hasPVal > 0 ? hasPVal : hasCall))
-           : hasPVal);
-
-// Get trees
-   TTree  **tree = new TTree*[n];
-   XPCall **call = new XPCall*[n];
-   if (fTrees->GetSize() == 0) {
-   // Get trees from names
-      for (Int_t k=0; k<n; k++) {
-         call[k] = 0;
-         tree[k] = (TTree*)gDirectory->Get((names[k]).Data());
-         if (!tree[k]) return errGetTree;
-
-         tree[k]->SetBranchAddress("CallBranch", &call[k]);
-      }//for_k
-   } else {
-   // Get trees from list fTrees
-      for (Int_t k=0; k<n; k++) {
-         call[k] = 0;
-         tree[k] = (TTree*)fTrees->At(k);
-         if (!tree[k]) return errGetTree;
-
-         tree[k]->SetBranchAddress("CallBranch", &call[k]);
-      }//for_k
-   }//if
-
-// Get treeinfo and its option for selection of unittree and anntree
-   XTreeInfo *info   = (XTreeInfo*)tree[0]->GetUserInfo()->At(0);
-   Option_t  *option = info->GetOption();
-
-   Int_t type = eTRANSCRIPT;
-   if      (strcmp(option, "exon")     == 0) type = eEXONTYPE; 
-   else if (strcmp(option, "probeset") == 0) type = ePROBESET; 
-
-// Get scheme name (also for alternative CDFs)
-   if (strcmp(fSchemeName.Data(), "") == 0) {
-      fSchemeName = tree[0]->GetTitle();
-   } else if (!fSchemeName.Contains(tree[0]->GetTitle())) {
-      cerr << "Error: Scheme <" << fSchemeName.Data() << "> is not derived from <"
-           << tree[0]->GetTitle() << ">." << endl;
-      return errAbort;
-   }//if
-
-// Get chip from scheme file
-   if (fSchemeFile == 0) return errGetScheme;
-   fSchemeFile->cd();
-   XFolder *schemes = (XFolder*)(fSchemeFile->Get(kContent));
-   if (!schemes) {
-      return fManager->HandleError(errMissingContent, "Scheme", kContent);
-   }//if
-
-   XGeneChip *chip = (XGeneChip*)schemes->FindObject(fSchemeName, kTRUE);
-   if (chip == 0) return errAbort;
-
-// Get unit tree for scheme (needed for annotation)
-//   XGCUnit *unit   = 0;
-   XExonUnit *unit = 0;
-   TTree *unittree = this->GetUnitTree(chip, type);
-   if (unittree == 0) return errGetTree;
-   unittree->SetBranchAddress("IdxBranch", &unit);
-
-// Get annotation tree for scheme
-   XTransAnnotation *annot = 0;
-   TTree *anntree = this->GetAnnotationTree(chip, type);
-   if (anntree == 0) return errGetTree;
-   anntree->SetBranchAddress("AnnBranch", &annot);
-
-   Int_t numunits = (Int_t)(unittree->GetEntries());
-   Int_t numannot = (Int_t)(anntree->GetEntries());
-
-// Create hash table to store unit names from anntree
-   THashTable *htable = 0;
-   if (!(htable = new THashTable(2*numannot))) return errInitMemory;
-
-   htable = this->FillHashTable(htable, anntree, annot, type);
-
-// Output header
-   output << "UNIT_ID";
-   for (Short_t j=1; j<=idx; j++) {
-      if (hasUnit == j) output << sep << "UnitName";
-
-      if (hasAnnot > 0) {
-         if (hasTrans  == j) output << sep << "TranscriptID";
-         if (hasName   == j) output << sep << "GeneName";
-         if (hasSymbol == j) output << sep << "GeneSymbol";
-         if (hasAccess == j) output << sep << "GeneAccession";
-         if (hasEntrez == j) output << sep << "EntrezID";
-         if (hasChromo == j) output << sep << "Chromosome";
-         if (hasStart  == j) output << sep << "Start";
-         if (hasStop   == j) output << sep << "Stop";
-         if (hasStrand == j) output << sep << "Strand";
-         if (hasCyto   == j) output << sep << "Cytoband";
-      }//if
-
-      if (hasData == j) {
-         if (n == 1) {
-            if (hasCall)  output << sep << "CALL";
-            if (hasPVal)  output << sep << "PVALUE";
-         } else {
-            for (Int_t k=0; k<n; k++) {
-               if (hasCall)  output << sep << (names[k] + "_CALL").Data();
-               if (hasPVal)  output << sep << (names[k] + "_PVALUE").Data();
-            }//for_k
-         }//if
-      }//if
-   }//for_j
-   output << endl;
-
-// Loop over tree entries and tree branches
-   XIdxString *idxstr = 0;
-   Int_t index = 0;
-   Int_t nentries = (Int_t)(tree[0]->GetEntries());
-   for (Int_t i=0; i<nentries; i++) {
-      tree[0]->GetEntry(i);
-
-      Int_t unitID = call[0]->GetUnitID();
-      output << unitID;
-
-      unittree->GetEntry(index++);
-      while (unitID != unit->GetUnitID()) {
-         if (index == numunits) {
-           cerr << "Error: UnitID <" << unitID << "> not found." << endl;
-           err = errAbort; goto cleanup;
-         }//if
-
-         unittree->GetEntry(index++);
-      }//while
-
-      for (Short_t j=1; j<=idx; j++) {
-         // export unitname
-         if (hasUnit == j) {
-            output << sep << unit->GetUnitName();
-         }//if
-
-         // export annotation
-         if (hasAnnot > 0) {
-            idxstr = FindUnitID(htable, unit);
-            if (idxstr) {
-               anntree->GetEntry(idxstr->GetIndex());
-               if (hasTrans  == j) output << sep << this->GetTranscriptID(unit, annot, type);
-               if (hasName   == j) output << sep << annot->GetName();
-               if (hasSymbol == j) output << sep << annot->GetSymbol();
-               if (hasAccess == j) output << sep << annot->GetAccession();
-               if (hasEntrez == j) output << sep << annot->GetEntrezID();
-               if (hasChromo == j) output << sep << annot->GetChromosome();
-               if (hasStart  == j) output << sep << annot->GetStart();
-               if (hasStop   == j) output << sep << annot->GetStop();
-               if (hasStrand == j) output << sep << annot->GetStrand();
-               if (hasCyto   == j) output << sep << annot->GetCytoBand();
-            } else {
-               if (hasTrans  == j) output << sep << "NA";
-               if (hasName   == j) output << sep << "NA";
-               if (hasSymbol == j) output << sep << "NA";
-               if (hasAccess == j) output << sep << "NA";
-               if (hasEntrez == j) output << sep << "NA";
-               if (hasChromo == j) output << sep << "NA";
-               if (hasStart  == j) output << sep << "-1";
-               if (hasStop   == j) output << sep << "-1";
-               if (hasStrand == j) output << sep << "?";
-               if (hasCyto   == j) output << sep << "NA";
-            }//if
-         }//if
-
-         // export data
-         if (hasData == j) {
-            for (Int_t k=0; k<n; k++) {
-               tree[k]->GetEntry(i);
-
-               if (hasCall) {
-                  Int_t cl = call[k]->GetCall();
-/*                  char *ch = "NA";
-                  if      (cl == 2) ch = "P";
-                  else if (cl == 0) ch = "A";
-                  else if (cl == 1) ch = "M";
-                  output << sep << ch;
-*/
-                  const char *ch[1];
-                  ch[0] = "NA";
-                  if      (cl == 2) ch[0] = "P";
-                  else if (cl == 0) ch[0] = "A";
-                  else if (cl == 1) ch[0] = "M";
-                  output << sep << ch[0];
-               }//if
-
-               if (hasPVal) {
-                  output << sep << call[k]->GetPValue();
-               }//if
-            }//for_k
-         }//if
-      }//for_j
-      output << endl;
-
-      if (XManager::fgVerbose && i%10000 == 0) {
-         cout << "<" << i+1 << "> records exported...\r" << flush;
-      }//if
-   }//for_i
-   if (XManager::fgVerbose) {
-      cout << "<" << nentries << "> records exported." << endl;
-   }//if
-
-//Cleanup
-cleanup:
-   // remove trees from RAM
-   if (anntree)  {anntree->Delete("");  anntree  = 0;}
-   if (unittree) {unittree->Delete(""); unittree = 0;}
-   if (htable)   {htable->Delete(); delete htable; htable = 0;}
-   SafeDelete(schemes);
-
-   delete [] call;
-   delete [] tree;
-
-   return err;
-}//ExportCallTrees
-
-//______________________________________________________________________________
 Int_t *XExonProcesSet::FillMaskArray(XDNAChip *chip, TTree *scmtree, XScheme *scheme,
                        Int_t level, Int_t n, Int_t *msk)
 {
@@ -8630,3 +5642,73 @@ Int_t *XExonProcesSet::FillMaskArray(XDNAChip *chip, TTree *scmtree, XScheme *sc
    return msk = XGenomeProcesSet::FillMaskArray(chip, scmtree, scheme, level, n, msk);
 }//FillMaskArray
 
+//______________________________________________________________________________
+TTree *XExonProcesSet::SchemeTree(XAlgorithm *algorithm, void *scheme, TLeaf **scmleaf)
+{
+   // Get scheme tree for scheme
+   if(kCS) cout << "------XExonProcesSet::SchemeTree------" << endl;
+
+
+   XExonChip *chip = (XExonChip*)fSchemes->FindObject(fSchemeName, kTRUE);
+   if (!chip) return 0;
+
+   TTree *scmtree = (TTree*)gDirectory->Get(chip->GetSchemeTree()); 
+   if (scmtree == 0) return 0;
+
+//   scheme = ((XExonScheme*)scheme);
+   XExonScheme **scheme_ptr_ptr = (XExonScheme**)scheme;
+   scmtree->SetBranchAddress("ScmBranch", scheme);
+
+   TLeaf *leaf = 0;
+   if (strcmp(algorithm->GetOption(), "exon") == 0) { 
+      leaf = scmtree->FindLeaf("fExonID");      
+   } else if (strcmp(algorithm->GetOption(), "probeset") == 0) {
+      leaf = scmtree->FindLeaf("fProbesetID");      
+   } else {
+      leaf = scmtree->FindLeaf("fUnitID");      
+   }//if
+   *scmleaf = leaf;
+
+   return scmtree;
+}//SchemeTree
+
+//______________________________________________________________________________
+TTree *XExonProcesSet::UnitTree(XAlgorithm *algorithm, void *unit, Int_t &numunits)
+{
+   // Get unit tree for scheme
+   if(kCS) cout << "------XExonProcesSet::UnitTree------" << endl;
+
+
+   XExonChip *chip = (XExonChip*)fSchemes->FindObject(fSchemeName, kTRUE);
+   if (!chip) return 0;
+
+   TTree *idxtree = 0; 
+   if (strcmp(algorithm->GetOption(), "exon") == 0) { 
+      idxtree  = (TTree*)gDirectory->Get(chip->GetExonUnitTree()); //tree.exn
+      if (idxtree == 0) return 0;
+      numunits = chip->GetNumExonUnits();
+   } else if (strcmp(algorithm->GetOption(), "probeset") == 0) {
+      idxtree  = (TTree*)gDirectory->Get(chip->GetProbesetUnitTree()); //tree.pbs
+      if (idxtree == 0) return 0;
+      numunits = idxtree->GetEntries();
+   } else {
+      idxtree  = (TTree*)gDirectory->Get(chip->GetUnitTree());     //tree.idx
+      if (idxtree == 0) return 0;
+      numunits = chip->GetNumUnits();
+   }//if
+   idxtree->SetBranchAddress("IdxBranch", unit);
+
+   return idxtree;
+}//UnitTree
+
+//______________________________________________________________________________
+const char *XExonProcesSet::GetTranscriptID(XUnit *unit, XTransAnnotation *annot, Int_t type)
+{
+   // Get transcript IDs from unit tree
+
+   Int_t id = (type == eTRANSCRIPT) 
+            ? ((XExonUnit*)unit)->GetSubUnitID()
+            : ((XProbesetAnnotation*)annot)->GetTranscriptIX();
+
+   return Form("%d", id);
+}//GetTranscriptID

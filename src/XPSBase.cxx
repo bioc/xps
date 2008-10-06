@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 05/05/2008
+// File created: 05/18/2002                          last modified: 09/26/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -1023,6 +1023,37 @@ void XTreeSet::Select(const char *name, Int_t id)
 }//Select
 
 //______________________________________________________________________________
+Double_t **XTreeSet::CreateTable(Int_t nrow, Int_t ncol)
+{
+   // Create table
+   if(kCS) cout << "------XTreeSet::CreateTable------" << endl;
+
+   Double_t **table = 0;
+
+   if (!(table = new (nothrow) Double_t*[nrow])) return 0;
+   for (Int_t k=0; k<nrow; k++) {
+      table[k] = 0;
+      if (!(table[k] = new (nothrow) Double_t[ncol])) return 0; 
+   }//for_i
+
+   return table;
+}//CreateTable
+
+//______________________________________________________________________________
+void XTreeSet::DeleteTable(Double_t **table, Int_t nrow)
+{
+   // Delete table
+   if(kCS) cout << "------XTreeSet::DeleteTable------" << endl;
+
+   if (table == 0) return;
+
+   for (Int_t k=0; k<nrow; k++) {
+      if (table[k]) {delete [] table[k]; table[k] = 0;}
+   }//for_k
+   delete [] table;
+}//DeleteTable
+
+//______________________________________________________________________________
 Int_t XTreeSet::WriteTree(TTree *tree, Int_t option, Int_t bufsize)
 {
    // Write tree to current directory
@@ -1236,6 +1267,37 @@ XAlgorithm::~XAlgorithm()
    if (fIsFileOwner) SafeDelete(fFile);
    fFile = 0;
 }//Destructor
+
+//______________________________________________________________________________
+Double_t **XAlgorithm::CreateTable(Int_t nrow, Int_t ncol)
+{
+   // Create table
+   if(kCS) cout << "------XAlgorithm::CreateTable------" << endl;
+
+   Double_t **table = 0;
+
+   if (!(table = new (nothrow) Double_t*[nrow])) return 0;
+   for (Int_t k=0; k<nrow; k++) {
+      table[k] = 0;
+      if (!(table[k] = new (nothrow) Double_t[ncol])) return 0; 
+   }//for_i
+
+   return table;
+}//CreateTable
+
+//______________________________________________________________________________
+void XAlgorithm::DeleteTable(Double_t **table, Int_t nrow)
+{
+   // Delete table
+   if(kCS) cout << "------XAlgorithm::DeleteTable------" << endl;
+
+   if (table == 0) return;
+
+   for (Int_t k=0; k<nrow; k++) {
+      if (table[k]) {delete [] table[k]; table[k] = 0;}
+   }//for_k
+   delete [] table;
+}//DeleteTable
 
 //______________________________________________________________________________
 TFile *XAlgorithm::NewFile(const char *name, const char *exten)

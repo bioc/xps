@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 04/27/2008
+// File created: 08/05/2002                          last modified: 10/03/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -243,13 +243,15 @@ class XGCProcesSet: public XPreProcesSet {
                        Int_t &numbgrd, TTree **bgrdtree);
       virtual Int_t Normalize(Int_t numdata, TTree **datatree,
                        Int_t &numbgrd, TTree **bgrdtree);
-      virtual Int_t Express(Int_t numdata, TTree **datatree,
-                       Int_t &numbgrd, TTree **bgrdtree);
       virtual Int_t DetectCall(Int_t numdata, TTree **datatree,
                        Int_t &numbgrd, TTree **bgrdtree);
+      virtual Int_t DoCall(Int_t numdata, TTree **datatree,
+                       Int_t &numbgrd, TTree **bgrdtree);
+      virtual Int_t DoMultichipCall(Int_t numdata, TTree **datatree,
+                       Int_t &numbgrd, TTree **bgrdtree, TFile *file);
+      virtual Int_t Express(Int_t numdata, TTree **datatree,
+                       Int_t &numbgrd, TTree **bgrdtree);
       virtual Int_t DoExpress(Int_t numdata, TTree **datatree,
-                       Int_t numbgrd, TTree **bgrdtree);
-      virtual Int_t DoMultichipExpress(Int_t numdata, TTree **datatree,
                        Int_t numbgrd, TTree **bgrdtree);
       virtual Int_t DoMultichipExpress(Int_t numdata, TTree **datatree,
                        Int_t numbgrd, TTree **bgrdtree, TFile *file);
@@ -267,9 +269,22 @@ class XGCProcesSet: public XPreProcesSet {
 
       virtual Int_t *FillMaskArray(XDNAChip *chip, TTree *scmtree, XScheme *scheme,
                        Int_t level, Int_t n, Int_t *msk);
+      virtual Int_t *FillUnitArray(TTree *idxtree, XGCUnit *unit,
+                         Int_t n, Int_t *arr, Int_t *msk);
+      virtual void   FillProbeSets(Int_t &p, Int_t &m, Int_t &idx, Double_t *pm, 
+                        Double_t *mm, Double_t *sp, Double_t *sm, Int_t *xp, 
+                        Int_t *xm, Int_t msk, Double_t inten, Double_t stdev,
+                        Double_t bgrd, Double_t bgdev, Int_t npix);
+      virtual Int_t  MaxNumberCells(TTree *idxtree);
+      virtual TTree *SchemeTree(XAlgorithm *algorithm, void *scheme, TLeaf **scmleaf);
+      virtual TTree *UnitTree(XAlgorithm *algorithm, void *unit, Int_t &numunits);
 
-      Bool_t   BackgroundParameters(XAlgorithm *algorithm, const char *option);
       Double_t AdjustIntensity(Double_t inten, Double_t bgrd, Double_t stdv);
+      Bool_t   BackgroundParameters(XAlgorithm *algorithm, const char *option);
+      TString  ChipType(const char *type);
+      Int_t    FillDataArrays(TTree *datatree, TTree *bgrdtree, Bool_t doBg,
+                  Int_t nrow, Int_t ncol, Double_t *inten, Double_t *stdev,
+                  Int_t *npix, Double_t *bgrd, Double_t *bgdev);
       Int_t    FillDataArrays(TTree *datatree, TTree *bgrdtree, Bool_t doBg,
                   Int_t nrow, Int_t ncol, Double_t *inten, Double_t *stdev, Int_t *npix);
       Int_t    FillDataArrays(TTree *datatree, Int_t nrow, Int_t ncol,
@@ -282,13 +297,15 @@ class XGCProcesSet: public XPreProcesSet {
                   Int_t ncol, Double_t *arr);
       Int_t    FillMaskTree(const char *name, XAlgorithm *algorithm, Int_t nrow,
                   Int_t ncol, Int_t *arr);
+      void     FillProbeSets(Int_t &p, Int_t &idx, Double_t *pm, Double_t *sp, 
+                  Int_t *xp, Int_t msk, Double_t inten, Double_t stdev);
+      Int_t    MaskArray2GC(XDNAChip *chip, Int_t *msk);
       Int_t    MeanReference(Int_t numdata, TTree **datatree,
                   Int_t numbgrd, TTree **bgrdtree,
                   Int_t nrow, Int_t ncol, Double_t *arr, Bool_t doBg);
       Int_t    MedianReference(Int_t numdata, TTree **datatree,
                   Int_t numbgrd, TTree **bgrdtree,
                   Int_t nrow, Int_t ncol, Double_t *arr, Bool_t doBg);
-
 
    public:
       XGCProcesSet();
@@ -316,20 +333,15 @@ class XGenomeProcesSet: public XGCProcesSet {
    protected:
 
    protected:
-      virtual Int_t DetectCall(Int_t numdata, TTree **datatree,
-                       Int_t &numbgrd, TTree **bgrdtree);
-
-      virtual Int_t DoExpress(Int_t numdata, TTree **datatree,
-                       Int_t numbgrd, TTree **bgrdtree);
-      virtual Int_t DoMultichipExpress(Int_t numdata, TTree **datatree,
-                       Int_t numbgrd, TTree **bgrdtree);
-      virtual Int_t DoMultichipExpress(Int_t numdata, TTree **datatree,
-                       Int_t numbgrd, TTree **bgrdtree, TFile *file);
-
       virtual Int_t *FillMaskArray(XDNAChip *chip, TTree *scmtree, XScheme *scheme,
                         Int_t level, Int_t n, Int_t *msk);
       virtual Int_t *FillUnitArray(TTree *idxtree, XGCUnit *unit,
                          Int_t n, Int_t *arr, Int_t *msk);
+      virtual void   FillProbeSets(Int_t &p, Int_t &m, Int_t &idx, Double_t *pm, 
+                        Double_t *mm, Double_t *sp, Double_t *sm, Int_t *xp, 
+                        Int_t *xm, Int_t msk, Double_t inten, Double_t stdev,
+                        Double_t bgrd, Double_t bgdev, Int_t npix);
+      virtual Int_t  MaxNumberCells(TTree *idxtree);
 
    public:
       XGenomeProcesSet();
@@ -351,23 +363,12 @@ class XExonProcesSet: public XGenomeProcesSet {
    protected:
 
    protected:
-      virtual Int_t DetectCall(Int_t numdata, TTree **datatree,
-                       Int_t &numbgrd, TTree **bgrdtree);
-
-      virtual Int_t DoExpress(Int_t numdata, TTree **datatree,
-                       Int_t numbgrd, TTree **bgrdtree);
-      virtual Int_t DoMultichipExpress(Int_t numdata, TTree **datatree,
-                       Int_t numbgrd, TTree **bgrdtree);
-      virtual Int_t DoMultichipExpress(Int_t numdata, TTree **datatree,
-                       Int_t numbgrd, TTree **bgrdtree, TFile *file);
-      virtual Int_t ExportExprTrees(Int_t n, TString *names, const char *varlist,
-                       ofstream &output, const char *sep);
-      virtual Int_t ExportCallTrees(Int_t n, TString *names, const char *varlist,
-                       ofstream &output, const char *sep);
-
       virtual Int_t *FillMaskArray(XDNAChip *chip, TTree *scmtree, XScheme *scheme,
                         Int_t level, Int_t n, Int_t *msk);
+      virtual TTree *SchemeTree(XAlgorithm *algorithm, void *scheme, TLeaf **scmleaf);
+      virtual TTree *UnitTree(XAlgorithm *algorithm, void *unit, Int_t &numunits);
 
+      virtual const char *GetTranscriptID(XUnit *unit, XTransAnnotation *annot, Int_t type);
 
    public:
       XExonProcesSet();

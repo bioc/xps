@@ -72,6 +72,13 @@ void PreprocessDABGCall(char **filename, char **dirname, char **chipname,
                         char **treeset, char **treenames, int *ntrees,
                         double *alpha1, double *alpha2, int *level,
                         int *verbose, char **result);
+void PreprocessINICall(char **filename, char **dirname, char **chipname,
+                       char **chiptype, char **schemefile, char **tmpdir,
+                       char **option, char **treeset, char **treenames,
+                       int *ntrees, int *version, double *weight, double *mu,
+                       double *scale, double *tol, int *cyc, double *alpha1,
+                       double *alpha2, int *normlevel, int *callevel,
+                       int *verbose, char **result);
 
 void Preprocess(char **filename, char **dirname, char **chipname, char **chiptype,
                 char **schemefile, char **tmpdir, int *update,

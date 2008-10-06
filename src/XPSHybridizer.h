@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 09/13/2008
+// File created: 08/05/2002                          last modified: 10/04/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -64,6 +64,10 @@ class XHybridizer: public XAlgorithm {
       Double_t   *fArray;       //[fLength] Array to be used for calculation
       Int_t       fNDefPar;     //number of default parameters
       Bool_t      fMultichip;   //TRUE if multichip algorithm
+ 
+   protected:
+      Double_t *Array2Log(Int_t n, Double_t *x, Double_t neglog, const char *base);
+      Double_t *Array2Pow(Int_t n, Double_t *x, const char *base);
 
    public:
       XHybridizer();
@@ -73,9 +77,6 @@ class XHybridizer: public XAlgorithm {
       virtual Int_t CreateArray(Int_t /*length*/) {return 0;}
       virtual void  DeleteArray();
       virtual Int_t SetArray(Int_t length, Double_t *array);
-
-      Double_t **CreateTable(Int_t nrow, Int_t ncol);
-      void       DeleteTable(Double_t **table, Int_t nrow);
 
       void   InitArrays(Int_t length, Double_t *inten1, Double_t *stdev1,
                 Int_t *npix1, Double_t *inten2, Double_t *stdev2, Int_t *npix2);
@@ -164,10 +165,6 @@ class XExpressor: public XHybridizer {
    protected:
       TString    fBgrdOpt;      //option for background subtraction
       TString    fLogBase;      //logbase: 0, log, log2, log10
- 
-   protected:
-      Double_t *Array2Log(Int_t n, Double_t *x, Double_t neglog);
-      Double_t *Array2Pow(Int_t n, Double_t *x);
 
    public:
       XExpressor();
@@ -349,7 +346,7 @@ class XDetectionCall: public XCallDetector {
 //                                                                      //
 // XMAS4Call                                                            //
 //                                                                      //
-// Prsent call algorithm of MAS4                                        //
+// Present call algorithm of MAS4                                       //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 class XMAS4Call: public XCallDetector {
@@ -380,7 +377,7 @@ class XDABGCall: public XCallDetector {
       Int_t        fNMaxGC;      //! maximum GC-content, i.e. kProbeLength+1
       Int_t        fNMaxBin;     //! maximum probesize for any GC-content
       Int_t       *fNBins;       //[fNMaxGC] number of probes with certain GC-content
-      Double_t   **fGCTable;     //! Backround values sorted for GC-content
+      Double_t   **fGCTable;     //! Background values sorted for GC-content
 
    protected:
       Double_t PValueFisher(Int_t n, Int_t *arrgc, Double_t *inten);
@@ -408,6 +405,38 @@ class XDABGCall: public XCallDetector {
                                                             {return 0;}
 
       ClassDef(XDABGCall,1) //DABGCall
+};
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XINICall                                                             //
+//                                                                      //
+// Informative call algorithm of FARMS                                  //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+class XINICall: public XCallDetector {
+
+   protected:
+
+   private:
+      Int_t DoFARMS130(Int_t nrow, Int_t ncol, Double_t *inten, Double_t *x, 
+               Double_t *y, Double_t weight = 8.0, Double_t mu = 0.0, 
+               Double_t scale = 2.0, Double_t tol = 0.00001, Double_t cyc = 0.0);
+      Int_t DoFARMS131(Int_t nrow, Int_t ncol, Double_t *inten, 
+               Double_t *x, Double_t *y, Double_t weight = 0.5, Double_t mu = 0.0, 
+               Double_t scale = 1.0, Double_t tol = 0.00001, Double_t cyc = 0.0);
+
+   public:
+      XINICall();
+      XINICall(const char *name, const char *type);
+      virtual ~XINICall();
+
+      virtual Int_t SetArray(Int_t length, Double_t *array);
+
+      using XAlgorithm::Calculate;
+      virtual Int_t Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk);
+
+      ClassDef(XINICall,1) //INICall
 };
 
 //////////////////////////////////////////////////////////////////////////

@@ -54,10 +54,10 @@ setValidity("CallTreeSet",
       }#if
 
       ## check calltype
-      TYPE <- c("mas5", "dabg");
+      TYPE <- c("mas5", "dabg", "ini");
       if (is.na(match(object@calltype, TYPE))) {
          msg <- validMsg(msg, paste(sQuote("normation"), "must be one of",
-                         "<mas5,dabg>"));
+                         "<mas5,dabg,ini>"));
       }#if
 
       if (is.null(msg)) TRUE else msg;

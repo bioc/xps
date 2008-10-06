@@ -11,6 +11,7 @@ EXPORTS
  PreprocessMAS5
  PreprocessMAS5Call
  PreprocessDABGCall
+ PreprocessINICall
  Preprocess
  BgCorrect
  Normalize

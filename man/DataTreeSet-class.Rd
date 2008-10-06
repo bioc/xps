@@ -33,6 +33,7 @@
 \alias{validData,DataTreeSet-method}
 \alias{xpsBgCorrect,DataTreeSet-method}
 \alias{xpsDABGCall,DataTreeSet-method}
+\alias{xpsINICall,DataTreeSet-method}
 \alias{xpsMAS4,DataTreeSet-method}
 \alias{xpsMAS5,DataTreeSet-method}
 \alias{xpsMAS5Call,DataTreeSet-method}
@@ -121,6 +122,7 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
     \item{xpsBgCorrect}{\code{signature(object = "DataTreeSet")}: applies background correction methods.
      See \code{\link{bgcorrect}}.}
     \item{xpsDABGCall}{\code{signature(object = "DataTreeSet")}: computes DABG call.}
+    \item{xpsINICall}{\code{signature(object = "DataTreeSet")}: computes I/NI call.}
     \item{xpsMAS4}{\code{signature(object = "DataTreeSet")}: computes MAS4 expression levels.}
     \item{xpsMAS5}{\code{signature(object = "DataTreeSet")}: computes MAS5 expression levels.}
     \item{xpsMAS5Call}{\code{signature(object = "DataTreeSet")}: computes MAS5 detection call.}
