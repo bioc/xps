@@ -60,6 +60,7 @@
 *          - Add method AdjustIntensity() to allow different background corrections
 * Aug 2007 - Add support for whole genome arrays, class XGenomeProcesSet
 * Aug 2008 - Add summarization algorithms FARMS and DFW, classes XFARMS, XDFW
+* Oct 2008 - Add I/NI-call algorithm class XINICall
 *
 ******************************************************************************/
 

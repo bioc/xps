@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 10/04/2008
+// File created: 08/05/2002                          last modified: 10/09/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -2188,6 +2188,7 @@ Int_t XINICall::SetArray(Int_t length, Double_t *array)
    if(kCSa) cout << "------XINICall::SetArray------" << endl;
 
    Int_t err = XHybridizer::SetArray(length, array);
+   if (err != errNoErr) return err;
 
    fArray = Array2Log(fLength, fArray, 1.0, "log2");
 
@@ -2227,7 +2228,7 @@ Int_t XINICall::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk)
    }//if
 
 // Present call (x)
-   for (Int_t k=0; k<nrow; k++) {
+   for (Int_t k=0; k<ncol; k++) {
       if      (y[k] < alpha1) x[k] = 2.0;  //"P"
       else if (y[k] < alpha2) x[k] = 1.0;  //"M"
       else                    x[k] = 0.0;  //"A"
@@ -2254,7 +2255,6 @@ Int_t XINICall::DoFARMS130(Int_t nrow, Int_t ncol, Double_t *inten, Double_t *x,
    Double_t mean   = 0.0;
    Double_t a      = 0.0;
    Double_t ezz    = 0.0;
-//   Double_t lambda = 0.0;
 
 // Initialize local arrays
    Double_t *xmean  = 0;  // column means
@@ -2270,7 +2270,6 @@ Int_t XINICall::DoFARMS130(Int_t nrow, Int_t ncol, Double_t *inten, Double_t *x,
    Double_t *XXbeta = 0;  // 
    Double_t *TXbeta = 0;  // 
    Double_t *EZZ    = 0;  //
-//   Double_t *c      = 0;  //
 
 // Initialize memory for local arrays
    if (!(X  = new (nothrow) Double_t[nrow*ncol])) {err = errInitMemory; goto cleanup;}
@@ -2287,7 +2286,6 @@ Int_t XINICall::DoFARMS130(Int_t nrow, Int_t ncol, Double_t *inten, Double_t *x,
    if (!(XXbeta = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
    if (!(TXbeta = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
    if (!(EZZ    = new (nothrow) Double_t[nrow])) {err = errInitMemory; goto cleanup;}
-//   if (!(c      = new (nothrow) Double_t[ncol])) {err = errInitMemory; goto cleanup;}
 
    // row means
    for (Int_t i=0; i<nrow; i++) {
@@ -2400,36 +2398,16 @@ Int_t XINICall::DoFARMS130(Int_t nrow, Int_t ncol, Double_t *inten, Double_t *x,
       for (Int_t i=0; i<nrow; i++) Lold[i] = L[i];
       cyc--;
    }//while
-/*
-   for (Int_t j=0; j<ncol; j++) {
-      c[j] = 0.0;
-      for (Int_t i=0; i<nrow; i++) {
-         c[j] += X[i*ncol + j]*beta[i];
-      }//for_i
-   }//for_j
 
-   lambda = mean = 0.0;
-   for (Int_t i=0; i<nrow; i++) {
-      lambda += L[i];
-      mean   += xmean[i];
-   }//for_i
-   lambda = lambda/nrow;
-   mean   = mean/nrow;
-*/
 // Final result x and stdev y
    for (Int_t j=0; j<ncol; j++) {
-//      x[j] = scale*lambda*c[j] + mean;
+
       y[j] = 1.0/a;
    }//for_j
-/*
-// Convert results
-   x = Array2Pow(ncol, x, fLogBase);
-   y = Array2Pow(ncol, y, fLogBase);
-*/
+
 
 // Cleanup
 cleanup:
-//   if (c)      {delete [] c;      c      = 0;}
    if (EZZ)    {delete [] EZZ;    EZZ    = 0;}
    if (TXbeta) {delete [] TXbeta; TXbeta = 0;}
    if (XXbeta) {delete [] XXbeta; XXbeta = 0;}
@@ -2662,10 +2640,6 @@ Int_t XINICall::DoFARMS131(Int_t nrow, Int_t ncol, Double_t *inten,
 
    var = TStat::StDev(ncol, c, mean);
 
-/*   for (Int_t j=0; j<ncol; j++) {
-      c[j] = c[j]/var;
-   }//for_j
-*/
    for (Int_t i=0; i<nrow; i++) {
       L[i] = L[i]*var;
    }//for_i
@@ -2676,44 +2650,11 @@ Int_t XINICall::DoFARMS131(Int_t nrow, Int_t ncol, Double_t *inten,
       a      += L[i]*PsiL[i];
    }//for_i
 
-/*   for (Int_t i=0; i<nrow; i++) {
-      arr1[i] = L[i]*xstdv[i];
-   }//for_i
-
-   for (Int_t i=0; i<nrow; i++) {
-      arr2[i] = xmean[i]*xstdv[i];
-   }//for_i
-
-   if (weighted) {
-      sum = 0.0;
-      for (Int_t i=0; i<nrow; i++) {
-         PsiL[i] = L[i]*L[i]/Ph[i];
-         sum    += PsiL[i];
-      }//for_i
-      for (Int_t i=0; i<nrow; i++) {
-         PsiL[i] = PsiL[i]/sum;
-      }//for_i
-
-      var = 0.0;
-      for (Int_t i=0; i<nrow; i++) {
-         var +=arr1[i]* PsiL[i];
-      }//for_i
-   } else {
-      var  = TStat::Median(nrow, arr1);
-   }//if
-
-   mean = TStat::Mean(nrow, arr2);
-*/
 // Final expression and stdev
    for (Int_t j=0; j<ncol; j++) {
-//      x[j] = scale*var*c[j] + mean;
       y[j] = 1.0/a;
    }//for_j
-/*
-// Convert results
-   x = Array2Pow(ncol, x, fLogBase);
-   y = Array2Pow(ncol, y, fLogBase);
-*/
+
 // Cleanup
 cleanup:
    delete [] c;
