@@ -27,6 +27,11 @@ function(xps.scheme,
 
    if (celnames[1] != "*") {
       celnames  <- paste(namePart(celnames), "cel", sep=".");
+      dupnames  <- celnames[duplicated(celnames)];
+      if (length(dupnames) > 0) {
+         stop(paste("duplicated celnames: ", dupnames, "\n"));
+      }#if
+
       treenames <- treenames[match(celnames, treenames)];
       if (length(treenames[is.na(treenames)]) > 0) {
          stop(paste("some", sQuote("celnames"), " are not found in",

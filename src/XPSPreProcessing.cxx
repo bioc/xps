@@ -1793,6 +1793,7 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
       cout << "Warning: No background trees available for background subtraction."
            << endl;
       doBg = kFALSE;
+//TO DO: case of pars[npars-1] == -100 in BackgroundParameters()
    } else {
       // to prevent subtraction of background in FillDataArrays()
       // e.g. AdjustBackground() creates bgrdtrees but sets numbgrd=0 !!
@@ -2181,6 +2182,7 @@ Int_t XGCProcesSet::DoCall(Int_t numdata, TTree **datatree,
          cout << "Warning: No background trees available for background subtraction."
               << endl;
       }//if
+//TO DO: case of pars[npars-1] == -100 in BackgroundParameters()
       // to prevent subtraction of background in FillDataArrays()
       // e.g. AdjustBackground() creates bgrdtrees but sets numbgrd=0 !!
       doBg = kFALSE;
@@ -2571,6 +2573,7 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
       cout << "Warning: No background trees available for background subtraction."
            << endl;
       doBg = kFALSE;
+//TO DO: case of pars[npars-1] == -100 in BackgroundParameters()
    } else {
       // to prevent subtraction of background in FillDataArrays()
       // e.g. AdjustBackground() creates bgrdtrees but sets numbgrd=0 !!
@@ -3038,6 +3041,7 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
          cout << "Warning: No background trees available for background subtraction."
               << endl;
       }//if
+//TO DO: case of pars[npars-1] == -100 in BackgroundParameters()
       // to prevent subtraction of background in FillDataArrays()
       // e.g. AdjustBackground() creates bgrdtrees but sets numbgrd=0 !!
       doBg = kFALSE;
@@ -3414,6 +3418,7 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
       cout << "Warning: No background trees available for background subtraction."
            << endl;
       doBg = kFALSE;
+//TO DO: case of pars[npars-1] == -100 in BackgroundParameters()
    } else {
       // to prevent subtraction of background in FillDataArrays()
       // e.g. AdjustBackground() creates bgrdtrees but sets numbgrd=0 !!
@@ -4819,6 +4824,7 @@ Bool_t XGCProcesSet::BackgroundParameters(XAlgorithm *algorithm, const char *opt
    fNBgPar = 0;
 
 // Set background parameters
+   Int_t npar1 = npars -1;
    if ((strcmp(option, "none") == 0) || (strcmp(option, "") == 0)) {
       fNBgPar = 1;
       fBgPars = new (nothrow) Double_t[fNBgPar];
@@ -4834,15 +4840,19 @@ Bool_t XGCProcesSet::BackgroundParameters(XAlgorithm *algorithm, const char *opt
       fNBgPar = 2;
       fBgPars = new (nothrow) Double_t[fNBgPar];
 
+//TO DO      if (pars[npars-1] == -100) npar1 = npars -2;
+
       fBgPars[0] = 2; //"correctbg"
-      fBgPars[1] = (npars > 0) ? pars[npars-1] : 0.5;  //nfrac
+      fBgPars[1] = (npars > 0) ? pars[npar1] : 0.5;  //nfrac
    } else if (strcmp(option, "attenuatebg") == 0) {
       fNBgPar = 3;
       fBgPars = new (nothrow) Double_t[fNBgPar];
 
+//TO DO      if (pars[npars-1] == -100) npar1 = npars -2;
+
       fBgPars[0] = 3; //"attenuatebg"
-      fBgPars[1] = (npars > 1) ? pars[npars-2] : 0.005;  //l
-      fBgPars[2] = (npars > 1) ? pars[npars-1] : -1.0;   //h
+      fBgPars[1] = (npars > 1) ? pars[npar1-1] : 0.005;  //l
+      fBgPars[2] = (npars > 1) ? pars[npar1]   : -1.0;   //h
    }//if
 
 // Do bgrd subtraction?

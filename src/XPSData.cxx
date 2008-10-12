@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 09/13/2008
+// File created: 08/05/2002                          last modified: 10/10/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -1715,8 +1715,8 @@ Int_t XGeneChipHyb::ReadData(ifstream &input, Option_t *option, const char * /*s
 // Check for problems with intensities
    if (max <= min) {
       cout << "Warning: maximal intensity equal or less than minimal intensity!" << endl;
-      cout << "Thus CEL-file will not be imported as <" << fDataTreeName << ">!" << endl;
-      goto cleanup;
+//      cout << "Thus CEL-file will not be imported as <" << fDataTreeName << ">!" << endl;
+//      goto cleanup;
    }//if
 
 // Write data tree to file if all data are read
@@ -1911,8 +1911,8 @@ Int_t XGeneChipHyb::ReadXDAData(ifstream &input, Option_t *option, const char * 
 // Check for problems with intensities
    if (max <= min) {
       cout << "Warning: maximal intensity equal or less than minimal intensity!" << endl;
-      cout << "Thus CEL-file will not be imported as <" << fDataTreeName << ">!" << endl;
-      goto cleanup;
+//      cout << "Thus CEL-file will not be imported as <" << fDataTreeName << ">!" << endl;
+//      goto cleanup;
    }//if
 
 // Write data tree to file if all data are read
@@ -2321,8 +2321,8 @@ Int_t XGeneChipHyb::ReadDataGroup(ifstream &input, UInt_t &filepos,
 // Check for problems with intensities
    if (max <= min) {
       cout << "Warning: maximal intensity equal or less than minimal intensity!" << endl;
-      cout << "Thus CEL-file will not be imported as <" << fDataTreeName << ">!" << endl;
-      goto cleanup;
+//      cout << "Thus CEL-file will not be imported as <" << fDataTreeName << ">!" << endl;
+//      goto cleanup;
    }//if
 
 // Write data tree to file
@@ -2639,6 +2639,13 @@ Int_t XGeneChipHyb::ReadXMLData(ifstream &input, Option_t *option, const char * 
       cout << "   hybridization statistics: " << endl;
       cout << "      " << nummin << " cells with minimal intensity " << min << endl;
       cout << "      " << nummax << " cells with maximal intensity " << max << endl;
+   }//if
+
+// Check for problems with intensities
+   if (max <= min) {
+      cout << "Warning: maximal intensity equal or less than minimal intensity!" << endl;
+//      cout << "Thus CEL-file will not be imported as <" << fDataTreeName << ">!" << endl;
+//      goto cleanup;
    }//if
 
 // Write data tree to file if all data are read

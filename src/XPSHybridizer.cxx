@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 10/09/2008
+// File created: 08/05/2002                          last modified: 10/10/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -1125,10 +1125,12 @@ Int_t XRMABackground::Calculate(Int_t n, Double_t *x, Double_t *y, Double_t *z,
    m = 0;
    for (Int_t i=0; i<n; i++) {
       if (msk[i] == 1) {
+         if (x[i] == 0) continue;  // protect against broken chips
          arrPM[p] = x[i];
          weiPM[p] = 1.0;
          p++;
       } else if (msk[i] == 0) {
+         if (x[i] == 0) continue;
          arrMM[m] = x[i];
          weiMM[m] = 1.0;
          m++;
@@ -1232,7 +1234,8 @@ Int_t XRMABackground::ComputeParameters(Int_t n, Double_t *x, Double_t *w,
  
 // Estimate alpha 
    for (Int_t i=0; i<nhi; i++) arr[i] = arr[i] - max;
-   alpha = 1.0 / TStat::MaxDensity(nhi, arr, w, npts, fKernel);
+//x   alpha = 1.0 / TStat::MaxDensity(nhi, arr, w, npts, fKernel);
+   alpha = (nhi > 0) ? 1.0 / TStat::MaxDensity(nhi, arr, w, npts, fKernel) : 0.0;
  
    pars[0] = alpha;
    pars[1] = max;
@@ -1296,7 +1299,10 @@ void XRMABackground::Adjust(Int_t n, Double_t *x, Double_t *pars)
 
    for (Int_t i=0; i<n; i++) {
       Double_t a = x[i] - pars[1] - pars[0]*pars[2]*pars[2];
-      x[i] = a + pars[2]*TMath::Gaus(a/pars[2],0,1,kTRUE)/TMath::Freq(a/pars[2]);
+      x[i] = (pars[2] != 0) 
+           ? a + pars[2]*TMath::Gaus(a/pars[2],0,1,kTRUE)/TMath::Freq(a/pars[2])
+           : a;   // protect against broken chips
+//old      x[i] = a + pars[2]*TMath::Gaus(a/pars[2],0,1,kTRUE)/TMath::Freq(a/pars[2]);
 //R      x[i] = a + pars[2]*TMLMath::DNorm(a/pars[2],0,1,kFALSE)/TMLMath::PNorm(a/pars[2],0,1,kTRUE,kFALSE);
    }//for_i
 }//Adjust

@@ -66,6 +66,11 @@ function(xps.scheme,
       treenames <- nametypes;
    } else {
       treenames <- paste(namePart(treenames), treetype, sep=".");
+      dupnames  <- treenames[duplicated(treenames)];
+      if (length(dupnames) > 0) {
+         stop(paste("duplicated treenames: ", dupnames, "\n"));
+      }#if
+
       nametypes <- nametypes[match(treenames, nametypes)];
       if (length(nametypes[is.na(nametypes)]) > 0) {
          stop(paste("some", sQuote("treenames"), " are not found in",
