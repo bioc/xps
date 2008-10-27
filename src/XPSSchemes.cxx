@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 04/26/2008
+// File created: 05/18/2002                          last modified: 10/23/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -3808,8 +3808,10 @@ Int_t XGeneChip::ImportTransAnnotation(ifstream &input, Option_t *option,
    anntree->Branch("AnnBranch", "XTransAnnotation", &ann, 64000, split);
 
 // Check if header line begins with "Probe Set ID"
-   std::getline(input, nextline, delim);
-   if (nextline.compare(0, 14, "\"Probe Set ID\"") != 0) return errMissingColumn;
+   while (nextline.compare(0, 14, "\"Probe Set ID\"") != 0) {
+      std::getline(input, nextline, delim);
+      if (input.eof()) return errMissingColumn;
+   }//while
    Int_t numsep = NumSeparators(nextline.c_str(), sep);
 
 // Init variables to tokenize lines

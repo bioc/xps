@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 09/26/2008
+// File created: 05/18/2002                          last modified: 10/23/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -2463,6 +2463,8 @@ Int_t XManager::Import(const char *setname, const char *infile, const char *tree
       input.close();
    }//while
 
+   err = this->HandleError(err, infile);
+
    delete [] (char*)fullname;
 
    infiles->Delete();
@@ -3283,88 +3285,7 @@ Int_t XManager::HandleOption(const char *setname, const char *treename,
 
    return errAbort;
 }//HandleOption
-/*
-//______________________________________________________________________________
-TFile *XManager::NewFile(const char *name, const char *title)
-{
-   // Create new root file and return pointer to TFile
-   // If name is "tmp" or "tmp_abc", i.e. "tmp.root" or "tmp_abc.root"
-   // a temporary file will be created using RECREATE
-   if(kCS) cout << "------XManager::NewFile------" << endl;
 
-//?? better?? fInterrupt = kTRUE;
-   fAbort = kTRUE;
-
-   TFile *file = 0;
-//to do: check name for TNetFile!!
-
-//cout << "name= " << TString(name) << endl;
-printf("name = %s \n", name);
-
-// For "tmp.root" create temporary file (can be overwritten)
-   TString tmp = Path2Name(name, dSEP, ".");
-//cout << "tmp = " << TString(tmp) << endl;
-printf("tmp = %s \n", tmp.Data());
-   tmp = Path2Name(tmp.Data(), dSEP, "_"); // if e.g. "tmp_abc.root"
-printf("tmp = %s \n", tmp.Data());
-   tmp.ToLower();
-//cout << "tmp = " << tmp << endl;
-printf("tmp = %s \n", tmp.Data());
-   if (strcmp(tmp.Data(), "tmp") == 0) {
-      file = new TFile(name, "RECREATE", title);
-
-      if (!file || file->IsZombie()) {
-         cerr << "Error: Could not create file <" << name << ">" << endl;
-         SafeDelete(file);
-         fAbort = kTRUE;
-         return 0;
-      } else if (file->IsOpen()) {
-         if (XManager::fgVerbose) {
-            cout << "Creating new temporary file <" << name << ">..." << endl;
-         }//if
-         fAbort = kFALSE;
-         return file;
-      }//if
-   }//if
-
-// Create new root file
-   const char *fname;
-   if ((fname = gSystem->ExpandPathName(name))) {
-      file = gROOT->GetFile(fname);
-      if (file) {
-         cerr << "Error: File <" << name << "> does already exist" << endl;
-         delete [] (char*)fname;
-         return 0;
-      }//if
-
-      if (gSystem->AccessPathName(name)) {
-         file = new TFile(name, "CREATE", title);
-      } else {
-         cerr << "Error: File <" << name << "> does already exist" << endl;
-         delete [] (char*)fname;
-         return 0;
-      }//if
-
-      if (!file || file->IsZombie()) {
-         fAbort = kTRUE;
-      } else if (file->IsOpen()) {
-         if (XManager::fgVerbose) {
-            cout << "Creating new file <" << name << ">..." << endl;
-         }//if
-         fAbort = kFALSE;
-         delete [] (char*)fname;
-         return file;
-      }//if
-
-      delete [] (char*)fname;
-   }//if
-
-   cerr << "Error: Could not create file <" << name << ">" << endl;
-   SafeDelete(file);
-
-   return 0;
-}//NewFile
-*/
 //______________________________________________________________________________
 TFile *XManager::NewFile(const char *name, const char *title)
 {

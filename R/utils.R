@@ -25,6 +25,7 @@
 # extenPart:
 # namePart:
 # type2Exten:
+# listTreeNames:
 # plotDensity:
 # getNameType:
 # getChipName:
@@ -601,6 +602,29 @@ type2Exten <- function(type, datatype) {
  
    return(XTEN[match(type, TYPE)]);
 }#type2Exten
+
+#------------------------------------------------------------------------------#
+# listTreeNames: utility function to get treenames and /path/treenames
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+"listTreeNames" <- function(object) {
+   if (debug.xps()) print("------listTreeNames------")
+
+   datafile  <- object@rootfile;
+   setname   <- object@setname;
+   treenames <- as.character(object@treenames);
+
+   ## get treenames as fullnames=/datafile/setname/treenames
+   if (length(unlist(strsplit(treenames[1],"/"))) == 1) {
+      fullnames <- paste(datafile, setname, treenames, sep="/");
+   } else {
+      fullnames <- treenames;
+      treenames <- as.character(sapply(treenames,
+                                       function(x){tree <- unlist(strsplit(x, "/"));
+                                                   tree[length(tree)];}));
+   }#if
+
+   return(list(treenames = treenames, fullnames = fullnames));
+}#listTreeNames
 
 #------------------------------------------------------------------------------#
 # plotDensity: function to plot density

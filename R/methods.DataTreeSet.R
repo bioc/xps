@@ -681,11 +681,10 @@ function(object,
    exlevel <- exonLevel(exonlevel, chiptype);
 
    ## get treenames to normalize as fullnames=/datadir/treenames
-   datafile  <- object@rootfile;
-   setname   <- object@setname;
-   treenames <- as.character(object@treenames);
+   listnames <- listTreeNames(object);
+   treenames <- listnames$treenames;
+   fullnames <- listnames$fullnames;
    numtrees  <- length(treenames);
-   fullnames <- paste(datafile, setname, treenames, sep="/");
 
    ## define setname and settype for new treeset
    setname <- "PreprocesSet";
@@ -830,11 +829,10 @@ function(object,
    exlevel <- exonLevel(exonlevel, chiptype);
 
    ## get treenames to normalize as fullnames=/datadir/treenames
-   datafile  <- object@rootfile;
-   setname   <- object@setname;
-   treenames <- as.character(object@treenames);
+   listnames <- listTreeNames(object);
+   treenames <- listnames$treenames;
+   fullnames <- listnames$fullnames;
    numtrees  <- length(treenames);
-   fullnames <- paste(datafile, setname, treenames, sep="/");
 
    ## define setname and settype for new treeset
    setname <- "PreprocesSet";
@@ -976,11 +974,10 @@ function(object,
    exlevel <- exonLevel(exonlevel, chiptype);
 
    ## get treenames to normalize as fullnames=/datadir/treenames
-   datafile  <- object@rootfile;
-   setname   <- object@setname;
-   treenames <- as.character(object@treenames);
+   listnames <- listTreeNames(object);
+   treenames <- listnames$treenames;
+   fullnames <- listnames$fullnames;
    numtrees  <- length(treenames);
-   fullnames <- paste(datafile, setname, treenames, sep="/");
 
    ## define setname and settype for new treeset
    setname <- "PreprocesSet";
@@ -1140,11 +1137,10 @@ function(object,
    exlevel <- exonLevel(exonlevel, chiptype);
 
    ## get treenames as fullnames=/datadir/treenames
-   datafile  <- object@rootfile;
-   setname   <- object@setname;
-   treenames <- as.character(object@treenames);
+   listnames <- listTreeNames(object);
+   treenames <- listnames$treenames;
+   fullnames <- listnames$fullnames;
    numtrees  <- length(treenames);
-   fullnames <- paste(datafile, setname, treenames, sep="/");
 
    ## define setname and settype for new treeset
    setname <- "CallSet";
@@ -1333,14 +1329,12 @@ function(object,
    exlevel <- exonLevel(exonlevel, chiptype);
 
    ## get treenames as fullnames=/datadir/treenames
-   datafile  <- object@rootfile;
-   setname   <- object@setname;
-   treenames <- as.character(object@treenames);
+   listnames <- listTreeNames(object);
+   treenames <- listnames$treenames;
+   fullnames <- listnames$fullnames;
    numtrees  <- length(treenames);
-   fullnames <- paste(datafile, setname, treenames, sep="/");
 
    ## define setname and settype for new treeset
-#old   setname <- "CallTreeSet";
    setname <- "CallSet";
    settype <- "preprocess";
 
@@ -1546,11 +1540,10 @@ function(object,
    exlevel <- exonLevel(exonlevel, chiptype);
 
    ## get treenames as fullnames=/datadir/treenames
-   datafile  <- object@rootfile;
-   setname   <- object@setname;
-   treenames <- as.character(object@treenames);
+   listnames <- listTreeNames(object);
+   treenames <- listnames$treenames;
+   fullnames <- listnames$fullnames;
    numtrees  <- length(treenames);
-   fullnames <- paste(datafile, setname, treenames, sep="/");
 
    ## define setname and settype for new treeset
    setname <- "CallSet";
@@ -1841,11 +1834,10 @@ function(object,
    exlevel <- exonLevel(exonlevel, chiptype);
 
    ## get treenames to normalize as fullnames=/datadir/treenames
-   datafile  <- object@rootfile;
-   setname   <- object@setname;
-   treenames <- validTreenames(object@treenames, "Reference");
+   listnames <- listTreeNames(object);
+   treenames <- listnames$treenames;
+   fullnames <- listnames$fullnames;
    numtrees  <- length(treenames);
-   fullnames <- paste(datafile, setname, treenames, sep="/");
 
    ## reference tree
    reference.tree <- "";
@@ -1853,6 +1845,8 @@ function(object,
       stop(paste(sQuote("reference.index"),
                         "must be 0 or less than number of trees"));
    }#if
+
+   setname <- object@setname;
    if (reference.index == 0) {
       reference.tree <- paste(setname, "/*.", extenPart(treenames), sep="");
    } else {
@@ -2089,11 +2083,10 @@ function(object,
    }#if
 
    ## get treenames to normalize as fullnames=/datadir/treenames
-   datafile  <- object@rootfile;
-   setname   <- object@setname;
-   treenames <- as.character(object@treenames);
+   listnames <- listTreeNames(object);
+   treenames <- listnames$treenames;
+   fullnames <- listnames$fullnames;
    numtrees  <- length(treenames);
-   fullnames <- paste(datafile, setname, treenames, sep="/");
 
    ## define setname and settype for new treeset
    setname <- "BackgroundSet";
@@ -2223,17 +2216,18 @@ function(object,
    exonlevel <- exonLevel(exonlevel, chiptype);
 
    ## get treenames to normalize as fullnames=/datadir/treenames
-   datafile  <- object@rootfile;
-   setname   <- object@setname;
-   treenames <- as.character(object@treenames);
+   listnames <- listTreeNames(object);
+   treenames <- listnames$treenames;
+   fullnames <- listnames$fullnames;
    numtrees  <- length(treenames);
-   fullnames <- paste(datafile, setname, treenames, sep="/");
 
    ## reference tree
    reftree <- "";
    if (!(refindex >= 0 && refindex <= numtrees)) {
       stop(paste(sQuote("refindex"), "must be 0 or less than number of trees"));
    }#if
+
+   setname <- object@setname;
    if (refindex == 0) {
       reftree <- paste(setname, "/*.", extenPart(treenames), sep="");
    } else {
@@ -2386,11 +2380,10 @@ function(object,
    }#if
 
    ## get treenames to summarize as fullnames=/datadir/treenames
-   datafile  <- object@rootfile;
-   setname   <- object@setname;
-   treenames <- validTreenames(object@treenames, "Reference");
+   listnames <- listTreeNames(object);
+   treenames <- listnames$treenames;
+   fullnames <- listnames$fullnames;
    numtrees  <- length(treenames);
-   fullnames <- paste(datafile, setname, treenames, sep="/");
 
    ## check exon level
    exonlevel <- exonLevel(exonlevel, chiptype);

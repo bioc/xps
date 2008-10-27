@@ -197,7 +197,7 @@ export(ProjectInfo)
 export(PreFilter, UniFilter)
 
 ## root.functions
-export(root.scheme, root.data, root.expr, root.call)
+export(root.scheme, root.data, root.merge.data, root.expr, root.call)
 export(root.image)
 export(root.graph1D, root.graph2D, root.mvaplot)
 export(root.hist1D, root.hist2D, root.hist3D)
