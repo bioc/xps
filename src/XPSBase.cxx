@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 10/23/2008
+// File created: 05/18/2002                          last modified: 12/12/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -3311,9 +3311,10 @@ TFile *XManager::NewFile(const char *name, const char *title)
    delete datime;
 
 // Dissect name
-   TString filename = SubString(name, '_', '.', kTRUE);
    TString pathname = SubString(name, '\"', sSEP, kTRUE);
    TString tmp      = Path2Name(name, dSEP, ".");
+   TString filename = SubString(tmp.Data(), '_', '.', kTRUE);
+
    tmp = Path2Name(tmp.Data(), dSEP, "_"); // if e.g. "tmp_abc.root"
    tmp.ToLower();
 
@@ -3323,7 +3324,7 @@ TFile *XManager::NewFile(const char *name, const char *title)
        (strcmp(tmp.Data(), "tmpt")  == 0) ||
        (strcmp(tmp.Data(), "tmpdt") == 0)) {
 
-      filename = pathname + dSEP + "tmp_" + filename;
+      filename = pathname + dSEP + filename;
       if (strcmp(tmp.Data(), "tmpd")  == 0) {
          filename += "_"; filename += date;
       } else if (strcmp(tmp.Data(), "tmpt") == 0) {
@@ -3361,7 +3362,6 @@ TFile *XManager::NewFile(const char *name, const char *title)
       }//if
 
       if (gSystem->AccessPathName(fname)) {
-//old      if (gSystem->AccessPathName(name)) {
          filename = pathname + dSEP + filename;
          if (strcmp(tmp.Data(), "d")  == 0) {
             filename += "_"; filename += date; filename += ".root";
