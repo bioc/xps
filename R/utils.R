@@ -21,6 +21,7 @@
 # validTreetype:
 # getDatatype:
 # CELNames:
+# CELHeader:
 # exonLevel:
 # extenPart:
 # namePart:
@@ -461,6 +462,49 @@ CELNames <- function(celnames) {
 }#CELNames
 
 #------------------------------------------------------------------------------#
+# CELHeader: utility function to create header part for CEL-file (Version 3)
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+CELHeader <- function(celname, scheme) {
+   if (debug.xps()) print("------CELHeader------")
+
+   dathdr <- paste("DatHeader=[0..65534]  ",
+                   celname,
+                   ":CLS=1167 RWS=1167 XIN=3  YIN=3  VE=17        ",
+                   "2.0 10/13/02 10:28:08       ",
+                   chipName(scheme), ".1sq", 
+                   "                  6",
+                   sep="");
+
+   header <- data.frame(matrix(nr=23,nc=1));
+
+   header[1, 1] <- "[CEL]";
+   header[2, 1] <- "Version=3";
+   header[3, 1] <- "";
+   header[4, 1] <- "[HEADER]";
+   header[5, 1] <- paste("Cols=", ncols(scheme));
+   header[6, 1] <- paste("Rows=", nrows(scheme));
+   header[7, 1] <- paste("TotalX=", ncols(scheme));
+   header[8, 1] <- paste("TotalY=", nrows(scheme));
+   header[9, 1] <- "OffsetX=0";
+   header[10,1] <- "OffsetY=0";
+   header[11,1] <- "GridCornerUL=100 100";
+   header[12,1] <- "GridCornerUR=1000 100";
+   header[13,1] <- "GridCornerLR=1000 1000";
+   header[14,1] <- "GridCornerLL=100 1000";
+   header[15,1] <- "Axis-invertX=0";
+   header[16,1] <- "AxisInvertY=0";
+   header[17,1] <- "swapXY=0";
+   header[18,1] <- dathdr;
+   header[19,1] <- "Algorithm=Percentile";
+   header[20,1] <- "AlgorithmParameters=Percentile:75;CellMargin:2;OutlierHigh:1.500;OutlierLow:1.004";
+   header[21,1] <- "";
+   header[22,1] <- "[INTENSITY]";
+   header[23,1] <- paste("NumberCells=", nrows(scheme)*ncols(scheme));
+
+   return(header);
+}#CELHeader
+
+#------------------------------------------------------------------------------#
 # exonLevel: utility function for setValidity
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 exonLevel <- function(exonlevel="", chiptype, as.sum=TRUE) {
@@ -636,8 +680,8 @@ plotDensity <- function(mat,
   
    x.density <- apply(mat, 2, density);
 
-   all.x <- do.call(cbind, lapply(x.density, function(x) x$x));
-   all.y <- do.call(cbind, lapply(x.density, function(x) x$y));
+   all.x <- do.call("cbind", lapply(x.density, function(x) x$x));
+   all.y <- do.call("cbind", lapply(x.density, function(x) x$y));
   
    matplot(all.x, all.y, ylab=ylab, xlab=xlab, type=type, col=col, ...);
 

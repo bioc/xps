@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 12/12/2008
+// File created: 05/18/2002                          last modified: 12/19/2008
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -111,10 +111,10 @@ Bool_t XTreeSet::fgPrintHeader = kTRUE;
 
 //XFolders
 const int kMAXDEPTH = 64;
-static const char *d[kMAXDEPTH];
-static Int_t level = -1;
-static char path[512];
-const char* kRootFolder = "Content"; //??
+static const char *gFolderD[kMAXDEPTH];
+static Int_t gFolderLevel = -1;
+static char  gFolderPath[512];
+const  char* kRootFolder = "Content"; //??
 ///////////
 // NOTE: In root file containing database import all content XFolders
 //       from all xxx_cel.root files as subfolders
@@ -203,18 +203,18 @@ const char *XFolder::FindFullPathName(const char *name) const
    // adapted from TFolder::FindFullPathName
    TObject *obj = this->FindObject(name);
    if (obj || !fFolders) {
-      level++;
-      d[level] = GetName();
-      path[0] = '/';
-      path[1] = 0;
-      for (Int_t l=0;l<=level;l++) {
-         strcat(path,"/");
-         strcat(path,d[l]);
+      gFolderLevel++;
+      gFolderD[gFolderLevel] = GetName();
+      gFolderPath[0] = '/';
+      gFolderPath[1] = 0;
+      for (Int_t l=0; l<=gFolderLevel; l++) {
+         strcat(gFolderPath, "/");
+         strcat(gFolderPath, gFolderD[l]);
       }
-      strcat(path,"/");
-      strcat(path,name);
-      level = -1;
-      return path;
+      strcat(gFolderPath, "/");
+      strcat(gFolderPath, name);
+      gFolderLevel = -1;
+      return gFolderPath;
    }
 
    if (name[0] == '/') return 0;
@@ -222,8 +222,8 @@ const char *XFolder::FindFullPathName(const char *name) const
    TIter next(fFolders);
    XFolder *folder;
    const char *found;
-   level++;
-   d[level] = GetName();
+   gFolderLevel++;
+   gFolderD[gFolderLevel] = GetName();
    while ((obj=next())) {
       if (!obj->InheritsFrom(XFolder::Class())) continue;
       if (obj->InheritsFrom(TClass::Class())) continue;
@@ -231,7 +231,7 @@ const char *XFolder::FindFullPathName(const char *name) const
       found = folder->FindFullPathName(name);
       if (found) return found;
    }
-   level--;
+   gFolderLevel--;
    return 0;
 }//FindFullPathName
 
@@ -487,7 +487,7 @@ TObject *XFolder::FindObjectAny(const char *name) const
    TIter next(fFolders);
    XFolder *folder;
    TObject *found;
-   if (level >= 0) d[level] = this->GetName();
+   if (gFolderLevel >= 0) gFolderD[gFolderLevel] = GetName();
    while ((obj=next())) {
       if (!obj->InheritsFrom(XFolder::Class())) continue;
       if (obj->IsA() == TClass::Class()) continue;
@@ -2044,7 +2044,7 @@ Int_t XManager::ExportSet(const char *setname, const char *exten,
 // Set outname in case no outfile name is given
    TString outname = TString(outfile);
    if (strcmp(outname.Data(), "") == 0) {
-      char tmp[kBufSize]; 
+      char tmp[kBuf4096]; 
       strcpy(tmp, setname);
       strcat(tmp, "_"); strcat(tmp, exten);
       outname = tmp;
@@ -2153,7 +2153,7 @@ Int_t XManager::Export(const char *treename, const char *varlist,
 // Set outname in case no outfile name is given
    TString outname = TString(outfile);
    if (strcmp(outname.Data(), "") == 0) {
-      char tmp[kBufSize]; 
+      char tmp[kBuf4096]; 
       if (strcmp(trename.Data(), "*") == 0) {
          if ((strcmp(setname.Data(), "*") == 0) ||
              (strcmp(setname.Data(), "")  == 0)) strcpy(tmp, "AllTrees");

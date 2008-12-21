@@ -197,7 +197,7 @@ setClass("DataTreeSet",
 
 # generic methods for class DataTreeSet
 setGeneric("intensity",     function(object) standardGeneric("intensity"));
-setGeneric("intensity<-",   function(object, value) standardGeneric("intensity<-"));
+setGeneric("intensity<-",   function(object, ..., value) standardGeneric("intensity<-"));
 setGeneric("background",    function(object) standardGeneric("background"));
 setGeneric("background<-",  function(object, value) standardGeneric("background<-"));
 setGeneric("bgtreeNames",   function(object) standardGeneric("bgtreeNames"));

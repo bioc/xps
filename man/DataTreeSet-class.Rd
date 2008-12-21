@@ -14,9 +14,7 @@
 \alias{bgtreeNames}
 \alias{image,DataTreeSet-method}
 \alias{intensity,DataTreeSet-method}
-\alias{intensity}
 \alias{intensity<-,DataTreeSet,data.frame-method}
-\alias{intensity<-}
 \alias{mm,DataTreeSet-method}
 \alias{ncols,DataTreeSet-method}
 \alias{nrows,DataTreeSet-method}

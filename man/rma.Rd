@@ -97,6 +97,8 @@ containing the same parameters.
 In contrary to other implementations of RMA the expression measure is given to you in linear scale,
 analogously to the expression measures computed with \code{\link{mas5}} and \code{\link{mas4}}. 
 
+It is also possible to skip background correction by setting parameter \code{background="none"}.
+
 For the analysis of many exon arrays it may be better to define a \code{tmpdir}, since this will
 store only the results in the main file and not e.g. background and normalized intensities, and
 thus will reduce the file size of the main file. For quantile normalization memory should not

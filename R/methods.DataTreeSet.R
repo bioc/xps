@@ -94,9 +94,128 @@ setMethod("intensity", signature(object="DataTreeSet"),
 )#intensity
 
 setReplaceMethod("intensity", signature(object="DataTreeSet", value="data.frame"),
-   function(object, value) {
-      object@data <- value;
-      return(object);
+   function(object, filename = NULL, verbose = FALSE, value)  {
+      ## check if dataframe value has same dimension as data
+      if (!(length(rownames(value)) == 0 || length(rownames(object@data)) == 0) &&
+          (length(rownames(value)) != length(rownames(object@data)))) {
+         stop("replacement data.frame value must have same number of rows as data.");
+      }#if
+
+      ## check if dataframe value has columns X,Y
+      if (dim(value)[2] != 0 && colnames(value)[1] != "X") {
+         stop(paste("first column of value must be", sQuote("X")));
+      }#if
+      if (dim(value)[2] != 0 && colnames(value)[2] != "Y") {
+         stop(paste("second column of value must be", sQuote("Y")));
+      }#if
+
+      ## sort for Y then X to ensure correct order
+      if (dim(value)[2] > 0) {
+         value <- value[order(value[,"Y"],value[,"X"]),];
+      }#if
+
+      ## replace data with value
+      if (is.null(filename)) {
+         object@data <- value;
+         return(object);
+      } else {
+         if (dim(value)[1] == 0 || dim(value)[2] == 0) {
+            warning(paste(sQuote("value"), "has dimension zero, object will not be changed."));
+            return(object);
+         }#if
+
+         ## root data file
+         rootdata <- paste(filename, "_cel.root", sep="");
+         filedir  <- getwd();
+         rootfile <- rootDirFile(rootdata, filedir);
+
+         ## check if root file exists (necessary for WinXP to test already here)
+         if (existsROOTFile(rootfile)) {
+            stop(paste("ROOT file", sQuote(rootfile), "does already exist."));
+         }#if
+
+         ## get names of CEL-files
+         celnames <- namePart(colnames(value)[3:dim(value)[2]]);
+         celfiles <- paste(getwd(), "/", celnames, ".CEL", sep="");
+
+         ## create CEL-files (version 3)
+         for (i in 1:length(celnames)) {
+            celname <- paste(celnames[i], ".CEL", sep="");
+            if (verbose) print(paste("exporting value as CEL-file:", celname))
+
+            ## create CEL header
+            cel.header <- CELHeader(celnames[i], object@scheme);
+
+            ## create CEL data: STDV=3*sqrt(MEAN), NPIXELS=20
+#x            cel.data <- value[,c(1,2,i+2)];
+            cel.data <- cbind(value[,1:2], formatC(value[,i+2], digits=1, format="f"));
+            cel.data <- cbind(cel.data, formatC(3*sqrt(as.numeric(cel.data[,3])), digits=1, format="f"), 20);
+            colnames(cel.data) <- c("CellHeader=X", "Y", "MEAN", "STDV", "NPIXELS");
+
+            write.table(cel.header, celname, quote=FALSE, col.names=FALSE, row.names=FALSE);
+            suppressWarnings(write.table(cel.data, celname, quote=FALSE, sep="\t", append=TRUE, col.names=TRUE, row.names=FALSE));
+         }#for
+
+         ## create root data file
+         r <- .C("ImportData",
+                 as.character(filename),
+                 as.character(filedir),
+                 as.character(chipType(object@scheme)),
+                 as.character(chipName(object@scheme)),
+                 as.character(rootFile(object@scheme)),
+                 as.character("DataSet"),
+                 as.character(celfiles),
+                 as.character(celnames),
+                 as.integer(length(celfiles)),
+                 as.character(""),
+                 as.integer(0),
+                 as.character(""),
+                 as.integer(0),
+                 as.character(""),
+                 as.integer(0),
+                 as.character(""),
+                 as.integer(0),
+                 as.character(""),
+                 as.integer(0),
+                 as.character(""),
+                 as.integer(0),
+                 as.character(""),
+                 as.integer(0),
+                 as.character(""),
+                 as.integer(0),
+                 as.character(""),
+                 as.integer(0),
+                 as.character(""),
+                 as.integer(0),
+                 as.character(""),
+                 as.integer(0),
+                 as.character(""),
+                 as.integer(0),
+                 as.integer(0),
+                 as.integer(0),
+                 as.integer(verbose),
+                 result=character(2),
+                 PACKAGE="xps")$result;
+
+         ## returned result: saved rootfile and error
+         rootfile <- r[1];
+         error    <- as.integer(r[2]);
+
+         if (error != 0) {
+            stop(paste("error in function", sQuote("ImportData")));
+            return(NULL);
+         }#if
+
+         ## replace object parameters
+         object@data        <- value;
+         object@rootfile    <- rootfile;
+         object@filedir     <- filedir;
+         object@treenames   <- as.list(paste(celnames, ".cel", sep=""));
+         object@bgtreenames <- list();
+         object@bgrd        <- data.frame(matrix(nr=0,nc=0));
+
+         return(object);
+      }#if
    }
 )#intensity<-
 
@@ -143,12 +262,12 @@ setMethod("attachInten", signature(object="DataTreeSet"),
       treetype <- extenPart(object@treenames);
       if (treenames[1] == "*") treenames <- object@treenames;
       if (length(treenames) > 0) {
-         intensity(object) <- export(object,
-                                     treenames    = treenames,
-                                     treetype     = treetype,
-                                     varlist      = "fInten",
-                                     as.dataframe = TRUE,
-                                     verbose      = FALSE);
+         intensity(object, NULL, FALSE) <- export(object,
+                                                  treenames    = treenames,
+                                                  treetype     = treetype,
+                                                  varlist      = "fInten",
+                                                  as.dataframe = TRUE,
+                                                  verbose      = FALSE);
       } else {
          warning("missing data tree names, data will not be added.");
       }#if
@@ -162,7 +281,7 @@ setMethod("removeInten", signature(object="DataTreeSet"),
    function(object) {
       if (debug.xps()) print("------removeInten.DataTreeSet------")
 
-      intensity(object) <- data.frame(matrix(nr=0,nc=0));
+      intensity(object, NULL, FALSE) <- data.frame(matrix(nr=0,nc=0));
       gc(); #????
       return(object);
    }
