@@ -398,7 +398,7 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
 
 // initialize normalizer
    const char *normopt = new char[strlen(exproption[0]) + 17];
-   if (normalize) {
+   if (*normalize) {
       if (strcmp(chiptype[0], "GeneChip") == 0) {
          r += manager->InitAlgorithm("selector", "probe", "pmonly", 0);
       } else if (strcmp(chiptype[0], "GenomeChip") == 0) {

@@ -4190,20 +4190,27 @@ Int_t XGCProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
    if (unittree == 0) return errGetTree;
    unittree->SetBranchAddress("IdxBranch", &unit);
 
+   Int_t numunits = (Int_t)(unittree->GetEntries());
+
 // Get annotation tree for scheme
    XTransAnnotation *annot = 0;
    TTree *anntree = this->GetAnnotationTree(chip, type);
-   if (anntree == 0) return errGetTree;
-   anntree->SetBranchAddress("AnnBranch", &annot);
-
-   Int_t numunits = (Int_t)(unittree->GetEntries());
-   Int_t numannot = (Int_t)(anntree->GetEntries());
+   Int_t numannot = 0;
 
 // Create hash table to store unit names from anntree
    THashTable *htable = 0;
-   if (!(htable = new THashTable(2*numannot))) return errInitMemory;
+   if (anntree) {
+      anntree->SetBranchAddress("AnnBranch", &annot);
+      numannot = (Int_t)(anntree->GetEntries());
 
-   htable = this->FillHashTable(htable, anntree, annot, type);
+      if (!(htable = new THashTable(2*numannot))) return errInitMemory;
+      htable = this->FillHashTable(htable, anntree, annot, type);
+   } else {
+      if (hasAnnot) {
+         cout << "Warning: Missing annotation, gene info not exported." << endl;
+      }//if
+      hasAnnot = kFALSE;
+   }//if
 
 // Output header
    output << "UNIT_ID";
@@ -4462,20 +4469,27 @@ Int_t XGCProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varlist
    if (unittree == 0) return errGetTree;
    unittree->SetBranchAddress("IdxBranch", &unit);
 
+   Int_t numunits = (Int_t)(unittree->GetEntries());
+
 // Get annotation tree for scheme
    XTransAnnotation *annot = 0;
    TTree *anntree = this->GetAnnotationTree(chip, type);
-   if (anntree == 0) return errGetTree;
-   anntree->SetBranchAddress("AnnBranch", &annot);
-
-   Int_t numunits = (Int_t)(unittree->GetEntries());
-   Int_t numannot = (Int_t)(anntree->GetEntries());
+   Int_t numannot = 0;
 
 // Create hash table to store unit names from anntree
    THashTable *htable = 0;
-   if (!(htable = new THashTable(2*numannot))) return errInitMemory;
+   if (anntree) {
+      anntree->SetBranchAddress("AnnBranch", &annot);
+      numannot = (Int_t)(anntree->GetEntries());
 
-   htable = this->FillHashTable(htable, anntree, annot, type);
+      if (!(htable = new THashTable(2*numannot))) return errInitMemory;
+      htable = this->FillHashTable(htable, anntree, annot, type);
+   } else {
+      if (hasAnnot) {
+         cout << "Warning: Missing annotation, gene info not exported." << endl;
+      }//if
+      hasAnnot = kFALSE;
+   }//if
 
 // Output header
    output << "UNIT_ID";
