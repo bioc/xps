@@ -724,7 +724,7 @@ function(object,
    ## export result to outfile and import as dataframe ds
    ds <- data.frame(matrix(nr=0,nc=0));
    if (add.data) {
-      outfile  <- sub(".root", ".txt", rootfile);
+      outfile  <- sub("\\.root", ".txt", rootfile);
       ## get treename "treeset.treename.treetype"
       treetype <- "mdp";
       treename <- paste(setname, "*", treetype, sep=".");
@@ -870,7 +870,7 @@ function(object,
    ## export result to outfile and import as dataframe ds
    ds <- data.frame(matrix(nr=0,nc=0));
    if (add.data) {
-      outfile  <- sub(".root", ".txt", rootfile);
+      outfile  <- sub("\\.root", ".txt", rootfile);
       ## get treename "treeset.treename.treetype"
       treetype <- "adf";
       treename <- paste(setname, "*", treetype, sep=".");
@@ -1016,7 +1016,7 @@ function(object,
    ## export result to outfile and import as dataframe ds
    ds <- data.frame(matrix(nr=0,nc=0));
    if (add.data) {
-      outfile  <- sub(".root", ".txt", rootfile);
+      outfile  <- sub("\\.root", ".txt", rootfile);
       ## get treename "treeset.treename.treetype"
       treetype <- "tbw";
       treename <- paste(setname, "*", treetype, sep=".");
@@ -1185,7 +1185,7 @@ function(object,
    ds <- data.frame(matrix(nr=0,nc=0));
    dc <- data.frame(matrix(nr=0,nc=0));
    if (add.data) {
-      outfile  <- sub(".root", "_pval.txt", rootfile);
+      outfile  <- sub("\\.root", "_pval.txt", rootfile);
       ## get treename "treeset.treename.treetype"
       treetype <- "dc5";
       treename <- paste(setname, "*", treetype, sep=".");
@@ -1218,7 +1218,7 @@ function(object,
       }#if
 
       ## export detection call to outfile and import as dataframe dc
-      outfile  <- sub(".root", "_call.txt", rootfile);
+      outfile  <- sub("\\.root", "_call.txt", rootfile);
       # get treename "treeset.treename.treetype"
       treename <- paste(setname, "*", treetype, sep=".");
 
@@ -1375,7 +1375,7 @@ function(object,
    ds <- data.frame(matrix(nr=0,nc=0));
    dc <- data.frame(matrix(nr=0,nc=0));
    if (add.data) {
-      outfile  <- sub(".root", "_pval.txt", rootfile);
+      outfile  <- sub("\\.root", "_pval.txt", rootfile);
       ## get treename "treeset.treename.treetype"
       treetype <- "dab";
       treename <- paste(setname, "*", treetype, sep=".");
@@ -1408,7 +1408,7 @@ function(object,
       }#if
 
       ## export detection call to outfile and import as dataframe dc
-      outfile  <- sub(".root", "_call.txt", rootfile);
+      outfile  <- sub("\\.root", "_call.txt", rootfile);
       ## get treename "treeset.treename.treetype"
       treename <- paste(setname, "*", treetype, sep=".");
 
@@ -1595,7 +1595,7 @@ function(object,
    ds <- data.frame(matrix(nr=0,nc=0));
    dc <- data.frame(matrix(nr=0,nc=0));
    if (add.data) {
-      outfile  <- sub(".root", "_pval.txt", rootfile);
+      outfile  <- sub("\\.root", "_pval.txt", rootfile);
       ## get treename "treeset.treename.treetype"
       treetype <- "ini";
       treename <- paste(setname, "*", treetype, sep=".");
@@ -1628,7 +1628,7 @@ function(object,
       }#if
 
       ## export detection call to outfile and import as dataframe dc
-      outfile  <- sub(".root", "_call.txt", rootfile);
+      outfile  <- sub("\\.root", "_call.txt", rootfile);
       # get treename "treeset.treename.treetype"
       treename <- paste(setname, "*", treetype, sep=".");
 
@@ -1924,7 +1924,7 @@ function(object,
       ds <- data.frame(matrix(nr=0,nc=0));
       if (add.data) {
          ## export result to outfile and import as dataframe
-         outfile  <- sub(".root", ".txt", rootfile);
+         outfile  <- sub("\\.root", ".txt", rootfile);
          ## get treename "treeset.treename.treetype"
          exten <- type2Exten(summarize.method, settype);
          treename <- paste(setname, "*", exten, sep=".");
@@ -2433,7 +2433,7 @@ function(object,
    ## export result to outfile and import as dataframe
    ds <- data.frame(matrix(nr=0,nc=0));
       if (add.data) {
-      outfile  <- sub(".root", ".txt", rootfile);
+      outfile  <- sub("\\.root", ".txt", rootfile);
       ## get treename "treeset.treename.treetype"
       exten    <- type2Exten(method, settype);
       treename <- paste(setname, "*", exten, sep=".");

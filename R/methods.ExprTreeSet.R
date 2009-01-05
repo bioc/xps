@@ -415,7 +415,7 @@ function(object,
    ## export/import result as dataframe
    ds <- data.frame(matrix(nr=0,nc=0));
    if (add.data) {
-      outfile  <- sub(".root", ".txt", rootfile);
+      outfile  <- sub("\\.root", ".txt", rootfile);
       # get treename "treeset.treename.treetype"
       treename <- paste(setname, "*", exten, sep=".");
       numtrees <- 1; # must be one for treename="*"
@@ -696,7 +696,7 @@ function(object,
    }#if
 
    ## export/import filter mask as dataframe
-   outfile  <- sub(".root", ".txt", rootfile);
+   outfile  <- sub("\\.root", ".txt", rootfile);
    # get treename "treeset.treename.treetype"
    treename <- paste(setname, treename, exten, sep=".");
    numtrees <- 1; 
@@ -959,7 +959,7 @@ function(object,
    ds <- data.frame(matrix(nr=0,nc=0));
    if (numberFilters(filter) > 0) {
       ## export/import unifilter as dataframe
-      outfile  <- sub(".root", ".txt", rootfile);
+      outfile  <- sub("\\.root", ".txt", rootfile);
       # get treename "treeset.treename.treetype"
       ufltrname <- paste(setname, treename, exten, sep=".");
       numtrees  <- 1;
@@ -1025,7 +1025,7 @@ function(object,
    exten   <- "stt";
 
    ## export/import unitest result as dataframe
-   outfile  <- sub(".root", ".txt", rootfile);
+   outfile  <- sub("\\.root", ".txt", rootfile);
    # get treename "treeset.treename.treetype"
    treename <- paste(setname, treename, exten, sep=".");
    numtrees <- 1;

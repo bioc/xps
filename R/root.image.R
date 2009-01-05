@@ -27,7 +27,7 @@ function(x,
       stop(paste("treename", sQuote(treename), "is not present in", sQuote(rootfile)));
    }#if
    ## need to add ROOT directory in rootfile
-   treename <- paste("DataSet", treename, sep="/");
+   treename <- paste(setName(x), treename, sep="/");
 
    ## test for zlim
    if (is.null(zlim)) {

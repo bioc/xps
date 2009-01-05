@@ -1,5 +1,5 @@
 Package: xps
-Version: 1.2.3
+Version: 1.2.4
 Title: Methods for Processing and Analysis of Affymetrix Oligonucleotide Arrays
        including Exon Arrays and Gene Arrays
 Author: Christian Stratowa, Vienna, Austria
@@ -36,3 +36,4 @@ Collate: utils.R TreeSetClasses.R
 biocViews: Microarray, OneChannel, Preprocessing
 LazyLoad: yes
 SystemRequirements: ROOT <http://root.cern.ch> - See README file for installation instructions.
+Packaged: Mon Dec 22 14:18:27 2008; biocbuild
