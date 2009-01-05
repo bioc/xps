@@ -4685,6 +4685,8 @@ cout << "numcols = " << numcols << endl;
          break;
       }//if
    }//for_id
+//TO DO
+//need to update to work also for Gene/Exon arrays: use THashTable!!
 
 //TO TEST!!!
 // Return if unitID/unitname are not correct

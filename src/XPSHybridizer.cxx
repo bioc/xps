@@ -79,6 +79,8 @@ ClassImp(XWeightedDiff);
 ClassImp(XAvgDif);
 ClassImp(XTukeyBiweight);
 ClassImp(XMedianPolish);
+ClassImp(XFARMS);
+ClassImp(XDFW);
 
 
 //////////////////////////////////////////////////////////////////////////
