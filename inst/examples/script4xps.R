@@ -48,6 +48,8 @@ scheme.test3.na22 <- import.expr.scheme("Scheme_Test3_na22",filedir=scmdir,paste
 scheme.test3.na23 <- import.expr.scheme("Scheme_Test3_na23",filedir=scmdir,paste(libdir,"Test3.CDF",sep="/"),paste(libdir,"Test3_probe.tab",sep="/"),paste(anndir,"Version07Jul/Test3.na23.annot.csv",sep="/"))
 scheme.test3.na24 <- import.expr.scheme("Scheme_Test3_na24",filedir=scmdir,paste(libdir,"Test3.CDF",sep="/"),paste(libdir,"Test3_probe.tab",sep="/"),paste(anndir,"Version07Nov/Test3.na24.annot.csv",sep="/"))
 scheme.test3.na25 <- import.expr.scheme("Scheme_Test3_na25",filedir=scmdir,paste(libdir,"Test3.CDF",sep="/"),paste(libdir,"Test3_probe.tab",sep="/"),paste(anndir,"Version08Mar/Test3.na25.annot.csv",sep="/"))
+scheme.test3.na26 <- import.expr.scheme("Scheme_Test3_na26",filedir=scmdir,paste(libdir,"Test3.CDF",sep="/"),paste(libdir,"Test3_probe.tab",sep="/"),paste(anndir,"Version08Jul/Test3.na26.annot.csv",sep="/"))
+scheme.test3.na27 <- import.expr.scheme("Scheme_Test3_na27",filedir=scmdir,paste(libdir,"Test3.CDF",sep="/"),paste(libdir,"Test3_probe.tab",sep="/"),paste(anndir,"Version08Nov/Test3.na27.annot.csv",sep="/"))
 
 # Hu6800:
 scheme.hu6800.na21 <- import.expr.scheme("Scheme_Hu6800_na21",filedir=scmdir,paste(libdir,"Hu6800.CDF",sep="/"),paste(libdir,"HuGeneFL_probe.tab",sep="/"),paste(anndir,"Version06Nov/Hu6800.na21.annot.csv",sep="/"))
@@ -89,6 +91,8 @@ scheme.hgu133p2.na22 <- import.expr.scheme("Scheme_HGU133p2_na22",filedir=scmdir
 scheme.hgu133p2.na23 <- import.expr.scheme("Scheme_HGU133p2_na23",filedir=scmdir,paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),paste(anndir,"Version07Jul/HG-U133_Plus_2.na23.annot.csv",sep="/"))
 scheme.hgu133p2.na24 <- import.expr.scheme("Scheme_HGU133p2_na24",filedir=scmdir,paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),paste(anndir,"Version07Nov/HG-U133_Plus_2.na24.annot.csv",sep="/"))
 scheme.hgu133p2.na25 <- import.expr.scheme("Scheme_HGU133p2_na25",filedir=scmdir,paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),paste(anndir,"Version08Mar/HG-U133_Plus_2.na25.annot.csv",sep="/"))
+scheme.hgu133p2.na26 <- import.expr.scheme("Scheme_HGU133p2_na26",filedir=scmdir,paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),paste(anndir,"Version08Jul/HG-U133_Plus_2.na26.annot.csv",sep="/"))
+scheme.hgu133p2.na27 <- import.expr.scheme("Scheme_HGU133p2_na27",filedir=scmdir,paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),paste(anndir,"Version08Nov/HG-U133_Plus_2.na27.annot.csv",sep="/"))
 
 # alternative CDF-files, e.g.:
 #AffyProbeMiner
@@ -119,6 +123,16 @@ scheme.hugene10stv1r3.na25 <- import.genome.scheme("Scheme_HuGene10stv1r3_na25",
                               paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.pgf",sep="/"),
                               paste(anndir,"Version08Mar/HuGene-1_0-st-v1.na25.hg18.transcript.csv",sep="/"))
 
+scheme.hugene10stv1r3.na26 <- import.genome.scheme("Scheme_HuGene10stv1r3_na26",filedir=scmdir,
+                              paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.clf",sep="/"),
+                              paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.pgf",sep="/"),
+                              paste(anndir,"Version08Jul/HuGene-1_0-st-v1.na26.hg18.transcript.csv/HuGene-1_0-st-v1.na26.hg18.transcript.csv",sep="/"))
+
+scheme.hugene10stv1r3.na27 <- import.genome.scheme("Scheme_HuGene10stv1r3_na27",filedir=scmdir,
+                              paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.clf",sep="/"),
+                              paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.pgf",sep="/"),
+                              paste(anndir,"Version08Nov/HuGene-1_0-st-v1.na27.hg18.transcript.csv/HuGene-1_0-st-v1.na27.hg18.transcript.csv",sep="/"))
+
 # MoGene-1_0-st-v1.r3:
 scheme.mogene10stv1r3.na24 <- import.genome.scheme("Scheme_MoGene10stv1r3_na24",filedir=scmdir,
                               paste(libdir,"MoGene-1_0-st-v1.r3.analysis-lib-files/MoGene-1_0-st-v1.r3.clf",sep="/"),
@@ -129,6 +143,11 @@ scheme.mogene10stv1r3.na25 <- import.genome.scheme("Scheme_MoGene10stv1r3_na25",
                               paste(libdir,"MoGene-1_0-st-v1.r3.analysis-lib-files/MoGene-1_0-st-v1.r3.clf",sep="/"),
                               paste(libdir,"MoGene-1_0-st-v1.r3.analysis-lib-files/MoGene-1_0-st-v1.r3.pgf",sep="/"),
                               paste(anndir,"Version08Mar/MoGene-1_0-st-v1.na25.mm9.transcript.csv",sep="/"))
+
+scheme.mogene10stv1r3.na27 <- import.genome.scheme("Scheme_MoGene10stv1r3_na27",filedir=scmdir,
+                              paste(libdir,"MoGene-1_0-st-v1.r3.analysis-lib-files/MoGene-1_0-st-v1.r3.clf",sep="/"),
+                              paste(libdir,"MoGene-1_0-st-v1.r3.analysis-lib-files/MoGene-1_0-st-v1.r3.pgf",sep="/"),
+                              paste(anndir,"Version08Nov/MoGene-1_0-st-v1.na27.mm9.transcript.csv",sep="/"))
 
 # RaGene-1_0-st-v1.r3:
 scheme.ragene10stv1r3.na24 <- import.genome.scheme("Scheme_RaGene10stv1r3_na24",filedir=scmdir,
@@ -177,6 +196,18 @@ scheme.huex10stv2r2.na25 <- import.exon.scheme("Scheme_HuEx10stv2r2_na25",filedi
                             paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
                             paste(anndir,"Version08Mar/HuEx-1_0-st-v2.na25.hg18.probeset.csv",sep="/"),
                             paste(anndir,"Version08Mar/HuEx-1_0-st-v2.na25.hg18.transcript.csv",sep="/"))
+
+scheme.huex10stv2r2.na26 <- import.exon.scheme("Scheme_HuEx10stv2r2_na26",filedir=scmdir,
+                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
+                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
+                            paste(anndir,"Version08Jul/HuEx-1_0-st-v2.na26.hg18.probeset.csv/HuEx-1_0-st-v2.na26.hg18.probeset.csv",sep="/"),
+                            paste(anndir,"Version08Jul/HuEx-1_0-st-v2.na26.hg18.transcript.csv/HuEx-1_0-st-v2.na26.hg18.transcript.csv",sep="/"))
+
+scheme.huex10stv2r2.na27 <- import.exon.scheme("Scheme_HuEx10stv2r2_na27",filedir=scmdir,
+                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
+                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
+                            paste(anndir,"Version08Nov/HuEx-1_0-st-v2.na27.hg18.probeset.csv/HuEx-1_0-st-v2.na27.hg18.probeset.csv",sep="/"),
+                            paste(anndir,"Version08Nov/HuEx-1_0-st-v2.na27.hg18.transcript.csv/HuEx-1_0-st-v2.na27.hg18.transcript.csv",sep="/"))
 
 # HuEx-1_0-st-v2.r2 old annotation:
 scheme.huex10stv2r2.old <- import.exon.scheme("Scheme_HuEx10stv2r2_old",filedir=scmdir,
@@ -583,6 +614,12 @@ data.exon <- removeInten(data.exon)
 data.exon <- removeMask(data.exon)
 gc()
 
+# Note: To avoid the memory problems when plotting data, you can use the corresponding
+#       methods "root.drawxxx()", such as:
+root.density(data.exon, "*")
+root.image(data.exon, "BreastA.cel")
+root.hist2D(data.test3, "BreastA.cel", "BreastB.cel", option="COLZ")
+
 
 ### plot raw data for HuGene-1_0-st-v1
 # need to attach scheme mask, since it was not attached to scheme
@@ -608,7 +645,6 @@ boxplot.dev(data.genome, dev="png", w=600, h=480, outfile="Boxplot_DataMixHuGene
 # to avoid memory comsumption of R remove data:
 data.genome <- removeInten(data.genome)
 data.genome <- removeMask(data.genome)
-
 
 
 #------------------------------------------------------------------------------#
@@ -1229,7 +1265,7 @@ expr.bg.rma <- express(data.test3,"Test3ExprsBgrd",filedir=datdir,tmpdir="",upda
                bgcorrect.method="rma",bgcorrect.select="none",bgcorrect.option="pmonly:epanechnikov",bgcorrect.params=c(16384))
 
 expr.qu.rma <- express(expr.bg.rma,"Test3ExprsNorm",filedir=datdir,tmpdir="",update=F,
-               normalize.method="quantile",normalize.select="pmonly",normalize.option="together:none",normalize.logbase="0",normalize.params=c(0.0))
+               normalize.method="quantile",normalize.select="pmonly",normalize.option="transcript:together:none",normalize.logbase="0",normalize.params=c(0.0))
 
 expr.mp.rma <- express(expr.qu.rma,"Test3ExprsSum",filedir=datdir,tmpdir="",update=F,
                summarize.method="medianpolish",summarize.select="pmonly",summarize.option="transcript",summarize.logbase="log2",summarize.params=c(10, 0.01, 1.0))
@@ -1246,7 +1282,7 @@ plot((expr.mp[,1] - expr[,1])/expr[,1], ylim=c(-0.0001,0.0001))
 ### compute rma with a single call to express()
 expr.rma <- express(data.test3,"Test3Exprs",filedir=datdir,tmpdir="",update=F,
             bgcorrect.method="rma",bgcorrect.select="none",bgcorrect.option="pmonly:epanechnikov",bgcorrect.params=c(16384),
-            normalize.method="quantile",normalize.select="pmonly",normalize.option="together:none",normalize.logbase="0",normalize.params=c(0.0),
+            normalize.method="quantile",normalize.select="pmonly",normalize.option="transcript:together:none",normalize.logbase="0",normalize.params=c(0.0),
             summarize.method="medianpolish",summarize.select="pmonly",summarize.option="transcript",summarize.logbase="log2",summarize.params=c(10, 0.01, 1.0))
 
 # compare results

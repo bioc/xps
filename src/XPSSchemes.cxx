@@ -10012,6 +10012,10 @@ Int_t XExonChip::ProbesetLevel(const char *level)
       return eAMBIGUOUS;
    } else if (strcmp(level,"free") == 0) {
       return eFREE;
+//TEST ////////////////////
+   } else if (strcmp(level,"NA") == 0) {
+      return ePARACORE;
+//////////////////////////
    }//if
 
    return eNOLEVEL;

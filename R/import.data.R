@@ -80,10 +80,15 @@ function(xps.scheme,
                  sQuote("celfiles")));
    }#if
    if (is.null(celnames)) {
-#      celnames <- "";
       celnames <- CELNames(celfiles);
    } else {
       celnames <- unlist(strsplit(celnames, "\\.[cC][eE][lL]"));
+   }#if
+
+   ## check celnames for presence of characters [.:#] and replace with "_"
+   if (length(grep("[.:#]", celnames)) > 0) {
+      if (verbose) warning("characters  [.:#] in celnames will be replaced  with [_]");
+      celnames <- gsub("[.:#]", "_", celnames);
    }#if
 
    ## concatenate celfiles with celdir

@@ -45,8 +45,12 @@
 
  Note: The CEL-files created are fully functional CEL-files (version 3), however some header
  rows such as GridCornerUL, AlgorithmParameters, and some of the data in DatHeader are 
- placeholders only. Since sometimes the CEL-files have identical names to the original CEL-files,
- thus they should not be created in the same directory where the original CEL-files are located.
+ placeholders only.
+
+ Warning: The CEL-files created WILL REPLACE THE ORIGINAL CEL-files, if they have identical names
+ to the original CEL-files and the original CEL-files are located in the working directory.
+ Thus the original CEL-files should preferable be located in directory \code{celdir} of function
+ \code{\link{import.data}}.
 }
 \author{Christian Stratowa}
 \seealso{\code{\link{validData}}}
