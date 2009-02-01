@@ -57,7 +57,7 @@ import.genome.scheme(filename   = character(0),
 }
 \section{Warning }{
  The current version of \sQuote{xps} should be able to import all Affymetrix genome array
- annotation files up to July 2007. However, since Affymetrix is still changing the headers
+ annotation files up to November 2008. However, since Affymetrix is still changing the headers
  and/or columns of the annotation files, future annotation files may require adaptation
  of the source code, thus the current version of \sQuote{xps} may not be able to read
  these files.

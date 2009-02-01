@@ -1921,12 +1921,13 @@ function(object,
    }#if
 
    if (summarize.method != "none") {
+      exten <- type2Exten(summarize.method, settype);
+
       ds <- data.frame(matrix(nr=0,nc=0));
       if (add.data) {
          ## export result to outfile and import as dataframe
          outfile  <- sub("\\.root", ".txt", rootfile);
          ## get treename "treeset.treename.treetype"
-         exten <- type2Exten(summarize.method, settype);
          treename <- paste(setname, "*", exten, sep=".");
          numtrees <- 1; # must be one for treename="*"
 
@@ -2430,12 +2431,14 @@ function(object,
       return(NULL);
    }#if
 
+   ## get extension
+   exten <- type2Exten(method, settype);
+
    ## export result to outfile and import as dataframe
    ds <- data.frame(matrix(nr=0,nc=0));
-      if (add.data) {
+   if (add.data) {
       outfile  <- sub("\\.root", ".txt", rootfile);
       ## get treename "treeset.treename.treetype"
-      exten    <- type2Exten(method, settype);
       treename <- paste(setname, "*", exten, sep=".");
       numtrees <- 1; # must be one for treename="*"
 

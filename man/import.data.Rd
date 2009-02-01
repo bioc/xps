@@ -33,7 +33,7 @@ import.data(xps.scheme,
  full path for each CEL-file and \code{celdir} must be \code{celdir=NULL}. 
 
  Currently, the following types of Affymetrix CEL-files can be imported: 
- text (version 3), xml, binary (xda), generic (calvin)
+ text (version 3), xml, binary (xda), generic (agcc,calvin)
 
  An S4 class \code{\link{DataTreeSet}} will be created, serving as R wrapper to the 
  \code{\link{ROOT}} data file \code{filename}.
@@ -61,6 +61,10 @@ import.data(xps.scheme,
  Once a \code{\link{ROOT}} file is created it can not be overwritten, it must be deleted
  manually first. Only \code{\link{ROOT}} files called \dQuote{tmp} or with \code{filename} 
  starting with \dQuote{tmp\_} will be re-created automatically.
+
+ If CEL-file names contain dots and/or colons as characters, these characters will be replaced
+ by underscores. It is recommended to use parameter \code{celnames} to create shorter CEL names
+ and to replace special characters. 
 }
 \seealso{\code{\link{root.data}}, \code{\link{DataTreeSet}}}
 \examples{
