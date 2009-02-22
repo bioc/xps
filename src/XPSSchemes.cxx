@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 10/23/2008
+// File created: 05/18/2002                          last modified: 02/20/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2009 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -54,6 +54,7 @@
 * Aug 2007 - Add support for whole genome arrays, classes XGenomeChip,
 *            XGenomeAnnotation
 * Sep 2007 - Change fMask from class XScheme from "Short_t to "Int_t"
+* Feb 2009 - Add support for whole genome array probeset annotation file (na27)
 *
 ******************************************************************************/
 
@@ -5928,6 +5929,7 @@ Int_t XGenomeChip::ReadData(ifstream &input, Option_t *option,
          didWhile = kTRUE;
          i++;
 
+//?? ev at beginning of while with:  if(didWhile) ?? see XExonChip
          z = (Int_t)(TMath::BinarySearch((Long64_t)size, psi, arrGene[i]));
          if (psi[z] != arrGene[i]) continue;
       }//while
@@ -6496,8 +6498,6 @@ Int_t XGenomeChip::ImportTransAnnotation(ifstream &input, Option_t *option,
       ann->SetCrossHybType(0);
       ann->SetProbesetType(eCONTROLAFFX);
       anntree->Fill();
-
-      if(i%10000 == 0) cout << "   <" << i+1 << "> records imported...\r" << flush;
    }//for_i
 
 // Fill transcript annotation tree with sorted "main" annotation data
@@ -6525,8 +6525,8 @@ Int_t XGenomeChip::ImportTransAnnotation(ifstream &input, Option_t *option,
       ann->SetProbesetType(psettype[k]);
       anntree->Fill();
 
-      if (XManager::fgVerbose && i%10000 == 0) {
-         cout << "   <" << i+1 << "> records imported...\r" << flush;
+      if (XManager::fgVerbose && idx%10000 == 0) {
+         cout << "   <" << idx << "> records imported...\r" << flush;
       }//if
    }//for_i
 
@@ -6556,14 +6556,14 @@ Int_t XGenomeChip::ImportTransAnnotation(ifstream &input, Option_t *option,
       ann->SetProbesetType(psettype[k]);
       anntree->Fill();
 
-      if (XManager::fgVerbose && i%10000 == 0) {
-         cout << "   <" << i+1 << "> records imported...\r" << flush;
+      if (XManager::fgVerbose && idx%10000 == 0) {
+         cout << "   <" << idx << "> records imported...\r" << flush;
       }//if
    }//for_i
 
 
    if (XManager::fgVerbose) {
-      cout << "   <" << size << "> records imported...Finished" << endl;
+      cout << "   <" << idx << "> records imported...Finished" << endl;
    }//if
 
 //TO DO:
@@ -7432,7 +7432,7 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
    Int_t    unitID   = 0;
    Int_t    mask     = 0;
    Int_t    mainexon = 0;
-   Int_t    numcells, numatoms;
+   Int_t    numcells, numatoms, numprobs;
    Double_t Tm;
    Short_t  strd;
    Short_t  unittype;
@@ -8209,7 +8209,6 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
       arrXType[i] = psann->GetCrossHybType();
       arrLevel[i] = psann->GetLevelID();
       arrBound[i] = psann->GetBounded();
-//?      arrPSType[i] = psann->GetProbesetType();
 
       if (XManager::fgVerbose && i%10000 == 0) {
          cout << "   <" << i+1 << "> probeset tree entries read...\r" << flush;
@@ -8248,6 +8247,16 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
       exonbitmsk.ResetBit(XBitSet::kBitMask);
       transbitmsk.ResetBit(XBitSet::kBitMask);
       while (geneID == arrGene[i]) {
+         if (didWhile) {  // loop at least once
+            if (numperex == 0) intexonID++;
+            intpsetID++;
+            idx++;
+            i++;
+
+            z = (Int_t)(TMath::BinarySearch((Long64_t)size, psi, arrPSet[i]));
+            if (psi[z] != arrPSet[i]) continue;
+            if (geneID != arrGene[i]) break;
+         }//if
 
          input.seekg(pos[z], ios::beg);
          input.getline(nextline, kBufSize, delim);
@@ -8271,7 +8280,8 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
          minpsets = (arrCount[i] <  minpsets) ? arrCount[i] : minpsets;
          maxpsets = (arrCount[i] >  maxpsets) ? arrCount[i] : maxpsets;
 
-         begin = 1;
+         numprobs = 0;
+         begin    = 1;
          while (begin != 0) { //loop over header0
             input.getline(nextline, kBufSize, delim);
             if (input.eof()) {
@@ -8282,7 +8292,12 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
             }//if
             str = RemoveEnds(&nextline[0], begin, end);
 
-            if (begin == 1) numatoms++; //count atoms for header1
+//x            if (begin == 1) numatoms++; //count atoms for header1
+            if (begin == 1) { // counts for header1
+               numatoms++; //count number of atoms
+               numprobs++; //count number of probes
+            }//if
+
             if (begin == 2) { //data for header2
                probe_id   = atoi(strtok((char*)str.Data(), sep));
                probe_type = TString(strtok(NULL, sep));
@@ -8352,10 +8367,18 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
          pset->SetUnitID(intpsetID);
          pset->SetSubUnitID(probeset_id);
          pset->SetUnitType(mask);
-         pset->SetNumCells(arrCount[i]);
-         pset->SetNumAtoms(arrCount[i]);
+//x         pset->SetNumCells(arrCount[i]);
+//x         pset->SetNumAtoms(arrCount[i]);
+         pset->SetNumCells(numprobs);
+         pset->SetNumAtoms(numprobs);
          pset->SetNumSubunits(1);
          psettree->Fill();
+
+         if (XManager::fgVerbose && arrCount[i] != numprobs) {
+            cout << "Warning: number of  probes <" << numprobs << "> for probeset <"
+                 << probeset_id << "> is not equal to annotated probe_count <"
+                 << arrCount[i] << ">" << endl;
+         }//if
 
          if (exonID == arrExon[i+1]) {
             numperex++;
@@ -8388,15 +8411,7 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
 
          transbitmsk.SetBit(mask);
 
-         if (numperex == 0) intexonID++;
-         intpsetID++;
-         idx++;
-         i++;
-
          didWhile = kTRUE;
-
-         z = (Int_t)(TMath::BinarySearch((Long64_t)size, psi, arrPSet[i]));
-         if (psi[z] != arrPSet[i]) continue;
       }//while
 
       // count number of exons
@@ -8724,7 +8739,7 @@ Int_t XExonChip::ImportTransAnnotation(ifstream &input, Option_t *option,
 
    TString lib_set_name, lib_set_version;
    TString genome_species, genome_version;
-   TString annot_version, annot_type;
+   TString annot_version, annot_type, annps_version;
    TString assigngene, assignmrna, category;
    TString str, dummy;
 
@@ -8810,7 +8825,10 @@ Int_t XExonChip::ImportTransAnnotation(ifstream &input, Option_t *option,
       if (input.eof()) return errPrematureEOF;
    }//while
    annot_version = strtok((&((char*)nextline.c_str())[35]), sep);
-   if (strcmp(annot_version.Data(), fVersionAnnot.Data()) != 0) {
+   // compare annotation versions, but only main version, e.g. 27 for 27.2
+   annps_version = fVersionAnnot;
+   if (annps_version.Index(".") > 0) annps_version.Resize(annps_version.Index("."));
+   if (strcmp(annot_version.Data(), annps_version.Data()) != 0) {
       return fManager->HandleError(errAnnVersion, annot_version);
    }//if
 
@@ -8861,7 +8879,8 @@ Int_t XExonChip::ImportTransAnnotation(ifstream &input, Option_t *option,
    }//if 
 
 // Check if annotation file is at least build version na22 with new column category
-   if (hasColumn[kNTranscriptCols-1] == kNTranscriptCols-1) {hasPST = kTRUE;} //category
+//no   if (hasColumn[kNTranscriptCols-1] == kNTranscriptCols-1) {hasPST = kTRUE;} //category
+   if (hasColumn[kNTranscriptCols-2] == 1) {hasPST = kTRUE;} //crosshyb_type
 
 // Get number of transcripts
    // get current streamposition for rewinding input
@@ -8911,8 +8930,12 @@ Int_t XExonChip::ImportTransAnnotation(ifstream &input, Option_t *option,
 
       // replace all "\",\"" with tab "\t" and remove "\""
       str = TString(nextline);
+      // first need to replace "" with NA
+      str.ReplaceAll("\"\"", "\"NA\"");
       // replace csv with tab
       str.ReplaceAll(csv, tab);
+      // remove all "\"" from line
+      str.ReplaceAll("\"", "");
 
       // check number of separators
       if (numsep != NumSeparators(str, tab)) {
@@ -8943,10 +8966,11 @@ Int_t XExonChip::ImportTransAnnotation(ifstream &input, Option_t *option,
       dummy        = strtok(NULL, tab);
       dummy        = strtok(NULL, tab);
       dummy        = strtok(NULL, tab);
-      category     = hasPST ? strtok(NULL, tab) : dummy; //for na22
+      category     = hasPST ? strtok(NULL, tab) : dummy; //for >=na22
 
       // chromosome
       seqname[idx] = strcmp(seqname[idx].Data(),"---") ? seqname[idx] : "NA";
+      strand[idx]  = strcmp(strand[idx].Data(), "---") ? strand[idx]  : "?";
 
       // get gene accession and symbol
       geneaccess[idx] = strtok((char*)assigngene.Data(), "\\");
@@ -8971,23 +8995,30 @@ Int_t XExonChip::ImportTransAnnotation(ifstream &input, Option_t *option,
          entrezid[idx]   = (strcmp(names[4].Data(),"---") != 0) ? names[4].Atoi() : -1;
       }//if
 
+      // convert category to probesettype_id
+      psettype[idx] = this->ProbesetType(category);
+
       // get mrna accession for genes or for control->affx 
       if (psettype[idx] == eCONTROLAFFX) {
          geneaccess[idx] = RemoveEnds(assignmrna);
       }//if
 
-      // convert category to probesettype_id
-      psettype[idx] = this->ProbesetType(category);
-
       // get mrna accession for genes or for control->affx 
       if ((psettype[idx] == eINTRON) ||
           (psettype[idx] == eEXON)   ||
           (psettype[idx] == eUNMAPPED)) {
-         geneaccess[idx] = RemoveEnds(assignmrna);
-         genesymbol[idx] = "NA";
-         genename[idx]   = "NA";
-         cytoband[idx]   = "NA";
-         entrezid[idx]   = -1;
+         Int_t index = 0;
+         index = assignmrna.Index(kSepSl3, kNumSl3, index, TString::kExact);
+         // index>0 only if assignmrna is a multipart entry
+         assignmrna = (index > 0) ? assignmrna(0, index) : assignmrna;
+
+         index = TokenizeString(assignmrna.Data(), nsub, names, kNumSl2, kSepSl2);
+
+         geneaccess[idx] = (strcmp(names[0].Data(),"---") != 0) ? names[0] : "NA";
+         genesymbol[idx] = (strcmp(names[1].Data(),"---") != 0) ? names[1] : "NA";
+         genename[idx]   = (strcmp(names[2].Data(),"---") != 0) ? names[2] : "NA";
+         cytoband[idx]   = (strcmp(names[3].Data(),"---") != 0) ? ("chr" + names[3]) : "NA";
+         entrezid[idx]   = (strcmp(names[4].Data(),"---") != 0) ? names[4].Atoi() : -1;
       }//if
 
       // fill sort values
@@ -9025,7 +9056,7 @@ Int_t XExonChip::ImportTransAnnotation(ifstream &input, Option_t *option,
          ann->SetName(geneaccess[k]);
          ann->SetSymbol("NA");
          ann->SetAccession(str);
-         ann->SetEntrezID(0);
+         ann->SetEntrezID(-1);
          ann->SetChromosome("NA");
          ann->SetCytoBand("NA");
          ann->SetStrand('?');
@@ -9051,7 +9082,7 @@ Int_t XExonChip::ImportTransAnnotation(ifstream &input, Option_t *option,
          ann->SetName(affxname);
          ann->SetSymbol("NA");
          ann->SetAccession(str);
-         ann->SetEntrezID(0);
+         ann->SetEntrezID(-1);
          ann->SetChromosome("NA");
          ann->SetCytoBand("NA");
          ann->SetStrand('?');
@@ -10012,6 +10043,8 @@ Int_t XExonChip::ProbesetLevel(const char *level)
       return eAMBIGUOUS;
    } else if (strcmp(level,"free") == 0) {
       return eFREE;
+   } else if (strcmp(level,"NA") == 0) {
+      return ePARACORE;
    }//if
 
    return eNOLEVEL;

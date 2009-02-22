@@ -52,8 +52,8 @@ R sessions to avoid creating a new \code{\link{ROOT}} scheme file for every sess
  scheme file for every R session.
 
  Do not separate \code{filename} of ROOT files with dots, use underscores, e.g. do not use 
- \code{filename="Scheme.Test3.na21"} but use \code{filename="Scheme_Test3_na21"} or simply
- \code{filename="SchemeTest3na21"} instead. Extension \dQuote{root} is added automatically,
+ \code{filename="Scheme.Test3.na27"} but use \code{filename="Scheme_Test3_na27"} or simply
+ \code{filename="SchemeTest3na27"} instead. Extension \dQuote{root} is added automatically,
  so that ROOT is able to recognize the file as ROOT file.
 
  For a few probesets, parsing the Affymetrix annotation files will provide ambiguous results.
@@ -69,21 +69,21 @@ libdir <- "/my/path/Affy/libraryfiles"
 anndir <- "/my/path/Affy/Annotation"
 
 ## create scheme for Test3 GeneChip
-scheme.test3.na22 <- import.expr.scheme("Scheme_Test3_na22",filedir=scmdir,
+scheme.test3.na27 <- import.expr.scheme("Scheme_Test3_na27",filedir=scmdir,
                      schemefile=paste(libdir,"Test3.CDF",sep="/"),
                      probefile=paste(libdir,"Test3_probe.tab",sep="/"),
-                     annotfile=paste(anndir,"Test3.na22.annot.csv",sep="/"))
+                     annotfile=paste(anndir,"Test3.na27.annot.csv",sep="/"))
 
 ## access ROOT scheme file from new R session
-scheme.test3 <- root.scheme(paste(scmdir,"Scheme_Test3_na22.root",sep="/"))
+scheme.test3 <- root.scheme(paste(scmdir,"Scheme_Test3_na27.root",sep="/"))
 
 ## create scheme for HG-U133_Plus_2 GeneChip
-scheme.hgu133p2.na22 <- import.expr.scheme("Scheme_HGU133p2_na22",filedir=scmdir,
+scheme.hgu133p2.na27 <- import.expr.scheme("Scheme_HGU133p2_na27",filedir=scmdir,
                         schemefile=paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),
                         probefile=paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),
-                        annotfile=paste(anndir,"HG-U133_Plus_2.na22.annot.csv",sep="/"))
+                        annotfile=paste(anndir,"HG-U133_Plus_2.na27.annot.csv",sep="/"))
 ## access ROOT scheme file from new R session
-scheme.hgu133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na22.root",sep="/"))
+scheme.hgu133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na27.root",sep="/"))
 }
 }
 \keyword{manip}
