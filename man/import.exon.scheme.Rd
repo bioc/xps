@@ -34,7 +34,7 @@ import.exon.scheme(filename   = character(0),
  An S4 class \code{\link{SchemeTreeSet}} will be created, serving as R wrapper to the 
  \code{\link{ROOT}} scheme file \code{filename}.
 
- Since a new \code{\link{ROOT}} scheme file needs only to be created when  new annotation files
+ Since a new \code{\link{ROOT}} scheme file needs only to be created when new annotation files
  are available from the Affymetrix website, it is recommended to store all \code{\link{ROOT}}
  scheme files in a commonly accessible system directory \code{filedir}.
 
@@ -50,7 +50,7 @@ import.exon.scheme(filename   = character(0),
  scheme file for every R session.
 
  Do not separate \code{filename} of ROOT files with dots, use underscores, e.g. do not use 
- \code{filename="Scheme.HuEx10stv2r2.na21"} but use \code{filename="Scheme_HuEx10stv2r2_na21"}
+ \code{filename="Scheme.HuEx10stv2r2.na27"} but use \code{filename="Scheme_HuEx10stv2r2_na27"}
  instead. Extension \dQuote{root} is added automatically, so that ROOT is able to recognize
  the file as ROOT file.
 
@@ -75,14 +75,24 @@ libdir <- "/my/path/Affy/libraryfiles"
 anndir <- "/my/path/Affy/Annotation"
 
 ## create scheme for HuEx-1_0-st-v2.r2 Exon array
-scheme.huex10stv2r2.na21 <- import.exon.scheme("Scheme_HuEx10stv2r2_na21",filedir=scmdir,
+scheme.huex10stv2r2.na27 <- import.exon.scheme("Scheme_HuEx10stv2r2_na27",filedir=scmdir,
                             layoutfile=paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
                             schemefile=paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
-                            probeset=paste(anndir,"HuEx-1_0-st-v2.na21.hg18.probeset.csv",sep="/"),
-                            transcript=paste(anndir,"HuEx-1_0-st-v2.na21.hg18.transcript.csv",sep="/"))
+                            probeset=paste(anndir,"HuEx-1_0-st-v2.na27.hg18.probeset.csv",sep="/"),
+                            transcript=paste(anndir,"HuEx-1_0-st-v2.na27.hg18.transcript.csv",sep="/"))
 
 ## access ROOT scheme file from new R session
-scheme.huex10stv2r2 <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na21.root",sep="/"))
+scheme.huex10stv2r2 <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na27.root",sep="/"))
+
+## create scheme for HuGene-1_0-st-v1.r4 as exon array
+scheme.hugene10stv1r4.na27 <- import.exon.scheme("Scheme_HuGene10stv1r4_na27_2",filedir=scmdir,
+                              layoutfile=paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.clf",sep="/"),
+                              schemefile=paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.pgf",sep="/"),
+                              probeset=paste(anndir,"HuGene-1_0-st-v1.na27.2.hg18.probeset.csv",sep="/"),
+                              transcript=paste(anndir,"HuGene-1_0-st-v1.na27.hg18.transcript.csv",sep="/"))
+
+## access ROOT scheme file from new R session
+scheme.hugene10stv1r4 <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r4_na27_2.root",sep="/"))
 
 ## create scheme for HuEx-1_0-st-v2.r2 Exon array with the old annotation file
 scheme.huex10stv2r2.old <- import.exon.scheme("Scheme_HuEx10stv2r2_old",filedir=scmdir,

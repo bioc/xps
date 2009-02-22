@@ -46,7 +46,7 @@ import.genome.scheme(filename   = character(0),
  scheme file for every R session.
 
  Do not separate \code{filename} of ROOT files with dots, use underscores, e.g. do not use 
- \code{filename="Scheme.HuGene10stv1.na23"} but use \code{filename="Scheme_HuGene10stv1_na23"}
+ \code{filename="Scheme.HuGene10stv1.na27"} but use \code{filename="Scheme_HuGene10stv1_na27"}
  instead. Extension \dQuote{root} is added automatically, so that ROOT is able to recognize
  the file as ROOT file.
 
@@ -56,11 +56,13 @@ import.genome.scheme(filename   = character(0),
  files where the probeset annotation file does not contain the AFFX controls.
 }
 \section{Warning }{
- The current version of \sQuote{xps} should be able to import all Affymetrix genome array
- annotation files up to November 2008. However, since Affymetrix is still changing the headers
- and/or columns of the annotation files, future annotation files may require adaptation
- of the source code, thus the current version of \sQuote{xps} may not be able to read
- these files.
+ The current version of \sQuote{xps} is able to import all Affymetrix genome array annotation
+ files up to November 2008, i.e. all files of release 3 (r3) and earlier. However, in January 2009
+ Affymetrix has updated all CLF, PGF and annotation files to release 4 (r4) and added a new
+ probeset annotation file, thus in effect changing the whole genome arrays to exon arrays!
+
+ Thus, for release 4 (r4) files, function \code{import.genome.scheme} can no longer be used,
+ but you must use function \code{\link{import.exon.scheme}} instead (see examples). 
 }
 \seealso{\code{\link{import.exon.scheme}}, \code{\link{root.scheme}}, \code{\link{SchemeTreeSet}}}
 \examples{
@@ -71,13 +73,13 @@ libdir <- "/my/path/Affy/libraryfiles"
 anndir <- "/my/path/Affy/Annotation"
 
 ## create scheme for HuGene-1_0-st-v1 whole genome array
-scheme.hugene10stv1r3.na23 <- import.genome.scheme("Scheme_HuEx10stv1r3_na23",filedir=scmdir,
+scheme.hugene10stv1r3.na27 <- import.genome.scheme("Scheme_HuEx10stv1r3_na27",filedir=scmdir,
                               layoutfile=paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.clf",sep="/"),
                               schemefile=paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.pgf",sep="/"),
-                              transcript=paste(anndir,"HuGene-1_0-st-v1.na23.hg18.transcript.csv",sep="/"))
+                              transcript=paste(anndir,"HuGene-1_0-st-v1.na27.hg18.transcript.csv",sep="/"))
 
 ## access ROOT scheme file from new R session
-scheme.hugene10stv1r3 <- root.scheme(paste(scmdir,"Scheme_HuEx10stv1r3_na23.root",sep="/"))
+scheme.hugene10stv1r3 <- root.scheme(paste(scmdir,"Scheme_HuEx10stv1r3_na27.root",sep="/"))
 }
 }
 \keyword{manip}
