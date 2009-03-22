@@ -66,6 +66,7 @@ xpsUniFilter(object, ...)
 }
 \seealso{\code{\link{UniFilter}}, \code{\link{prefilter}}}
 \examples{
+\dontrun{
 ## first, load ROOT scheme file and ROOT data file
 scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
 data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
@@ -82,5 +83,6 @@ unifltr <- UniFilter(unitest=c("t.test","two.sided","none",0,0.0,FALSE,0.95,TRUE
 ## finally, create an AnalysisTreeSet
 rma.ufr <- unifilter(data.rma,"tmp_Test3Unifilter",getwd(),unifltr,group=c("GrpA","GrpA","GrpB","GrpB"),verbose=FALSE)
 str(rma.ufr)
+}
 }
 \keyword{manip}

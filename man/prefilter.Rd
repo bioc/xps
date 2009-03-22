@@ -52,6 +52,7 @@ xpsPreFilter(object, ...)
 \author{Christian Stratowa}
 \seealso{\code{\link{PreFilter}}, \code{\link{unifilter}}}
 \examples{
+\dontrun{
 ## first, load ROOT scheme file and ROOT data file
 scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
 data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
@@ -68,5 +69,6 @@ prefltr <- PreFilter(mad=c(0.5,0.01),lothreshold=c(6.0,0.02,"mean"),hithreshold=
 ## finally, create a FilterTreeSet
 rma.pfr <- prefilter(data.rma,"tmp_Test3Prefilter",getwd(),prefltr,2,verbose=FALSE)
 str(rma.pfr)
+}
 }
 \keyword{manip}
