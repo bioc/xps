@@ -50,9 +50,15 @@ MT_DLL        =
 EXTRAFLAGS    = -G5
 !endif
 
+#check for libGraf setting
+!if ([findstr /c:"-include:_G__cpp_setupG__Graf1" ${ROOTSYS}\bin\root-config > nul ] == 0)
+WHICHGRAF =_G__cpp_setupG__Graf1
+!else
+WHICHGRAF =_G__cpp_setupG__Graf
+!endif
 
 LDFLAGS       = $(LDOPT) $(conlflags) -nologo -include:_G__cpp_setupG__Hist \
-                -include:_G__cpp_setupG__Graf -include:_G__cpp_setupG__G3D \
+                -include:$(WHICHGRAF) -include:_G__cpp_setupG__G3D \
                 -include:_G__cpp_setupG__GPad -include:_G__cpp_setupG__Tree \
                 -include:_G__cpp_setupG__Rint -include:_G__cpp_setupG__PostScript \
                 -include:_G__cpp_setupG__Matrix -include:_G__cpp_setupG__Physics

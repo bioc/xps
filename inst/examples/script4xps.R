@@ -4,7 +4,7 @@
 # Note: please feel free to copy-paste the examples of interest and adapt the
 #       examples to your own needs
 #
-# Copyright (c) 2007-2007 Christian Stratowa, Vienna, Austria.
+# Copyright (c) 2007-2009 Christian Stratowa, Vienna, Austria.
 # All rights reserved.
 #
 #------------------------------------------------------------------------------#
@@ -37,9 +37,9 @@ scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # create ROOT scheme files for expression arrays
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# note: as of April 2008 the latest Affymetrix annotation is na25
+# note: as of March 2009 the latest Affymetrix annotation is na27
 # note: do not separate name of ROOT files with dots, use underscores,
-#       e.g. do not use "Scheme.Test3.na25" but "Scheme_Test3_na25"
+#       e.g. do not use "Scheme.Test3.na27" but "Scheme_Test3_na27"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # Test3:
@@ -93,6 +93,12 @@ scheme.hgu133p2.na24 <- import.expr.scheme("Scheme_HGU133p2_na24",filedir=scmdir
 scheme.hgu133p2.na25 <- import.expr.scheme("Scheme_HGU133p2_na25",filedir=scmdir,paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),paste(anndir,"Version08Mar/HG-U133_Plus_2.na25.annot.csv",sep="/"))
 scheme.hgu133p2.na26 <- import.expr.scheme("Scheme_HGU133p2_na26",filedir=scmdir,paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),paste(anndir,"Version08Jul/HG-U133_Plus_2.na26.annot.csv",sep="/"))
 scheme.hgu133p2.na27 <- import.expr.scheme("Scheme_HGU133p2_na27",filedir=scmdir,paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),paste(anndir,"Version08Nov/HG-U133_Plus_2.na27.annot.csv",sep="/"))
+
+# HT_HG-U133_Plus_PM
+# Note:
+# need to replace header column of "HT_HG-U133_Plus_PM.probe.tab" file with:
+# Probe Set Name	Probe X	Probe Y	Probe Interrogation Position	Probe Sequence	Target Strandedness
+scheme.hthgu133ppm.na27 <- import.expr.scheme("Scheme_HTHGU133pPM_na27",filedir=scmdir,paste(libdir,"HT_HG-U133_Plus_PM.CDF",sep="/"),paste(libdir,"HT_HG-U133_Plus_PM.probe.tab",sep="/"),paste(anndir,"Version09Feb/HT_HG-U133_Plus_PM.na27.1.annot.csv",sep="/"))
 
 # alternative CDF-files, e.g.:
 #AffyProbeMiner
@@ -286,31 +292,31 @@ scheme.raex10stv1r2.na25 <- import.exon.scheme("Scheme_RaEx10stv2r2_na25",filedi
 
 ### export different trees from ROOT scheme file
 # Test3: export as table only
-export(scheme.test3.na25, treetype="idx", outfile="Test3_idx.txt")
-export(scheme.test3.na25, treetype="scm", outfile="Test3_scm.txt")
-export(scheme.test3.na25, treetype="prb", outfile="Test3_prb.txt")
-export(scheme.test3.na25, treetype="ann", outfile="Test3_ann.txt")
+export(scheme.test3.na27, treetype="idx", outfile="Test3_idx.txt")
+export(scheme.test3.na27, treetype="scm", outfile="Test3_scm.txt")
+export(scheme.test3.na27, treetype="prb", outfile="Test3_prb.txt")
+export(scheme.test3.na27, treetype="ann", outfile="Test3_ann.txt")
 
 # export as table and import as data.frame
-idx <- export(scheme.test3.na25, treetype="idx", outfile="Test3_idx.txt",as.dataframe=T)
-ann <- export(scheme.test3.na25, treetype="ann", outfile="Test3_ann.txt",as.dataframe=T)
+idx <- export(scheme.test3.na27, treetype="idx", outfile="Test3_idx.txt",as.dataframe=T)
+ann <- export(scheme.test3.na27, treetype="ann", outfile="Test3_ann.txt",as.dataframe=T)
 
 ### attach mask later: if import parameter was: as.dataframe=FALSE
-scheme.test3.na25 <- attachMask(scheme.test3.na25)
-str(scheme.test3.na25)
+scheme.test3.na27 <- attachMask(scheme.test3.na27)
+str(scheme.test3.na27)
 ### export scheme mask
-msk <- chipMask(scheme.test3.na25)
-scheme.test3.na25 <- removeMask(scheme.test3.na25)
-str(scheme.test3.na25)
+msk <- chipMask(scheme.test3.na27)
+scheme.test3.na27 <- removeMask(scheme.test3.na27)
+str(scheme.test3.na27)
 
 ### scheme accessors
-rootFile(scheme.test3.na25)
-chipName(scheme.test3.na25)
-chipType(scheme.test3.na25)
-probeInfo(scheme.test3.na25)
+rootFile(scheme.test3.na27)
+chipName(scheme.test3.na27)
+chipType(scheme.test3.na27)
+probeInfo(scheme.test3.na27)
 
 ### browse ROOT scheme files
-root.browser(scheme.test3.na25)
+root.browser(scheme.test3.na27)
 
 
 
@@ -482,7 +488,7 @@ datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 
 ### HG-U133_Plus_2 data: import raw data
 # first, import ROOT scheme file
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na25.root",sep="/"))
+scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na27.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("u1332plus_ivt_breast_A.CEL","u1332plus_ivt_breast_B.CEL","u1332plus_ivt_breast_C.CEL",
@@ -501,7 +507,7 @@ data.mix.u133p2 <- import.data(scheme.u133p2, "HuTissuesU133P2", filedir=datdir,
 
 ### HuEx-1_0-st-v2 data: import raw data
 # first, import ROOT scheme file
-scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na25.root",sep="/"))
+scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na27.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("huex_wta_breast_A.CEL","huex_wta_breast_B.CEL","huex_wta_breast_C.CEL",
@@ -523,7 +529,7 @@ celdir <- "/Volumes/GigaDrive/ChipData/Exon/HuGene"
 
 ### HuGene-1_0-st-v1 data: import raw data
 # first, import ROOT scheme file
-scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na25.root",sep="/"))
+scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na27.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("TisMap_Breast_01_v1_WTGene1.CEL","TisMap_Breast_02_v1_WTGene1.CEL","TisMap_Breast_03_v1_WTGene1.CEL",
@@ -535,6 +541,34 @@ data.mix.genome <- import.data(scheme.genome, "HuTissuesGenome", filedir=datdir,
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# example 5: Test data from Affymetrix HT_PM_human_tissue_panel Dataset for HT_HG-U133_Plus_PM 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+### new R session: load library xps
+library(xps)
+
+### define directories:
+# directory of ROOT scheme files
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
+# directory containing Tissues CEL files
+celdir <- "/Volumes/GigaDrive/ChipData/Plate/HT_PM_human_tissue_panel"
+# directory to store ROOT raw data files
+datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
+
+### HT_HG-U133_Plus_PM data: import raw data
+# first, import ROOT scheme file
+scheme.u133ppm <- root.scheme(paste(scmdir,"Scheme_HTHGU133pPM_na27.root",sep="/"))
+
+# subset of CEL files to import
+celfiles <- c("Human_PM_TestData.A01.CEL","Human_PM_TestData.A02.CEL","Human_PM_TestData.A03.CEL",
+              "Human_PM_TestData.B01.CEL","Human_PM_TestData.B02.CEL","Human_PM_TestData.B03.CEL")
+# rename CEL files
+celnames <- c("TestDataA01","TestDataA02","TestDataA03","TestDataB01","TestDataB02","TestDataB03")
+# import CEL files
+data.mix.u133ppm <- import.data(scheme.u133ppm, "TestDataHTU133PPM", filedir=datdir,celdir=celdir,celfiles=celfiles,celnames=celnames)
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # demonstration how to access the data, and plot the data
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -543,9 +577,9 @@ library(xps)
 
 # import ROOT scheme files
 scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na25.root",sep="/"))
-scheme.exon   <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na25.root",sep="/"))
-scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na25.root",sep="/"))
+scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na27.root",sep="/"))
+scheme.exon   <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na27.root",sep="/"))
+scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na27.root",sep="/"))
 
 # import ROOT data files
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
@@ -769,7 +803,7 @@ library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
 scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na25.root",sep="/"))
+scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na27.root",sep="/"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.u133p2 <- root.data(scheme.u133p2, paste(datdir,"HuTissuesU133P2_cel.root",sep="/"))
 
@@ -876,7 +910,7 @@ library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
 scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na25.root",sep="/"))
+scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na27.root",sep="/"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.exon <- root.data(scheme.exon, paste(datdir,"HuTissuesExon_cel.root",sep="/"))
 
@@ -1009,7 +1043,7 @@ library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
 scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na25.root",sep="/"))
+scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na27.root",sep="/"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.genome <- root.data(scheme.genome, paste(datdir,"HuTissuesGenome_cel.root",sep="/"))
 
@@ -1115,6 +1149,42 @@ wbg <- matrix(bgrd[,"BGRD"], ncol=ncols(schemeSet(data.mas5)), nrow=nrows(scheme
 image(wbg)
 image(log2(wbg))
 
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# example 5: Test data from Affymetrix HT_PM_human_tissue_panel Dataset for HT_HG-U133_Plus_PM 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+### new R session: load library xps
+library(xps)
+
+### first, load ROOT scheme file and ROOT data file
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
+scheme.u133ppm <- root.scheme(paste(scmdir,"Scheme_HTHGU133pPM_na27.root",sep="/"))
+datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
+data.u133ppm <- root.data(scheme.u133ppm, paste(datdir,"TestDataHTU133PPM_cel.root",sep="/"))
+
+
+### preprocess raw data ###
+
+# 1. RMA
+data.rma <- rma(data.u133ppm,"TestDataHTU133PPM_RMA",tmpdir="",background="pmonly",normalize=T)
+
+# 2. MAS5: not possible since no MM
+# data.mas5 <- mas5(data.u133ppm,"TestDataHTU133PPM_MAS5",,tmpdir="",normalize=T,sc=500)
+
+# get data.frames
+expr.rma <- validData(data.rma)
+
+# density plots
+hist(data.rma)
+
+# boxplots
+boxplot(data.rma)
+
+root.density(data.u133ppm)
+root.density(data.rma)
+root.profile(data.u133ppm)
+root.profile(data.rma)
 
 
 #------------------------------------------------------------------------------#
