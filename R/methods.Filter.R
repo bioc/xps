@@ -12,16 +12,14 @@
 # Filter initialization:
 #------------------------------------------------------------------------------#
 
-"initialize.Filter" <-
-function(.Object, ...) 
-{
-   if (debug.xps()) print("------initialize:Filter------")
+setMethod("initialize", "Filter", 
+   function(.Object, ...) {
+      if (debug.xps()) print("------initialize:Filter------")
 
-   .Object <- callNextMethod(.Object, ...);
-   .Object;
-}#initialize.Filter
-
-setMethod("initialize", "Filter", initialize.Filter);
+      .Object <- callNextMethod(.Object, ...);
+      .Object;
+   }
+)#initialize
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

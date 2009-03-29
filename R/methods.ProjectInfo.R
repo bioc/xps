@@ -35,17 +35,14 @@
 # ProjectInfo initialization:
 #------------------------------------------------------------------------------#
 
-"initialize.ProjectInfo" <-
-function(.Object, ...) 
-{
-   if (debug.xps()) print("------initialize:ProjectInfo------")
+setMethod("initialize", "ProjectInfo", 
+   function(.Object, ...) {
+      if (debug.xps()) print("------initialize:ProjectInfo------")
 
-#   callNextMethod();
-   .Object <- callNextMethod(.Object, ...);
-   .Object;
-}#initialize.ProjectInfo
-
-setMethod("initialize", "ProjectInfo", initialize.ProjectInfo);
+      .Object <- callNextMethod(.Object, ...);
+      .Object;
+   }
+)#initialize
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

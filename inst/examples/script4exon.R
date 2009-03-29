@@ -678,6 +678,135 @@ root.mvaplot(data.x.rma, "BreastA.mdp", "BreastB.mdp", w=400, h=400)
 
 
 
+#------------------------------------------------------------------------------#
+# Demonstrations of advanced methods
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#    Note: ROOT scheme files and ROOT raw data files are usually already stored
+#          in special system directories. When a new R session is created for the
+#          first time, they must fist be loaded using "root.scheme()" and "root.data()".
+#          However, this is not necessary when re-opening a saved R session later.
+#------------------------------------------------------------------------------#
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Tissues from Affymetrix Exon Array Dataset for HuEx-1_0-st-v2
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+### new R session: load library xps
+library(xps)
+
+### first, load ROOT scheme file and ROOT data file
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
+scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na28.root",sep="/"))
+datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
+data.exon <- root.data(scheme.exon, paste(datdir,"HuTissuesExon_cel.root",sep="/"))
+
+### preprocess raw data ###
+datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Exon/hutissues/exon"
+
+
+### RMA transcript: metacore
+data.x.rma <- rma(data.exon,"HuExonRMAMetacore",filedir=datdir,tmpdir="",background="antigenomic",
+                  normalize=T,option="transcript",exonlevel="metacore+affx")
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# demonstration 1: compute RMA stepwise 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+### 1.step: background - rma
+data.bg.rma <- bgcorrect.rma(data.exon, "HuExonRMABgrd", filedir=datdir, tmpdir="", 
+               select="antigenomic", exonlevel="metacore+affx")
+# or:
+data.bg.rma <- bgcorrect(data.exon, "HuExonRMABgrd", filedir=datdir, tmpdir="", 
+               method="rma", select="antigenomic", option="pmonly:epanechnikov",
+               params=c(16384), exonlevel="metacore+affx")
+
+### 2step: normalization - quantile
+data.qu.rma <- normalize.quantiles(data.bg.rma, "HuExonRMANorm", filedir=datdir , 
+               tmpdir="", exonlevel="metacore+affx")
+# or:
+data.qu.rma <- normalize(data.bg.rma, "HuExonRMANorm", filedir=datdir, tmpdir="", 
+               method="quantile", select="pmonly", option="transcript:together:none", 
+               logbase="0", params=c(0.0), exonlevel="metacore+affx")
+
+### 3.step: summarization - medpol
+data.mp.rma <- summarize.rma(data.qu.rma, "HuExonRMASum", filedir=datdir, tmpdir="", 
+               exonlevel="metacore+affx")
+# or:
+data.mp.rma <- summarize(data.qu.rma, "HuExonRMASum", filedir=datdir, tmpdir="", 
+               method="medianpolish", select="pmonly", option="transcript", 
+               logbase="log2", params=c(10, 0.01, 1.0), exonlevel="metacore+affx")
+
+# compare results
+expr.x  <- exprs(data.x.rma)
+expr.mp <- exprs(data.mp.rma)
+# plot differences
+plot((expr.mp[,1] - expr.x[,1])/expr.x[,1], ylim=c(-0.0001,0.0001))
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# demonstration 2: compute RMA using function "express()"
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+### compute rma stepwise
+expr.bg.rma <- express(data.exon, "HuExonExprsBgrd", filedir=datdir, tmpdir="", update=F,
+               bgcorrect.method="rma", bgcorrect.select="antigenomic",
+               bgcorrect.option="pmonly:epanechnikov", bgcorrect.params=c(16384),
+               exonlevel="metacore+affx")
+
+expr.qu.rma <- express(expr.bg.rma, "HuExonExprsNorm", filedir=datdir, tmpdir="", update=F,
+               normalize.method="quantile", normalize.select="pmonly",
+               normalize.option="transcript:together:none", normalize.logbase="0",
+               normalize.params=c(0.0), exonlevel="metacore+affx")
+
+expr.mp.rma <- express(expr.qu.rma, "HuExonExprsSum", filedir=datdir, tmpdir="", update=F,
+               summarize.method="medianpolish", summarize.select="pmonly", 
+               summarize.option="transcript", summarize.logbase="log2", 
+               summarize.params=c(10, 0.01, 1.0), exonlevel="metacore+affx")
+
+# compare results
+expr.x  <- exprs(data.x.rma)
+expr.mp <- exprs(expr.mp.rma)
+# plot differences
+plot((expr.mp[,1] - expr.x[,1])/expr.x[,1], ylim=c(-0.0001,0.0001))
+
+### compute rma with a single call to express()
+expr.rma <- express(data.exon,"HuExonExprs",filedir=datdir,tmpdir="",update=F,
+            bgcorrect.method="rma",bgcorrect.select="antigenomic",bgcorrect.option="pmonly:epanechnikov",bgcorrect.params=c(16384),
+            normalize.method="quantile",normalize.select="pmonly",normalize.option="transcript:together:none",normalize.logbase="0",normalize.params=c(0.0),
+            summarize.method="medianpolish",summarize.select="pmonly",summarize.option="transcript",summarize.logbase="log2",summarize.params=c(10, 0.01, 1.0),
+            exonlevel="metacore+affx")
+
+# compare results
+expr.x <- exprs(data.x.rma)
+expr   <- exprs(expr.rma)
+# plot differences
+plot((expr[,1] - expr.x[,1])/expr.x[,1], ylim=c(-0.0001,0.0001))
+
+
+
+
+
+
+
+
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# demonstration 3: diverse tests
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# compute background for antigenomic probes
+# a, using bgcorrect()
+data.bg.gc <- bgcorrect.gc(data.exon,"tmp_HuExonGCBgrd",filedir=datdir,tmpdir="", exonlevel="metacore+affx")
+
+# b, using express()
+expr.bg.gc <- express(data.exon, "HuExonExprGCBgrd", filedir=datdir, tmpdir="", update=F,
+              bgcorrect.method="gccontent", bgcorrect.select="antigenomic",
+              bgcorrect.option="attenuatebg", bgcorrect.params=c(0.4, 0.005, -1.0),
+              exonlevel="metacore+affx")
+
+
 
 
 ##############################

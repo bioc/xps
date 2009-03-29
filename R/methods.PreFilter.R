@@ -30,63 +30,62 @@
 # PreFilter initialization:
 #------------------------------------------------------------------------------#
 
-"initialize.PreFilter" <-
-function(.Object,
-         mad         = list(),
-         cv          = list(),
-         variance    = list(),
-         difference  = list(),
-         ratio       = list(),
-         gap         = list(),
-         lothreshold = list(),
-         hithreshold = list(),
-         quantile    = list(),
-         prescall    = list(),
-         ...) 
-{
-   if (debug.xps()) print("------initialize:PreFilter------")
+setMethod("initialize", "PreFilter",
+   function(.Object,
+            mad         = list(),
+            cv          = list(),
+            variance    = list(),
+            difference  = list(),
+            ratio       = list(),
+            gap         = list(),
+            lothreshold = list(),
+            hithreshold = list(),
+            quantile    = list(),
+            prescall    = list(),
+            ...) 
+   {
+      if (debug.xps()) print("------initialize:PreFilter------")
 
-   .Object@numfilters <- 0;
+      .Object@numfilters <- 0;
 
-   if (length(mad))         madFilter(.Object)      <- unlist(mad);
-   if (length(cv))          cvFilter(.Object)       <- unlist(cv);
-   if (length(variance))    varFilter(.Object)      <- unlist(variance);
-   if (length(difference))  diffFilter(.Object)     <- unlist(difference);
-   if (length(ratio))       ratioFilter(.Object)    <- unlist(ratio);
-   if (length(gap))         gapFilter(.Object)      <- unlist(gap);
-   if (length(lothreshold)) lowFilter(.Object)      <- unlist(lothreshold);
-   if (length(hithreshold)) highFilter(.Object)     <- unlist(hithreshold);
-   if (length(quantile))    quantileFilter(.Object) <- unlist(quantile);
-   if (length(prescall))    callFilter(.Object)     <- unlist(prescall);
+      if (length(mad))         madFilter(.Object)      <- unlist(mad);
+      if (length(cv))          cvFilter(.Object)       <- unlist(cv);
+      if (length(variance))    varFilter(.Object)      <- unlist(variance);
+      if (length(difference))  diffFilter(.Object)     <- unlist(difference);
+      if (length(ratio))       ratioFilter(.Object)    <- unlist(ratio);
+      if (length(gap))         gapFilter(.Object)      <- unlist(gap);
+      if (length(lothreshold)) lowFilter(.Object)      <- unlist(lothreshold);
+      if (length(hithreshold)) highFilter(.Object)     <- unlist(hithreshold);
+      if (length(quantile))    quantileFilter(.Object) <- unlist(quantile);
+      if (length(prescall))    callFilter(.Object)     <- unlist(prescall);
+ 
+      .Object <- callNextMethod(.Object,
+                                mad         = mad,
+                                cv          = cv,
+                                variance    = variance,
+                                difference  = difference,
+                                ratio       = ratio,
+                                gap         = gap,
+                                lothreshold = lothreshold,
+                                hithreshold = hithreshold,
+                                quantile    = quantile,
+                                prescall    = prescall,
+                                ...);
 
-   .Object <- callNextMethod(.Object,
-                             mad         = mad,
-                             cv          = cv,
-                             variance    = variance,
-                             difference  = difference,
-                             ratio       = ratio,
-                             gap         = gap,
-                             lothreshold = lothreshold,
-                             hithreshold = hithreshold,
-                             quantile    = quantile,
-                             prescall    = prescall,
-                             ...);
+      if (length(mad))         madFilter(.Object)      <- unlist(mad);
+      if (length(cv))          cvFilter(.Object)       <- unlist(cv);
+      if (length(variance))    varFilter(.Object)      <- unlist(variance);
+      if (length(difference))  diffFilter(.Object)     <- unlist(difference);
+      if (length(ratio))       ratioFilter(.Object)    <- unlist(ratio);
+      if (length(gap))         gapFilter(.Object)      <- unlist(gap);
+      if (length(lothreshold)) lowFilter(.Object)      <- unlist(lothreshold);
+      if (length(hithreshold)) highFilter(.Object)     <- unlist(hithreshold);
+      if (length(quantile))    quantileFilter(.Object) <- unlist(quantile);
+      if (length(prescall))    callFilter(.Object)     <- unlist(prescall);
 
-   if (length(mad))         madFilter(.Object)      <- unlist(mad);
-   if (length(cv))          cvFilter(.Object)       <- unlist(cv);
-   if (length(variance))    varFilter(.Object)      <- unlist(variance);
-   if (length(difference))  diffFilter(.Object)     <- unlist(difference);
-   if (length(ratio))       ratioFilter(.Object)    <- unlist(ratio);
-   if (length(gap))         gapFilter(.Object)      <- unlist(gap);
-   if (length(lothreshold)) lowFilter(.Object)      <- unlist(lothreshold);
-   if (length(hithreshold)) highFilter(.Object)     <- unlist(hithreshold);
-   if (length(quantile))    quantileFilter(.Object) <- unlist(quantile);
-   if (length(prescall))    callFilter(.Object)     <- unlist(prescall);
-
-   .Object;
-}#initialize.PreFilter
-
-setMethod("initialize", "PreFilter", initialize.PreFilter);
+      .Object;
+   }
+)#initialize
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

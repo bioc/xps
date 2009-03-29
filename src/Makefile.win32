@@ -51,7 +51,7 @@ EXTRAFLAGS    = -G5
 !endif
 
 #check for libGraf setting
-!if ([findstr /c:"-include:_G__cpp_setupG__Graf1" ${ROOTSYS}\bin\root-config > nul ] == 0)
+!if ([findstr /c:"-include:_G__cpp_setupG__Graf1" $(ROOTSYS)\bin\root-config > nul ] == 0)
 WHICHGRAF =_G__cpp_setupG__Graf1
 !else
 WHICHGRAF =_G__cpp_setupG__Graf

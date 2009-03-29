@@ -41,16 +41,14 @@
 # DataTreeSet initialization:
 #------------------------------------------------------------------------------#
 
-"initialize.DataTreeSet" <-
-function(.Object, ...) 
-{
-   if (debug.xps()) print("------initialize:DataTreeSet------")
+setMethod("initialize", "DataTreeSet", 
+   function(.Object, ...) {
+      if (debug.xps()) print("------initialize:DataTreeSet------")
 
-   .Object <- callNextMethod(.Object, ...);
-   .Object;
-}#initialize.DataTreeSet
-
-setMethod("initialize", "DataTreeSet", initialize.DataTreeSet);
+      .Object <- callNextMethod(.Object, ...);
+      .Object;
+   }
+)#initialize
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

@@ -12,16 +12,14 @@
 # AnalysisTreeSet initialization:
 #------------------------------------------------------------------------------#
 
-"initialize.AnalysisTreeSet" <-
-function(.Object, ...) 
-{
-   if (debug.xps()) print("------initialize:AnalysisTreeSet------")
+setMethod("initialize", "AnalysisTreeSet", 
+   function(.Object, ...) {
+      if (debug.xps()) print("------initialize:AnalysisTreeSet------")
 
-   .Object <- callNextMethod(.Object, ...);
-   .Object;
-}#initialize.AnalysisTreeSet
-
-setMethod("initialize", "AnalysisTreeSet", initialize.AnalysisTreeSet);
+      .Object <- callNextMethod(.Object, ...);
+      .Object;
+   }
+)#initialize
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

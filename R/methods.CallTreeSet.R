@@ -20,24 +20,23 @@
 # CallTreeSet initialization:
 #------------------------------------------------------------------------------#
 
-"initialize.CallTreeSet" <-
-function(.Object,
-         calltype = "none",
-         ...) 
-{
-   if (debug.xps()) print("------initialize:CallTreeSet------")
+setMethod("initialize", "CallTreeSet", 
+   function(.Object,
+            calltype = "none",
+            ...) 
+   {
+      if (debug.xps()) print("------initialize:CallTreeSet------")
 
-   ## set default calltype
-   if (calltype == "") {
-      calltype <- "mas5";
-   }#if
+      ## set default calltype
+      if (calltype == "") {
+         calltype <- "mas5";
+      }#if
 
-   .Object <- callNextMethod(.Object, calltype=calltype, ...);
-   .Object@calltype = calltype;
-   .Object;
-}#initialize.CallTreeSet
-
-setMethod("initialize", "CallTreeSet", initialize.CallTreeSet);
+      .Object <- callNextMethod(.Object, calltype=calltype, ...);
+      .Object@calltype = calltype;
+      .Object;
+   }
+)#initialize
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

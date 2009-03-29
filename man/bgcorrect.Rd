@@ -13,13 +13,13 @@
 \usage{
 bgcorrect(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, select = "none", method = character(0), option = character(0), exonlevel = "", params = list(), verbose = TRUE)
 
-bgcorrect.gc(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, exonlevel = "", select = "antigenomic", verbose = TRUE)
+bgcorrect.gc(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, select = "antigenomic", exonlevel = "", verbose = TRUE)
 
-bgcorrect.mas4(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, exonlevel = "", verbose = TRUE)
+bgcorrect.mas4(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, select = "all", exonlevel = "", verbose = TRUE)
 
-bgcorrect.mas5(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, exonlevel = "", verbose = TRUE)
+bgcorrect.mas5(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, select = "both", exonlevel = "", verbose = TRUE)
 
-bgcorrect.rma(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, exonlevel = "", verbose = TRUE)
+bgcorrect.rma(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, select = "none", exonlevel = "", verbose = TRUE)
 
 xpsBgCorrect(object, ...)
 }
@@ -69,6 +69,26 @@ head(bg.mas4)
 if (interactive()) {
 image.dev(data.bg.mas4,bg=TRUE,col=rainbow(32))
 image(matrix(bg.mas4[,1], ncol=ncols(schemeSet(data.bg.mas4)), nrow=nrows(schemeSet(data.bg.mas4))))
+}
+
+\dontrun{
+## examples using Affymetrix human tissue dataset (see also xps/examples/script4exon.R)
+
+## example - exon array, e.g. HuEx-1_0-st-v2:
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
+datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
+scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na25.root",sep="/"))
+data.exon   <- root.data(scheme.exon, paste(datdir,"HuTissuesExon_cel.root",sep="/"))
+
+## compute rma background
+workdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Exon/hutissues/exon"
+data.bg.rma <- bgcorrect(data.exon, "HuExonRMABgrd", filedir=workdir, tmpdir="", 
+               method="rma", select="antigenomic", option="pmonly:epanechnikov",
+               params=c(16384), exonlevel="metacore+affx")
+
+# or alternatively:
+data.bg.rma <- bgcorrect.rma(data.exon, "HuExonRMABgrd", filedir=workdir, tmpdir="", 
+               select="antigenomic", exonlevel="metacore+affx")
 }
 }
 \keyword{manip}

@@ -93,6 +93,7 @@ scheme.hgu133p2.na24 <- import.expr.scheme("Scheme_HGU133p2_na24",filedir=scmdir
 scheme.hgu133p2.na25 <- import.expr.scheme("Scheme_HGU133p2_na25",filedir=scmdir,paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),paste(anndir,"Version08Mar/HG-U133_Plus_2.na25.annot.csv",sep="/"))
 scheme.hgu133p2.na26 <- import.expr.scheme("Scheme_HGU133p2_na26",filedir=scmdir,paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),paste(anndir,"Version08Jul/HG-U133_Plus_2.na26.annot.csv",sep="/"))
 scheme.hgu133p2.na27 <- import.expr.scheme("Scheme_HGU133p2_na27",filedir=scmdir,paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),paste(anndir,"Version08Nov/HG-U133_Plus_2.na27.annot.csv",sep="/"))
+scheme.hgu133p2.na28 <- import.expr.scheme("Scheme_HGU133p2_na28",filedir=scmdir,paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),paste(anndir,"Version09Mar/HG-U133_Plus_2.na28.annot.csv",sep="/"))
 
 # HT_HG-U133_Plus_PM
 # Note:
@@ -113,7 +114,7 @@ scheme.hgu133p2.umi <- import.expr.scheme("Scheme_HGU133p2_umi_refseq_v10",filed
 # create ROOT scheme files for whole genome arrays
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# HuGene-1_0-st-v1.r3:
+# HuGene-1_0-st-v1.r3: used as whole genome array
 scheme.hugene10stv1r3.na23 <- import.genome.scheme("Scheme_HuGene10stv1r3_na23",filedir=scmdir,
                               paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.clf",sep="/"),
                               paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.pgf",sep="/"),
@@ -132,12 +133,31 @@ scheme.hugene10stv1r3.na25 <- import.genome.scheme("Scheme_HuGene10stv1r3_na25",
 scheme.hugene10stv1r3.na26 <- import.genome.scheme("Scheme_HuGene10stv1r3_na26",filedir=scmdir,
                               paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.clf",sep="/"),
                               paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.pgf",sep="/"),
-                              paste(anndir,"Version08Jul/HuGene-1_0-st-v1.na26.hg18.transcript.csv/HuGene-1_0-st-v1.na26.hg18.transcript.csv",sep="/"))
+                              paste(anndir,"Version08Jul/HuGene-1_0-st-v1.na26.hg18.transcript.csv",sep="/"))
 
 scheme.hugene10stv1r3.na27 <- import.genome.scheme("Scheme_HuGene10stv1r3_na27",filedir=scmdir,
                               paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.clf",sep="/"),
                               paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.pgf",sep="/"),
-                              paste(anndir,"Version08Nov/HuGene-1_0-st-v1.na27.hg18.transcript.csv/HuGene-1_0-st-v1.na27.hg18.transcript.csv",sep="/"))
+                              paste(anndir,"Version08Nov/HuGene-1_0-st-v1.na27.hg18.transcript.csv",sep="/"))
+
+scheme.hugene10stv1r3.na28 <- import.genome.scheme("Scheme_HuGene10stv1r3_na28",filedir=scmdir,
+                              paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.clf",sep="/"),
+                              paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.pgf",sep="/"),
+                              paste(anndir,"Version09Mar/HuGene-1_0-st-v1.na28.hg18.transcript.csv",sep="/"))
+
+# HuGene-1_0-st-v1.r4: used as exon array
+scheme.hugene10stv1r4.na27 <- import.exon.scheme("Scheme_HuGene10stv1r4_na27",filedir=scmdir,
+                              paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.clf",sep="/"),
+                              paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.pgf",sep="/"),
+                              paste(anndir,"Version09Feb/HuGene-1_0-st-v1.na27.2.hg18.probeset.csv",sep="/"),
+                              paste(anndir,"Version09Feb/HuGene-1_0-st-v1.na27.hg18.transcript.csv",sep="/"))
+
+scheme.hugene10stv1r4.na28 <- import.exon.scheme("Scheme_HuGene10stv1r4_na28",filedir=scmdir,
+                              paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.clf",sep="/"),
+                              paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.pgf",sep="/"),
+                              paste(anndir,"Version09Mar/HuGene-1_0-st-v1.na28.hg18.probeset.csv",sep="/"),
+                              paste(anndir,"Version09Mar/HuGene-1_0-st-v1.na28.hg18.transcript.csv",sep="/"))
+
 
 # MoGene-1_0-st-v1.r3:
 scheme.mogene10stv1r3.na24 <- import.genome.scheme("Scheme_MoGene10stv1r3_na24",filedir=scmdir,
@@ -206,14 +226,20 @@ scheme.huex10stv2r2.na25 <- import.exon.scheme("Scheme_HuEx10stv2r2_na25",filedi
 scheme.huex10stv2r2.na26 <- import.exon.scheme("Scheme_HuEx10stv2r2_na26",filedir=scmdir,
                             paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
                             paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
-                            paste(anndir,"Version08Jul/HuEx-1_0-st-v2.na26.hg18.probeset.csv/HuEx-1_0-st-v2.na26.hg18.probeset.csv",sep="/"),
-                            paste(anndir,"Version08Jul/HuEx-1_0-st-v2.na26.hg18.transcript.csv/HuEx-1_0-st-v2.na26.hg18.transcript.csv",sep="/"))
+                            paste(anndir,"Version08Jul/HuEx-1_0-st-v2.na26.hg18.probeset.csv",sep="/"),
+                            paste(anndir,"Version08Jul/HuEx-1_0-st-v2.na26.hg18.transcript.csv",sep="/"))
 
 scheme.huex10stv2r2.na27 <- import.exon.scheme("Scheme_HuEx10stv2r2_na27",filedir=scmdir,
                             paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
                             paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
-                            paste(anndir,"Version08Nov/HuEx-1_0-st-v2.na27.hg18.probeset.csv/HuEx-1_0-st-v2.na27.hg18.probeset.csv",sep="/"),
-                            paste(anndir,"Version08Nov/HuEx-1_0-st-v2.na27.hg18.transcript.csv/HuEx-1_0-st-v2.na27.hg18.transcript.csv",sep="/"))
+                            paste(anndir,"Version08Nov/HuEx-1_0-st-v2.na27.hg18.probeset.csv",sep="/"),
+                            paste(anndir,"Version08Nov/HuEx-1_0-st-v2.na27.hg18.transcript.csv",sep="/"))
+
+scheme.huex10stv2r2.na28 <- import.exon.scheme("Scheme_HuEx10stv2r2_na28",filedir=scmdir,
+                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
+                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
+                            paste(anndir,"Version09Mar/HuEx-1_0-st-v2.na28.hg18.probeset.csv",sep="/"),
+                            paste(anndir,"Version09Mar/HuEx-1_0-st-v2.na28.hg18.transcript.csv",sep="/"))
 
 # HuEx-1_0-st-v2.r2 old annotation:
 scheme.huex10stv2r2.old <- import.exon.scheme("Scheme_HuEx10stv2r2_old",filedir=scmdir,

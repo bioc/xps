@@ -26,7 +26,7 @@
 \begin{document}
 
 \title{Introduction to the xps Package: Overview}
-\date{February, 2009}
+\date{April, 2009}
 \author{Christian Stratowa}
 \maketitle
 
@@ -623,7 +623,7 @@ and saved in subdirectories \Rcode{libraryfiles} and \Rcode{Annotation}, respect
 \begin{itemize}
 \item GeneChip chip definition file: {\it Test3.CDF}
 \item Probe sequence file: {\it Test3\_probe.tab}
-\item Probeset annotation file: {\it Test3.na25.annot.csv}
+\item Probeset annotation file: {\it Test3.na28.annot.csv}
 \end{itemize}
 
 In a new \Robject{R}-session we load our library and define the directories, where
@@ -638,11 +638,11 @@ scmdir <- "/path/to/CRAN/Workspaces/Schemes"
 
 Now we can create a \ROOT\ \Rclass{scheme} file:
 <<eval=FALSE>>=
-scheme.test3 <- import.expr.scheme("Scheme_Test3_na25", 
+scheme.test3 <- import.expr.scheme("Scheme_Test3_na28", 
                        filedir=scmdir,  
                        paste(libdir,"Test3.CDF",sep="/"), 
                        paste(libdir,"Test3_probe.tab",sep="/"), 
-                       paste(anndir,"Test3.na25.annot.csv",sep="/"))
+                       paste(anndir,"Test3.na28.annot.csv",sep="/"))
 @
 
 The \Robject{R} object \Rclass{scheme.test3} is not needed lateron, since in every
@@ -670,7 +670,7 @@ of \Rclass{SchemeTreeSet}, which contain this information already, by setting pa
 \Rcode{add.mask} of function \Rfunction{import.expr.scheme} to \Rcode{add.mask=TRUE}, 
 e.g.:
 <<eval=FALSE>>=
-scheme.test3 <- import.expr.scheme("Scheme_Test3_na25",..., add.mask=TRUE)
+scheme.test3 <- import.expr.scheme("Scheme_Test3_na28",..., add.mask=TRUE)
 @
 
 {\bf Note 3:} Please note that for the new GeneChip Exon array systems and Gene array systems

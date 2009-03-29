@@ -21,51 +21,49 @@
 # TreeSet initialization:
 #------------------------------------------------------------------------------#
 
-"initialize.TreeSet" <-
-function(.Object,
-         setname   = character(),
-         settype   = character(),
-         rootfile  = NULL,
-         filedir   = getwd(),
-         numtrees  = 0,
-         treenames = list(),
-         ...) 
-{
-   if (debug.xps()) print("------initialize:TreeSet------")
+setMethod("initialize", "TreeSet", 
+   function(.Object,
+            setname   = character(),
+            settype   = character(),
+            rootfile  = NULL,
+            filedir   = getwd(),
+            numtrees  = 0,
+            treenames = list(),
+            ...) 
+   {
+      if (debug.xps()) print("------initialize:TreeSet------")
 
-   ## prevent effects of multiple initialization
-   if (is.null(rootfile)) return(.Object);
-   .Object@setname  <- setname;
-   .Object@settype  <- settype;
-   .Object@rootfile <- rootfile;
-   .Object@filedir  <- filedir;
+      ## prevent effects of multiple initialization
+      if (is.null(rootfile)) return(.Object);
+      .Object@setname  <- setname;
+      .Object@settype  <- settype;
+      .Object@rootfile <- rootfile;
+      .Object@filedir  <- filedir;
 
-   rootfile <- rootDirFile(rootfile, filedir);
+      rootfile <- rootDirFile(rootfile, filedir);
 
-   .Object <- callNextMethod(.Object,
-                             setname   = setname,
-                             settype   = settype,
-                             rootfile  = rootfile,
-                             filedir   = filedir,
-                             numtrees  = numtrees,
-                             treenames = treenames,
-                             ...);
-   .Object@setname   <- setname;
-   .Object@settype   <- settype;
-   .Object@rootfile  <- rootfile;
-   .Object@filedir   <- filedir;
-   .Object@numtrees  <- numtrees;
-   .Object@treenames <- treenames;
-   .Object;
-}#initialize.TreeSet
-
-setMethod("initialize", "TreeSet", initialize.TreeSet);
+      .Object <- callNextMethod(.Object,
+                                setname   = setname,
+                                settype   = settype,
+                                rootfile  = rootfile,
+                                filedir   = filedir,
+                                numtrees  = numtrees,
+                                treenames = treenames,
+                                ...);
+      .Object@setname   <- setname;
+      .Object@settype   <- settype;
+      .Object@rootfile  <- rootfile;
+      .Object@filedir   <- filedir;
+      .Object@numtrees  <- numtrees;
+      .Object@treenames <- treenames;
+      .Object;
+   }
+)#initialize
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 setValidity("TreeSet",
-   function(object) 
-   {
+   function(object) {
       if (debug.xps()) print("------setValidity:TreeSet------")
 
       msg <- NULL;

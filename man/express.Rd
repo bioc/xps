@@ -108,5 +108,22 @@ if (interactive()) {
 boxplot(expr.rma)
 boxplot(log2(expr[,3:6]))
 }
+
+\dontrun{
+## examples using Affymetrix human tissue dataset (see also xps/examples/script4exon.R)
+
+## example - exon array, e.g. HuEx-1_0-st-v2:
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
+datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
+scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na25.root",sep="/"))
+data.exon   <- root.data(scheme.exon, paste(datdir,"HuTissuesExon_cel.root",sep="/"))
+
+workdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Exon/hutissues/exon"
+expr.rma <- express(data.exon,"HuExonExprs",filedir=workdir,tmpdir="",update=F,
+            bgcorrect.method="rma",bgcorrect.select="antigenomic",bgcorrect.option="pmonly:epanechnikov",bgcorrect.params=c(16384),
+            normalize.method="quantile",normalize.select="pmonly",normalize.option="transcript:together:none",normalize.logbase="0",normalize.params=c(0.0),
+            summarize.method="medianpolish",summarize.select="pmonly",summarize.option="transcript",summarize.logbase="log2",summarize.params=c(10, 0.01, 1.0),
+            exonlevel="metacore+affx")
+}
 }
 \keyword{manip}

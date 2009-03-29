@@ -22,36 +22,35 @@
 # ProcesSet initialization:
 #------------------------------------------------------------------------------#
 
-"initialize.ProcesSet" <-
-function(.Object,
-         scheme = NULL,
-         data   = data.frame(),
-         params = list(),
-         ...) 
-{
-   if (debug.xps()) print("------initialize:ProcesSet------")
+setMethod("initialize", "ProcesSet", 
+   function(.Object,
+            scheme = NULL,
+            data   = data.frame(),
+            params = list(),
+            ...) 
+   {
+      if (debug.xps()) print("------initialize:ProcesSet------")
 
-   ## prevent effects of multiple initialization
-   if (is.null(scheme))  return(.Object);
-   if (is.null(data))    data   <- data.frame(matrix(nr=0,nc=0));
-   if (!is.list(params)) params <- as.list(params);
+      ## prevent effects of multiple initialization
+      if (is.null(scheme))  return(.Object);
+      if (is.null(data))    data   <- data.frame(matrix(nr=0,nc=0));
+      if (!is.list(params)) params <- as.list(params);
 
-   .Object@scheme = scheme;
-   .Object@data   = data;
-   .Object@params = params;
+      .Object@scheme = scheme;
+      .Object@data   = data;
+      .Object@params = params;
 
-   .Object <- callNextMethod(.Object,
-                             scheme = scheme,
-                             data   = data,
-                             params = params,
-                             ...);
-   .Object@scheme = scheme;
-   .Object@data   = data;
-   .Object@params = params;
-   .Object;
-}#initialize.ProcesSet
-
-setMethod("initialize", "ProcesSet", initialize.ProcesSet);
+      .Object <- callNextMethod(.Object,
+                                scheme = scheme,
+                                data   = data,
+                                params = params,
+                                ...);
+      .Object@scheme = scheme;
+      .Object@data   = data;
+      .Object@params = params;
+      .Object;
+   }
+)#initialize
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

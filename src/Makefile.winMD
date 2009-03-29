@@ -1,14 +1,14 @@
 #------------------------------------------------------------------------------
 
-CL            = "$(MSVSPATH)/cl"
-LINK          = "$(MSVSPATH)/link"
+CL            = "${MSVSPATH}/cl"
+LINK          = "${MSVSPATH}/link"
 
 #check for libGraf setting
-!if ([findstr /c:"-include:_G__cpp_setupG__Graf1" $(ROOTSYS)\bin\root-config > nul ] == 0)
+ifneq ($(findstring _G__cpp_setupG__Graf1, ${ROOTSYS}/bin/root-config),)
 WHICHGRAF =_G__cpp_setupG__Graf1
-!else
+else
 WHICHGRAF =_G__cpp_setupG__Graf
-!endif
+endif
 
 #LDOPT         = -opt:ref
 LDOPT         = -opt:noref
@@ -19,18 +19,18 @@ LDFLAGS       = $(LDOPT) $(conlflags) -nologo -include:_G__cpp_setupG__Hist \
                 -include:_G__cpp_setupG__Matrix -include:_G__cpp_setupG__Physics \
                 -include:_G__cpp_setupG__Ged 
 SOFLAGS       = $(dlllflags:-pdb:none=)
-ROOTLIBS      = "$(ROOTSYS)/lib/libCore.lib" \
-                "$(ROOTSYS)/lib/libCint.lib" "$(ROOTSYS)/lib/libHist.lib" \
-                "$(ROOTSYS)/lib/libGraf.lib" "$(ROOTSYS)/lib/libGraf3d.lib" \
-                "$(ROOTSYS)/lib/libGpad.lib" "$(ROOTSYS)/lib/libTree.lib" \
-                "$(ROOTSYS)/lib/libRint.lib" "$(ROOTSYS)/lib/libPostscript.lib" \
-                "$(ROOTSYS)/lib/libMatrix.lib" "$(ROOTSYS)/lib/libPhysics.lib" \
+ROOTLIBS      = "${ROOTSYS}/lib/libCore.lib" \
+                "${ROOTSYS}/lib/libCint.lib" "${ROOTSYS}/lib/libHist.lib" \
+                "${ROOTSYS}/lib/libGraf.lib" "${ROOTSYS}/lib/libGraf3d.lib" \
+                "${ROOTSYS}/lib/libGpad.lib" "${ROOTSYS}/lib/libTree.lib" \
+                "${ROOTSYS}/lib/libRint.lib" "${ROOTSYS}/lib/libPostscript.lib" \
+                "${ROOTSYS}/lib/libMatrix.lib" "${ROOTSYS}/lib/libPhysics.lib" \
                 "$(ROOTSYS)/lib/libNet.lib" "$(ROOTSYS)/lib/libRIO.lib" \
                 "$(ROOTSYS)/lib/libMathCore.lib"
 LIBS          = $(ROOTLIBS)
-GLIBS         = $(LIBS) "$(ROOTSYS)/lib/libGui.lib" "$(ROOTSYS)/lib/libGraf.lib" \
-                "$(ROOTSYS)/lib/libGpad.lib" "$(ROOTSYS)/lib/libGed.lib" \
-                "$(ROOTSYS)/lib/libTreePlayer.lib" "$(ROOTSYS)/lib/libTreeViewer.lib"
+GLIBS         = $(LIBS) "${ROOTSYS}/lib/libGui.lib" "${ROOTSYS}/lib/libGraf.lib" \
+                "${ROOTSYS}/lib/libGpad.lib" "${ROOTSYS}/lib/libGed.lib" \
+                "${ROOTSYS}/lib/libTreePlayer.lib" "${ROOTSYS}/lib/libTreeViewer.lib"
 LIBSALL       = $(ROOTLIBS)
 
 #------------------------------------------------------------------------------
@@ -62,68 +62,68 @@ xps.dll:  $(MYOBJ)
 	$(LINK) /dll /def:xps.def /out:xps.dll fp10.obj $(SOFLAGS) $(LDFLAGS) $(GLIBS) *.obj 
 	
 TMLMath.obj: TMLMath.h TMLMath.cxx
-	$(CL) /I"$(ROOTSYS)/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c TMLMath.cxx
+	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MD /EHsc /Ox /D "MSVC" /D "WIN32" /c TMLMath.cxx
 
 TStat.obj: TStat.h TStat.cxx
-	$(CL) /I"$(ROOTSYS)/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c TStat.cxx
+	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MD /EHsc /Ox /D "MSVC" /D "WIN32" /c TStat.cxx
 	
 StatUtils.obj: StatUtils.h StatUtils.cxx
-	$(CL) /I"$(ROOTSYS)/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c StatUtils.cxx
+	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MD /EHsc /Ox /D "MSVC" /D "WIN32" /c StatUtils.cxx
 	
 XPSBase.obj: XPSBase.h XPSBase.cxx
-	$(CL) /I"$(ROOTSYS)/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSBase.cxx
+	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MD /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSBase.cxx
 
 XPSUtils.obj: XPSUtils.h XPSUtils.cxx
-	$(CL) /I"$(ROOTSYS)/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSUtils.cxx
+	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MD /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSUtils.cxx
 	
 XPSSchemes.obj: XPSSchemes.h XPSSchemes.cxx
-	$(CL) /I"$(ROOTSYS)/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSSchemes.cxx
+	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MD /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSSchemes.cxx
 	
 XPSDataTypes.obj: XPSDataTypes.h XPSDataTypes.cxx
-	$(CL) /I"$(ROOTSYS)/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSDataTypes.cxx
+	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MD /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSDataTypes.cxx
 
 XPSProjectHandler.obj: XPSProjectHandler.h XPSProjectHandler.cxx
-	$(CL) /I"$(ROOTSYS)/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSProjectHandler.cxx
+	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MD /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSProjectHandler.cxx
 	
 XPSData.obj: XPSData.h XPSData.cxx
-	$(CL) /I"$(ROOTSYS)/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSData.cxx
+	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MD /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSData.cxx
 	
 XPSProcessing.obj: XPSProcessing.h XPSProcessing.cxx
-	$(CL) /I"$(ROOTSYS)/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSProcessing.cxx
+	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MD /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSProcessing.cxx
 
 XPSHybridizer.obj: XPSHybridizer.h XPSHybridizer.cxx
-	$(CL) /I"$(ROOTSYS)/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSHybridizer.cxx
+	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MD /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSHybridizer.cxx
 	
 XPSSelector.obj: XPSSelector.h XPSSelector.cxx
-	$(CL) /I"$(ROOTSYS)/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSSelector.cxx
+	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MD /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSSelector.cxx
 	
 XPSNormalizer.obj: XPSNormalizer.h XPSNormalizer.cxx
-	$(CL) /I"$(ROOTSYS)/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSNormalizer.cxx
+	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MD /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSNormalizer.cxx
 
 XPSPreProcessing.obj: XPSPreProcessing.h XPSPreProcessing.cxx
-	$(CL) /I"$(ROOTSYS)/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSPreProcessing.cxx
+	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MD /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSPreProcessing.cxx
 	
 XPSNormation.obj: XPSNormation.h XPSNormation.cxx
-	$(CL) /I"$(ROOTSYS)/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSNormation.cxx
+	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MD /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSNormation.cxx
 	
 XPSFilter.obj: XPSFilter.h XPSFilter.cxx
-	$(CL) /I"$(ROOTSYS)/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSFilter.cxx
+	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MD /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSFilter.cxx
 
 XPSAnalyzer.obj: XPSAnalyzer.h XPSAnalyzer.cxx
-	$(CL) /I"$(ROOTSYS)/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSAnalyzer.cxx
+	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MD /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSAnalyzer.cxx
 	
 XPSAnalysis.obj: XPSAnalysis.h XPSAnalysis.cxx
-	$(CL) /I"$(ROOTSYS)/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSAnalysis.cxx
+	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MD /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSAnalysis.cxx
 
 rwrapper.obj: rwrapper.h rwrapper.cxx
-	$(CL) /I"$(ROOTSYS)/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c rwrapper.cxx
+	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MD /EHsc /Ox /D "MSVC" /D "WIN32" /c rwrapper.cxx
 	
 xpsDict.cxx: $(MYHDR) xpsLinkDef.h
 	@echo "Generating dictionary $@..."
 	@rootcint -f $@ -c $(MYHDR) xpsLinkDef.h
 	
 xpsDict.obj: xpsDict.cxx xpsDict.h
-	$(CL) /I"$(ROOTSYS)/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c xpsDict.cxx
+	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MD /EHsc /Ox /D "MSVC" /D "WIN32" /c xpsDict.cxx
 
 clean:
 	rm -f $(MYOBJ) *.a *.d *.rc 

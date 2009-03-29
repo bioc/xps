@@ -13,16 +13,14 @@
 # FilterTreeSet initialization:
 #------------------------------------------------------------------------------#
 
-"initialize.FilterTreeSet" <-
-function(.Object, ...) 
-{
-   if (debug.xps()) print("------initialize:FilterTreeSet------")
+setMethod("initialize", "FilterTreeSet", 
+   function(.Object, ...) {
+      if (debug.xps()) print("------initialize:FilterTreeSet------")
 
-   .Object <- callNextMethod(.Object, ...);
-   .Object;
-}#initialize.FilterTreeSet
-
-setMethod("initialize", "FilterTreeSet", initialize.FilterTreeSet);
+      .Object <- callNextMethod(.Object, ...);
+      .Object;
+   }
+)#initialize
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

@@ -23,28 +23,27 @@
 # ExprTreeSet initialization:
 #------------------------------------------------------------------------------#
 
-"initialize.ExprTreeSet" <-
-function(.Object,
-         exprtype = "none",
-         normtype = "none",
-         ...) 
-{
-   if (debug.xps()) print("------initialize:ExprTreeSet------")
+setMethod("initialize", "ExprTreeSet", 
+   function(.Object,
+            exprtype = "none",
+            normtype = "none",
+            ...) 
+   {
+      if (debug.xps()) print("------initialize:ExprTreeSet------")
 
-   ## set default expression/normation type
-   if (exprtype == "") exprtype <- "none";
-   if (normtype == "") normtype <- "none";
+      ## set default expression/normation type
+      if (exprtype == "") exprtype <- "none";
+      if (normtype == "") normtype <- "none";
 
-   .Object <- callNextMethod(.Object,
-                             exprtype = exprtype,
-                             normtype = normtype,
-                             ...);
-   .Object@exprtype = exprtype;
-   .Object@normtype = normtype;
-   .Object;
-}#initialize.ExprTreeSet
-
-setMethod("initialize", "ExprTreeSet", initialize.ExprTreeSet);
+      .Object <- callNextMethod(.Object,
+                                exprtype = exprtype,
+                                normtype = normtype,
+                                ...);
+      .Object@exprtype = exprtype;
+      .Object@normtype = normtype;
+      .Object;
+   }
+)#initialize
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

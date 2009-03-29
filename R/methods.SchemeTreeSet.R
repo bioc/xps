@@ -21,32 +21,31 @@
 # SchemeTreeSet initialization:
 #------------------------------------------------------------------------------#
 
-"initialize.SchemeTreeSet" <-
-function(.Object,
-         chipname  = character(),
-         chiptype  = character(),
-         probeinfo = list(),
-         ...) 
-{
-   if (debug.xps()) print("------initialize:SchemeTreeSet------")
+setMethod("initialize", "SchemeTreeSet", 
+   function(.Object,
+            chipname  = character(),
+            chiptype  = character(),
+            probeinfo = list(),
+            ...) 
+   {
+      if (debug.xps()) print("------initialize:SchemeTreeSet------")
 
-   ## set default chiptype
-   if (missing(chiptype) || chiptype == "") {
-      chiptype <- "GeneChip";
-   }#if
+      ## set default chiptype
+      if (missing(chiptype) || chiptype == "") {
+         chiptype <- "GeneChip";
+      }#if
 
-   .Object <- callNextMethod(.Object,
-                             chipname  = chipname,
-                             chiptype  = chiptype,
-                             probeinfo = probeinfo,
-                             ...);
-   .Object@chipname  <- chipname;
-   .Object@chiptype  <- chiptype;
-   .Object@probeinfo <- probeinfo;
-   .Object;
-}#initialize.SchemeTreeSet
-
-setMethod("initialize", "SchemeTreeSet", initialize.SchemeTreeSet);
+      .Object <- callNextMethod(.Object,
+                                chipname  = chipname,
+                                chiptype  = chiptype,
+                                probeinfo = probeinfo,
+                                ...);
+      .Object@chipname  <- chipname;
+      .Object@chiptype  <- chiptype;
+      .Object@probeinfo <- probeinfo;
+      .Object;
+   }
+)#initialize
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
