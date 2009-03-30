@@ -2215,7 +2215,7 @@ void MetaProbesets(char **schemefile, char **infile, char **outfile,
       idxstr = (XIdxString*)(htable->FindObject(strg.Data()));
       if (idxstr) {
          idx = idxstr->GetIndex();
-         output << str[idx] << "\t" << pcnt[idx] << endl;
+         output << (str[idx]).Data() << "\t" << pcnt[idx] << endl;
       }//if
    }//for_i
    output.close();

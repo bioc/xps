@@ -26,4 +26,5 @@ EXPORTS
  GetTreeNames
  GetTreeNames4Exten
  GetRawCELNames
+ MetaProbesets
  PlotImage
