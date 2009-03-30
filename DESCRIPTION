@@ -1,14 +1,14 @@
 Package: xps
-Version: 1.2.6
+Version: 1.2.7
 Title: Methods for Processing and Analysis of Affymetrix Oligonucleotide Arrays
        including Exon Arrays and Gene Arrays
 Author: Christian Stratowa, Vienna, Austria
 Maintainer: Christian Stratowa <cstrato@aon.at>
-Depends: R (>= 2.5.0), methods
+Depends: R (>= 2.6.0), methods
 Description: The package handles pre-processing, normalization, filtering
-      and analysis of Affymetrix GeneChip expression arrays, including 
-      exon array systems (Exon 1.0 ST: core, extended, full probesets) and gene array 
-      systems (Gene 1.0 ST) on computers with 1 GB RAM only. It imports Affymetrix 
+      and analysis of Affymetrix GeneChip expression arrays, including exon 
+      arrays (Exon 1.0 ST: core, extended, full probesets), gene arrays (Gene 1.0 ST)
+      and plate arrays on computers with 1 GB RAM only. It imports Affymetrix 
       .CDF, .CLF, .PGF and .CEL as well as annotation files, and computes e.g. RMA, 
       MAS5, FARMS, DFW, MAS5-calls, DABG-calls, I/NI-calls. It is an R wrapper to 
       XPS (eXpression Profiling System), which is based on ROOT, an object-oriented 
@@ -24,7 +24,7 @@ Collate: utils.R TreeSetClasses.R
          methods.FilterTreeSet.R methods.AnalysisTreeSet.R 
          Constructors.R
          import.expr.scheme.R import.exon.scheme.R import.genome.scheme.R root.scheme.R
-         import.data.R root.data.R
+         import.data.R root.data.R root.merge.data.R
          root.expr.R root.call.R
          export.R
          rma.R mas4.R mas5.R mas5.call.R dabg.call.R
@@ -33,6 +33,6 @@ Collate: utils.R TreeSetClasses.R
          image.dev.R boxplot.dev.R mvaplot.dev.R
          root.image.R root.density.R root.draw.R root.draw.leaves.R root.profile.R
          zzz.R
-biocViews: Microarray, OneChannel, Preprocessing
+biocViews: ExonArray, GeneExpression, Microarray, OneChannel, DataImport, Preprocessing
 LazyLoad: yes
 SystemRequirements: ROOT <http://root.cern.ch> - See README file for installation instructions.
