@@ -1,7 +1,7 @@
 Package: xps
-Version: 1.3.9
-Title: Methods for Processing and Analysis of Affymetrix Oligonucleotide Arrays
-       including Exon Arrays and Gene Arrays
+Version: 1.3.10
+Title: Processing and Analysis of Affymetrix Oligonucleotide Arrays including
+       Exon Arrays, Whole Genome Arrays and Plate Arrays
 Author: Christian Stratowa, Vienna, Austria
 Maintainer: Christian Stratowa <cstrato@aon.at>
 Depends: R (>= 2.6.0), methods
