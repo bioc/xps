@@ -462,7 +462,7 @@ CELNames <- function(celnames) {
 #------------------------------------------------------------------------------#
 # exonLevel: utility function for setValidity
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-exonLevel <- function(exonlevel="", chiptype, as.sum=TRUE) {
+exonLevel <- function(exonlevel="", chiptype="GeneChip", as.sum=TRUE) {
    if (debug.xps()) print("------exonLevel------")
 
    exlevel <- 0; if (as.sum) exlevel <- c(0, 0, 0);
