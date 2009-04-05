@@ -1889,7 +1889,7 @@ function(object,
 
       TYPE <- c("subtractbg", "correctbg", "attenuatebg", "pmonly:epanechnikov");
       if (is.na(match(bgcorrect.option, TYPE))) {
-         warning(paste(sQuote("bgcorrect.option"),
+         print(paste("Note:", sQuote("bgcorrect.option"),
                       "is different from <pmonly:epanechnikov> for rma"));
       }#if
       if (length(bgcorrect.params) == 0) {
@@ -2188,7 +2188,7 @@ function(object,
    ## check for valid background correction option
    TYPE <- c("subtractbg", "correctbg", "attenuatebg", "pmonly:epanechnikov");
    if (is.na(match(option, TYPE))) {
-      warning(paste(sQuote("option"),
+      print(paste("Note:", sQuote("option"),
                    "is different from <pmonly:epanechnikov> for rma"));
    }#if
 

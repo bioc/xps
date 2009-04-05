@@ -66,6 +66,7 @@ Following \code{exonlevel} annotations are valid for exon arrays:
   \tab \code{metaextended}:\tab extended meta-probesets. \cr
   \tab \code{full}:\tab probesets supported by gene predictions only. \cr
   \tab \code{metafull}:\tab full meta-probesets. \cr
+  \tab \code{ambiguous}:\tab ambiguous probesets only. \cr
   \tab \code{affx}:\tab standard AFFX controls. \cr
   \tab \code{all}:\tab combination of above (including affx).
 }
@@ -78,7 +79,7 @@ Following \code{exonlevel} annotations are valid for whole genome arrays:
 }
 Exon levels can also be combined, with following combinations being most useful:
 \tabular{ll}{
-  \code{exonlevel="metacore+affy"}:  \tab core meta-probesets plus AFFX controls \cr
+  \code{exonlevel="metacore+affx"}:  \tab core meta-probesets plus AFFX controls \cr
   \code{exonlevel="core+extended"}: \tab probesets with cDNA support \cr
   \code{exonlevel="core+extended+full"}:  \tab supported plus predicted probesets \cr
 }

@@ -13,7 +13,7 @@
 */
 
 #ifndef R_WRAPPER
-#define R_WRAPPER 1
+#define R_WRAPPER
 
 extern "C" {
 void ImportExprSchemes(char **filename, char **dirname, char **chipname,

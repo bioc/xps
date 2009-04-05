@@ -64,6 +64,7 @@ Following \code{exonlevel} annotations are valid for exon arrays:
   \tab \code{metaextended}:\tab extended meta-probesets. \cr
   \tab \code{full}:\tab probesets supported by gene predictions only. \cr
   \tab \code{metafull}:\tab full meta-probesets. \cr
+  \tab \code{ambiguous}:\tab ambiguous probesets only. \cr
   \tab \code{affx}:\tab standard AFFX controls. \cr
   \tab \code{all}:\tab combination of above (including affx).
 }
@@ -76,7 +77,7 @@ Following \code{exonlevel} annotations are valid for whole genome arrays:
 }
 Exon levels can also be combined, with following combinations being most useful:
 \tabular{ll}{
-  \code{exonlevel="metacore+affy"}:  \tab core meta-probesets plus AFFX controls \cr
+  \code{exonlevel="metacore+affx"}:  \tab core meta-probesets plus AFFX controls \cr
   \code{exonlevel="core+extended"}: \tab probesets with cDNA support \cr
   \code{exonlevel="core+extended+full"}:  \tab supported plus predicted probesets \cr
 }
@@ -108,7 +109,8 @@ Parameter \code{exonlevel} determines not only which probes are used for medianp
 the probes used for background calculation and for quantile normalization. If you want to use
 seperate probes for background calculation, quantile normalization and medianpolish summarization,
 you can pass a numeric vector containing three integer values corresponding to the respective 
-\code{exonlevel}, e.g. you can use \code{exonlevel=c(16316,8252,8252)}.
+\code{exonlevel}, e.g. you can use \code{exonlevel=c(16316,8252,8252)}, see function 
+\code{\link{exonLevel}} for more details.
 }
 \references{
  Rafael. A. Irizarry, Benjamin M. Bolstad, Francois Collin, Leslie M. Cope, Bridget Hobbs
