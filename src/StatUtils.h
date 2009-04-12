@@ -1,11 +1,11 @@
-// Author: Christian Stratowa 11/25/2002             last modified: 02/10/2008
+// Author: Christian Stratowa 11/25/2002             last modified: 04/11/2009
 
 /*
  *******************************************************************************
  ***********************  Statistics Package for ROOT  *************************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2009 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -146,6 +146,7 @@ class TUnivariateTest: public TNamed {
 
       Double_t *PAdjust(Int_t n, Double_t *pval, Double_t *padj);
       Double_t *Bonferroni(Int_t n, Double_t *pval, Double_t *padj);
+      Double_t *BY(Int_t n, Double_t *pval, Double_t *padj);
       Double_t *FDR(Int_t n, Double_t *pval, Double_t *padj);
       Double_t *Hochberg(Int_t n, Double_t *pval, Double_t *padj);
       Double_t *Holm(Int_t n, Double_t *pval, Double_t *padj);

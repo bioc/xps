@@ -4,6 +4,9 @@
 # initialize:
 # setValidity:
 # filterTreeset:
+# validFilter:
+# getTreeData:
+# validData:
 # volcanoplot:
 #==============================================================================#
 

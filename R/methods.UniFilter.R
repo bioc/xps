@@ -198,10 +198,10 @@ setReplaceMethod("uniTest", signature(object="UniFilter", value="character"),
       }#if
 
       ## check correction
-      COR <- c("none", "bonferroni", "fdr", "hochberg", "holm", "wy");
+      COR <- c("none", "bonferroni", "BH", "BY", "fdr", "hochberg", "holm", "wy");
       if (is.na(match(value[3], COR))) {
          stop(paste(sQuote("unitest@correction"),
-              "must be <none,bonferroni,fdr,hochberg,holm,wy>"));
+              "must be <none,bonferroni,BH,BY,fdr,hochberg,holm,wy>"));
       }#if
 
       ## check paired

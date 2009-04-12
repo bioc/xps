@@ -2819,7 +2819,7 @@ Int_t XGeneChip::ImportProbeInfo(ifstream &input, Option_t *option,
    input.getline(nextline, kBufSize, delim);
    err = CheckHeader(&nextline[0], kPrbHeader, kNPrbCols, hasColumn, sep);
    if (err > 0) {
-      cout << "Warning: The following header columns are missing: " << endl;
+      cout << "Note: The following header columns are missing: " << endl;
       for (Int_t i=0; i<kNPrbCols; i++) {
          if (hasColumn[i] == 0) cout << "<" << kPrbHeader[i] << ">" << endl;
          if (i == 0 && hasColumn[i] == 0) return errMissingColumn;  //Probe Set Name
@@ -3855,7 +3855,7 @@ Int_t XGeneChip::ImportTransAnnotation(ifstream &input, Option_t *option,
 // Check column headers from header line, hasColumn = 1 if column is present
    err = CheckHeader(str, kAnnotHeader, kNAnnotCols, hasColumn, sep);
    if (err > 0) {
-      cout << "Warning: The following header columns are missing: " << endl;
+      cout << "Note: The following header columns are missing: " << endl;
       for (Int_t i=0; i<kNAnnotCols; i++) {
          if (hasColumn[i] == 0) cout << "<" << kAnnotHeader[i] << ">" << endl;
          if (i ==  0 && hasColumn[i] == 0) {err = errMissingColumn; goto cleanup;} //Probe Set ID
@@ -4103,14 +4103,14 @@ Int_t XGeneChip::ImportTransAnnotation(ifstream &input, Option_t *option,
       if (idx == fNGenes) {
          cout << "   Number of annotated transcripts is <" << idx << ">." << endl;
       } else {
-         cout << "Warning: Number of annotated transcripts <" << idx  
+         cout << "Note: Number of annotated transcripts <" << idx  
               << "> is not equal to number of genes <" << fNGenes << ">" << endl;
       }//if
    }//if
 
    if (XManager::fgVerbose) {
       if (namb >0) {
-         cout << "Warning: Number of transcripts with ambigous annotation is <"
+         cout << "Note: Number of transcripts with ambigous annotation is <"
               << namb  << ">" << endl;
       }//if
    }//if
@@ -6277,7 +6277,7 @@ Int_t XGenomeChip::ImportTransAnnotation(ifstream &input, Option_t *option,
 // Check column headers from header line, hasColumn = 1 if column is present
    err = CheckHeader(str, kTranscriptHeader, kNTranscriptCols, hasColumn, sep);
    if (err > 0) {
-      cout << "Warning: The following header columns are missing: " << endl;
+      cout << "Note: The following header columns are missing: " << endl;
       for (Int_t i=0; i<kNTranscriptCols; i++) {
          if (hasColumn[i] == 0) cout << "<" << kTranscriptHeader[i] << ">" << endl;
          if (i == 0  && hasColumn[i] == 0) {err = errMissingColumn; goto cleanup;} //transcript_cluster_id
@@ -8442,7 +8442,7 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
 // Check if total number of exons is equal to fNExons (determined in ImportExonAnnotation)
    if (exncount != fNExons) {
       if (XManager::fgVerbose) {
-         cout << "Warning: Number of exons imported <" << exncount  
+         cout << "Note: Number of exons imported <" << exncount  
               << "> is not equal to number of annotated exons <" << fNExons << ">."
               << endl;
       }//if
@@ -8867,7 +8867,7 @@ Int_t XExonChip::ImportTransAnnotation(ifstream &input, Option_t *option,
 // Check column headers from header line, hasColumn = 1 if column is present
    err = CheckHeader(str, kTranscriptHeader, kNTranscriptCols, hasColumn, sep);
    if (err > 0) {
-      cout << "Warning: The following header columns are missing: " << endl;
+      cout << "Note: The following header columns are missing: " << endl;
       for (Int_t i=0; i<kNTranscriptCols; i++) {
          if (hasColumn[i] == 0) cout << "<" << kTranscriptHeader[i] << ">" << endl;
          if (i == 0 && hasColumn[i] == 0) {err = errMissingColumn; goto cleanup;} //transcript_cluster_id
@@ -9363,7 +9363,7 @@ Int_t XExonChip::ImportProbesetAnnotation(ifstream &input, Option_t *option,
 // Check column headers from header line, hasColumn = 1 if column is present
    err = CheckHeaderOrder(str, kProbesetHeader, kNProbesetCols, hasColumn, sep);
    if (err > 0) {
-      cout << "Warning: The following header columns are missing or in wrong order: " << endl;
+      cout << "Note: The following header columns are missing or in wrong order: " << endl;
       for (Int_t i=0; i<kNProbesetCols; i++) {
          if (hasColumn[i] != i) cout << "   <" << kProbesetHeader[i] << ">" << endl;
          if (i == 0  && hasColumn[i] != i) {err = errMissingColumn; goto cleanup;} //probeset_id
@@ -9877,7 +9877,7 @@ Int_t XExonChip::ImportControlAnnotation(ifstream &input, Option_t * /*option*/,
    str = RemoveEnds(nextline.c_str());  //need to remove <cr>
    err = CheckHeaderOrder(str, kControlHeader, kNControlCols, hasColumn, sep);
    if (err > 0) {
-      cout << "Warning: The following header columns are missing or in wrong order: " << endl;
+      cout << "Note: The following header columns are missing or in wrong order: " << endl;
       for (Int_t i=0; i<kNControlCols; i++) {
          if (hasColumn[i] != i) cout << "   <" << kControlHeader[i] << ">" << endl;
          if (i == 0  && hasColumn[i] != i) {err = errMissingColumn; goto cleanup;} //probeset_id
