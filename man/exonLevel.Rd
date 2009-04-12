@@ -20,22 +20,22 @@ exonLevel(exonlevel = "", chiptype = "GeneChip", as.sum = TRUE)
 
 Following \code{exonlevel} annotations are valid for exon arrays:
 \tabular{lll}{
-  \tab \code{core}:\tab (=8192+1024) probesets supported by RefSeq and full-length GenBank transcripts. \cr
-  \tab \code{metacore}:\tab (=8192) core meta-probesets. \cr
-  \tab \code{extended}:\tab (=4096+512) probesets with other cDNA support. \cr
-  \tab \code{metaextended}:\tab (=4096) extended meta-probesets. \cr
-  \tab \code{full}:\tab (=2048+256) probesets supported by gene predictions only. \cr
-  \tab \code{metafull}:\tab (=2048) full meta-probesets. \cr
-  \tab \code{ambiguous}:\tab (=128) probesets that fall within multiple genes. \cr
-  \tab \code{affx}:\tab (=60) standard AFFX controls. \cr
-  \tab \code{all}:\tab (=16316) combination of above (including affx).
+  \tab \code{core}:\tab \code{(=8192+1024)} probesets supported by RefSeq and full-length GenBank transcripts. \cr
+  \tab \code{metacore}:\tab \code{(=8192)} core meta-probesets. \cr
+  \tab \code{extended}:\tab \code{(=4096+512)} probesets with other cDNA support. \cr
+  \tab \code{metaextended}:\tab \code{(=4096)} extended meta-probesets. \cr
+  \tab \code{full}:\tab \code{(=2048+256)} probesets supported by gene predictions only. \cr
+  \tab \code{metafull}:\tab \code{(=2048)} full meta-probesets. \cr
+  \tab \code{ambiguous}:\tab \code{(=128)} probesets that fall within multiple genes. \cr
+  \tab \code{affx}:\tab \code{(=60)} standard AFFX controls. \cr
+  \tab \code{all}:\tab \code{(=16316)} combination of above (including affx).
 }
 Following \code{exonlevel} annotations are valid for whole genome arrays:
 \tabular{lll}{
-  \tab \code{core}:\tab (=8192+1024) probesets with category \sQuote{unique}, \sQuote{similar} and \sQuote{mixed}. \cr
-  \tab \code{metacore}:\tab (=8192) probesets with category \sQuote{unique} only. \cr
-  \tab \code{affx}:\tab (=60) standard AFFX controls. \cr
-  \tab \code{all}:\tab (=9276) combination of above (including affx).
+  \tab \code{core}:\tab \code{(=8192+1024)} probesets with category \sQuote{unique}, \sQuote{similar} and \sQuote{mixed}. \cr
+  \tab \code{metacore}:\tab \code{(=8192)} probesets with category \sQuote{unique} only. \cr
+  \tab \code{affx}:\tab \code{(=60)} standard AFFX controls. \cr
+  \tab \code{all}:\tab \code{(=9276)} combination of above (including affx).
 }
 Exon levels can also be combined, with following combinations being most useful:
 \tabular{ll}{

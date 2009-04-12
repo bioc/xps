@@ -1,11 +1,11 @@
-// Author: Christian Stratowa 11/25/2002             last modified: 02/10/2008
+// Author: Christian Stratowa 11/25/2002             last modified: 04/11/2009
 
 /*
  *******************************************************************************
  ***********************  Statistics Package for ROOT  *************************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2009 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -2519,7 +2519,8 @@ Double_t *TUnivariateTest::PAdjust(Int_t n, Double_t *pval, Double_t *padj)
    // Supported adjustment methods are:
    //    adj.method = "none"         no adjustment
    //    adj.method = "bonferroni"   Bonferroni adjustment
-   //    adj.method = "fdr"          FDR adjustment
+   //    adj.method = "by"           FDR adjustment (Benjamini & Yekutieli)
+   //    adj.method = "bh" or "fdr"  FDR adjustment (Benjamini & Hochberg)
    //    adj.method = "hochberg"     Hochberg adjustment
    //    adj.method = "holm"         Holm adjustment
    // Converted from: R-1.6.1/src/library/base/R/p.adjust.R 
@@ -2532,14 +2533,16 @@ Double_t *TUnivariateTest::PAdjust(Int_t n, Double_t *pval, Double_t *padj)
       for (Int_t i=0; i<n; i++) padj[i] = pval[i];
    } else if (strcmp(fAdjustment, "bonferroni") == 0) {
       padj = this->Bonferroni(n, pval, padj);
-   } else if (strcmp(fAdjustment, "fdr") == 0) {
+   } else if (strcmp(fAdjustment, "by") == 0) {
+      padj = this->BY(n, pval, padj);
+   } else if (strcmp(fAdjustment, "fdr") == 0 || strcmp(fAdjustment, "bh") == 0) {
       padj = this->FDR(n, pval, padj);
    } else if (strcmp(fAdjustment, "hochberg") == 0) {
       padj = this->Hochberg(n, pval, padj);
    } else if (strcmp(fAdjustment, "holm") == 0) {
       padj = this->Holm(n, pval, padj);
    } else {
-      cerr << "Error: Adjustment method not known" << endl;
+      cerr << "Error: Adjustment method not known, using method <none>" << endl;
       for (Int_t i=0; i<n; i++) padj[i] = pval[i];
    }//if
 
@@ -2558,9 +2561,47 @@ Double_t *TUnivariateTest::Bonferroni(Int_t n, Double_t *pval, Double_t *padj)
 }//Bonferroni
 
 //______________________________________________________________________________
+Double_t *TUnivariateTest::BY(Int_t n, Double_t *pval, Double_t *padj)
+{
+   // Calculate FDR adjustment (Benjamini & Yekutieli)
+   if(kCS) cout << "------TUnivariateTest::BY------" << endl;
+
+   Double_t q = 0;
+
+   Int_t    *index = 0;
+   Int_t    *rank  = 0;
+   Double_t *vec1  = 0;
+   Double_t *tmp1  = 0;
+   Double_t *tmp2  = 0;
+
+   if (!(index = new (nothrow) Int_t[n]))    {padj = pval; goto cleanup;}
+   if (!(rank  = new (nothrow) Int_t[n]))    {padj = pval; goto cleanup;}
+   if (!(vec1  = new (nothrow) Double_t[n])) {padj = pval; goto cleanup;}
+   if (!(tmp1  = new (nothrow) Double_t[n])) {padj = pval; goto cleanup;}
+   if (!(tmp2  = new (nothrow) Double_t[n])) {padj = pval; goto cleanup;}
+
+   TStat::Rank(n, pval, index, rank, kTRUE);
+   for (Int_t i=0; i<n; i++) vec1[i] = 1;
+   for (Int_t i=0; i<n; i++) q += 1.0/(Double_t)(i+1);
+   for (Int_t i=0; i<n; i++) tmp1[i] = ((Double_t)n/(Double_t)(n-i))*q*pval[index[i]];
+   tmp2 = TStat::CumMin(n, tmp1, tmp2);
+   tmp1 = TStat::PMin(n, vec1, tmp2, tmp1);
+   for (Int_t i=0; i<n; i++) padj[i] = tmp1[rank[i]];
+
+cleanup:
+   delete [] index;
+   delete [] rank;
+   delete [] vec1;
+   delete [] tmp1;
+   delete [] tmp2;
+
+   return padj;
+}//BY
+
+//______________________________________________________________________________
 Double_t *TUnivariateTest::FDR(Int_t n, Double_t *pval, Double_t *padj)
 {
-   // Calculate FDR adjustment
+   // Calculate FDR adjustment (Benjamini & Hochberg)
    if(kCS) cout << "------TUnivariateTest::FDR------" << endl;
 
    Int_t    *index = 0;
@@ -2577,7 +2618,7 @@ Double_t *TUnivariateTest::FDR(Int_t n, Double_t *pval, Double_t *padj)
 
    TStat::Rank(n, pval, index, rank, kTRUE);
    for (Int_t i=0; i<n; i++) vec1[i] = 1;
-   for (Int_t i=0; i<n; i++) tmp1[i] = (n/(i+1))*pval[index[i]];
+   for (Int_t i=0; i<n; i++) tmp1[i] = ((Double_t)n/(Double_t)(n-i))*pval[index[i]];
    tmp2 = TStat::CumMin(n, tmp1, tmp2);
    tmp1 = TStat::PMin(n, vec1, tmp2, tmp1);
    for (Int_t i=0; i<n; i++) padj[i] = tmp1[rank[i]];
@@ -2612,7 +2653,7 @@ Double_t *TUnivariateTest::Hochberg(Int_t n, Double_t *pval, Double_t *padj)
 
    TStat::Rank(n, pval, index, rank, kTRUE);
    for (Int_t i=0; i<n; i++) vec1[i] = 1;
-   for (Int_t i=0; i<n; i++) tmp1[i] = (n-i)*pval[index[i]];
+   for (Int_t i=0; i<n; i++) tmp1[i] = (i+1)*pval[index[i]];
    tmp2 = TStat::CumMin(n, tmp1, tmp2);
    tmp1 = TStat::PMin(n, vec1, tmp2, tmp1);
    for (Int_t i=0; i<n; i++) padj[i] = tmp1[rank[i]];

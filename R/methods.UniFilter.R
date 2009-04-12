@@ -16,39 +16,38 @@
 # UniFilter initialization:
 #------------------------------------------------------------------------------#
 
-"initialize.UniFilter" <-
-function(.Object, 
-         foldchange = list(),
-         prescall   = list(),
-         unifilter  = list(),
-         unitest    = list(),
-         ...) 
-{
-   if (debug.xps()) print("------initialize:UniFilter------")
+setMethod("initialize", "UniFilter", 
+   function(.Object, 
+            foldchange = list(),
+            prescall   = list(),
+            unifilter  = list(),
+            unitest    = list(),
+            ...) 
+   {
+      if (debug.xps()) print("------initialize:UniFilter------")
 
-   .Object@numfilters <- 0;
+      .Object@numfilters <- 0;
 
-   if (length(foldchange)) fcFilter(.Object)      <- unlist(foldchange);
-   if (length(prescall))   callFilter(.Object)    <- unlist(prescall);
-   if (length(unifilter))  unitestFilter(.Object) <- unlist(unifilter);
-   if (length(unitest))    uniTest(.Object)       <- unlist(unitest);
+      if (length(foldchange)) fcFilter(.Object)      <- unlist(foldchange);
+      if (length(prescall))   callFilter(.Object)    <- unlist(prescall);
+      if (length(unifilter))  unitestFilter(.Object) <- unlist(unifilter);
+      if (length(unitest))    uniTest(.Object)       <- unlist(unitest);
 
-   .Object <- callNextMethod(.Object,
-                             foldchange = foldchange,
-                             prescall   = prescall,
-                             unifilter  = unifilter,
-                             unitest    = unitest,
-                             ...);
+      .Object <- callNextMethod(.Object,
+                                foldchange = foldchange,
+                                prescall   = prescall,
+                                unifilter  = unifilter,
+                                unitest    = unitest,
+                                ...);
 
-   if (length(foldchange)) fcFilter(.Object)      <- unlist(foldchange);
-   if (length(prescall))   callFilter(.Object)    <- unlist(prescall);
-   if (length(unifilter))  unitestFilter(.Object) <- unlist(unifilter);
-   if (length(unitest))    uniTest(.Object)       <- unlist(unitest);
+      if (length(foldchange)) fcFilter(.Object)      <- unlist(foldchange);
+      if (length(prescall))   callFilter(.Object)    <- unlist(prescall);
+      if (length(unifilter))  unitestFilter(.Object) <- unlist(unifilter);
+      if (length(unitest))    uniTest(.Object)       <- unlist(unitest);
 
-   .Object;
-}#initialize.UniFilter
-
-setMethod("initialize", "UniFilter", initialize.UniFilter);
+      .Object;
+   }
+)#initialize
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -199,10 +198,10 @@ setReplaceMethod("uniTest", signature(object="UniFilter", value="character"),
       }#if
 
       ## check correction
-      COR <- c("none", "bonferroni", "fdr", "hochberg", "holm", "wy");
+      COR <- c("none", "bonferroni", "BH", "BY", "fdr", "hochberg", "holm", "wy");
       if (is.na(match(value[3], COR))) {
          stop(paste(sQuote("unitest@correction"),
-              "must be <none,bonferroni,fdr,hochberg,holm,wy>"));
+              "must be <none,bonferroni,BH,BY,fdr,hochberg,holm,wy>"));
       }#if
 
       ## check paired

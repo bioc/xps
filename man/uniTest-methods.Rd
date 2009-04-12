@@ -27,7 +27,8 @@
   \tab \code{correction}:\tab a correction to adjust p-values for multiple comparisons: \cr
   \tab                   \tab \code{correction="none"}: no correction (default). \cr
   \tab                   \tab \code{correction="bonferroni"}: Bonferroni correction. \cr
-  \tab                   \tab \code{correction="fdr"}: correction for false discovery rate (Benjamini & Hochberg). \cr
+  \tab                   \tab \code{correction="BH" or "fdr"}: correction for false discovery rate (Benjamini & Hochberg). \cr
+  \tab                   \tab \code{correction="BY"}: correction for false discovery rate (Benjamini & Yekutieli). \cr
   \tab                   \tab \code{correction="hochberg"}: Hochberg correction. \cr
   \tab                   \tab \code{correction="holm"}: Holm correction. \cr
   \tab                   \tab \code{correction="wy"}: Westfall-Young step-down adjusted p-chance (E.Manduchi). \cr
@@ -48,8 +49,12 @@
   Benjamini, Y., and Hochberg, Y. (1995).
   Controlling the false discovery rate: a practical and powerful
   approach to multiple testing.
-  \emph{Journal of the Royal Statistical Society Series} B, \bold{57},
-  289--300.
+  \emph{Journal of the Royal Statistical Society Series} B, \bold{57}, 289--300.
+
+  Benjamini, Y., and Yekutieli, D. (2001).
+  The control of the false discovery rate in multiple testing under dependency.
+  \emph{Annals of Statistics} \bold{29}, 1165--1188.
+
 
   Holm, S. (1979).
   A simple sequentially rejective multiple test procedure.
