@@ -1,4 +1,4 @@
-// File created: 11/02/2002                          last modified: 08/09/2008
+// File created: 11/02/2002                          last modified: 04/26/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2009 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -109,6 +109,8 @@ extern Int_t   CheckHeader(const char *header, const char **kHeader,
                   const Int_t ncols, Int_t *index, const char *sep);
 extern Int_t   CheckHeaderOrder(const char *header, const char **kHeader,
                   const Int_t ncols, Int_t *index, const char *sep);
+extern Int_t   GetHeaderOrder(const char *header, const char **kHeader, 
+                  const Int_t ncols, Int_t *index, const char *sep);
 extern TString Extension2Type(const char *exten, const char **types,
                   const char **extens);
 extern char   *FirstPath(const char *name);
@@ -132,6 +134,8 @@ extern Int_t   StringInList(const char *str, const char **kStrList,
                   const Int_t n, Bool_t exact);
 extern TString SubString(const char *str, const char *sep, Int_t n);
 extern TString SubString(const char *str, char sep1, char sep2, Bool_t source);
+extern Int_t   TokenizeString(const char *cstr, Int_t &n, TString *names,
+                  const char *sep);
 extern Int_t   TokenizeString(const char *cstr, Int_t &n, TString *names,
                   Int_t len, const char *sep);
 extern TString Type2Extension(const char *type, const char **types,

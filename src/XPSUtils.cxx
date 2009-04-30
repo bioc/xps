@@ -1,4 +1,4 @@
-// File created: 11/02/2002                          last modified: 08/09/2008
+// File created: 11/02/2002                          last modified: 04/26/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2009 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -46,6 +46,7 @@
 *          - Get trees from XTreeSet in separate TDirectory.
 * Jan 2008 - Add/update functions for file parsing.
 *          - Add functions to decode Affymetrix MIME types*
+* Apr 2009 - Add functions GetHeaderOrder() and TokenizeString()
 ******************************************************************************/
 
 // IMPORTANT: must be defined for PowerPC and undefined for Intel PCs
@@ -3896,6 +3897,40 @@ Int_t CheckHeaderOrder(const char *header, const char **kHeader, const Int_t nco
 }//CheckHeaderOrder
 
 //______________________________________________________________________________
+Int_t GetHeaderOrder(const char *header, const char **kHeader, const Int_t ncols,
+                       Int_t *index, const char *sep)
+{
+   // Get header line from input as "header" and compare to header columns
+   // stored in string array "kHeader".
+   // Export "index" array containing column number or -1 for absent column.
+   // Returns number of present columns
+
+   char *str = new char[strlen(header) + 1];
+   strcpy(str, header);
+
+// Inititialize index
+   for (Int_t i=1; i<ncols; i++) index[i] = -1;
+
+// Set index to header order
+   Int_t size = 0;
+   for (Int_t i=0; i<ncols; i++) {
+      char *str1  = (i == 0) ? strtok(str, sep) : strtok(0, sep);
+      if (!str1) break;
+      for (Int_t k=0; k<ncols; k++) {
+         if (strcmp(str1, kHeader[k]) == 0) {
+            index[k] = i;
+            size++;
+            break;
+         }//if
+      }//for_k
+   }//for_i
+
+   delete [] str;
+
+   return size;
+}//GetHeaderOrder
+
+//______________________________________________________________________________
 TString Extension2Type(const char *exten, const char **types, const char **extens)
 {
    // Return type contained in array types for exten of array extens
@@ -4333,6 +4368,26 @@ TString SubString(const char *str, char sep1, char sep2, Bool_t source)
 
    return outname;
 }//SubString
+
+//______________________________________________________________________________
+Int_t TokenizeString(const char *cstr, Int_t &n, TString *names, const char *sep)
+{
+   // Tokenize string into n substrings, separated by delimiter sep 
+
+   Int_t idx = 0;
+
+   names[idx++] = RemoveEnds(strtok((char*)cstr, sep));
+
+   for (Int_t i=1; i<n; i++) {
+      char *str = strtok(0, sep);
+      if (str == 0) break;
+      names[idx++] = str;
+   }//for_i
+
+   n = idx;
+
+   return idx;
+}//TokenizeString
 
 //______________________________________________________________________________
 Int_t TokenizeString(const char *cstr, Int_t &n, TString *names,

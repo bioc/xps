@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 02/20/2009
+// File created: 05/18/2002                          last modified: 04/29/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -55,6 +55,7 @@
 *            XGenomeAnnotation
 * Sep 2007 - Change fMask from class XScheme from "Short_t to "Int_t"
 * Feb 2009 - Add support for whole genome array probeset annotation file (na27)
+* Apr 2009 - Add support for both versions of probe info file "xxx_probe.tab"
 *
 ******************************************************************************/
 
@@ -89,15 +90,15 @@ const char *kTypeAnnot[]  = { "transcript",
                               ""};
 
 
-// Header line for probe info file "xxx_probe.tab"
-const Int_t kNPrbCols = 7;
-const char *kPrbHeader[7] = { "Probe Set Name",
-                              "Serial Order", 
-                              "Probe X", 
-                              "Probe Y", 
-                              "Probe Interrogation Position", 
-                              "Probe Sequence", 
-                              "Target Strandedness" };
+// Header line for probe info file "xxx_probe.tab": two versions
+const Int_t kNPrbCols = 14;
+const char *kPrbHeader[14] = { "Probe Set Name",               "Probe Set ID", 
+                               "Serial Order",                 "serial order", 
+                               "Probe X",                      "probe x", 
+                               "Probe Y",                      "probe y", 
+                               "Probe Interrogation Position", "probe interrogation position", 
+                               "Probe Sequence",               "probe sequence", 
+                               "Target Strandedness",          "target strandedness"};
 
 // Header line for annotation file "xxx_annot4xps.txt"
 const Int_t kNAnnCols = 6;
@@ -2785,10 +2786,17 @@ Int_t XGeneChip::ImportProbeInfo(ifstream &input, Option_t *option,
 
    char nextline[kBufSize];
    Int_t    err   = errNoErr;
+   Int_t    hc    = -1;
+   Int_t    nprb  = kNPrbCols;
+   Int_t    idx   = 0;
+   Int_t    count = 0;
    Int_t    minGC = 9999999;
    Int_t    maxGC = -1;
    Double_t minTm = DBL_MAX;  //defined in float.h
    Double_t maxTm = -1.0;
+
+   Int_t   order, x, y, position, id;
+   TString name, sequence, orientation;
 
    TString opt   = Path2Name(option, dSEP, ".");
    TString exten = Path2Name(option, ".", "");
@@ -2808,175 +2816,180 @@ Int_t XGeneChip::ImportProbeInfo(ifstream &input, Option_t *option,
    probe = new XGCProbe();
    probetree->Branch("PrbBranch", "XGCProbe", &probe, 64000, split);
 
-// Create array hasColumn 
-   Int_t *hasColumn = 0;
-   if (!(hasColumn = new (nothrow) Int_t[kNPrbCols])) return errInitMemory;
-   for (Int_t i=0; i<kNPrbCols; i++) {
-      hasColumn[i] = 0;
-   }//for_i
-
-// Check column headers from header line, hasColumn = 1 if column is present
-   input.getline(nextline, kBufSize, delim);
-   err = CheckHeader(&nextline[0], kPrbHeader, kNPrbCols, hasColumn, sep);
-   if (err > 0) {
-      cout << "Note: The following header columns are missing: " << endl;
-      for (Int_t i=0; i<kNPrbCols; i++) {
-         if (hasColumn[i] == 0) cout << "<" << kPrbHeader[i] << ">" << endl;
-         if (i == 0 && hasColumn[i] == 0) return errMissingColumn;  //Probe Set Name
-         if (i == 2 && hasColumn[i] == 0) return errMissingColumn;  //Probe X
-         if (i == 3 && hasColumn[i] == 0) return errMissingColumn;  //Probe Y
-         if (i == 5 && hasColumn[i] == 0) return errMissingColumn;  //Probe Sequence
-      }//for_i
-   }//if 
-
 // Create local arrays to store data from input
-   Int_t    *arrPos = 0;
-   TString  *arrSeq = 0;
-   Short_t  *arrPrb = 0;
-   Int_t    *arrGC  = 0;
-   Double_t *arrTm  = 0;
+   Int_t    *arrPos  = 0;
+   TString  *arrSeq  = 0;
+   Short_t  *arrPrb  = 0;
+   Int_t    *arrGC   = 0;
+   Double_t *arrTm   = 0;
+   Int_t   *isColumn = 0;
+   TString  *names   = 0;
 
    // initialize memory for local arrays
    Int_t size = fNRows*fNCols;
-   if (!(arrPos = new (nothrow) Int_t[size]))    err = errInitMemory;
-   if (!(arrSeq = new (nothrow) TString[size]))  err = errInitMemory;
-   if (!(arrPrb = new (nothrow) Short_t[size]))  err = errInitMemory;
-   if (!(arrGC  = new (nothrow) Int_t[size]))    err = errInitMemory;
-   if (!(arrTm  = new (nothrow) Double_t[size])) err = errInitMemory;
+   if (!(arrPos = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
+   if (!(arrSeq = new (nothrow) TString[size]))  {err = errInitMemory; goto cleanup;}
+   if (!(arrPrb = new (nothrow) Short_t[size]))  {err = errInitMemory; goto cleanup;}
+   if (!(arrGC  = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
+   if (!(arrTm  = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+   for (Int_t i=0; i<size; i++) {
+      arrPos[i] = -1;
+      arrSeq[i] = "N";
+      arrPrb[i] = -1;
+      arrGC[i]  = -1;
+      arrTm[i]  = -1.0;
+   }//for_i
 
-   if (err >= 0) {
-   // Initialize local arrays
-      for (Int_t i=0; i<size; i++) {
-         arrPos[i] = -1;
-         arrSeq[i] = "N";
-         arrPrb[i] = -1;
-         arrGC[i]  = -1;
-         arrTm[i]  = -1.0;
-      }//for_i
+   if (!(isColumn = new (nothrow) Int_t[nprb]))   {err = errInitMemory; goto cleanup;}
+   if (!(names    = new (nothrow) TString[nprb])) {err = errInitMemory; goto cleanup;}
+   for (Int_t i=0; i<nprb; i++) isColumn[i] = 0;
 
-   // Import data
-      Int_t   order, x, y, position, id;
-      TString name, sequence, orientation;
-      Int_t   idx   = 0;
-      Int_t   count = 0;
-      while (input.good()) {
-         input.getline(nextline, kBufSize, delim);
-         if (input.fail() || (idx == size)) break;
-
-         // Import fields
-         name  = strtok(&nextline[0], sep);
-         if (hasColumn[1]) order = atoi(strtok(NULL, sep));
-         else              order = -1;
-         x = atoi(strtok(NULL, sep));
-         y = atoi(strtok(NULL, sep));
-         if (hasColumn[4]) position = atoi(strtok(NULL, sep));
-         else              position = -1;
-         sequence = strtok(NULL, sep);
-         if (hasColumn[6]) orientation = strtok(NULL, sep);
-         else              orientation = "NA";
-
-         idx         = XY2Index(x, y);
-         arrPos[idx] = position;
-         arrSeq[idx] = RemoveEnds(sequence);
-         arrPrb[idx] = (Int_t)(strcmp((RemoveEnds(orientation)).Data(), "Antisense") == 0);
-
-         // calculate number of G/C in sequence and melting temperature
-         arrGC[idx] = this->ContentGC(sequence, arrTm[idx], "empirical");
-
-         // minimum/maximum GC content
-         minGC = (minGC <= arrGC[idx]) ? minGC : arrGC[idx];
-         maxGC = (maxGC >= arrGC[idx]) ? maxGC : arrGC[idx];
-
-         // minimum/maximum Tm
-         minTm = (minTm <= arrTm[idx]) ? minTm : arrTm[idx];
-         maxTm = (maxTm >= arrTm[idx]) ? maxTm : arrTm[idx];
-
-         count++;
-         if (XManager::fgVerbose && count%10000 == 0) {
-            if(count%10000 == 0) cout << "   <" << count << "> records read...\r" << flush;
-         }//if
-      }//while
-      if (XManager::fgVerbose) {
-         cout << "   <" << count << "> records read...Finished" << endl;
-      }//if
-
-   // Add GC content, Tm and ProbeType to MM probes (problem: will be set for controls, too)
-      for (Int_t i=0; i<fNCols; i++) {
-         for (Int_t k=0; k<fNRows-1; k++) { //must be fNRows-1 since k+1
-            Int_t ik0 = XY2Index(i, k);
-            Int_t ik1 = XY2Index(i, k+1);
-
-            // if no data exist for MM[x,y+1] then set to data of PM[x,y]
-            if((arrGC[ik1] == -1) && (arrGC[ik0] != -1)) {
-               arrGC[ik1]  = arrGC[ik0];
-               arrTm[ik1]  = arrTm[ik0];
-               arrPrb[ik1] = arrPrb[ik0];
-            }//if
-         }//for_k
-      }//for_i
-
-   // Fill probe tree
-      for (Int_t i=0; i<size; i++) {
-         schemetree->GetEntry(i);
-         id  = scheme->GetUnitID();
-         x   = scheme->GetX();
-         y   = scheme->GetY();
-         idx = XY2Index(x, y);
-
-         probe->SetX(x);
-         probe->SetY(y);
-         probe->SetSequence(arrSeq[idx]);
-         probe->SetPosition(arrPos[idx]);
-         // set only for MMs, not for controls (see above)
-         probe->SetNumberGC(id  >= 0 ? arrGC[idx]  : -1);
-         probe->SetTMelting(id  >= 0 ? arrTm[idx]  : -1);
-         probe->SetProbeType(id >= 0 ? arrPrb[idx] : -1);
-         probetree->Fill();
-
-         if (XManager::fgVerbose && i%10000 == 0) {
-            cout << "   <" << i+1 << "> records imported...\r" << flush;
-         }//if
-      }//for_i
-      if (XManager::fgVerbose) {
-         cout << "   <" << size << "> records imported...Finished" << endl;
-      }//if
-
-      fMinGC = minGC;
-      fMaxGC = maxGC;
-      fMinTm = minTm;
-      fMaxTm = maxTm;
-
-      if (XManager::fgVerbose) {
-         cout << "   probe info: " << endl;
-         cout << "      GC content: minimum GC is <" << minGC << ">  maximum GC is <"
-              << maxGC << ">" << endl;
-         cout << "      Melting Tm: minimum Tm is <" << minTm << ">  maximum Tm is <"
-              << maxTm << ">" << endl;
-      }//if
-
-   // Add tree info to probetree
-      this->AddProbeTreeInfo(probetree, fPrbTreeName);
-
-   // Write probe tree to file
-      if ((err = WriteTree(probetree, TObject::kOverwrite)) == errNoErr) {
-         // add tree header to list
-         AddTreeHeader(probetree->GetName(), 0);
-      }//if
-      //delete tree from memory
-      probetree->Delete("");
-      probetree = 0;
-
-   // Reset err > 0 (missing columns) to errNoErr
-      if (err >= 0) err = errNoErr;
+// Check column headers from header line: which header column is used as first column
+   input.getline(nextline, kBufSize, delim);
+   if      (strncmp(kPrbHeader[0], nextline, strlen(kPrbHeader[0])) == 0) hc = 0;
+   else if (strncmp(kPrbHeader[1], nextline, strlen(kPrbHeader[1])) == 0) hc = 1;
+   else {
+      cerr << "Error: Header column must begin with <" << kPrbHeader[0] << "> or <"
+           << kPrbHeader[1] << ">" << endl;
+      err = errHeaderLine; goto cleanup;
    }//if
 
+// Check column headers from header line: isColumn = -1 if column is absent
+   nprb = GetHeaderOrder(&nextline[0], kPrbHeader, kNPrbCols, isColumn, sep);
+   if (nprb > 0) {
+      cout << "Note: The following header columns are missing: " << endl;
+      for (Int_t i=0; i<kNPrbCols/2; i++) {
+         if (isColumn[i*2+hc] == -1) cout << "<" << kPrbHeader[i*2+hc] << ">" << endl;
+         if (i == 2 && isColumn[i*2+hc] == -1) {err = errMissingColumn; goto cleanup;}  //Probe X
+         if (i == 3 && isColumn[i*2+hc] == -1) {err = errMissingColumn; goto cleanup;}  //Probe Y
+         if (i == 5 && isColumn[i*2+hc] == -1) {err = errMissingColumn; goto cleanup;}  //Probe Sequence
+      }//for_i
+   }//if 
+
+// Import data
+   while (input.good()) {
+      input.getline(nextline, kBufSize, delim);
+      if (input.fail() || (idx == size)) break;
+
+      // Import fields
+      nprb = TokenizeString(&nextline[0], nprb, names, sep);
+      // Probe Set Name
+      name = names[0];
+      // Serial Order
+      if (isColumn[2+hc] >= 0) order = atoi(names[isColumn[2+hc]]);
+      else                     order = -1;
+      // Probe X, Probe Y
+      x = atoi(names[isColumn[4+hc]]);
+      y = atoi(names[isColumn[6+hc]]);
+      // Probe Interrogation Position
+      if (isColumn[8+hc] >= 0) position = atoi(names[isColumn[8+hc]]);
+      else                     position = -1;
+      // Probe Sequence
+      sequence = names[isColumn[10+hc]];
+      // Target Strandedness
+      if (isColumn[12+hc] >= 0) orientation = names[isColumn[12+hc]];
+      else                      orientation = "NA";
+
+      idx         = XY2Index(x, y);
+      arrPos[idx] = position;
+      arrSeq[idx] = RemoveEnds(sequence);
+      arrPrb[idx] = (Int_t)(strcmp((RemoveEnds(orientation)).Data(), "Antisense") == 0);
+
+      // calculate number of G/C in sequence and melting temperature
+      arrGC[idx] = this->ContentGC(sequence, arrTm[idx], "empirical");
+
+      // minimum/maximum GC content
+      minGC = (minGC <= arrGC[idx]) ? minGC : arrGC[idx];
+      maxGC = (maxGC >= arrGC[idx]) ? maxGC : arrGC[idx];
+
+      // minimum/maximum Tm
+      minTm = (minTm <= arrTm[idx]) ? minTm : arrTm[idx];
+      maxTm = (maxTm >= arrTm[idx]) ? maxTm : arrTm[idx];
+
+      count++;
+      if (XManager::fgVerbose && count%10000 == 0) {
+         if(count%10000 == 0) cout << "   <" << count << "> records read...\r" << flush;
+      }//if
+   }//while
+   if (XManager::fgVerbose) {
+      cout << "   <" << count << "> records read...Finished" << endl;
+   }//if
+
+// Add GC content, Tm and ProbeType to MM probes (problem: will be set for controls, too)
+   for (Int_t i=0; i<fNCols; i++) {
+      for (Int_t k=0; k<fNRows-1; k++) { //must be fNRows-1 since k+1
+         Int_t ik0 = XY2Index(i, k);
+         Int_t ik1 = XY2Index(i, k+1);
+
+         // if no data exist for MM[x,y+1] then set to data of PM[x,y]
+         if((arrGC[ik1] == -1) && (arrGC[ik0] != -1)) {
+            arrGC[ik1]  = arrGC[ik0];
+            arrTm[ik1]  = arrTm[ik0];
+            arrPrb[ik1] = arrPrb[ik0];
+         }//if
+      }//for_k
+   }//for_i
+
+// Fill probe tree
+   for (Int_t i=0; i<size; i++) {
+      schemetree->GetEntry(i);
+      id  = scheme->GetUnitID();
+      x   = scheme->GetX();
+      y   = scheme->GetY();
+      idx = XY2Index(x, y);
+
+      probe->SetX(x);
+      probe->SetY(y);
+      probe->SetSequence(arrSeq[idx]);
+      probe->SetPosition(arrPos[idx]);
+      // set only for MMs, not for controls (see above)
+      probe->SetNumberGC(id  >= 0 ? arrGC[idx]  : -1);
+      probe->SetTMelting(id  >= 0 ? arrTm[idx]  : -1);
+      probe->SetProbeType(id >= 0 ? arrPrb[idx] : -1);
+      probetree->Fill();
+
+      if (XManager::fgVerbose && i%10000 == 0) {
+         cout << "   <" << i+1 << "> records imported...\r" << flush;
+      }//if
+   }//for_i
+   if (XManager::fgVerbose) {
+      cout << "   <" << size << "> records imported...Finished" << endl;
+   }//if
+
+   fMinGC = minGC;
+   fMaxGC = maxGC;
+   fMinTm = minTm;
+   fMaxTm = maxTm;
+
+   if (XManager::fgVerbose) {
+      cout << "   probe info: " << endl;
+      cout << "      GC content: minimum GC is <" << minGC << ">  maximum GC is <"
+           << maxGC << ">" << endl;
+      cout << "      Melting Tm: minimum Tm is <" << minTm << ">  maximum Tm is <"
+           << maxTm << ">" << endl;
+   }//if
+
+// Add tree info to probetree
+   this->AddProbeTreeInfo(probetree, fPrbTreeName);
+
+// Write probe tree to file
+   if ((err = WriteTree(probetree, TObject::kOverwrite)) == errNoErr) {
+      // add tree header to list
+      AddTreeHeader(probetree->GetName(), 0);
+   }//if
+   //delete tree from memory
+   probetree->Delete("");
+   probetree = 0;
+
 // Clean up
-   if (arrTm)     {delete [] arrTm;     arrTm     = 0;}
-   if (arrGC)     {delete [] arrGC;     arrGC     = 0;}
-   if (arrPrb)    {delete [] arrPrb;    arrPrb    = 0;}
-   if (arrSeq)    {delete [] arrSeq;    arrSeq    = 0;}
-   if (arrPos)    {delete [] arrPos;    arrPos    = 0;}
-   if (hasColumn) {delete [] hasColumn; hasColumn = 0;}
+cleanup:
+   if (names)    {delete [] names;    names    = 0;}
+   if (isColumn) {delete [] isColumn; isColumn = 0;}
+   if (arrTm)    {delete [] arrTm;    arrTm    = 0;}
+   if (arrGC)    {delete [] arrGC;    arrGC    = 0;}
+   if (arrPrb)   {delete [] arrPrb;   arrPrb   = 0;}
+   if (arrSeq)   {delete [] arrSeq;   arrSeq   = 0;}
+   if (arrPos)   {delete [] arrPos;   arrPos   = 0;}
    SafeDelete(probe);
 
    return err;

@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 10/10/2008
+// File created: 08/05/2002                          last modified: 04/28/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2009 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -2039,14 +2039,17 @@ Int_t XGeneChipHyb::ReadGenericDataHeader(ifstream &input, Bool_t isParent)
          str  = new char[avalue->len + 1];
          wstr = DecodeTEXT(avalue);
          wcstombs(str, wstr, avalue->len + 1);
-         TString chipname = ChipType(str, 1);
 
-         if (strcmp(chipname.Data(), fSchemeName.Data()) != 0) {
-            cerr << "Error: dat-header chipname <"   << chipname.Data() 
-                 << "> is not equal to array-type <" << fSchemeName.Data() << ">!"
-                 << endl;
-            return errGeneral;
+         if (strlen(str) > 0) {
+            TString chipname = ChipType(str, 1);
+            if (strcmp(chipname.Data(), fSchemeName.Data()) != 0) {
+               cerr << "Error: dat-header chipname <"   << chipname.Data() 
+                    << "> is not equal to array-type <" << fSchemeName.Data() << ">!"
+                    << endl;
+               return errGeneral;
+            }//if
          }//if
+
          delete[] wstr; wstr = 0;
          delete[] str;  str  = 0;
       }//if
