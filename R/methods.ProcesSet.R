@@ -160,9 +160,21 @@ function(object,
 
    ## use names from column "which" as rownames
    if (!is.na(match(which, colnames(data)))) {
-      rownames(data) <- data[,which];
+      len <- length(which(duplicated(data[,which])==TRUE));
+      if (len == 0) {
+         rownames(data) <- data[, which];
+      } else {
+         warning(paste("cannot use ", sQuote(which), "as row.names since it has <",
+                       len, "> non-unique values.", sep=""));
+
+         ## use names from column "UNIT_ID" as rownames
+         if (!is.na(match("UNIT_ID", colnames(data)))) {
+            rownames(data) <- data[, "UNIT_ID"];
+         }#if
+      }#if
    }#if
 
+   ## get name part for matching columns
    treenames <- namePart(object@treenames);
    datanames <- namePart(colnames(data));
 
