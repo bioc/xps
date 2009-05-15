@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 10/10/2008
+// File created: 08/05/2002                          last modified: 05/15/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2009 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -1025,6 +1025,8 @@ cleanup:
    if (arrMean)   {delete [] arrMean;   arrMean   = 0;}
    if (secSorted) {delete [] secSorted; secSorted = 0;}
    if (sector)    {delete [] sector;    sector    = 0;}
+   if (cenY)      {delete [] cenY;      cenY      = 0;}
+   if (cenX)      {delete [] cenX;      cenX      = 0;}
    if (lenY)      {delete [] lenY;      lenY      = 0;}
    if (lenX)      {delete [] lenX;      lenX      = 0;}
 
@@ -2665,21 +2667,21 @@ Int_t XINICall::DoFARMS131(Int_t nrow, Int_t ncol, Double_t *inten,
 
 // Cleanup
 cleanup:
-   delete [] c;
-   delete [] EZZ;
-   delete [] arr2;
-   delete [] arr1;
-   delete [] beta;
-   delete [] PsiL;
-   delete [] Ph;
-   delete [] Lold;
-   delete [] L;
-   delete [] diagXX;
-   delete [] xstdv;
-   delete [] xmean;
-   delete [] XX;
-   delete [] mm;
-   delete [] X;
+   if (c)      {delete [] c;      c      = 0;}
+   if (EZZ)    {delete [] EZZ;    EZZ    = 0;}
+   if (arr2)   {delete [] arr2;   arr2   = 0;}
+   if (arr1)   {delete [] arr1;   arr1   = 0;}
+   if (beta)   {delete [] beta;   beta   = 0;}
+   if (PsiL)   {delete [] PsiL;   PsiL   = 0;}
+   if (Ph)     {delete [] Ph;     Ph     = 0;}
+   if (Lold)   {delete [] Lold;   Lold   = 0;}
+   if (L)      {delete [] L;      L      = 0;}
+   if (diagXX) {delete [] diagXX; diagXX = 0;}
+   if (xstdv)  {delete [] xstdv;  xstdv  = 0;}
+   if (xmean)  {delete [] xmean;  xmean  = 0;}
+   if (XX)     {delete [] XX;     XX     = 0;}
+   if (mm)     {delete [] mm;     mm     = 0;}
+   if (X)      {delete [] X;      X      = 0;}
    
    return err;
 }//DoFARMS131
@@ -2787,7 +2789,7 @@ Int_t XArithmeticMean::Calculate(Double_t &value1, Double_t &value2, Int_t &num)
 //   var /= (trimlen - 1); // degrees of freedom? test for null division
 //   var /= (fLength - 1); // degrees of freedom? test for null division
 
-   delete [] index;
+   if (index) {delete [] index; index = 0;}
 
 // Return values
    value1 = mean;
@@ -2884,7 +2886,7 @@ Int_t XGeometricMean::Calculate(Double_t &value1, Double_t &value2, Int_t &num)
 //   var /= (trimlen - 1); // degrees of freedom? test for null division
 //   var /= (fLength - 1); // degrees of freedom? test for null division
 
-   delete [] index;
+   if (index) {delete [] index; index = 0;}
 
 // Return values
    value1 = mean;
@@ -2999,7 +3001,7 @@ Int_t XWeightedMean::Calculate(Double_t &value1, Double_t &value2, Int_t &num)
       var  =  0; //std = sqrt(vVar)
    }//if
 
-   delete [] weight;
+   if (weight) {delete [] weight; weight = 0;}
 
 // Return values
    value1 = mean;
@@ -3192,7 +3194,7 @@ Int_t XWeightedDiff::Calculate(Double_t &value1, Double_t &value2, Int_t &num)
       var  =  0; //std = sqrt(vVar)
    }//if
 
-   delete [] weight;
+   if (weight) {delete [] weight; weight = 0;}
 
 // Return values
    value1 = mean;
@@ -3382,8 +3384,8 @@ Int_t XTukeyBiweight::CreateArray(Int_t length)
       fArray[i] = pm[i] - mm[i]; 
    }//for_i
 
-   delete [] mm;
-   delete [] pm;
+   if (mm) {delete [] mm; mm = 0;}
+   if (pm) {delete [] pm; pm = 0;}
 
    return errNoErr;
 }//CreateArray
@@ -3439,7 +3441,7 @@ Int_t XTukeyBiweight::Calculate(Double_t &value1, Double_t &value2, Int_t &num)
    value2 = ct[1];
    num    = fLength;
 
-   delete [] ct;
+   if (ct) {delete [] ct; ct = 0;}
 
    return errNoErr;
 }//Calculate
@@ -3543,7 +3545,7 @@ Int_t XMedianPolish::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk)
       }//for_j
    }//if
 
-   delete [] rowmed;
+   if (rowmed) {delete [] rowmed; rowmed = 0;}
    
    return err;
 }//Calculate
@@ -4101,21 +4103,21 @@ Int_t XFARMS::DoFARMS131(Int_t nrow, Int_t ncol, Double_t *inten,
 
 // Cleanup
 cleanup:
-   delete [] c;
-   delete [] EZZ;
-   delete [] arr2;
-   delete [] arr1;
-   delete [] beta;
-   delete [] PsiL;
-   delete [] Ph;
-   delete [] Lold;
-   delete [] L;
-   delete [] diagXX;
-   delete [] xstdv;
-   delete [] xmean;
-   delete [] XX;
-   delete [] mm;
-   delete [] X;
+   if (c)      {delete [] c;      c      = 0;}
+   if (EZZ)    {delete [] EZZ;    EZZ    = 0;}
+   if (arr2)   {delete [] arr2;   arr2   = 0;}
+   if (arr1)   {delete [] arr1;   arr1   = 0;}
+   if (beta)   {delete [] beta;   beta   = 0;}
+   if (PsiL)   {delete [] PsiL;   PsiL   = 0;}
+   if (Ph)     {delete [] Ph;     Ph     = 0;}
+   if (Lold)   {delete [] Lold;   Lold   = 0;}
+   if (L)      {delete [] L;      L      = 0;}
+   if (diagXX) {delete [] diagXX; diagXX = 0;}
+   if (xstdv)  {delete [] xstdv;  xstdv  = 0;}
+   if (xmean)  {delete [] xmean;  xmean  = 0;}
+   if (XX)     {delete [] XX;     XX     = 0;}
+   if (mm)     {delete [] mm;     mm     = 0;}
+   if (X)      {delete [] X;      X      = 0;}
    
    return err;
 }//DoFARMS131
