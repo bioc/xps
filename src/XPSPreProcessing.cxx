@@ -2497,6 +2497,7 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
 
    Double_t **table   = 0;
    Double_t  *arrData = 0;
+   Double_t  *arrPM   = 0; 
 
    TTree   *scmtree = 0; 
    TLeaf   *scmleaf = 0;
@@ -2803,6 +2804,11 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
       calltree[k]->Branch("CallBranch", "XPCall", &call[k], 64000, split);
    }//for_k
 
+// Create array to store PM values for all probes with current unitID
+   if (!(arrPM = new (nothrow) Double_t[(maxnumcells+1)*numdata])) {
+      err = errInitMemory; goto cleanup;
+   }//if
+
 // Calculate detection call values
    start = 0;
    end   = 0;
@@ -2823,8 +2829,8 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
 //TO DO
 //Better above: arrPM = new Double_t[maxnumcells*numdata]; 
       // create array to store PM values for all probes with current unitID
-      Int_t  numatoms = unit->GetNumAtoms();
-      Double_t *arrPM = new Double_t[numatoms*numdata]; 
+//x      Int_t  numatoms = unit->GetNumAtoms();
+//x      Double_t *arrPM = new Double_t[numcells*numdata]; 
 
       // fill arrPM with PM values of current unitID
       Int_t p = 0;
@@ -2865,7 +2871,7 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
 
       // fill arrPM or continue if it is not filled
       if ((err = fCaller->SetArray(p, arrPM)) != errNoErr) {
-         delete [] arrPM;
+//x         delete [] arrPM;
          continue;
       }//if
 
@@ -2889,7 +2895,7 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
          calltree[k]->Fill();
       }//for_k
 
-      delete [] arrPM;
+//x      delete [] arrPM;
 
       if (XManager::fgVerbose && id%10000 == 0) {
          cout << "      calculating detection call for <" << idx << "> of <"
@@ -2945,6 +2951,7 @@ cleanup:
       delete [] tmptree;
    }//if
    // delete arrays
+   if (arrPM)    {delete [] arrPM;    arrPM    = 0;}
    if (arrData)  {delete [] arrData;  arrData  = 0;}
    if (pvalue)   {delete [] pvalue;   pvalue   = 0;}
    if (prescall) {delete [] prescall; prescall = 0;}
@@ -3342,6 +3349,7 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
 
    Double_t **table   = 0;
    Double_t  *arrData = 0;
+   Double_t  *arrPM   = 0; 
 
    TTree   *scmtree = 0; 
    TLeaf   *scmleaf = 0;
@@ -3654,6 +3662,11 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
 //gBenchmark->Reset();
 //gBenchmark->Start("Bench_Loop");
 
+// Create array to store PM values for all probes with current unitID
+   if (!(arrPM = new (nothrow) Double_t[(maxnumcells+1)*numdata])) {
+      err = errInitMemory; goto cleanup;
+   }//if
+
 // Calculate expression values
    start = 0;
    end   = 0;
@@ -3675,7 +3688,7 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
 //Better above: arrPM = new Double_t[maxnumcells*numdata]; 
       // create array to store PM values for all probes with current unitID
       Int_t  numatoms = unit->GetNumAtoms();
-      Double_t *arrPM = new Double_t[numatoms*numdata]; 
+//x      Double_t *arrPM = new Double_t[numcells*numdata]; 
 
       // fill arrPM with PM values of current unitID
       Int_t p = 0;
@@ -3716,7 +3729,7 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
 
       // fill arrPM or continue if it is not filled
       if ((err = fExpressor->SetArray(p, arrPM)) != errNoErr) {
-         delete [] arrPM;
+//x         delete [] arrPM;
          continue;
       }//if
 
@@ -3743,7 +3756,7 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
          exprtree[k]->Fill();
       }//for_k
 
-      delete [] arrPM;
+//x      delete [] arrPM;
 
       if (XManager::fgVerbose && id%10000 == 0) {
          cout << "      calculating expression for <" << idx << "> of <"
@@ -3798,6 +3811,7 @@ cleanup:
       delete [] tmptree;
    }//if
    // delete arrays
+   if (arrPM)   {delete [] arrPM;   arrPM   = 0;}
    if (arrData) {delete [] arrData; arrData = 0;}
    if (stdev)   {delete [] stdev;   stdev   = 0;}
    if (level)   {delete [] level;   level   = 0;}
