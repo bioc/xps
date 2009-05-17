@@ -58,6 +58,20 @@ you can pass a numeric vector containing three integer values corresponding to t
 an \code{integer} vector.
 }
 \author{Christian Stratowa}
+\note{
+The following \code{exonlevel}s are unsupported:
+\tabular{lll}{
+  \tab \code{control->bgp->genomic}:\tab \code{(=32768)} genomic background probes. \cr
+  \tab \code{control->bgp->antigenomic}:\tab \code{(=65536)} antigenomic background probes. \cr
+  \tab \code{normgene->intron}:\tab \code{(=131072)} intronic controls. \cr
+  \tab \code{normgene->exon}:\tab \code{(=262144)} exronic controls. \cr
+  \tab \code{rescue->FLmRNA->unmapped}:\tab \code{(=524288)} unmapped mRNAs. \cr
+}
+For whole genome arrays it is possible (but not recommended) to use all probesets 
+by using \code{exonlevel=c(992316,992316,992316)}. \cr
+For exon arrays it is currently only  possible to use \code{exonlevel=c(631868,631868,631868)}. \cr
+However, please note that these settings are not recommended and not supported.
+}
 \seealso{\code{\link{rma}}, \code{\link{mas5}}}
 \examples{
 exonLevel("core", "GenomeChip")
