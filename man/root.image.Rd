@@ -15,7 +15,7 @@ root.image(x, treename = character(0), leafname = "fInten", logbase = "log2", op
   \item{option}{ROOT graph option, usually. one of \dQuote{COL}, \dQuote{COLZ}.}
   \item{zlim}{size limits c(min,max) of \code{leafname}.}
   \item{canvasname}{name of ROOT canvas}
-  \item{save.as}{gaphics tye for saving canvas, one of \dQuote{ps}, \dQuote{eps}, \dQuote{pdf},
+  \item{save.as}{graphics type for saving canvas, one of \dQuote{ps}, \dQuote{eps}, \dQuote{pdf},
    \dQuote{jpg}, \dQuote{gif}, \dQuote{png}, \dQuote{tiff}}
   \item{w}{the width of the device in pixels.}
   \item{h}{the height of the device in pixels.}

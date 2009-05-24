@@ -16,7 +16,7 @@ root.profile(x, treename = "*", varlist = NULL, as.log = TRUE, globalscale = TRU
   \item{boxes}{logical indicating if box-and-whisker plots should be drawn.}
   \item{ylim}{size limits c(min,max) of \code{varlist}.}
   \item{canvasname}{name of ROOT canvas}
-  \item{save.as}{gaphics tye for saving canvas, one of \dQuote{ps}, \dQuote{eps}, \dQuote{pdf},
+  \item{save.as}{graphics type for saving canvas, one of \dQuote{ps}, \dQuote{eps}, \dQuote{pdf},
    \dQuote{jpg}, \dQuote{gif}, \dQuote{png}, \dQuote{tiff}}
   \item{w}{the width of the device in pixels.}
   \item{h}{the height of the device in pixels.}

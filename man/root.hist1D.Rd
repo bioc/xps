@@ -14,7 +14,7 @@ root.hist1D(x, treename = character(0), logbase = "log2", type = "hist", option 
   \item{type}{ROOT 1D-hist or density, i.e. \dQuote{hist} or \dQuote{density}.}
   \item{option}{ROOT 1D-hist option only, usually one of \dQuote{HIST}, \dQuote{B}, \dQuote{C}, \dQuote{E}.}
   \item{canvasname}{name of ROOT canvas}
-  \item{save.as}{gaphics tye for saving canvas, one of \dQuote{ps}, \dQuote{eps}, \dQuote{pdf},
+  \item{save.as}{graphics type for saving canvas, one of \dQuote{ps}, \dQuote{eps}, \dQuote{pdf},
    \dQuote{jpg}, \dQuote{gif}, \dQuote{png}, \dQuote{tiff}}
   \item{w}{the width of the canvas in pixels.}
   \item{h}{the height of the canvas in pixels.}

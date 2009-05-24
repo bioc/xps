@@ -13,7 +13,7 @@ root.graph1D(x, treename = character(0), logbase = "log2", option = "P", canvasn
   \item{logbase}{usually \dQuote{log2}, or \dQuote{0}, determines if leaf data should be converted to log.}
   \item{option}{ROOT TGraph::PaintGraph option, usually one of \dQuote{P}, \dQuote{*}, \dQuote{L}.}
   \item{canvasname}{name of ROOT canvas}
-  \item{save.as}{gaphics tye for saving canvas, one of \dQuote{ps}, \dQuote{eps}, \dQuote{pdf},
+  \item{save.as}{graphics type for saving canvas, one of \dQuote{ps}, \dQuote{eps}, \dQuote{pdf},
    \dQuote{jpg}, \dQuote{gif}, \dQuote{png}, \dQuote{tiff}}
   \item{w}{the width of the canvas in pixels.}
   \item{h}{the height of the canvas in pixels.}

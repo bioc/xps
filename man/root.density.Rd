@@ -12,7 +12,7 @@ root.density(x, treename = "*", logbase = "log2", canvasname = "DensityPlot", sa
   \item{treename}{name of tree, must be present in \code{rootfile} of object \code{x}.}
   \item{logbase}{usually \dQuote{log2}, or \dQuote{0}, determines if leaf data should be converted to log.}
   \item{canvasname}{name of ROOT canvas}
-  \item{save.as}{gaphics tye for saving canvas, one of \dQuote{ps}, \dQuote{eps}, \dQuote{pdf},
+  \item{save.as}{graphics type for saving canvas, one of \dQuote{ps}, \dQuote{eps}, \dQuote{pdf},
    \dQuote{jpg}, \dQuote{gif}, \dQuote{png}, \dQuote{tiff}}
   \item{w}{the width of the canvas in pixels.}
   \item{h}{the height of the canvas in pixels.}
