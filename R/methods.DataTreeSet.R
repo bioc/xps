@@ -360,6 +360,9 @@ function(object,
       stop(paste("slot", sQuote("data"), "has no data"));
    }#if
 
+   ## get column number for chip
+   ncol <- ncols(object@scheme);
+
    ## check for presence of scheme mask
    msk <- chipMask(object@scheme);
    if (nrow(msk) == 0 || ncol(msk) == 0) {
@@ -389,23 +392,21 @@ function(object,
       if (which == "") {
          id <- 1:nrow(data); ##all
       } else if (which == "antigenomic") {
-         id <- which(msk[,"Mask"] == -2);
+         id <- exonLevelIDs(-2, data, msk, ncol);
       } else {
          level <- exonLevel(which, "GenomeChip", as.sum=FALSE);
-         id    <- unlist(sapply(level, function(x) {which(msk[,"Mask"] == x)}));
-         id    <- id[order(id)];
+         id    <- exonLevelIDs(level, data, msk, ncol);
       }#if
    } else if (chipType(object) == "ExonChip") {
       if (which == "") {
          id <- 1:nrow(data); ##all
       } else if (which == "genomic") {
-         id <- which(msk[,"Mask"] == -1);
+         id <- exonLevelIDs(-1, data, msk, ncol);
       } else if (which == "antigenomic") {
-         id <- which(msk[,"Mask"] == -2);
+         id <- exonLevelIDs(-2, data, msk, ncol);
       } else {
          level <- exonLevel(which, "ExonChip", as.sum=FALSE);
-         id    <- unlist(sapply(level, function(x) {which(msk[,"Mask"] == x)}));
-         id    <- id[order(id)];
+         id    <- exonLevelIDs(level, data, msk, ncol);
       }#if
    }#if
 
@@ -2694,7 +2695,7 @@ setMethod("image", signature(x="DataTreeSet"),
       for (i in 1:ncol(ds)) {
          m <- as.numeric(ds[,i]);
          m <- matrix(m, ncol=ncols(x), nrow=nrows(x));
-         m <- m[,nrows(x):1];
+         m <- m[,ncols(x):1];
 
          image(m,
                col  = col,

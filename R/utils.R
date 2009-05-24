@@ -23,6 +23,7 @@
 # CELNames:
 # CELHeader:
 # exonLevel:
+# exonLevelIDs:
 # extenPart:
 # namePart:
 # type2Exten:
@@ -505,7 +506,7 @@ CELHeader <- function(celname, scheme) {
 }#CELHeader
 
 #------------------------------------------------------------------------------#
-# exonLevel: utility function for setValidity
+# exonLevel: utility function to convert exonlevel to mask
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 exonLevel <- function(exonlevel="", chiptype="GeneChip", as.sum=TRUE) {
    if (debug.xps()) print("------exonLevel------")
@@ -525,8 +526,8 @@ exonLevel <- function(exonlevel="", chiptype="GeneChip", as.sum=TRUE) {
 
       ## levels are defined in src/XPSSchemes.h
       level <- unlist(strsplit(exonlevel, "\\+"));
-      LEVEL <- c("core", "metacore", "affx", "all");
-      CODE  <- c( 1024,   8192,       60,     9276);
+      LEVEL <-    c("core", "metacore", "affx",           "all");
+      CODE  <- list( 1024,   8192,       c(4,8,16,32),     9276);
       level <- match(level, LEVEL);
 
       if (is.na(all(level))) {
@@ -539,10 +540,10 @@ exonLevel <- function(exonlevel="", chiptype="GeneChip", as.sum=TRUE) {
       level <- unique(level);
 
       if (as.sum) {
-         exlevel <- sum(CODE[level]);
+         exlevel <- sum(unlist(CODE[level]));
          exlevel <- c(exlevel, exlevel, exlevel);
       } else {
-         exlevel <- CODE[level];
+         exlevel <- unlist(CODE[level]);
       }#if
    } else if (chiptype == "ExonChip") {
       ## separate levels for bgrd, norm, expr must be given as integers
@@ -558,8 +559,8 @@ exonLevel <- function(exonlevel="", chiptype="GeneChip", as.sum=TRUE) {
 
       ## levels are defined in src/XPSSchemes.h
       level <- unlist(strsplit(exonlevel, "\\+"));
-      LEVEL <- c("core", "metacore", "extended", "metaextended", "full", "metafull", "ambiguous", "affx", "all");
-      CODE  <- c( 1024,   8192,       512,        4096,           256,    2048,       128,         60,    16316);
+      LEVEL <-    c("core", "metacore", "extended", "metaextended", "full", "metafull", "ambiguous", "affx",           "all");
+      CODE  <- list( 1024,   8192,       512,        4096,           256,    2048,       128,         c(4,8,16,32),    16316);
       level <- match(level, LEVEL);
 
       if (is.na(all(level))) {
@@ -574,15 +575,33 @@ exonLevel <- function(exonlevel="", chiptype="GeneChip", as.sum=TRUE) {
       level <- unique(level);
 
       if (as.sum) {
-         exlevel <- sum(CODE[level]);
+         exlevel <- sum(unlist(CODE[level]));
          exlevel <- c(exlevel, exlevel, exlevel);
       } else {
-         exlevel <- CODE[level];
+         exlevel <- unlist(CODE[level]);
       }#if
    }#if
 
    return(exlevel);
 }#exonLevel
+
+#------------------------------------------------------------------------------#
+# exonLevelIDs: utility function to get row numbers for exonlevel
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+exonLevelIDs <- function(exonlevel, data, mask, ncol) {
+   if (debug.xps()) print("------exonLevelIDs------")
+
+   id <- sapply(exonlevel,
+                function(x) {
+                   xy <- mask[mask[, "Mask"] == x, c("X","Y")];
+                   id <- match(xy[,"X"]   + ncol*xy[,"Y"],
+                               data[,"X"] + ncol*data[,"Y"]);
+                }
+         );
+   id <- unique(unlist(id));
+
+   return(id[order(id)]);
+}#exonLevelIDs
 
 #------------------------------------------------------------------------------#
 # extenPart: utility function to extract extension part from "name.exten"
