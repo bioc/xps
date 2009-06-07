@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 10/03/2008
+// File created: 08/05/2002                          last modified: 06/07/2009
 
 // Author: Christian Stratowa 06/18/2000
 
@@ -7,7 +7,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2009 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -624,6 +624,9 @@ Int_t XNormedSet::FillExprArray(TTree *tree, Int_t n, Int_t *idx, Double_t *arr)
       arr[i] = expr->GetLevel();
    }//for_i
 
+   SafeDelete(expr);
+   tree->ResetBranchAddress(tree->GetBranch("ExprBranch"));
+
    return errNoErr;
 }//FillExprArray
 
@@ -676,8 +679,9 @@ Int_t XNormedSet::FillExprTree(const char *name, Int_t n, Int_t *idx, Double_t *
    }//if
 
 // Cleanup
-   tree->Delete(""); tree = 0;
-   delete expr;
+   SafeDelete(expr);
+   tree->ResetBranchAddress(tree->GetBranch("ExprBranch"));
+   SafeDelete(tree);
 
    return err;
 }//FillExprTree
@@ -746,6 +750,13 @@ Int_t XNormedSet::FillMaskArray(const char *name, Int_t n, Int_t *arr)
    cleanup:
       delete [] arrFlag;
       delete [] arrName;
+
+      for (Int_t k=0; k<nummask; k++) {
+         SafeDelete(mask[k]);
+         tree[k]->ResetBranchAddress(tree[k]->GetBranch("MaskBranch"));
+         SafeDelete(tree[k]);
+      }//for_k
+
       delete [] mask;
       delete [] tree;
    } else {
@@ -767,8 +778,9 @@ Int_t XNormedSet::FillMaskArray(const char *name, Int_t n, Int_t *arr)
          arr[i] = mask->GetFlag();
       }//for_i
 
-      tree->Delete(""); //temporary tree only
-      tree = 0;
+      SafeDelete(mask);
+      tree->ResetBranchAddress(tree->GetBranch("MaskBranch"));
+      SafeDelete(tree);
    }//if
 
    return err;
@@ -820,9 +832,11 @@ Int_t XNormedSet::FillMaskTree(const char *name, Int_t n, Int_t *idx, Int_t *arr
    }//if
 
 // Cleanup
-   tree->Delete(""); tree = 0; //delete tree from heap
-   delete mask;
-   delete unit;
+   SafeDelete(unit);
+   SafeDelete(mask);
+   tree->ResetBranchAddress(tree->GetBranch("UnitBranch"));
+   tree->ResetBranchAddress(tree->GetBranch("MaskBranch"));
+   SafeDelete(tree);
 
    return err;
 }//FillMaskTree
@@ -867,6 +881,12 @@ Int_t XNormedSet::MeanReference(Int_t numexpr, TTree **exprtree,
          arr[i] = expr[0]->GetLevel();
       }//for_i
    }//if
+
+// Cleanup
+   for (Int_t k=0; k<numexpr; k++) {
+      SafeDelete(expr[k]);
+      exprtree[k]->ResetBranchAddress(exprtree[k]->GetBranch("ExprBranch"));
+   }//for_k
 
    delete [] arrRef;
    delete [] expr;
@@ -915,6 +935,12 @@ Int_t XNormedSet::MedianReference(Int_t numexpr, TTree **exprtree,
          arr[i] = expr[0]->GetLevel();
       }//for_i
    }//if
+
+// Cleanup
+   for (Int_t k=0; k<numexpr; k++) {
+      SafeDelete(expr[k]);
+      exprtree[k]->ResetBranchAddress(exprtree[k]->GetBranch("ExprBranch"));
+   }//for_k
 
    delete [] arrRef;
    delete [] expr;
@@ -1528,14 +1554,26 @@ Int_t XNormedGCSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
 
 //Cleanup
 cleanup:
-   // remove trees from RAM
-   if (anntree)  {anntree->Delete("");  anntree  = 0;}
-   if (unittree) {unittree->Delete(""); unittree = 0;}
-   if (htable)   {htable->Delete(); delete htable; htable = 0;}
+   if (htable) {htable->Delete(); delete htable; htable = 0;}
    SafeDelete(schemes);
+
+   // remove trees from RAM
+   for (Int_t k=0; k<n; k++) {
+      SafeDelete(expr[k]);
+      tree[k]->ResetBranchAddress(tree[k]->GetBranch("ExprBranch"));
+      SafeDelete(tree[k]);
+   }//for_k
 
    delete [] expr;
    delete [] tree;
+
+   SafeDelete(annot);
+   anntree->ResetBranchAddress(anntree->GetBranch("AnnBranch"));
+   SafeDelete(anntree);
+
+   SafeDelete(unit);
+   unittree->ResetBranchAddress(unittree->GetBranch("IdxBranch"));
+   SafeDelete(unittree);
 
    return errNoErr;
 }//ExportExprTrees
@@ -1693,9 +1731,16 @@ Int_t XNormedGCSet::ExportMaskTrees(Int_t n, TString *names, const char *varlist
    }//for_i
 
 //Cleanup
-   // remove trees from RAM
-   if (unittree) {unittree->Delete(""); unittree = 0;}
    SafeDelete(schemes);
+
+   // remove trees from RAM
+   SafeDelete(mskunit);
+   tree[0]->ResetBranchAddress(tree[0]->GetBranch("UnitBranch"));
+   for (Int_t k=0; k<n; k++) {
+      SafeDelete(mask[k]);
+      tree[k]->ResetBranchAddress(tree[k]->GetBranch("MaskBranch"));
+      SafeDelete(tree[k]);
+   }//for_k
 
    delete [] mask;
    delete [] tree;

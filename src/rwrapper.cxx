@@ -5,7 +5,7 @@
  *
  * Implementation by: Christian Stratowa
  *
- * Copyright (C) Christian Stratowa 2002-2007
+ * Copyright (C) Christian Stratowa 2002-2009
  *
  * A wrapper for the XPS libraries
  *
@@ -303,22 +303,26 @@ void ExportData(char **filename, char **schemefile, char **chiptype,
 
       r += manager->Initialize(chiptype[0], "preprocess", "R");
       r += ((XPreProcessManager*)manager)->OpenSchemes(schemefile[0]);
+      r += ((XPreProcessManager*)manager)->OpenData(filename[0]);
    } else if (strcmp(datatype[0], "normation") == 0) {
       manager = new XNormationManager("NormationManager","", *verbose);
 
       r += manager->Initialize(chiptype[0], "normation", "R");
       r += ((XNormationManager*)manager)->OpenSchemes(schemefile[0]);
+      r += ((XNormationManager*)manager)->OpenData(filename[0]);
    } else if (strcmp(datatype[0], "prefilter") == 0) {
       manager = new XAnalysisManager("AnalysisManager","", *verbose);
 
       r += manager->Initialize("PreFilter", "", "R");
       r += ((XAnalysisManager*)manager)->OpenSchemes(schemefile[0]);
+      r += ((XAnalysisManager*)manager)->OpenData(filename[0]);
    } else if (strcmp(datatype[0], "unifilter")          == 0 ||
               strcmp(datatype[0], "UnivariateAnalysis") == 0) {
       manager = new XAnalysisManager("AnalysisManager","", *verbose);
 
       r += manager->Initialize("UnivariateAnalysis", "", "R");
       r += ((XAnalysisManager*)manager)->OpenSchemes(schemefile[0]);
+      r += ((XAnalysisManager*)manager)->OpenData(filename[0]);
    } else {
       printf("Error in ExportData(): datatype=%s not known\n", datatype[0]);
       *err = 1;

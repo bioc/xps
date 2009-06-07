@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 10/04/2008
+// File created: 08/05/2002                          last modified: 06/07/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2009 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -1474,8 +1474,8 @@ cleanup:
    delete [] bgrdtree;
    delete [] datatree;
 
-   SafeDelete(fSchemes);
    SafeDelete(fData);
+   SafeDelete(fSchemes);
 
    return err;
 }//Preprocess
@@ -1585,6 +1585,11 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
 //no!!            arrMask[ij] = eINITMASK - probe->GetNumberGC();
          }//if
       }//for_i
+
+      // delete probetree
+      SafeDelete(probe);
+      probetree->ResetBranchAddress(probetree->GetBranch("PrbBranch"));
+      SafeDelete(probetree);
    }//if
 
 // Change directory
@@ -1701,6 +1706,12 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
                           numrows, numcols, arrInten, arrStdev);
       if (datatree[k] == 0) {err = errCreateTree; goto cleanup;}
 
+      // reset branches
+      SafeDelete(bgcell);
+      bgrdtree[k]->ResetBranchAddress(bgrdtree[k]->GetBranch("BgrdBranch"));
+      SafeDelete(gccell);
+      datatree[k]->ResetBranchAddress(datatree[k]->GetBranch("DataBranch"));
+
       if (err != errNoErr) break;
    }//for_k
 
@@ -1714,6 +1725,8 @@ cleanup:
 //?   // delete scheme tree from RAM
 //?   if (scmtree)  {scmtree->Delete(""); scmtree = 0;}
    // note: keep datatree[k] and bgrdtree[k] for later use!
+
+//not allowed   SafeDelete(chip);
 
    savedir->cd();
 
@@ -2433,17 +2446,16 @@ Int_t XGCProcesSet::DoCall(Int_t numdata, TTree **datatree,
                        fCaller->GetParameters());
       }//if
 
-//?? needed later?
       SafeDelete(call);
+      calltree->ResetBranchAddress(calltree->GetBranch("CallBranch"));
+//?? calltree needed later?
+      SafeDelete(calltree);
+
       if (err != errNoErr) break;
    }//for_k
 
 // Cleanup
 cleanup:
-   SafeDelete(unitSelector);
-   SafeDelete(unit);
-   SafeDelete(scheme);
-
    // delete arrays
    if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
    if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
@@ -2459,6 +2471,14 @@ cleanup:
    if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
    if (mskUnit)  {delete [] mskUnit;  mskUnit  = 0;}
    if (arrUnit)  {delete [] arrUnit;  arrUnit  = 0;}
+
+   SafeDelete(unitSelector);
+   SafeDelete(unit);
+   idxtree->ResetBranchAddress(idxtree->GetBranch("IdxBranch"));
+   SafeDelete(scheme);
+   scmtree->ResetBranchAddress(scmtree->GetBranch("ScmBranch"));
+//?   // delete scheme tree from RAM
+//?   SafeDelete(scmtree);
 
    return err;
 }//DoCall
@@ -2936,10 +2956,6 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
 
 // Cleanup
 cleanup:
-   SafeDelete(unitSelector);
-   SafeDelete(unit);
-   SafeDelete(scheme);
-
    // delete table
    DeleteTable(table, numdata);
 
@@ -2960,13 +2976,32 @@ cleanup:
    if (mskUnit)  {delete [] mskUnit;  mskUnit  = 0;}
    if (arrUnit)  {delete [] arrUnit;  arrUnit  = 0;}
 
-   // delete scheme tree from RAM
-//?   if (scmtree)  {scmtree->Delete(""); scmtree = 0;}
+   for (Int_t k=0; k<numdata; k++) {
+      SafeDelete(gccell[k]);
+      datatree[k]->ResetBranchAddress(datatree[k]->GetBranch("DataBranch"));
 
-   delete [] call;
-   delete [] calltree;
+      if (numbgrd > 0) {
+         SafeDelete(bgcell[k]);
+         bgrdtree[k]->ResetBranchAddress(bgrdtree[k]->GetBranch("BgrdBranch"));
+      }//if
+
+      SafeDelete(call[k]);
+      calltree[k]->ResetBranchAddress(calltree[k]->GetBranch("CallBranch"));
+      SafeDelete(calltree[k]);
+   }//for_k
+
    delete [] gccell;
    delete [] bgcell;
+   delete [] call;
+   delete [] calltree;
+
+   SafeDelete(unitSelector);
+   SafeDelete(unit);
+   idxtree->ResetBranchAddress(idxtree->GetBranch("IdxBranch"));
+   SafeDelete(scheme);
+   scmtree->ResetBranchAddress(scmtree->GetBranch("ScmBranch"));
+//?   // delete scheme tree from RAM
+//?   SafeDelete(scmtree);
 
    return err;
 }//DoMultichipCall
@@ -3280,15 +3315,15 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
                        fExpressor->GetParameters());
       }//if
 
-//needed later?      SafeDelete(expr);
+// ??? do not remove exprtree and expr from RAM, needed later
+      SafeDelete(expr);
+      exprtree->ResetBranchAddress(exprtree->GetBranch("ExprBranch"));
+      SafeDelete(exprtree);
+
       if (err != errNoErr) break;
    }//for_k
 
 cleanup:
-   SafeDelete(unitSelector);
-   SafeDelete(unit);
-   SafeDelete(scheme);
-
    // delete arrays
    if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
    if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
@@ -3304,9 +3339,14 @@ cleanup:
    if (arrMask)  {delete [] arrMask;  arrMask  = 0;}
    if (mskUnit)  {delete [] mskUnit;  mskUnit  = 0;}
    if (arrUnit)  {delete [] arrUnit;  arrUnit  = 0;}
+
+   SafeDelete(unitSelector);
+   SafeDelete(unit);
+   idxtree->ResetBranchAddress(idxtree->GetBranch("IdxBranch"));
+   SafeDelete(scheme);
+   scmtree->ResetBranchAddress(scmtree->GetBranch("ScmBranch"));
 //?   // delete scheme tree from RAM
-//?   if (scmtree)  {scmtree->Delete(""); scmtree = 0;}
-   // Note: do not remove exprtree and expr from RAM, needed later
+//?   SafeDelete(scmtree);
 
    return err;
 }//DoExpress
@@ -3796,10 +3836,6 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
 
 // Cleanup
 cleanup:
-   SafeDelete(unitSelector);
-   SafeDelete(unit);
-   SafeDelete(scheme);
-
    // delete table
    DeleteTable(table, numdata);
 
@@ -3820,13 +3856,32 @@ cleanup:
    if (mskUnit) {delete [] mskUnit; mskUnit = 0;}
    if (arrUnit) {delete [] arrUnit; arrUnit = 0;}
 
-   // delete scheme tree from RAM
-//?   if (scmtree)  {scmtree->Delete(""); scmtree = 0;}
+   for (Int_t k=0; k<numdata; k++) {
+      SafeDelete(gccell[k]);
+      datatree[k]->ResetBranchAddress(datatree[k]->GetBranch("DataBranch"));
 
-   delete [] expr;
-   delete [] exprtree;
+      if (numbgrd > 0) {
+         SafeDelete(bgcell[k]);
+         bgrdtree[k]->ResetBranchAddress(bgrdtree[k]->GetBranch("BgrdBranch"));
+      }//if
+
+      SafeDelete(expr[k]);
+      exprtree[k]->ResetBranchAddress(exprtree[k]->GetBranch("ExprBranch"));
+      SafeDelete(exprtree[k]);
+   }//for_k
+
    delete [] gccell;
    delete [] bgcell;
+   delete [] expr;
+   delete [] exprtree;
+
+   SafeDelete(unitSelector);
+   SafeDelete(unit);
+   idxtree->ResetBranchAddress(idxtree->GetBranch("IdxBranch"));
+   SafeDelete(scheme);
+   scmtree->ResetBranchAddress(scmtree->GetBranch("ScmBranch"));
+//?   // delete scheme tree from RAM
+//?   SafeDelete(scmtree);
 
    return err;
 }//DoMultichipExpress
@@ -3956,6 +4011,14 @@ Int_t XGCProcesSet::ExportBgrdTrees(Int_t n, TString *names, const char *varlist
       cout << "<" << nentries << "> records exported." << endl;
    }//if
 
+// Cleanup
+   for (Int_t k=0; k<n; k++) {
+      SafeDelete(cell[k]);
+      tree[k]->ResetBranchAddress(tree[k]->GetBranch("BgrdBranch"));
+//?? keep tree for later???
+      SafeDelete(tree[k]);
+   }//for_k
+
    delete [] cell;
    delete [] tree;
 
@@ -4049,6 +4112,14 @@ Int_t XGCProcesSet::ExportIntnTrees(Int_t n, TString *names, const char *varlist
    if (XManager::fgVerbose) {
       cout << "<" << nentries << "> records exported." << endl;
    }//if
+
+// Cleanup
+   for (Int_t k=0; k<n; k++) {
+      SafeDelete(cell[k]);
+      tree[k]->ResetBranchAddress(tree[k]->GetBranch("DataBranch"));
+//?? keep tree for later???
+      SafeDelete(tree[k]);
+   }//for_k
 
    delete [] cell;
    delete [] tree;
@@ -4339,14 +4410,26 @@ Int_t XGCProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
 
 //Cleanup
 cleanup:
-   // remove trees from RAM
-   if (anntree)  {anntree->Delete("");  anntree  = 0;}
-   if (unittree) {unittree->Delete(""); unittree = 0;}
    if (htable)   {htable->Delete(); delete htable; htable = 0;}
    SafeDelete(schemes);
 
+   // remove trees from RAM
+   for (Int_t k=0; k<n; k++) {
+      SafeDelete(expr[k]);
+      tree[k]->ResetBranchAddress(tree[k]->GetBranch("ExprBranch"));
+      SafeDelete(tree[k]);
+   }//for_k
+
    delete [] expr;
    delete [] tree;
+
+   SafeDelete(annot);
+   anntree->ResetBranchAddress(anntree->GetBranch("AnnBranch"));
+   SafeDelete(anntree);
+
+   SafeDelete(unit);
+   unittree->ResetBranchAddress(unittree->GetBranch("IdxBranch"));
+   SafeDelete(unittree);
 
    return err;
 }//ExportExprTrees
@@ -4633,14 +4716,26 @@ Int_t XGCProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varlist
 
 //Cleanup
 cleanup:
-   // remove trees from RAM
-   if (anntree)  {anntree->Delete("");  anntree  = 0;}
-   if (unittree) {unittree->Delete(""); unittree = 0;}
    if (htable)   {htable->Delete(); delete htable; htable = 0;}
    SafeDelete(schemes);
 
+   // remove trees from RAM
+   for (Int_t k=0; k<n; k++) {
+      SafeDelete(call[k]);
+      tree[k]->ResetBranchAddress(tree[k]->GetBranch("CallBranch"));
+      SafeDelete(tree[k]);
+   }//for_k
+
    delete [] call;
    delete [] tree;
+
+   SafeDelete(annot);
+   anntree->ResetBranchAddress(anntree->GetBranch("AnnBranch"));
+   SafeDelete(anntree);
+
+   SafeDelete(unit);
+   unittree->ResetBranchAddress(unittree->GetBranch("IdxBranch"));
+   SafeDelete(unittree);
 
    return err;
 }//ExportCallTrees
@@ -4669,7 +4764,9 @@ Int_t XGCProcesSet::SchemeMask(XDNAChip *chip, Int_t level, Int_t n, Int_t *msk)
    msk = this->FillMaskArray(chip, scmtree, scheme, level, n, msk);
 
    // delete scheme tree from RAM
-   if (scmtree) {scmtree->Delete(""); scmtree = 0;}
+   SafeDelete(scheme);
+   scmtree->ResetBranchAddress(scmtree->GetBranch("ScmBranch"));
+   SafeDelete(scmtree);
 
    savedir->cd();
 
@@ -4976,7 +5073,13 @@ Int_t XGCProcesSet::FillDataArrays(TTree *datatree, TTree *bgrdtree, Bool_t doBg
             inten[ij] = this->AdjustIntensity(inten[ij], bgcell->GetBackground(), bgcell->GetStdev());
          }//if
       }//for_i
+
+      SafeDelete(bgcell);
+      bgrdtree->ResetBranchAddress(bgrdtree->GetBranch("BgrdBranch"));
    }//if
+
+   SafeDelete(gccell);
+   datatree->ResetBranchAddress(datatree->GetBranch("DataBranch"));
 
    return errNoErr;
 }//FillDataArrays
@@ -5044,7 +5147,13 @@ Int_t XGCProcesSet::FillDataArrays(TTree *datatree, TTree *bgrdtree, Bool_t doBg
          // subtract background from intensity
          inten[ij] = this->AdjustIntensity(inten[ij], bgcell->GetBackground(), bgcell->GetStdev());
       }//for_i
+
+      SafeDelete(bgcell);
+      bgrdtree->ResetBranchAddress(bgrdtree->GetBranch("BgrdBranch"));
    }//if
+
+   SafeDelete(gccell);
+   datatree->ResetBranchAddress(datatree->GetBranch("DataBranch"));
 
    return errNoErr;
 }//FillDataArrays
@@ -5081,6 +5190,9 @@ Int_t XGCProcesSet::FillDataArrays(TTree *datatree, Int_t nrow, Int_t ncol,
       if (npix)  npix[ij]  = gccell->GetNumPixels();
    }//for_i
 
+   SafeDelete(gccell);
+   datatree->ResetBranchAddress(datatree->GetBranch("DataBranch"));
+
    return errNoErr;
 }//FillDataArrays
 
@@ -5109,6 +5221,9 @@ Int_t XGCProcesSet::FillBgrdArrays(TTree *bgrdtree, Int_t nrow, Int_t ncol,
       if (inten) inten[ij] = bgcell->GetBackground();
       if (stdev) stdev[ij] = bgcell->GetStdev();
    }//for_i
+
+   SafeDelete(bgcell);
+   bgrdtree->ResetBranchAddress(bgrdtree->GetBranch("BgrdBranch"));
 
    return errNoErr;
 }//FillBgrdArrays
@@ -5207,6 +5322,13 @@ TTree *XGCProcesSet::FillDataTree(TTree *oldtree, const char *exten,
                     algorithm->GetNumParameters(), algorithm->GetParameters());
    }//if
 
+   SafeDelete(newcell);
+   newtree->ResetBranchAddress(newtree->GetBranch("DataBranch"));
+   SafeDelete(oldcell);
+   oldtree->ResetBranchAddress(oldtree->GetBranch("DataBranch"));
+//?? delete old tree??
+   SafeDelete(oldtree);
+
    return newtree;
 }//FillDataTree
 
@@ -5281,6 +5403,9 @@ TTree *XGCProcesSet::FillDataTree(const char *name, XAlgorithm *algorithm,
       }//if
    }//if
 
+   SafeDelete(cell);
+   tree->ResetBranchAddress(tree->GetBranch("DataBranch"));
+
    return tree;
 }//FillDataTree
 
@@ -5335,8 +5460,9 @@ Int_t XGCProcesSet::FillMaskTree(const char *name, XAlgorithm *algorithm,
    }//if
 
 // Cleanup
-   tree->Delete(""); tree = 0; //delete tree from heap
-   delete mask;
+   SafeDelete(mask);
+   tree->ResetBranchAddress(tree->GetBranch("MaskBranch"));
+   SafeDelete(tree);
 
    return err;
 }//FillMaskTree
@@ -5393,6 +5519,9 @@ Int_t XGCProcesSet::MaskArray2GC(XDNAChip *chip, Int_t *msk)
 //no         msk[ij] = eINITMASK - probe->GetNumberGC();
       }//if
    }//for_i
+
+   SafeDelete(probe);
+   probetree->ResetBranchAddress(probetree->GetBranch("PrbBranch"));
 
    return errNoErr;
 }//MaskArray2GC
@@ -5463,6 +5592,17 @@ Int_t XGCProcesSet::MeanReference(Int_t numdata, TTree **datatree, Int_t numbgrd
          arr[ij] = TStat::Mean(numdata, arrRef, fRefTrim);
       }//for_i
    }//if
+
+// Cleanup
+   for (Int_t k=0; k<numdata; k++) {
+      SafeDelete(gccell[k]);
+      datatree[k]->ResetBranchAddress(datatree[k]->GetBranch("DataBranch"));
+
+      if (numbgrd > 0) {
+         SafeDelete(bgcell[k]);
+         bgrdtree[k]->ResetBranchAddress(bgrdtree[k]->GetBranch("BgrdBranch"));
+      }//if
+   }//for_k
 
    delete [] gccell;
    delete [] bgcell;

@@ -1,4 +1,4 @@
-// File created: 12/16/2002                          last modified: 02/17/2008
+// File created: 12/16/2002                          last modified: 06/01/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2009 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -1113,7 +1113,11 @@ Int_t XAnalySet::CopyExprTrees(Int_t ntree, TTree **fromtree, TTree **totree,
 
       totree[k] = tmptree;
       if (save) tmptree->Write();
-//      delete expr; //needed by totree! will be deleted together with totree
+
+      SafeDelete(expr);
+      tmptree->ResetBranchAddress(tmptree->GetBranch("ExprBranch"));
+      SafeDelete(exprk);
+      fromtree[k]->ResetBranchAddress(fromtree[k]->GetBranch("ExprBranch"));
    }//for_k
 
    if (numneg > 0) {
@@ -1181,7 +1185,11 @@ Int_t XAnalySet::CopyCallTrees(Int_t ntree, TTree **fromtree, TTree **totree,
 
       totree[k] = tmptree;
       if (save) tmptree->Write("", TObject::kOverwrite);
-//      delete call; //needed by totree! will be deleted together with totree
+
+      SafeDelete(call);
+      tmptree->ResetBranchAddress(tmptree->GetBranch("CallBranch"));
+      SafeDelete(callk);
+      fromtree[k]->ResetBranchAddress(fromtree[k]->GetBranch("CallBranch"));
    }//for_k
 
    return errNoErr;
@@ -1418,9 +1426,16 @@ Int_t XAnalySet::ExportFilterTrees(Int_t n, TString *names, const char *varlist,
 
 //Cleanup
 cleanup:
-   // remove trees from RAM
-   if (unittree) {unittree->Delete(""); unittree = 0;}
    SafeDelete(schemes);
+
+   // remove trees from RAM
+   SafeDelete(mskunit);
+   tree[0]->ResetBranchAddress(tree[0]->GetBranch("UnitBranch"));
+   for (Int_t k=0; k<n; k++) {
+      SafeDelete(mask[k]);
+      tree[k]->ResetBranchAddress(tree[k]->GetBranch("MaskBranch"));
+      SafeDelete(tree[k]);
+   }//for_k
 
    delete [] mask;
    delete [] tree;
@@ -2510,12 +2525,21 @@ Int_t XUnivarSet::ExportUnivarTrees(Int_t n, TString *names, const char *varlist
 
 //Cleanup
 cleanup:
-   if (flag) {delete [] flag; flag = 0;}
-   // remove trees from RAM
-   if (anntree)  {anntree->Delete("");  anntree  = 0;}
-   if (unittree) {unittree->Delete(""); unittree = 0;}
-   if (htable)   {htable->Delete(); delete htable; htable = 0;}
+   if (flag)   {delete [] flag;   flag = 0;}
+   if (htable) {htable->Delete(); delete htable; htable = 0;}
    SafeDelete(schemes);
+
+   if (anntree) {
+      SafeDelete(annot);
+      anntree->ResetBranchAddress(anntree->GetBranch("AnnBranch"));
+      SafeDelete(anntree);
+   }//if
+
+   if (unittree) {
+      SafeDelete(unit);
+      unittree->ResetBranchAddress(unittree->GetBranch("IdxBranch"));
+      SafeDelete(unittree);
+   }//if
 
    delete [] tree;
 

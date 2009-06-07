@@ -3510,7 +3510,7 @@ Int_t XMedianPolish::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk)
       iter = 10;
    }//if
 
-   if (fResiduals) {delete [] fResiduals;}
+   if (fResiduals) {delete [] fResiduals; fResiduals = 0;}
    if (!(fResiduals = new (nothrow) Double_t[fLength])) return errInitMemory;
 
    Double_t *rowmed = 0;
@@ -3919,6 +3919,7 @@ Int_t XFARMS::DoFARMS131(Int_t nrow, Int_t ncol, Double_t *inten,
    // calculate standard deviation
    for (Int_t i=0; i<nrow; i++) {
       xstdv[i] = TMath::Sqrt(mm[i*nrow + i]);
+      if (xstdv[i] == 0) xstdv[i] = 1.0;
    }//for_i
 
    // standardize X to variance 1: X = inten/stdev
@@ -4024,6 +4025,7 @@ Int_t XFARMS::DoFARMS131(Int_t nrow, Int_t ncol, Double_t *inten,
 
       for (Int_t i=0; i<nrow; i++) {
          Ph[i] = diagXX[i] - arr1[i]*L[i] +  alpha*Ph[i]*L[i]*(bbeta - L[i]);
+         if (Ph[i] == 0) Ph[i] = 1.0;
       }//for_i
 
       sum = 0.0;
@@ -4048,6 +4050,7 @@ Int_t XFARMS::DoFARMS131(Int_t nrow, Int_t ncol, Double_t *inten,
    mean = sum/ncol;
 
    var = TStat::StDev(ncol, c, mean);
+   if (var == 0) var = 1.0;
 
    for (Int_t j=0; j<ncol; j++) {
       c[j] = c[j]/var;
