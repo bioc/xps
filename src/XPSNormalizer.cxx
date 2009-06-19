@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 05/05/2008
+// File created: 08/05/2002                          last modified: 06/01/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2009 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -1119,8 +1119,9 @@ Int_t XQuantileNormalizer::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *m
       if (arr) {delete [] arr; arr = 0;}
       delete [] sortk;
       // need to delete tree from RAM
-      for (Int_t k=0; k<fNData; k++) {treek[k]->Delete(""); treek[k] = 0;}
-//x??      delete [] treek;
+//      for (Int_t k=0; k<fNData; k++) {treek[k]->Delete(""); treek[k] = 0;}
+      for (Int_t k=0; k<fNData; k++) SafeDelete(treek[k]);
+      delete [] treek;
    } else if (strcmp(fDataOpt.Data(),"separate") == 0) {
       TTree   **pmtreek = new TTree*[fNData];
       TTree   **mmtreek = new TTree*[fNData];
@@ -1188,13 +1189,13 @@ Int_t XQuantileNormalizer::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *m
       if (arr) {delete [] arr; arr = 0;}
       delete [] mmsortk;
       delete [] pmsortk;
-      // need to delete tree from RAM
+      // need to delete trees from RAM
       for (Int_t k=0; k<fNData; k++) {
-         mmtreek[k]->Delete(""); mmtreek[k] = 0;
-         pmtreek[k]->Delete(""); pmtreek[k] = 0;
+         SafeDelete(mmtreek[k]);
+         SafeDelete(pmtreek[k]);
       }//for_k
-//x??      delete [] mmtreek;
-//x??      delete [] pmtreek;
+      delete [] mmtreek;
+      delete [] pmtreek;
    } else {
       cerr << "Error: Option <" << fDataOpt.Data()
            << "> cannot be used with quantile normalizer." << endl;

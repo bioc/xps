@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 10/04/2008
+// File created: 08/05/2002                          last modified: 06/19/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2009 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -1116,10 +1116,10 @@ XProcesSet::~XProcesSet()
    // XrocesSet destructor
    if(kCS) cout << "---XProcesSet::~XProcesSet------" << endl;
 
-//PROBLEM? *.cel trees saved in file => need to fReferences->Delete() ?
-//??   SafeDelete(fReferences);  //if fDataFile==fFile then trees already deleted
-   if(fReferences) {fReferences->Delete(); delete fReferences; fReferences = 0;}
-   if(fBaselines)  {fBaselines->Delete();  delete fBaselines;  fBaselines  = 0;}
+   fReferences->Clear("nodelete");  //do not delete trees
+   SafeDelete(fReferences);
+   fBaselines->Clear("nodelete");  //do not delete trees
+   SafeDelete(fBaselines);
 
    // delete content first, i.e. each chip and hyb
    if (fSchemes)  {fSchemes->Delete(); delete fSchemes; fSchemes = 0;}
@@ -1304,7 +1304,8 @@ Int_t XProcesSet::CopyUnitBranch(TTree *fromtree, TTree *totree, Int_t writeopt)
    // write totree with unit branch to file
    if (writeopt != -1) totree->Write("", writeopt);
 
-   delete unit;
+   SafeDelete(unit);
+   totree->ResetBranchAddress(totree->GetBranch("UnitBranch"));
 
    return errNoErr;
 }//CopyUnitBranch

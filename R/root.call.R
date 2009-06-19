@@ -63,7 +63,8 @@ function(xps.scheme,
    if (numtrees == 1) {
       treeset <- paste(setname, treenames, sep=".");
    } else if (numtrees > 1) {
-      treeset <- paste(rootfile, setname, treenames, sep="/");
+#      treeset <- paste(rootfile, setname, treenames, sep="/");
+      treeset <- paste(setname, treenames, sep="/");
    }#if
 
    ## export pvalue data from root file

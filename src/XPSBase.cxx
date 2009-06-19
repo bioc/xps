@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 12/19/2008
+// File created: 05/18/2002                          last modified: 06/19/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2009 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -730,16 +730,17 @@ XTreeSet::~XTreeSet()
    // TreeSet destructor
    if(kCS) cout << "---XTreeSet::~XTreeSet------" << endl;
 
-   if (fHeaders)    {fHeaders->Delete(); delete fHeaders; fHeaders = 0;}
-   if (fTrees)      {delete fTrees; fTrees = 0;} //or:
-//??   if (fTrees)      {fTrees->Delete(); delete fTrees; fTrees = 0;}
+   if (fHeaders)    {fHeaders->Delete();    delete fHeaders;    fHeaders    = 0;}
    if (fSelections) {fSelections->Delete(); delete fSelections; fSelections = 0;}
-   if (fTrash)      {fTrash->Delete(); delete fTrash; fTrash = 0;}
-   fManager    = 0;
-   fSetting    = 0;
-   fTree       = 0;
-   fSelections = 0;
-   fFile       = 0;
+   if (fTrash)      {fTrash->Delete();      delete fTrash;      fTrash      = 0;}
+
+   fTrees->Clear("nodelete");  //do not delete trees
+   SafeDelete(fTrees);
+
+   fManager = 0;
+   fSetting = 0;
+   fTree    = 0;
+   fFile    = 0;
 }//Destructor
 
 //______________________________________________________________________________
