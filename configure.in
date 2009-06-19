@@ -45,6 +45,7 @@ if test -z "${ROOTSYS}"; then
    echo ""
    echo "      export ROOTSYS=/opt/root"
    echo '      export "PATH=$ROOTSYS/bin:$PATH" '
+   echo '      export "LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH" '
    echo "      R CMD INSTALL ${R_PACKAGE_NAME}"
    echo ""
    echo "   Please consult the README file for more information"

@@ -112,7 +112,8 @@ void Summarize(char **filename, char **dirname, char **chipname, char **chiptype
 void Normxpress(char **filename, char **dirname, char **chiptype,
                 char **schemefile, char **tmpdir, char **seloption, double *pc,
                 char **type, char **option, int *npar, double *pars,
-                int *level, char **treeset, char **treenames, int *ntrees,
+//old                int *level, char **treeset, char **treenames, int *ntrees,
+                int *level, char **treeset, char **datafile, char **treenames, int *ntrees,
                 char **reftree, char **refmethod, int *update,
                 int *verbose, char **result);
 

@@ -1381,7 +1381,8 @@ void Summarize(char **filename, char **dirname, char **chipname, char **chiptype
 void Normxpress(char **filename, char **dirname, char **chiptype,
                 char **schemefile, char **tmpdir, char **seloption, double *pc,
                 char **type, char **option, int *npar, double *pars,
-                int *level, char **treeset, char **treenames, int *ntrees,
+//old                int *level, char **treeset, char **treenames, int *ntrees,
+                int *level, char **treeset, char **datafile, char **treenames, int *ntrees,
                 char **reftree, char **refmethod, int *update,
                 int *verbose, char **result)
 {
@@ -1432,6 +1433,9 @@ void Normxpress(char **filename, char **dirname, char **chiptype,
    } else {
       r += manager->New(filename[0], dirname[0], chiptype[0]);
    }//if
+
+// open root data file
+   r += manager->OpenData(datafile[0]);
 
 // add trees for rma
    for (int i=0; i<*ntrees; i++) {
@@ -1547,7 +1551,7 @@ void PreFilter(char **filename, char **dirname, char **chiptype, char **chipname
       r += manager->AddTree(treeset[0], exprtrees[i]);
    }//for_i
 
-// add expression trees
+// add call trees
    for (int i=0; i<*ncall; i++) {
       r += manager->AddTree(treeset[0], calltrees[i]);
    }//for_i

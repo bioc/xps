@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 05/15/2009
+// File created: 08/05/2002                          last modified: 06/19/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -3413,7 +3413,8 @@ Int_t XTukeyBiweight::Calculate(Double_t &value1, Double_t &value2, Int_t &num)
    Double_t sb = TStat::TukeyBiweight(fLength, fArray, var, c, eps);
 
    Double_t *ct = 0;
-   if (!(ct = new (nothrow) Double_t[fLength])) return errInitMemory;
+   // ct must be at least have length two, if fLength=1
+   if (!(ct = new (nothrow) Double_t[fLength + 1])) return errInitMemory;
 
 // Compute contrast value and subtract from PM
    for (Int_t i=0; i<fLength; i++) {
