@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 04/29/2009
+// File created: 05/18/2002                          last modified: 06/21/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -7769,6 +7769,16 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
          pset->SetNumSubunits(numexons);
          psettree->Fill();
 
+      // minimal number of cells
+         minunits = (numcells <  minunits) ? numcells : minunits;
+         minexons = (numcells <  minexons) ? numcells : minexons;
+         minpsets = (numcells <  minpsets) ? numcells : minpsets;
+
+      // maximal number of cells
+         maxunits = (numcells >  maxunits) ? numcells : maxunits;
+         maxexons = (numcells >  maxexons) ? numcells : maxexons;
+         maxpsets = (numcells >  maxpsets) ? numcells : maxpsets;
+
          idxcount++;
          break;
       }//if
@@ -7811,6 +7821,10 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
             pset->SetNumAtoms(numatoms);
             pset->SetNumSubunits(numexons);
             psettree->Fill();
+
+            // minimal/maximal number of unit cells
+            minunits = (numcells <  minunits) ? numcells : minunits;
+            maxunits = (numcells >  maxunits) ? numcells : maxunits;
 
             numcells = 0;
             idxcount++;
@@ -7947,8 +7961,8 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
             scheme->SetY(y);
             scheme->SetProbeLength(probe_len);
             scheme->SetMask(mask);
-            scheme->SetExonID(pst[i]);
-            scheme->SetProbesetID(pst[i]);
+            scheme->SetExonID(-ctlcount);
+            scheme->SetProbesetID(-ctlcount);
             schemetree->Fill();
 
            // fill probe tree: (x,y) has identical order to (x,y) of schemetree
@@ -7999,6 +8013,16 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
       pset->SetNumAtoms(numatoms);
       pset->SetNumSubunits(numexons);
       psettree->Fill();
+
+      // minimal number of cells
+      minunits = (numcells <  minunits) ? numcells : minunits;
+      minexons = (numcells <  minexons) ? numcells : minexons;
+      minpsets = (numcells <  minpsets) ? numcells : minpsets;
+
+      // maximal number of cells
+      maxunits = (numcells >  maxunits) ? numcells : maxunits;
+      maxexons = (numcells >  maxexons) ? numcells : maxexons;
+      maxpsets = (numcells >  maxpsets) ? numcells : maxpsets;
 
       ctlcount--;
       idxcount++;
