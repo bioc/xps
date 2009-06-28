@@ -20,7 +20,7 @@ Roebuck for his great example how to call C++ from R, for Benilton Carvalho,
 Seth Falcon, Martin Morgan and especially Herve Pages for their great help to 
 understand S4 classes, and Simon Urbanek for his help regarding diverse Intel-Mac 
 related problems. Last but not least I want to thank Robert Gentleman for 
-reviewing my package and making helpful suggestions.
+reviewing my package and for making helpful suggestions.
 
 Furthermore I want to thank Prof. Brian Ripley (R Core Development), Patrick 
 Aboyoun (Bioconductor), Philippe Canal, and especially Bertrand Bellenot for 
@@ -28,6 +28,12 @@ their help when porting my package to Windows.
 
 I am also greatful to Djork Clevert who provided me the latest implementation 
 of the farms package (farms_1.3.1) prior to publication.
+
+Last but not least I want to thank the numerous users for reporting problems,
+which helps me to improve the quality and stability of my package.
+Especially, I want to thank Annamaria Carissimo for reporting a mas5 problem
+with exon arrays, and for continuously testing new updates until I could finally 
+solve this problem. 
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 

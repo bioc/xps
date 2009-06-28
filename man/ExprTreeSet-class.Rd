@@ -17,6 +17,7 @@
 \alias{removeExpr,ExprTreeSet-method}
 \alias{se.exprs,ExprTreeSet-method}
 \alias{se.exprs}
+\alias{validExpr,ExprTreeSet-method}
 \alias{xpsNormalize,ExprTreeSet-method}
 \alias{xpsPreFilter,ExprTreeSet-method}
 \alias{xpsUniFilter,ExprTreeSet-method}
@@ -73,6 +74,8 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
     \item{removeExpr}{\code{signature(object = "ExprTreeSet")}: replaces data.frame \code{data} 
      with an empty data.frame of dim(0,0).}
     \item{se.exprs}{\code{signature(object = "ExprTreeSet")}: extracts the standard deviation data.frame.}
+    \item{validExpr}{\code{signature(object = "ExprTreeSet")}: extracts a subset of columns 
+     from data.frame \code{data}.}
     \item{xpsNormalize}{\code{signature(object = "ExprTreeSet")}: applies normalization methods.}
     \item{xpsPreFilter}{\code{signature(object = "ExprTreeSet")}: applies prefiltering methods.}
     \item{xpsUniFilter}{\code{signature(object = "ExprTreeSet")}: applies unifiltering methods.}

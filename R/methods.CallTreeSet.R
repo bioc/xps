@@ -7,6 +7,7 @@
 # pvalData<-:
 # presCall:
 # presCall<-:
+# validPVal:
 # validCall:
 # attachPVal:
 # removePVal:
@@ -151,8 +152,23 @@ setReplaceMethod("presCall", signature(object="CallTreeSet", value="data.frame")
 # CallTreeSet methods:
 #------------------------------------------------------------------------------#
 
+"pvalCallTreeSet" <-
+function(object,
+         which = "UnitName") 
+{
+   if (debug.xps()) print("------pvalCallTreeSet------")
+
+   return(validData(object, which));
+}#pvalCallTreeSet
+
+setMethod("validPVal", "CallTreeSet", pvalCallTreeSet);
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 "callCallTreeSet" <-
-function(object) {
+function(object,
+         which = "UnitName") 
+{
    if (debug.xps()) print("------callCallTreeSet------")
 
    ## check for presence of detcall
@@ -162,8 +178,24 @@ function(object) {
       stop(paste("slot", sQuote("detcall"), "has no data"));
    }#if
 
+   ## use names from column "which" as rownames
+   if (!is.na(match(which, colnames(dcall)))) {
+      len <- length(which(duplicated(dcall[,which])==TRUE));
+      if (len == 0) {
+         rownames(dcall) <- dcall[, which];
+      } else {
+         warning(paste("cannot use ", sQuote(which), "as row.names since it has <",
+                       len, "> non-unique values.", sep=""));
+
+         ## use names from column "UNIT_ID" as rownames
+         if (!is.na(match("UNIT_ID", colnames(dcall)))) {
+            rownames(dcall) <- dcall[, "UNIT_ID"];
+         }#if
+      }#if
+   }#if
+
+   ## get name part for matching columns
    treenames <- namePart(object@treenames);
-#x   treenames <- make.names(treenames);  #to compare names with colnames of data.frame
    callnames <- namePart(colnames(dcall));
 
    return(dcall[,!is.na(match(callnames, treenames))]);

@@ -12,21 +12,22 @@ validData(object, which = "")
 }
 }
 \arguments{
-  \item{object}{object of class \code{DataTreeSet}.}
-  \item{which}{type of probes to be returned.}
+  \item{object}{object of class \code{DataTreeSet}, \code{ExprTreeSet} or \code{CallTreeSet}.}
+  \item{which}{type of probes to be returned for \code{DataTreeSet}, otherwise name of column
+   containing unit name.}
 }
 \details{
-For expression arrays, \code{validData} returns all the perfect match or mismatch  
-probes on the arrays the object represents as data.frame, i.e. \code{which} can have 
-the following values:
+For class \code{DataTreeSet} and expression arrays, \code{validData} returns all the 
+perfect match or mismatch probes on the arrays the object represents as data.frame, 
+i.e. \code{which} can have the following values:
 \tabular{lll}{
   \tab \code{pm}:\tab perfect match probes. \cr
   \tab \code{mm}:\tab mismatch probes. \cr
   \tab \code{both}:\tab both perfect match and mismatch probes. 
 }
 
-For exon arrays, \code{validData} returns the probes of the different exon levels as 
-data.frame, i.e. \code{which} can have one of the following values:
+For class \code{DataTreeSet} and exon arrays, \code{validData} returns the probes of 
+the different exon levels as data.frame, i.e. \code{which} can have one of the following values:
 \tabular{lll}{
   \tab \code{core}:\tab probesets supported by RefSeq and full-length GenBank transcripts. \cr
   \tab \code{metacore}:\tab core meta-probesets. \cr
@@ -39,10 +40,18 @@ data.frame, i.e. \code{which} can have one of the following values:
   \tab \code{genomic}:\tab genomic background probes. \cr
   \tab \code{antigenomic}:\tab antigenomic background probes.
 }
+
+For class \code{ExprTreeSet} \code{validData} returns the valid expression levels from 
+slot \code{data} with unit names as row names, usually the probeset IDs stored in 
+column \code{which="UnitName"}.
+
+For class \code{CallTreeSet} \code{validData} returns the valid detection call p-values 
+from slot \code{data} with unit names as row names, usually the probeset IDs stored in 
+column \code{which="UnitName"}.
 }
 \value{
   A \code{\link{data.frame}}.
 }
 \author{Christian Stratowa}
-\seealso{\code{\link{pm}}, \code{\link{mm}}}
+\seealso{\code{\link{pm}}, \code{\link{mm}}, \code{\link{validExpr}}, \code{\link{validCall}}}
 \keyword{methods}

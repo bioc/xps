@@ -69,7 +69,7 @@ The following \code{exonlevel}s are unsupported:
 }
 For whole genome arrays it is possible (but not recommended) to use all probesets 
 by using \code{exonlevel=c(992316,992316,992316)}. \cr
-For exon arrays it is currently only  possible to use \code{exonlevel=c(631868,631868,631868)}. \cr
+For exon arrays it is possible to use e.g. \code{exonlevel=c(1032124,1032124,631868)}. \cr
 However, please note that these settings are not recommended and not supported.
 }
 \seealso{\code{\link{rma}}, \code{\link{mas5}}}

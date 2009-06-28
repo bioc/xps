@@ -12,7 +12,7 @@
 \alias{removeCall,CallTreeSet-method}
 \alias{removePVal,CallTreeSet-method}
 \alias{validCall,CallTreeSet-method}
-\alias{validCall}
+\alias{validPVal,CallTreeSet-method}
 
 \title{Class CallTreeSet}
 \description{This class provides the link to the \code{\link{ROOT}} call file and 
@@ -68,6 +68,8 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
      with an empty data.frame of dim(0,0).}
     \item{validCall}{\code{signature(object = "CallTreeSet")}: extracts a subset of columns 
      from data.frame \code{detcall}.}
+    \item{validPVal}{\code{signature(object = "CallTreeSet")}: extracts a subset of columns 
+     from data.frame \code{data}.}
 	 }
 }
 \author{Christian Stratowa}

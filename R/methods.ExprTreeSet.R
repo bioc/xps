@@ -10,6 +10,7 @@
 # exprs:
 # exprs<-:
 # se.exprs:
+# validExpr:
 # attachExpr:
 # removeExpr:
 # xpsNormalize:
@@ -164,6 +165,19 @@ setMethod("se.exprs", signature(object="ExprTreeSet"),
       return(se);
    }
 )#se.exprs
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+"exprExprTreeSet" <-
+function(object,
+         which = "UnitName") 
+{
+   if (debug.xps()) print("------exprExprTreeSet------")
+
+   return(validData(object, which));
+}#exprExprTreeSet
+
+setMethod("validExpr", "ExprTreeSet", exprExprTreeSet);
 
 
 #------------------------------------------------------------------------------#

@@ -123,6 +123,7 @@ exportMethods("attachExpr",
               "normType<-",
               "removeExpr",
               "se.exprs",
+              "validExpr",
               "xpsPreFilter",
               "xpsUniFilter")
 
@@ -136,6 +137,7 @@ exportMethods("attachCall",
               "removeCall",
               "removePVal",
               "validCall",
+              "validPVal",
               "callplot")
 
 ## class Filter
