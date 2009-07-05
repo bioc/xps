@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 06/19/2009
+// File created: 05/18/2002                          last modified: 07/03/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -1142,7 +1142,8 @@ TString XTreeSet::FindTree(const char *name)
    XTreeHeader *header = 0;
    header = (XTreeHeader*)fHeaders->FindObject(name);
    if (header) return header->GetString();
-   return 0;
+//x   return 0;
+   return TString(0);
 }//FindTree
 
 //______________________________________________________________________________

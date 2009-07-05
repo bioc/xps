@@ -744,6 +744,7 @@ function(object,
          normalize  = TRUE,
          option     = "transcript",
          exonlevel  = "",
+         params     = list(16384, 0.0, 1.0, 10, 0.01, 1.0),
          xps.scheme = NULL,
          add.data   = TRUE,
          verbose    = TRUE) 
@@ -792,6 +793,11 @@ function(object,
       stop(paste(sQuote("normalize"), "must be TRUE or FALSE"));
    }#if
 
+   ## check parameters
+   if (length(params) != 6) {
+      stop(paste("list", sQuote("params"), "has not length six"));
+   }#if
+
    ## check for presence of valid transcript option
    transcript <- validTranscriptOption(option);
 
@@ -801,7 +807,8 @@ function(object,
    ## get treenames to normalize as fullnames=/datadir/treenames
    listnames <- listTreeNames(object);
    treenames <- listnames$treenames;
-   fullnames <- listnames$fullnames;
+#old   fullnames <- listnames$fullnames;
+   fullnames <- paste(object@setname, treenames, sep="/");
    numtrees  <- length(treenames);
 
    ## define setname and settype for new treeset
@@ -819,9 +826,11 @@ function(object,
            as.character(background),
            as.character(transcript),
            as.character(setname),
+           as.character(object@rootfile),
            as.character(fullnames),
            as.integer(numtrees),
            as.integer(normalize),
+           as.double(params),
            as.integer(exlevel[1]),
            as.integer(exlevel[2]),
            as.integer(exlevel[3]),

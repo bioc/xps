@@ -251,11 +251,7 @@ function(object,
    setname   <- object@setname;
    treenames <- as.character(object@treenames);
    numtrees  <- length(treenames);
-#old   fullnames <- paste(datafile, setname, treenames, sep="/");
    fullnames <- paste(setname, treenames, sep="/");
-print("------normalize.ExprTreeSet------")
-print(treenames)
-print(fullnames)
 
    ## root file /filedir/filename.root
    rootfile <- rootDirFile(filename, filedir);
@@ -411,9 +407,8 @@ print(fullnames)
            as.double(params),
            as.integer(exonlevel),
            as.character(setname),
-as.character(datafile),
+           as.character(datafile),
            as.character(fullnames),
-#as.character(treenames),
            as.integer(numtrees),
            as.character(reftree),
            as.character(refmethod),

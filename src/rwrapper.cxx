@@ -359,8 +359,9 @@ void ExportData(char **filename, char **schemefile, char **chiptype,
 /*____________________________________________________________________________*/
 void PreprocessRMA(char **filename, char **dirname, char **chipname,
                    char **chiptype, char **schemefile, char **tmpdir,
-                   char **bgrdoption, char **exproption, char **treeset,
-                   char **treenames, int *ntrees, int *normalize,
+//old                   char **bgrdoption, char **exproption, char **treeset,
+                   char **bgrdoption, char **exproption, char **treeset, char **datafile, 
+                   char **treenames, int *ntrees, int *normalize, double *pars,
                    int *bgrdlevel, int *normlevel, int *exprlevel,
                    int *verbose, char **result)
 {
@@ -392,12 +393,12 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
       bgrdopt = strcat((char*)bgrdopt, ":epanechnikov");
 
       r += manager->InitAlgorithm("selector", "probe", bgrdoption[0], 0);
-      r += manager->InitAlgorithm("backgrounder", "rma", bgrdopt, tmpfile, 1, 16384);
+      r += manager->InitAlgorithm("backgrounder", "rma", bgrdopt, tmpfile, 1, pars[0]);
    } else if (strcmp(bgrdoption[0], "genomic") == 0 || strcmp(bgrdoption[0], "antigenomic") == 0) {
       int bgrdtype  = (strcmp(bgrdoption[0], "genomic") == 0) ? -1 : -2;
 
       r += manager->InitAlgorithm("selector", "probe", "exon", 0, 2, *bgrdlevel, bgrdtype);
-      r += manager->InitAlgorithm("backgrounder", "rma", "pmonly:epanechnikov", tmpfile, 1, 16384);
+      r += manager->InitAlgorithm("backgrounder", "rma", "pmonly:epanechnikov", tmpfile, 1, pars[0]);
    }//if
 
 // initialize normalizer
@@ -413,7 +414,7 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
 
       normopt = strcpy((char*)normopt, exproption[0]);
       normopt = strcat((char*)normopt, ":together:none:0");
-      r += manager->InitAlgorithm("normalizer", "quantile", normopt, tmpfile, 1, 0.0);
+      r += manager->InitAlgorithm("normalizer", "quantile", normopt, tmpfile, 2, pars[1], pars[2]);
    }//if
 
 // initialize expressor
@@ -428,7 +429,7 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
    const char *expropt = new char[strlen(exproption[0]) + 6];
    expropt = strcpy((char*)expropt, exproption[0]);
    expropt = strcat((char*)expropt, ":log2");
-   manager->InitAlgorithm("expressor", "medianpolish", expropt, tmpfile, 3, 10, 0.01, 1.0);
+   manager->InitAlgorithm("expressor", "medianpolish", expropt, tmpfile, 3, pars[3], pars[4], pars[5]);
 
 // create new root data file 
    r += manager->New(filename[0], dirname[0], chiptype[0], "preprocess");
@@ -436,10 +437,20 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
 // open root scheme file
    r += manager->OpenSchemes(schemefile[0], chipname[0]);
 
+// open root data file (to open data file only once)
+   r += manager->OpenData(datafile[0]);
+
 // add trees for rma
    for (int i=0; i<*ntrees; i++) {
       r += manager->AddTree(treeset[0], treenames[i]);
+
+      if (verbose[0] == 1 && i%100 == 0) {
+         cout << "Adding tree " << i+1 << " of " << *ntrees << "...   \r" << flush;
+      }//if
    }//for_i
+   if (verbose[0] == 1) {
+      cout << "Added <" << *ntrees << "> trees to " << treeset[0] << "." << endl;
+   }//if
 
 // preprocess expression values and store as trees in new file
    r += manager->Preprocess(treeset[0], "preprocess");

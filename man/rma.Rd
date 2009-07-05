@@ -16,6 +16,7 @@ rma(xps.data,
     normalize  = TRUE,
     option     = "transcript",
     exonlevel  = "",
+    params     = list(16384, 0.0, 1.0, 10, 0.01, 1.0),
     xps.scheme = NULL,
     add.data   = TRUE,
     verbose    = TRUE)
@@ -35,6 +36,7 @@ xpsRMA(object, ...)
    \sQuote{transcript}, \sQuote{exon}, \sQuote{probeset}; exon arrays only.}
   \item{exonlevel}{exon annotation level determining which probes should be used for summarization;
    exon/genome arrays only.}
+  \item{params}{list of (default) parameters for \code{rma}.}
   \item{xps.scheme}{optional alternative \code{SchemeTreeSet}.}
   \item{add.data}{logical. If \code{TRUE} expression data will be included as slot \code{data}.}
   \item{verbose}{logical, if \code{TRUE} print status information.}
@@ -98,7 +100,12 @@ containing the same parameters.
 In contrary to other implementations of RMA the expression measure is given to you in linear scale,
 analogously to the expression measures computed with \code{\link{mas5}} and \code{\link{mas4}}. 
 
-It is also possible to skip background correction by setting parameter \code{background="none"}.
+Please note that the default settings of \code{params} gives results which are identical to the 
+results obtained with APT (Affymetrix Power Tools) and with package \code{affy_1.14.2} or earlier.
+If you want to obtain results which are identical to the results obtained with \code{affy_1.16.0} 
+or later then you need to set \code{params = list(16384, 0.0, 0.4, 10, 0.01, 1.0)}. 
+
+By setting parameter \code{background="none"} it is possible to skip background correction .
 
 For the analysis of many exon arrays it may be better to define a \code{tmpdir}, since this will
 store only the results in the main file and not e.g. background and normalized intensities, and

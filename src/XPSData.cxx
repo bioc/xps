@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 04/28/2009
+// File created: 08/05/2002                          last modified: 07/04/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -1531,7 +1531,7 @@ TString XGeneChipHyb::ChipType(const char *header, Int_t toUpper)
    // For toUpper = 1 convert first letter to uppercase
    if(kCS) cout << "------XGeneChipHyb::ChipType------" << endl;
 
-   TString name = 0;
+   TString name = "";
    if (strstr(header, "DatHeader")) {
       name = strstr(header, "DatHeader");
    } else {

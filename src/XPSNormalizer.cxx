@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 06/01/2009
+// File created: 08/05/2002                          last modified: 07/04/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -34,6 +34,14 @@
  * For the list of contributors to "The ROOT System" see http://root.cern.ch/  *
  *******************************************************************************
  */
+
+/******************************************************************************
+* Major Revision History:
+* Nov 2002 - Initial versions finished
+* ??? ???? - Add XQuantileNormalizer.
+* Jul 2009 - Update XQuantileNormalizer to allow improved ties handling like
++            preprocessCore as option
+******************************************************************************/
 
 //#ifndef ROOT_Varargs
 #include "Varargs.h"
@@ -791,7 +799,7 @@ Int_t XQuantileNormalizer::AddArray(Int_t n, Double_t *x, Int_t *msk,
    if (strcmp(fDataOpt.Data(), "together") == 0) {
       TString   tname = TString(name) + ".rkt";  //rkt - rank together
       Double_t  sort  = 0;
-      Int_t     rank  = 0;
+      Float_t   rank  = 0;
       Int_t     id    = 0;
       Int_t     i     = 0;
 
@@ -806,7 +814,7 @@ Int_t XQuantileNormalizer::AddArray(Int_t n, Double_t *x, Int_t *msk,
       TTree *tree = new TTree(tname, "temporary tree");
       if (tree == 0) {err = errCreateTree; goto clean1;}
       tree->Branch("sortBr", &sort, "sort/D");
-      tree->Branch("rankBr", &rank, "rank/I");
+      tree->Branch("rankBr", &rank, "rank/F");
 
    // Get size of arrays for PM and MM
       for (i=0; i<n; i++) {if (msk[i] == 1) id++;}
@@ -833,7 +841,7 @@ Int_t XQuantileNormalizer::AddArray(Int_t n, Double_t *x, Int_t *msk,
    // Fill tree with sorted array 
       for (i=0; i<id; i++) {
          sort = arr[idx[i]];
-         rank = (Int_t)floor(rnkd[rnki[i]] - 1);
+         rank = rnkd[rnki[i]];
          tree->Fill();
       }//for_i
 
@@ -853,8 +861,8 @@ Int_t XQuantileNormalizer::AddArray(Int_t n, Double_t *x, Int_t *msk,
       TString   mname  = TString(name) + ".rkm";  //rks - mm rank separate
       Double_t  pmsort = 0;
       Double_t  mmsort = 0;
-      Int_t     pmrank = 0;
-      Int_t     mmrank = 0;
+      Float_t   pmrank = 0;
+      Float_t   mmrank = 0;
       Int_t     i      = 0;
       Int_t     p      = 0;
       Int_t     m      = 0;
@@ -878,12 +886,12 @@ Int_t XQuantileNormalizer::AddArray(Int_t n, Double_t *x, Int_t *msk,
       pmtree = new TTree(pname, "temporary PM tree");
       if (pmtree == 0) {err = errCreateTree; goto clean2;}
       pmtree->Branch("pmsortBr", &pmsort, "pmsort/D");
-      pmtree->Branch("pmrankBr", &pmrank, "pmrank/I");
+      pmtree->Branch("pmrankBr", &pmrank, "pmrank/F");
 
       mmtree = new TTree(mname, "temporary MM tree");
       if (mmtree == 0) {err = errCreateTree; goto clean2;}
       mmtree->Branch("mmsortBr", &mmsort, "mmsort/D");
-      mmtree->Branch("mmrankBr", &mmrank, "mmrank/I");
+      mmtree->Branch("mmrankBr", &mmrank, "mmrank/F");
 
    // Get size of arrays for PM and MM
       for (i=0; i<n; i++) {
@@ -919,7 +927,7 @@ Int_t XQuantileNormalizer::AddArray(Int_t n, Double_t *x, Int_t *msk,
 
       for (i=0; i<p; i++) {
          pmsort = arrPM[pmidx[i]];
-         pmrank = (Int_t)floor(prnkd[prnki[i]] - 1);
+         pmrank = prnkd[prnki[i]];
          pmtree->Fill();
       }//for_i
 
@@ -933,7 +941,7 @@ Int_t XQuantileNormalizer::AddArray(Int_t n, Double_t *x, Int_t *msk,
 
       for (i=0; i<m; i++) {
          mmsort = arrMM[mmidx[i]];
-         mmrank = (Int_t)floor(mrnkd[mrnki[i]] - 1);
+         mmrank = mrnkd[mrnki[i]];
          mmtree->Fill();
       }//for_i
 
@@ -973,13 +981,17 @@ Double_t *XQuantileNormalizer::GetArray(Int_t n, Double_t *x, Int_t *msk,
    // Return array x of length n with name
    if(kCS) cout << "---XQuantileNormalizer::GetArray------" << endl;
 
+// Parameter delta (default=1.0)
+   Float_t delta = (fNPar > 1) ? fPars[1] : 1.0;
+
    TDirectory *savedir = gDirectory;
    fTmpFile->cd();
 
    if (strcmp(fDataOpt.Data(), "together") == 0) {
    // Get tree with name
       TString tname = TString(name) + ".rkt";
-      Int_t   rank  = 0;
+      Float_t rank  = 0;
+      Int_t   frank = 0;
       TTree  *tree  = (TTree*)fTmpFile->Get(tname.Data()); 
       if (tree == 0) return 0;
       tree->SetBranchAddress("rankBr", &rank);
@@ -995,7 +1007,12 @@ Double_t *XQuantileNormalizer::GetArray(Int_t n, Double_t *x, Int_t *msk,
       for (Int_t i=0; i<n; i++) {
          if (msk[i] == 1) {
             tree->GetEntry(id++);
-            x[i] = fMean1[rank];
+            frank = (Int_t)floor(rank);
+            if (rank - frank > delta) {
+               x[i] = 0.5*(fMean1[frank - 1] + fMean1[frank]);
+            } else {
+               x[i] = fMean1[frank - 1];
+            }//if
          } else {
             x[i] = 0;  //not necessary?
          }//if
@@ -1007,14 +1024,16 @@ Double_t *XQuantileNormalizer::GetArray(Int_t n, Double_t *x, Int_t *msk,
    } else if (strcmp(fDataOpt.Data(), "separate") == 0) {
    // Get PM tree with name
       TString pmname = TString(name) + ".rkp";
-      Int_t   pmrank = 0;
+      Float_t pmrank = 0;
+      Int_t   pfrank = 0;
       TTree  *pmtree = (TTree*)fTmpFile->Get(pmname.Data()); 
       if (pmtree == 0) return 0;
       pmtree->SetBranchAddress("pmrankBr", &pmrank);
 
    // Get MM tree with name
       TString mmname = TString(name) + ".rkm";
-      Int_t   mmrank = 0;
+      Float_t mmrank = 0;
+      Int_t   mfrank = 0;
       TTree  *mmtree = (TTree*)fTmpFile->Get(mmname.Data()); 
       if (mmtree == 0) return 0;
       mmtree->SetBranchAddress("mmrankBr", &mmrank);
@@ -1031,10 +1050,20 @@ Double_t *XQuantileNormalizer::GetArray(Int_t n, Double_t *x, Int_t *msk,
       for (Int_t i=0; i<n; i++) {
          if (msk[i] == 1) {
             pmtree->GetEntry(p++);
-            x[i] = fMean1[pmrank];
+            pfrank = (Int_t)floor(pmrank);
+            if (pmrank - pfrank > delta) {
+               x[i] = 0.5*(fMean1[pfrank - 1] + fMean1[pfrank]);
+            } else {
+               x[i] = fMean1[pfrank - 1];
+            }//if
          } else if (msk[i] == 0) {
             mmtree->GetEntry(m++);
-            x[i] = fMean2[mmrank];
+            mfrank = (Int_t)floor(mmrank);
+            if (mmrank - mfrank > delta) {
+               x[i] = 0.5*(fMean1[mfrank - 1] + fMean1[mfrank]);
+            } else {
+               x[i] = fMean1[mfrank - 1];
+            }//if
          } else {
             x[i] = 0;  //not necessary?
          }//if

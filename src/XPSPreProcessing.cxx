@@ -1902,7 +1902,8 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
 
          // informing user
          if (XManager::fgVerbose) {
-            cout << "         filling array <" << treename.Data() << ">...        \r" << flush;
+            cout << "         filling array " << k+1 << " of " << numdata
+                 << ": <" << treename.Data() << ">...        \r" << flush;
          }//if
 
          err = this->FillDataArrays(datatree[k], bgrdtree[k], doBg,
@@ -1913,7 +1914,8 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
          if (err != errNoErr) goto cleanup;
       }//for_k
       if (XManager::fgVerbose) {
-         cout << "         finished filling <" << numdata << "> arrays.           " << endl;
+         cout << "         finished filling <" << numdata << "> arrays."
+              << "                   " << endl;
       }//if
    } else if (numrefs == 1) {
 //////////
@@ -2021,8 +2023,9 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
 
          // informing user
          if (XManager::fgVerbose) {
-            cout << "         filling tree <" << (treename + "." + exten).Data()
-                 << ">...              \r" << flush;
+            cout << "         filling tree " << k+1 << " of " << numdata
+                 << ": <" << (treename + "." + exten).Data() << ">..."
+                 << "              \r" << flush;
          }//if
 
          arrInty = fNormalizer->GetArray(size, arrInty, arrMask, treename);
@@ -2033,7 +2036,8 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
          if (datatree[k] == 0) {err = errCreateTree; goto cleanup;}
       }//for_k
       if (XManager::fgVerbose) {
-         cout << "         finished filling <" << numdata << "> trees.          " << endl;
+         cout << "         finished filling <" << numdata << "> trees."
+              << "                " << endl;
       }//if
    } else if ((strcmp(fNormSelector->GetName(),   "probe")    == 0) ||
               ((strcmp(fNormSelector->GetName(),  "rank")     == 0) &&

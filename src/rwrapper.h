@@ -46,8 +46,9 @@ void ExportData(char **filename, char **schemefile, char **chiptype,
 
 void PreprocessRMA(char **filename, char **dirname, char **chipname,
                    char **chiptype, char **schemefile, char **tmpdir,
-                   char **bgrdoption, char **exproption, char **treeset,
-                   char **treenames, int *ntrees, int *normalize,
+//old                   char **bgrdoption, char **exproption, char **treeset, 
+                   char **bgrdoption, char **exproption, char **treeset, char **datafile, 
+                   char **treenames, int *ntrees, int *normalize, double *pars,
                    int *bgrdlevel, int *normlevel, int *exprlevel,
                    int *verbose, char **result);
 void PreprocessMAS4(char **filename, char **dirname, char **chipname,
