@@ -10,7 +10,6 @@
 # exprs:
 # exprs<-:
 # se.exprs:
-# validExpr:
 # attachExpr:
 # removeExpr:
 # xpsNormalize:
@@ -166,19 +165,6 @@ setMethod("se.exprs", signature(object="ExprTreeSet"),
    }
 )#se.exprs
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-"exprExprTreeSet" <-
-function(object,
-         which = "UnitName") 
-{
-   if (debug.xps()) print("------exprExprTreeSet------")
-
-   return(validData(object, which));
-}#exprExprTreeSet
-
-setMethod("validExpr", "ExprTreeSet", exprExprTreeSet);
-
 
 #------------------------------------------------------------------------------#
 # ExprTreeSet methods:
@@ -251,6 +237,7 @@ function(object,
    setname   <- object@setname;
    treenames <- as.character(object@treenames);
    numtrees  <- length(treenames);
+#old   fullnames <- paste(datafile, setname, treenames, sep="/");
    fullnames <- paste(setname, treenames, sep="/");
 
    ## root file /filedir/filename.root
@@ -407,7 +394,7 @@ function(object,
            as.double(params),
            as.integer(exonlevel),
            as.character(setname),
-           as.character(datafile),
+as.character(datafile),
            as.character(fullnames),
            as.integer(numtrees),
            as.character(reftree),
