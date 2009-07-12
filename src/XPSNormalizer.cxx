@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 07/04/2009
+// File created: 08/05/2002                          last modified: 07/11/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -40,7 +40,7 @@
 * Nov 2002 - Initial versions finished
 * ??? ???? - Add XQuantileNormalizer.
 * Jul 2009 - Update XQuantileNormalizer to allow improved ties handling like
-+            preprocessCore as option
++            preprocessCore as option and to reduce memory consumption
 ******************************************************************************/
 
 //#ifndef ROOT_Varargs
@@ -793,12 +793,10 @@ Int_t XQuantileNormalizer::AddArray(Int_t n, Double_t *x, Int_t *msk,
       }//if
    }//if
 
-
 // Fill tree(s) with sorted data array and store in fTmpFile
    fTmpFile->cd();
    if (strcmp(fDataOpt.Data(), "together") == 0) {
       TString   tname = TString(name) + ".rkt";  //rkt - rank together
-      Double_t  sort  = 0;
       Float_t   rank  = 0;
       Int_t     id    = 0;
       Int_t     i     = 0;
@@ -813,11 +811,17 @@ Int_t XQuantileNormalizer::AddArray(Int_t n, Double_t *x, Int_t *msk,
    // Create tree with data and rank branches
       TTree *tree = new TTree(tname, "temporary tree");
       if (tree == 0) {err = errCreateTree; goto clean1;}
-      tree->Branch("sortBr", &sort, "sort/D");
       tree->Branch("rankBr", &rank, "rank/F");
 
    // Get size of arrays for PM and MM
       for (i=0; i<n; i++) {if (msk[i] == 1) id++;}
+
+   // Create mean array and initialize to 0
+      if (!fMean1) {
+         fNMean1 = id;
+         if (!(fMean1 = new (nothrow) Double_t[id])) {err = errInitMemory; goto clean1;}
+         for (Int_t i=0; i<id; i++) fMean1[i] = 0;
+      }//if
 
    // Create arrays
       if (!(arr  = new (nothrow) Double_t[id])) {err = errInitMemory; goto clean1;}
@@ -838,9 +842,10 @@ Int_t XQuantileNormalizer::AddArray(Int_t n, Double_t *x, Int_t *msk,
       for (Int_t i=0; i<id; i++) ord[i] = arr[idx[i]];
       TStat::Rank(id, ord, rnkd);
 
-   // Fill tree with sorted array 
+   // Fill tree with ranks 
       for (i=0; i<id; i++) {
-         sort = arr[idx[i]];
+         fMean1[i] += arr[idx[i]];
+
          rank = rnkd[rnki[i]];
          tree->Fill();
       }//for_i
@@ -859,8 +864,6 @@ Int_t XQuantileNormalizer::AddArray(Int_t n, Double_t *x, Int_t *msk,
    } else if (strcmp(fDataOpt.Data(), "separate") == 0) {
       TString   pname  = TString(name) + ".rkp";  //rks - pm rank separate
       TString   mname  = TString(name) + ".rkm";  //rks - mm rank separate
-      Double_t  pmsort = 0;
-      Double_t  mmsort = 0;
       Float_t   pmrank = 0;
       Float_t   mmrank = 0;
       Int_t     i      = 0;
@@ -885,12 +888,10 @@ Int_t XQuantileNormalizer::AddArray(Int_t n, Double_t *x, Int_t *msk,
 
       pmtree = new TTree(pname, "temporary PM tree");
       if (pmtree == 0) {err = errCreateTree; goto clean2;}
-      pmtree->Branch("pmsortBr", &pmsort, "pmsort/D");
       pmtree->Branch("pmrankBr", &pmrank, "pmrank/F");
 
       mmtree = new TTree(mname, "temporary MM tree");
       if (mmtree == 0) {err = errCreateTree; goto clean2;}
-      mmtree->Branch("mmsortBr", &mmsort, "mmsort/D");
       mmtree->Branch("mmrankBr", &mmrank, "mmrank/F");
 
    // Get size of arrays for PM and MM
@@ -898,6 +899,18 @@ Int_t XQuantileNormalizer::AddArray(Int_t n, Double_t *x, Int_t *msk,
          if      (msk[i] == 1) p++;
          else if (msk[i] == 0) m++;
       }//for_i
+
+   // Create mean arrays and initialize to 0
+      if (!fMean1) {
+         fNMean1 = p;
+         if (!(fMean1 = new (nothrow) Double_t[p])) {err = errInitMemory; goto clean2;}
+         for (Int_t i=0; i<p; i++) fMean1[i] = 0;
+      }//if
+      if (!fMean2) {
+         fNMean2 = m;
+         if (!(fMean2 = new (nothrow) Double_t[m])) {err = errInitMemory; goto clean2;}
+         for (Int_t i=0; i<m; i++) fMean2[i] = 0;
+      }//if
 
    // Create arrays
       if (!(arrPM = new (nothrow) Double_t[p])) {err = errInitMemory; goto clean2;}
@@ -926,7 +939,8 @@ Int_t XQuantileNormalizer::AddArray(Int_t n, Double_t *x, Int_t *msk,
       TStat::Rank(p, pmord, prnkd);
 
       for (i=0; i<p; i++) {
-         pmsort = arrPM[pmidx[i]];
+         fMean1[i] += arrPM[pmidx[i]];
+
          pmrank = prnkd[prnki[i]];
          pmtree->Fill();
       }//for_i
@@ -940,7 +954,8 @@ Int_t XQuantileNormalizer::AddArray(Int_t n, Double_t *x, Int_t *msk,
       TStat::Rank(m, mmord, mrnkd);
 
       for (i=0; i<m; i++) {
-         mmsort = arrMM[mmidx[i]];
+         fMean2[i] += arrMM[mmidx[i]];
+
          mmrank = mrnkd[mrnki[i]];
          mmtree->Fill();
       }//for_i
@@ -1103,128 +1118,20 @@ Int_t XQuantileNormalizer::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *m
 
 // Calculate trimmed mean
    if (strcmp(fDataOpt.Data(), "together") == 0) {
-      TTree   **treek = new TTree*[fNData];
-      Double_t *sortk = new Double_t[fNData];
-      for (Int_t k=0; k<fNData; k++) sortk[k] = 0;
-
-   // Init trees
-      Int_t idx = 0;
-      TKey *key = 0;
-      TIter next(fTmpFile->GetListOfKeys());
-      while ((key = (TKey*)next())) {
-         TTree *tmptree = (TTree*)fTmpFile->Get(key->GetName());
-         treek[idx] = tmptree;
-         treek[idx]->SetBranchAddress("sortBr", &sortk[idx]);
-         idx++;
-      }//while
-      if (idx != fNData) {
-         cerr << "Error: Number of trees for quantile normalization is not <"
-              << fNData << ">." << endl;
-         return errAbort;
-      }//if
-
-   // Create data array
-      Double_t *arr = 0;
-      if (!(arr = new (nothrow) Double_t[fNData])) return errInitMemory;
-
-   // Create mean array
-      fNMean1 = treek[0]->GetEntries();
-      if (!fMean1) if (!(fMean1 = new (nothrow) Double_t[fNMean1])) return errInitMemory;
-
-   // Calculate trimmed mean values of all tree entries
       for (Int_t i=0; i<fNMean1; i++) {
-         // read entry i from trees and fill array
-         for (Int_t k=0; k<fNData; k++) {
-            treek[k]->GetEntry(i);
-            arr[k] = sortk[k];
-         }//for_k
-
-         // calculate trimmed mean of array
-         fMean1[i] = TStat::Mean(fNData, arr, trim);
+         fMean1[i] = fMean1[i]/fNData;
          y[i]      = fMean1[i];
       }//for_i
-
-   // Cleanup
-      if (arr) {delete [] arr; arr = 0;}
-      delete [] sortk;
-      // need to delete tree from RAM
-//      for (Int_t k=0; k<fNData; k++) {treek[k]->Delete(""); treek[k] = 0;}
-      for (Int_t k=0; k<fNData; k++) SafeDelete(treek[k]);
-      delete [] treek;
    } else if (strcmp(fDataOpt.Data(),"separate") == 0) {
-      TTree   **pmtreek = new TTree*[fNData];
-      TTree   **mmtreek = new TTree*[fNData];
-      Double_t *pmsortk = new Double_t[fNData];
-      Double_t *mmsortk = new Double_t[fNData];
-      for (Int_t k=0; k<fNData; k++) pmsortk[k] = mmsortk[k] = 0;
-
-   // Init trees
-      Int_t p   = 0;
-      Int_t m   = 0;
-      TKey *key = 0;
-      TIter next(fTmpFile->GetListOfKeys());
-      while ((key = (TKey*)next())) {
-         TTree *tmptree = (TTree*)fTmpFile->Get(key->GetName());
-         if (tmptree->GetBranch("pmsortBr")) {
-            pmtreek[p] = tmptree;
-            pmtreek[p]->SetBranchAddress("pmsortBr", &pmsortk[p]);
-            p++;
-            if (p > fNData) return errGetTree;
-         } else if (tmptree->GetBranch("mmsortBr")) {
-            mmtreek[m] = tmptree;
-            mmtreek[m]->SetBranchAddress("mmsortBr", &mmsortk[m]);
-            m++;
-            if (m > fNData) return errGetTree;
-         }//if
-      }//while
-
-   // Create data array
-      Double_t *arr = 0;
-      if (!(arr = new (nothrow) Double_t[fNData])) return errInitMemory;
-
-   // Create mean arrays
-      fNMean1 = pmtreek[0]->GetEntries();
-      fNMean2 = mmtreek[0]->GetEntries();
-      if (!(fMean1 = new (nothrow) Double_t[fNMean1])) return errInitMemory;
-      if (!(fMean2 = new (nothrow) Double_t[fNMean2])) return errInitMemory;
-
-   // Calculate trimmed mean values of PM tree entries
       for (Int_t i=0; i<fNMean1; i++) {
-         // read entry i from trees and fill array
-         for (Int_t k=0; k<fNData; k++) {
-            pmtreek[k]->GetEntry(i);
-            arr[k] = pmsortk[k];
-         }//for_k
-
-         // calculate trimmed mean of array
-         fMean1[i] = TStat::Mean(fNData, arr, trim);
+         fMean1[i] = fMean1[i]/fNData;
 //no         y[i]      = fMean1[i];
       }//for_i
 
-   // Calculate trimmed mean values of MM tree entries
       for (Int_t i=0; i<fNMean2; i++) {
-         // read entry i from trees and fill array
-         for (Int_t k=0; k<fNData; k++) {
-            mmtreek[k]->GetEntry(i);
-            arr[k] = mmsortk[k];
-         }//for_k
-
-         // calculate trimmed mean of array
-         fMean2[i] = TStat::Mean(fNData, arr, trim);
+         fMean2[i] = fMean2[i]/fNData;
 //no         y[i]      = fMean2[i];
       }//for_i
-
-   // Cleanup
-      if (arr) {delete [] arr; arr = 0;}
-      delete [] mmsortk;
-      delete [] pmsortk;
-      // need to delete trees from RAM
-      for (Int_t k=0; k<fNData; k++) {
-         SafeDelete(mmtreek[k]);
-         SafeDelete(pmtreek[k]);
-      }//for_k
-      delete [] mmtreek;
-      delete [] pmtreek;
    } else {
       cerr << "Error: Option <" << fDataOpt.Data()
            << "> cannot be used with quantile normalizer." << endl;

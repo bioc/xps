@@ -33,7 +33,9 @@ Last but not least I want to thank the numerous users for reporting problems,
 which helps me to improve the quality and stability of my package.
 Especially, I want to thank Annamaria Carissimo for reporting a mas5 problem
 with exon arrays, and for continuously testing new updates until I could finally 
-solve this problem. 
+solve this problem. Furthermore, I want to thank Simon de Bernard for testing
+xps extensively, reporting bugs and even offering solutions, especially an 
+essential improvement in class XQuantileNormalizer. 
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 

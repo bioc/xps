@@ -228,7 +228,7 @@ validMsg <- function(msg, result) {
 validOption <- function(option) {
    if (debug.xps()) print("------validOption------")
 
-   TYPE <- c("all", "together:none");
+   TYPE <- c("all", "together:none", "separate:none");
    if (is.na(match(option, TYPE))) {
       transcript <- unlist(strsplit(option, ":"))[1];
       transcript <- validTranscriptOption(transcript);
