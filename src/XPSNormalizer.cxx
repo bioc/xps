@@ -40,7 +40,7 @@
 * Nov 2002 - Initial versions finished
 * ??? ???? - Add XQuantileNormalizer.
 * Jul 2009 - Update XQuantileNormalizer to allow improved ties handling like
-+            preprocessCore as option and to reduce memory consumption
++            preprocessCore as option, and to reduce memory consumption
 ******************************************************************************/
 
 //#ifndef ROOT_Varargs
@@ -1075,9 +1075,9 @@ Double_t *XQuantileNormalizer::GetArray(Int_t n, Double_t *x, Int_t *msk,
             mmtree->GetEntry(m++);
             mfrank = (Int_t)floor(mmrank);
             if (mmrank - mfrank > delta) {
-               x[i] = 0.5*(fMean1[mfrank - 1] + fMean1[mfrank]);
+               x[i] = 0.5*(fMean2[mfrank - 1] + fMean2[mfrank]);
             } else {
-               x[i] = fMean1[mfrank - 1];
+               x[i] = fMean2[mfrank - 1];
             }//if
          } else {
             x[i] = 0;  //not necessary?

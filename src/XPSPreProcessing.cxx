@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 06/07/2009
+// File created: 08/05/2002                          last modified: 07/13/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -2014,6 +2014,9 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
 // Normalization
    if (strcmp(fNormalizer->GetName(), "quantile") == 0) {
       // quantile normalization
+      if (XManager::fgVerbose) {
+         cout << "         computing common mean..." << endl;
+      }//if
       if ((err = fNormalizer->Calculate(size, arrIntx, arrInty, arrMask))) goto cleanup;
 
       // get normalized arrays and fill data trees
@@ -5079,10 +5082,12 @@ Int_t XGCProcesSet::FillDataArrays(TTree *datatree, TTree *bgrdtree, Bool_t doBg
       }//for_i
 
       SafeDelete(bgcell);
+      bgrdtree->DropBaskets();
       bgrdtree->ResetBranchAddress(bgrdtree->GetBranch("BgrdBranch"));
    }//if
 
    SafeDelete(gccell);
+   datatree->DropBaskets();  //to remove baskets from memory
    datatree->ResetBranchAddress(datatree->GetBranch("DataBranch"));
 
    return errNoErr;
@@ -5153,10 +5158,12 @@ Int_t XGCProcesSet::FillDataArrays(TTree *datatree, TTree *bgrdtree, Bool_t doBg
       }//for_i
 
       SafeDelete(bgcell);
+      bgrdtree->DropBaskets();
       bgrdtree->ResetBranchAddress(bgrdtree->GetBranch("BgrdBranch"));
    }//if
 
    SafeDelete(gccell);
+   datatree->DropBaskets();  //to remove baskets from memory
    datatree->ResetBranchAddress(datatree->GetBranch("DataBranch"));
 
    return errNoErr;
@@ -5195,6 +5202,7 @@ Int_t XGCProcesSet::FillDataArrays(TTree *datatree, Int_t nrow, Int_t ncol,
    }//for_i
 
    SafeDelete(gccell);
+   datatree->DropBaskets();  //to remove baskets from memory
    datatree->ResetBranchAddress(datatree->GetBranch("DataBranch"));
 
    return errNoErr;
@@ -5227,6 +5235,7 @@ Int_t XGCProcesSet::FillBgrdArrays(TTree *bgrdtree, Int_t nrow, Int_t ncol,
    }//for_i
 
    SafeDelete(bgcell);
+   bgrdtree->DropBaskets();
    bgrdtree->ResetBranchAddress(bgrdtree->GetBranch("BgrdBranch"));
 
    return errNoErr;
@@ -5327,7 +5336,9 @@ TTree *XGCProcesSet::FillDataTree(TTree *oldtree, const char *exten,
    }//if
 
    SafeDelete(newcell);
+   newtree->DropBaskets();  //to remove baskets from memory
    newtree->ResetBranchAddress(newtree->GetBranch("DataBranch"));
+
    SafeDelete(oldcell);
    oldtree->ResetBranchAddress(oldtree->GetBranch("DataBranch"));
 //?? delete old tree??
