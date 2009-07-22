@@ -3678,6 +3678,8 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
          // write tmptree to temporary file
          tmptree[k]->Write();
 //??         tmptree[k]->Write(TObject::kOverwrite);
+//TEST: Linux??
+tmptree[k]->DropBaskets();  //to remove baskets from memory
       }//for_k
 
       if (XManager::fgVerbose) {
