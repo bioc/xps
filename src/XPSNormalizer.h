@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 05/05/2008
+// File created: 08/05/2002                          last modified: 07/26/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2009 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -232,7 +232,9 @@ class XQuantileNormalizer: public XNormalizer {
       Double_t   *fMean2;       //[fNMean2] array of entry means
       TFile      *fTmpFile;     //! temporary file 
 
-   protected:
+   private:
+      Int_t DoMean(Int_t n, Double_t *x);
+      Int_t DoTrimmedMean(Int_t n, Double_t *x, Double_t trim);
 
    public:
       XQuantileNormalizer();

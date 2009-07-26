@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 07/13/2009
+// File created: 08/05/2002                          last modified: 07/25/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -3411,8 +3411,10 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
    TTree     **tmptree  = 0;
    TTree     **exprtree = 0;
    XGCExpression **expr = 0;
-   Int_t    split = 99;
-   Double_t sort;
+
+   Int_t    bufsize = 32000;
+   Int_t    split   = 99;
+   Double_t sort    = 0;
 
    fFile->cd();
 
@@ -3599,6 +3601,9 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
       // change directory to temporary file
       if (!file->cd()) {err = errGetDir; goto cleanup;}
 
+      // set branch buffersize dependent on number of trees numdata
+      bufsize = 32000/(1 + numdata/10000);  //decrease for every 10000 trees
+
       // get data from datatrees (and bgrdtrees) and store in temporary file
       tmptree  = new TTree*[numdata];
       for (Int_t k=0; k<numdata; k++) {
@@ -3627,6 +3632,9 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
                                                          bgcell[k]->GetStdev());
                }//if
             }//for_i
+
+            datatree[k]->DropBaskets();  //to remove baskets from memory
+            bgrdtree[k]->DropBaskets();  //to remove baskets from memory
          } else {
             idx = 0;
             for (Int_t i=0; i<size; i++) {
@@ -3636,6 +3644,8 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
                   arrData[idx++] = gccell[k]->GetIntensity();
                }//if
             }//for_i
+
+            datatree[k]->DropBaskets();  //to remove baskets from memory
          }//if
 
          // fill tmptree with array in the order of scheme tree entries for (x,y)
@@ -3678,8 +3688,7 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
          // write tmptree to temporary file
          tmptree[k]->Write();
 //??         tmptree[k]->Write(TObject::kOverwrite);
-//TEST: Linux??
-tmptree[k]->DropBaskets();  //to remove baskets from memory
+         tmptree[k]->DropBaskets();  //to remove baskets from memory
       }//for_k
 
       if (XManager::fgVerbose) {
@@ -3696,6 +3705,9 @@ tmptree[k]->DropBaskets();  //to remove baskets from memory
    exprtree = new TTree*[numdata];
    expr     = new XGCExpression*[numdata];
 
+   // set branch buffersize dependent on number of trees numdata
+   bufsize = 64000/(1 + numdata/10000);  //decrease for every 10000 trees
+
    for (Int_t k=0; k<numdata; k++) {
       TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
       TString exprname = dataname + "." + fExpressor->GetTitle();
@@ -3704,6 +3716,9 @@ tmptree[k]->DropBaskets();  //to remove baskets from memory
 
       expr[k] = new XGCExpression();
       exprtree[k]->Branch("ExprBranch", "XGCExpression", &expr[k], 64000, split);
+
+      // to reduce number of baskets in memory when reading trees
+      if (file) tmptree[k]->SetMaxVirtualSize(bufsize);
    }//for_k
 
 //TEST
@@ -4433,11 +4448,9 @@ cleanup:
    delete [] tree;
 
    SafeDelete(annot);
-   anntree->ResetBranchAddress(anntree->GetBranch("AnnBranch"));
    SafeDelete(anntree);
 
    SafeDelete(unit);
-   unittree->ResetBranchAddress(unittree->GetBranch("IdxBranch"));
    SafeDelete(unittree);
 
    return err;
@@ -4739,11 +4752,9 @@ cleanup:
    delete [] tree;
 
    SafeDelete(annot);
-   anntree->ResetBranchAddress(anntree->GetBranch("AnnBranch"));
    SafeDelete(anntree);
 
    SafeDelete(unit);
-   unittree->ResetBranchAddress(unittree->GetBranch("IdxBranch"));
    SafeDelete(unittree);
 
    return err;
@@ -4850,7 +4861,9 @@ void XGCProcesSet::FillProbeSets(Int_t &p, Int_t &m, Int_t &idx, Double_t *pm,
 //______________________________________________________________________________
 Int_t XGCProcesSet::MaxNumberCells(TTree *idxtree)
 {
-   // Get maximum number of pairs from tree info for unit tree
+   // Get maximum number of cells from tree info for unit tree
+   // Note: need to return maximum number of cells, i.e. 2*fMaxNPairs, not pairs 
+   //       since for miRNA-1_0.CDF unit tree has: NumCells = NumAtoms
    if(kCS) cout << "------XGCProcesSet::MaxNumberCells------" << endl;
 
    XUnitTreeInfo *idxinfo = 0;
@@ -4861,7 +4874,7 @@ Int_t XGCProcesSet::MaxNumberCells(TTree *idxtree)
       return errGeneral;
    }//if
 
-   return (Int_t)idxinfo->GetValue("fMaxNPairs");
+   return 2*(Int_t)idxinfo->GetValue("fMaxNPairs");
 }//MaxNumberCells
 
 //______________________________________________________________________________

@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 01/26/2008
+// File created: 08/05/2002                          last modified: 07/25/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2009 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -308,6 +308,7 @@ class XGeneChipHyb: public XHybridization {
       virtual Int_t   IsXDAFile(ifstream &input);
       virtual Int_t   IsCalvinFile(ifstream &input);
       virtual TString ChipType(const char *header, Int_t toUpper = 0);
+      virtual Int_t   CheckChipType(const char *header, const char *name);
       virtual Int_t   ReadHeader(ifstream &input, const char *sep, char delim);
       virtual Int_t   ReadData(ifstream &input, Option_t *option, const char *sep,
                          char delim, Int_t split);

@@ -365,6 +365,12 @@ scheme.mouse430.2.na28 <- import.expr.scheme("Scheme_Mouse430_2_na28",filedir=sc
                           paste(libdir,"Mouse430_2.probe.tab",sep="/"),
                           paste(anndir,"Version09Mar/Mouse430_2.na28.annot.csv",sep="/"))
 
+# miRNA-1_0:
+# note: you need to rename "miRNA-1_0.probe_list.20081203.txt" to "miRNA-1_0.probe.tab"
+scheme.mirna <- import.expr.scheme("Scheme_miRNA_1_0",filedir=scmdir,
+                paste(libdir,"miRNA-1_0.CDF",sep="/"),
+                paste(libdir,"miRNA-1_0.probe.tab",sep="/"))
+
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # utility functions to demonstrate how to access scheme files

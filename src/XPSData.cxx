@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 07/04/2009
+// File created: 08/05/2002                          last modified: 07/25/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -1561,6 +1561,26 @@ TString XGeneChipHyb::ChipType(const char *header, Int_t toUpper)
 }//ChipType
 
 //______________________________________________________________________________
+Int_t XGeneChipHyb::CheckChipType(const char *header, const char *name)
+{
+   // Get scheme name from header, compare with name, and store in fSchemeName
+   // Check if first letter is uppercase/lowercase, e.g. test3 or miRNA
+   if(kCS) cout << "------XGeneChipHyb::CheckChipType------" << endl;
+
+   TString chipname = this->ChipType(header, 0);
+   // check if chipname is identical to name of imported scheme
+   if ((strcmp(name, "") != 0) && (strcmp(name, chipname.Data()) != 0)) {
+         chipname = this->ChipType(header, 1);
+         if ((strcmp(name, "") != 0) && (strcmp(name, chipname.Data()) != 0)) {
+            return errChipType;
+         }//if
+   }//if
+   fSchemeName = chipname;
+
+   return errNoErr;
+}//CheckChipType
+
+//______________________________________________________________________________
 Int_t XGeneChipHyb::ReadHeader(ifstream &input, const char * /*sep*/, char delim)
 {
    // Read header from input. 
@@ -1607,13 +1627,10 @@ Int_t XGeneChipHyb::ReadHeader(ifstream &input, const char * /*sep*/, char delim
       if (input.eof()) return errPrematureEOF;
    }//while
 
-   // need to convert fist letter to uppercase (e.g. for GeneChip "test3")
-   fSchemeName = this->ChipType(&nextline[0], 1);
-   // Check if optional scmname is identical to name of imported scheme
+   // need to check for correct scheme name
    TString scmname = ((XDataSetting*)fSetting)->GetSchemeName();
-   if ((strcmp(scmname.Data(), "") != 0) && 
-       (strcmp(scmname.Data(), fSchemeName.Data()) != 0)) {
-      return fManager->HandleError(errChipType, scmname, fSchemeName);
+   if ((err = this->CheckChipType(&nextline[0], scmname)) != errNoErr) {
+      return fManager->HandleError(err, scmname, fSchemeName);
    }//if
 
 //?? Maybe check algorithm?
@@ -1812,12 +1829,9 @@ Int_t XGeneChipHyb::ReadXDAHeader(ifstream &input, const char * /*sep*/, char /*
 //??   ParseCorners(header);
 
 // Get scheme name from DatHeader
-   fSchemeName = this->ChipType(header, 1);
-   // Check if optional scmname is identical to name of imported scheme
    TString scmname = ((XDataSetting*)fSetting)->GetSchemeName();
-   if ((strcmp(scmname.Data(), "") != 0) && 
-       (strcmp(scmname.Data(), fSchemeName.Data()) != 0)) {
-      return fManager->HandleError(errChipType, scmname, fSchemeName);
+   if ((err = this->CheckChipType(header, scmname)) != errNoErr) {
+      return fManager->HandleError(err, scmname, fSchemeName);
    }//if
 
    return err;
@@ -2016,9 +2030,6 @@ Int_t XGeneChipHyb::ReadGenericDataHeader(ifstream &input, Bool_t isParent)
       atype  = new AWSTRING;
 
       READ_WSTRING(input, aname, kTRUE);
-//      str = new char[aname->len + 1];
-//      wcstombs(str, aname->value, aname->len + 1);
-//      delete[] str; str = 0;
 
       READ_STRING(input, avalue, kTRUE);
 
@@ -2041,12 +2052,8 @@ Int_t XGeneChipHyb::ReadGenericDataHeader(ifstream &input, Bool_t isParent)
          wcstombs(str, wstr, avalue->len + 1);
 
          if (strlen(str) > 0) {
-            TString chipname = ChipType(str, 1);
-            if (strcmp(chipname.Data(), fSchemeName.Data()) != 0) {
-               cerr << "Error: dat-header chipname <"   << chipname.Data() 
-                    << "> is not equal to array-type <" << fSchemeName.Data() << ">!"
-                    << endl;
-               return errGeneral;
+            if ((err = this->CheckChipType(str, fSchemeName)) != errNoErr) {
+               return fManager->HandleError(err, fSchemeName, str);
             }//if
          }//if
 
@@ -2065,9 +2072,6 @@ Int_t XGeneChipHyb::ReadGenericDataHeader(ifstream &input, Bool_t isParent)
       }//if
 
       READ_WSTRING(input, atype, kTRUE);
-//      str = new char[atype->len + 1];
-//      wcstombs(str, atype->value, atype->len + 1);
-//      delete[] str; str = 0;
 
       delete atype;
       delete avalue;
