@@ -101,7 +101,7 @@ I. Install ROOT:
    Furthermore, it is necessary to set the environment variable ROOTSYS:
    under Windows 2000/XP/2003 you can use `System' in the control panel or the
    properties of `My Computer' (under the `Advanced' tab).
-   Simply add: ROOTSYS=C:\root
+   Simply add: ROOTSYS=C:\root\bin
 
 
  Ic.  Notes on  ROOT:

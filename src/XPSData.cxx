@@ -1674,9 +1674,9 @@ Int_t XGeneChipHyb::ReadData(ifstream &input, Option_t *option, const char * /*s
    TTree   *datatree = new TTree(fDataTreeName, fSchemeName);
    if (datatree == 0) return errCreateTree;
 
-   XGCCell *cell = 0;
-   cell = new XGCCell();
-   datatree->Branch("DataBranch", "XGCCell", &cell, 64000, split);
+   XGCCell *cell    = new XGCCell();
+   Int_t    bufsize = XManager::GetBufSize();
+   datatree->Branch("DataBranch", "XGCCell", &cell, bufsize, split);
 
 // Read header line containing column names
    input.getline(nextline, kBufSize, delim);
@@ -1861,9 +1861,9 @@ Int_t XGeneChipHyb::ReadXDAData(ifstream &input, Option_t *option, const char * 
    TTree *datatree = new TTree(fDataTreeName, fSchemeName);
    if (datatree == 0) return errCreateTree;
 
-   XGCCell *cell = 0;
-   cell = new XGCCell();
-   datatree->Branch("DataBranch", "XGCCell", &cell, 64000, split);
+   XGCCell *cell    = new XGCCell();
+   Int_t    bufsize = XManager::GetBufSize();
+   datatree->Branch("DataBranch", "XGCCell", &cell, bufsize, split);
 
 // Read the intensity data
    CELEntry *entries = new CELEntry[fNCells];
@@ -2120,9 +2120,9 @@ Int_t XGeneChipHyb::ReadDataGroup(ifstream &input, UInt_t &filepos,
    TTree *datatree = new TTree(fDataTreeName, fSchemeName);
    if (datatree == 0) return errCreateTree;
 
-   XGCCell *cell = 0;
-   cell = new XGCCell();
-   datatree->Branch("DataBranch", "XGCCell", &cell, 64000, split);
+   XGCCell *cell    = new XGCCell();
+   Int_t    bufsize = XManager::GetBufSize();
+   datatree->Branch("DataBranch", "XGCCell", &cell, bufsize, split);
 
 // Data group
    // file position of next data group
@@ -2580,10 +2580,11 @@ Int_t XGeneChipHyb::ReadXMLData(ifstream &input, Option_t *option, const char * 
    TTree *datatree = new TTree(fDataTreeName, fSchemeName);
    if (datatree == 0) return errCreateTree;
 
-   XGCCell *cell = new XGCCell();
-   XCellOM *omsk = new XCellOM();
-   datatree->Branch("DataBranch", "XGCCell", &cell, 64000, split);
-   datatree->Branch("OMskBranch", "XCellOM", &omsk, 64000, split);
+   XGCCell *cell    = new XGCCell();
+   XCellOM *omsk    = new XCellOM();
+   Int_t    bufsize = XManager::GetBufSize();
+   datatree->Branch("DataBranch", "XGCCell", &cell, bufsize, split);
+   datatree->Branch("OMskBranch", "XCellOM", &omsk, bufsize, split);
 
 // Read data and store in data tree
    for (i=0; i<fNCells; i++) {

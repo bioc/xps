@@ -250,7 +250,8 @@ function(object,
       treenames <- paste(treeset, treenames, treetype, sep=".");
    } else if (numtrees > 1) {
       treenames <- paste(treenames, treetype, sep=".");
-      treenames <- paste(filename, treeset, treenames, sep="/");
+#      treenames <- paste(filename, treeset, treenames, sep="/");
+      treenames <- paste(treeset, treenames, sep="/");
    }#if
 
    ## export data from root file

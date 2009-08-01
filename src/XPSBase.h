@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 09/26/2008
+// File created: 05/18/2002                          last modified: 07/31/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2009 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -481,7 +481,10 @@ class XManager: public TNamed {
       Bool_t    fInterrupt;      //! interrupt further input
       Bool_t    fInitFlag;       //! flag set to TRUE in New/Open/Update
 
-   public:
+   private:
+      static Int_t fgBufSize;    //! buffer size of tree baskets
+
+   public:  //better private and use GetVerbose()
       static Int_t fgVerbose;    //! print information if verbose=kTRUE
 
    protected:
@@ -604,6 +607,12 @@ class XManager: public TNamed {
       TFile   *GetFile()      const {return fFile;}
       XFolder *GetContent()   const {return fContent;}
       XPlot   *GetPlotter()   const {return fPlotter;}
+
+      static void  SetBufSize(Int_t bufsize = 32000);
+      static void  SetVerbose(Int_t verbose = 1);
+      static Int_t GetBufSize(Int_t n = 1, Int_t m = 10000);
+      static Int_t GetVerbose();
+
 
       ClassDef(XManager,1) //Manager
 };

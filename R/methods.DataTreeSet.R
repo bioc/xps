@@ -1103,7 +1103,8 @@ function(object,
    ## get treenames to normalize as fullnames=/datadir/treenames
    listnames <- listTreeNames(object);
    treenames <- listnames$treenames;
-   fullnames <- listnames$fullnames;
+#old   fullnames <- listnames$fullnames;
+   fullnames <- paste(object@setname, treenames, sep="/");
    numtrees  <- length(treenames);
 
    ## define setname and settype for new treeset
@@ -1120,6 +1121,7 @@ function(object,
            as.character(tmpdir),
            as.character(transcript),
            as.character(setname),
+           as.character(object@rootfile),
            as.character(fullnames),
            as.integer(numtrees),
            as.integer(exlevel[1]),
@@ -1266,7 +1268,8 @@ function(object,
    ## get treenames as fullnames=/datadir/treenames
    listnames <- listTreeNames(object);
    treenames <- listnames$treenames;
-   fullnames <- listnames$fullnames;
+#old   fullnames <- listnames$fullnames;
+   fullnames <- paste(object@setname, treenames, sep="/");
    numtrees  <- length(treenames);
 
    ## define setname and settype for new treeset
@@ -1283,6 +1286,7 @@ function(object,
            as.character(tmpdir),
            as.character(transcript),
            as.character(setname),
+           as.character(object@rootfile),
            as.character(fullnames),
            as.integer(numtrees),
            as.double(tau),
@@ -1458,7 +1462,8 @@ function(object,
    ## get treenames as fullnames=/datadir/treenames
    listnames <- listTreeNames(object);
    treenames <- listnames$treenames;
-   fullnames <- listnames$fullnames;
+#old   fullnames <- listnames$fullnames;
+   fullnames <- paste(object@setname, treenames, sep="/");
    numtrees  <- length(treenames);
 
    ## define setname and settype for new treeset
@@ -1474,6 +1479,7 @@ function(object,
            as.character(schemefile),
            as.character(transcript),
            as.character(setname),
+           as.character(object@rootfile),
            as.character(fullnames),
            as.integer(numtrees),
            as.double(alpha1),
@@ -1669,7 +1675,8 @@ function(object,
    ## get treenames as fullnames=/datadir/treenames
    listnames <- listTreeNames(object);
    treenames <- listnames$treenames;
-   fullnames <- listnames$fullnames;
+#old   fullnames <- listnames$fullnames;
+   fullnames <- paste(object@setname, treenames, sep="/");
    numtrees  <- length(treenames);
 
    ## define setname and settype for new treeset
@@ -1686,6 +1693,7 @@ function(object,
            as.character(tmpdir),
            as.character(transcript),
            as.character(setname),
+           as.character(object@rootfile),
            as.character(fullnames),
            as.integer(numtrees),
            as.integer(version),
@@ -1839,6 +1847,7 @@ function(object,
          exonlevel         = "",
          xps.scheme        = NULL,
          add.data          = TRUE,
+         bufsize           = 32000,
          verbose           = TRUE)
 {
    if (debug.xps()) print("------preprocess.DataTreeSet------")
@@ -1963,7 +1972,8 @@ function(object,
    ## get treenames to normalize as fullnames=/datadir/treenames
    listnames <- listTreeNames(object);
    treenames <- listnames$treenames;
-   fullnames <- listnames$fullnames;
+#old   fullnames <- listnames$fullnames;
+   fullnames <- paste(object@setname, treenames, sep="/");
    numtrees  <- length(treenames);
 
    ## reference tree
@@ -1989,6 +1999,11 @@ function(object,
    ## check reference parameter list
    if (length(reference.params) == 0) {
       stop(paste("empty parameter list", sQuote("reference.params")));
+   }#if
+
+   ## check bufsize for tree branch baskets
+   if (bufsize < 100) {
+      stop(paste("parameter", sQuote("bufsize"), "must be at least <100>"));
    }#if
 
    ## define setname and settype for new treeset
@@ -2023,11 +2038,13 @@ function(object,
            as.character(reference.method),
            as.double(reference.params),
            as.character(setname),
+           as.character(object@rootfile),
            as.character(fullnames),
            as.integer(numtrees),
            as.integer(exlevel[1]),
            as.integer(exlevel[2]),
            as.integer(exlevel[3]),
+           as.integer(bufsize),
            as.integer(verbose),
            result=character(2),
            PACKAGE="xps")$result;

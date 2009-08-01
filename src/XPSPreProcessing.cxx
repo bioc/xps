@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 07/25/2009
+// File created: 08/05/2002                          last modified: 08/01/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -61,6 +61,7 @@
 * Aug 2007 - Add support for whole genome arrays, class XGenomeProcesSet
 * Aug 2008 - Add summarization algorithms FARMS and DFW, classes XFARMS, XDFW
 * Oct 2008 - Add I/NI-call algorithm class XINICall
+* Jul 2009 - Allow to change bufsize of tree branches
 *
 ******************************************************************************/
 
@@ -1630,8 +1631,9 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
       TString bgrdname = dataname + "." + fBackgrounder->GetTitle();
       bgrdtree[k] = new TTree(bgrdname, fSchemeName);
       if (bgrdtree[k] == 0) return errCreateTree;
-      XBgCell *bgcell = new XBgCell();
-      bgrdtree[k]->Branch("BgrdBranch", "XBgCell", &bgcell, 64000, split);
+      XBgCell *bgcell  = new XBgCell();
+      Int_t    bufsize = XManager::GetBufSize();
+      bgrdtree[k]->Branch("BgrdBranch", "XBgCell", &bgcell, bufsize, split);
 
    // Get data from data tree and store in array
       for (i=0; i<size; i++) {
@@ -1709,7 +1711,9 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
       // reset branches
       SafeDelete(bgcell);
       bgrdtree[k]->ResetBranchAddress(bgrdtree[k]->GetBranch("BgrdBranch"));
+
       SafeDelete(gccell);
+      datatree[k]->DropBaskets();  //to remove baskets from memory
       datatree[k]->ResetBranchAddress(datatree[k]->GetBranch("DataBranch"));
 
       if (err != errNoErr) break;
@@ -2188,6 +2192,7 @@ Int_t XGCProcesSet::DoCall(Int_t numdata, TTree **datatree,
 
    TTree  *calltree = 0;
    XPCall *call     = 0;
+   Int_t   bufsize  = XManager::GetBufSize(numdata, 10000);
    Int_t   split    = 99;
 
    fFile->cd();
@@ -2337,7 +2342,7 @@ Int_t XGCProcesSet::DoCall(Int_t numdata, TTree **datatree,
       calltree = new TTree(name, fSchemeName);
       if (calltree == 0) {err = errCreateTree; goto cleanup;}
       call = new XPCall();
-      calltree->Branch("CallBranch", "XPCall", &call, 64000, split);
+      calltree->Branch("CallBranch", "XPCall", &call, bufsize, split);
 
    // Calculate detection call values
       start = 0;
@@ -2424,7 +2429,7 @@ Int_t XGCProcesSet::DoCall(Int_t numdata, TTree **datatree,
          call->SetPValue(pvalue);
          calltree->Fill();
 
-         if (XManager::fgVerbose && id%5000 == 0) {
+         if (XManager::fgVerbose && idx%1000 == 0) {
             cout << "      <" << idx << "> of <" << numunits << "> calls processed...\r" << flush;
          }//if
       }//for_id
@@ -2506,6 +2511,7 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
 
    Int_t numsels = 0;  //number of selected entries
    Int_t exlevel = 0;
+   Int_t stepout = (Int_t)(10000.0/(Float_t)numdata); //step size for verbose output
 
 // Init min/max p-values
    Int_t numabsent  = 0;
@@ -2539,6 +2545,7 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
    TTree  **tmptree  = 0;
    TTree  **calltree = 0;
    XPCall **call     = 0;
+   Int_t    bufsize  = XManager::GetBufSize(numdata, 10000);
    Int_t    split    = 99;
    Double_t sort;
 
@@ -2680,6 +2687,7 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
          arrIndx[ij] = idx++;
       }//if
    }//for_i
+   datatree[0]->DropBaskets();  //to remove baskets from memory
 
 // Get number of selected entries
    for (Int_t i=0; i<size; i++) {
@@ -2734,7 +2742,7 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
          // create temporary tree
          tmptree[k] = new TTree(datatree[k]->GetName(), "temporary tree");
          if (tmptree[k] == 0) {err = errCreateTree; goto cleanup;}
-         tmptree[k]->Branch("sort", &sort, "sort/D");
+         tmptree[k]->Branch("sort", &sort, "sort/D", bufsize);
 
          // informing user
          if (XManager::fgVerbose) {
@@ -2756,6 +2764,9 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
                                                          bgcell[k]->GetStdev());
                }//if
             }//for_i
+
+            datatree[k]->DropBaskets();  //to remove baskets from memory
+            bgrdtree[k]->DropBaskets();  //to remove baskets from memory
          } else {
             idx = 0;
             for (Int_t i=0; i<size; i++) {
@@ -2765,6 +2776,8 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
                   arrData[idx++] = gccell[k]->GetIntensity();
                }//if
             }//for_i
+
+            datatree[k]->DropBaskets();  //to remove baskets from memory
          }//if
 
          // fill tmptree with array in the order of scheme tree entries for (x,y)
@@ -2807,6 +2820,7 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
          // write tmptree to temporary file
          tmptree[k]->Write();
 //??         tmptree[k]->Write(TObject::kOverwrite);
+         tmptree[k]->DropBaskets();  //to remove baskets from memory
       }//for_k
 
       if (XManager::fgVerbose) {
@@ -2828,7 +2842,10 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
       if (calltree[k] == 0) {err = errCreateTree; goto cleanup;}
 
       call[k] = new XPCall();
-      calltree[k]->Branch("CallBranch", "XPCall", &call[k], 64000, split);
+      calltree[k]->Branch("CallBranch", "XPCall", &call[k], bufsize, split);
+
+      // to reduce number of baskets in memory when reading trees
+      if (file) tmptree[k]->SetMaxVirtualSize(bufsize);
    }//for_k
 
 // Create array to store PM values for all probes with current unitID
@@ -2924,7 +2941,7 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
 
 //x      delete [] arrPM;
 
-      if (XManager::fgVerbose && id%10000 == 0) {
+      if (XManager::fgVerbose && (idx == 1 || id%stepout == 0)) {
          cout << "      calculating detection call for <" << idx << "> of <"
               << numunits << "> units...\r" << flush;
       }//if
@@ -2985,10 +3002,12 @@ cleanup:
 
    for (Int_t k=0; k<numdata; k++) {
       SafeDelete(gccell[k]);
+      datatree[k]->DropBaskets();  //to remove baskets from memory
       datatree[k]->ResetBranchAddress(datatree[k]->GetBranch("DataBranch"));
 
       if (numbgrd > 0) {
          SafeDelete(bgcell[k]);
+         bgrdtree[k]->DropBaskets();  //to remove baskets from memory
          bgrdtree[k]->ResetBranchAddress(bgrdtree[k]->GetBranch("BgrdBranch"));
       }//if
 
@@ -3077,6 +3096,7 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
 
    TTree  *exprtree    = 0;
    XGCExpression *expr = 0;
+   Int_t   bufsize     = XManager::GetBufSize(numdata, 10000);
    Int_t   split       = 99;
 
    fFile->cd();
@@ -3218,7 +3238,7 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
       exprtree = new TTree(name, fSchemeName);
       if (exprtree == 0) {err = errCreateTree; goto cleanup;}
       expr = new XGCExpression();
-      exprtree->Branch("ExprBranch", "XGCExpression", &expr, 64000, split);
+      exprtree->Branch("ExprBranch", "XGCExpression", &expr, bufsize, split);
 
    // Calculate expression values
       start = 0;
@@ -3297,7 +3317,7 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
          expr->SetNumPairs(arrlen);
          exprtree->Fill();
 
-         if (XManager::fgVerbose && id%5000 == 0) {
+         if (XManager::fgVerbose && idx%1000 == 0) {
             cout << "      <" << idx << "> of <" << numunits << "> calls processed...\r" << flush;
          }//if
       }//for_id
@@ -3381,6 +3401,7 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
 
    Int_t numsels = 0;  //number of selected entries
    Int_t exlevel = 0;
+   Int_t stepout = (Int_t)(10000.0/(Float_t)numdata); //step size for verbose output
 
 // Init min/max expression levels
    Double_t min = DBL_MAX;  //defined in float.h
@@ -3412,7 +3433,7 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
    TTree     **exprtree = 0;
    XGCExpression **expr = 0;
 
-   Int_t    bufsize = 32000;
+   Int_t    bufsize = XManager::GetBufSize(numdata, 10000);
    Int_t    split   = 99;
    Double_t sort    = 0;
 
@@ -3551,6 +3572,7 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
          arrIndx[ij] = idx++;
       }//if
    }//for_i
+   datatree[0]->DropBaskets();  //to remove baskets from memory
 
 // Get number of selected entries
    for (Int_t i=0; i<size; i++) {
@@ -3601,16 +3623,13 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
       // change directory to temporary file
       if (!file->cd()) {err = errGetDir; goto cleanup;}
 
-      // set branch buffersize dependent on number of trees numdata
-      bufsize = 32000/(1 + numdata/10000);  //decrease for every 10000 trees
-
       // get data from datatrees (and bgrdtrees) and store in temporary file
       tmptree  = new TTree*[numdata];
       for (Int_t k=0; k<numdata; k++) {
          // create temporary tree
          tmptree[k] = new TTree(datatree[k]->GetName(), "temporary tree");
          if (tmptree[k] == 0) {err = errCreateTree; goto cleanup;}
-         tmptree[k]->Branch("sort", &sort, "sort/D");
+         tmptree[k]->Branch("sort", &sort, "sort/D", bufsize);
 
          // informing user
          if (XManager::fgVerbose) {
@@ -3705,9 +3724,6 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
    exprtree = new TTree*[numdata];
    expr     = new XGCExpression*[numdata];
 
-   // set branch buffersize dependent on number of trees numdata
-   bufsize = 64000/(1 + numdata/10000);  //decrease for every 10000 trees
-
    for (Int_t k=0; k<numdata; k++) {
       TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
       TString exprname = dataname + "." + fExpressor->GetTitle();
@@ -3715,7 +3731,7 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
       if (exprtree[k] == 0) {err = errCreateTree; goto cleanup;}
 
       expr[k] = new XGCExpression();
-      exprtree[k]->Branch("ExprBranch", "XGCExpression", &expr[k], 64000, split);
+      exprtree[k]->Branch("ExprBranch", "XGCExpression", &expr[k], bufsize, split);
 
       // to reduce number of baskets in memory when reading trees
       if (file) tmptree[k]->SetMaxVirtualSize(bufsize);
@@ -3822,7 +3838,12 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
 
 //x      delete [] arrPM;
 
-      if (XManager::fgVerbose && id%10000 == 0) {
+/////////////////////////////////
+// TO DO??: if (id%(10000/numdata)??) for k: exprtree[k]->DropBaskets??? ev also tmptree[k]->DropBaskets???
+/////////////////////////////////
+
+//      if (XManager::fgVerbose && id%10000 == 0) {
+      if (XManager::fgVerbose && (idx == 1 || id%stepout == 0)) {
          cout << "      calculating expression for <" << idx << "> of <"
               << numunits << "> units...\r" << flush;
       }//if
@@ -3882,10 +3903,12 @@ cleanup:
 
    for (Int_t k=0; k<numdata; k++) {
       SafeDelete(gccell[k]);
+      datatree[k]->DropBaskets();  //to remove baskets from memory
       datatree[k]->ResetBranchAddress(datatree[k]->GetBranch("DataBranch"));
 
       if (numbgrd > 0) {
          SafeDelete(bgcell[k]);
+         bgrdtree[k]->DropBaskets();  //to remove baskets from memory
          bgrdtree[k]->ResetBranchAddress(bgrdtree[k]->GetBranch("BgrdBranch"));
       }//if
 
@@ -4423,8 +4446,13 @@ Int_t XGCProcesSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
       }//for_j
       output << endl;
 
+/////////////////////////////////
+// TO DO??: if (id%10000??) for k: tree[k]->DropBaskets???
+// OR???:   tree[k]->SetMaxVirtualSize(bufsize);
+/////////////////////////////////
+
       cnt++;
-      if (XManager::fgVerbose && cnt%10000 == 0) {
+      if (XManager::fgVerbose && cnt%1000 == 0) {
          cout << "<" << cnt << "> records exported...\r" << flush;
       }//if
    }//for_i
@@ -4727,8 +4755,13 @@ Int_t XGCProcesSet::ExportCallTrees(Int_t n, TString *names, const char *varlist
       }//for_j
       output << endl;
 
+/////////////////////////////////
+// TO DO??: if (id%10000??) for k: tree[k]->DropBaskets???
+// OR???:   tree[k]->SetMaxVirtualSize(bufsize);
+/////////////////////////////////
+
       cnt++;
-      if (XManager::fgVerbose && cnt%10000 == 0) {
+      if (XManager::fgVerbose && cnt%1000 == 0) {
          cout << "<" << cnt << "> records exported...\r" << flush;
       }//if
    }//for_i
@@ -5279,10 +5312,10 @@ TTree *XGCProcesSet::FillDataTree(TTree *oldtree, const char *exten,
    TTree *newtree = new TTree(name, fSchemeName.Data());
    if (newtree == 0) return 0;
 
+   XGCCell *newcell = new XGCCell();
+   Int_t    bufsize = XManager::GetBufSize();
    Int_t    split   = 99;
-   XGCCell *newcell = 0;
-   newcell = new XGCCell();
-   newtree->Branch("DataBranch", "XGCCell", &newcell, 64000, split);
+   newtree->Branch("DataBranch", "XGCCell", &newcell, bufsize, split);
 
    Double_t min    = DBL_MAX;  //defined in float.h
    Double_t max    = 0;
@@ -5372,10 +5405,10 @@ TTree *XGCProcesSet::FillDataTree(const char *name, XAlgorithm *algorithm,
    TTree *tree = new TTree(name, fSchemeName.Data());
    if (tree == 0) return 0;
 
-   Int_t    split = 99;
-   XGCCell *cell  = 0;
-   cell = new XGCCell();
-   tree->Branch("DataBranch", "XGCCell", &cell, 64000, split);
+   XGCCell *cell    = new XGCCell();
+   Int_t    bufsize = XManager::GetBufSize();
+   Int_t    split   = 99;
+   tree->Branch("DataBranch", "XGCCell", &cell, bufsize, split);
 
    Double_t min    = DBL_MAX;  //defined in float.h
    Double_t max    = 0;
@@ -5451,10 +5484,10 @@ Int_t XGCProcesSet::FillMaskTree(const char *name, XAlgorithm *algorithm,
    TTree *tree = new TTree(name, fSchemeName.Data());
    if (tree == 0) return errCreateTree;
 
-   Int_t     split = 99;
-   XCellMask *mask = 0;
-   mask = new XCellMask();
-   tree->Branch("MaskBranch", "XCellMask", &mask, 64000, split);
+   XCellMask *mask    = new XCellMask();
+   Int_t      bufsize = XManager::GetBufSize();
+   Int_t      split   = 99;
+   tree->Branch("MaskBranch", "XCellMask", &mask, bufsize, split);
 
 // Fill mask tree
    Int_t i, j, ij;
@@ -5626,10 +5659,12 @@ Int_t XGCProcesSet::MeanReference(Int_t numdata, TTree **datatree, Int_t numbgrd
 // Cleanup
    for (Int_t k=0; k<numdata; k++) {
       SafeDelete(gccell[k]);
+      datatree[k]->DropBaskets();
       datatree[k]->ResetBranchAddress(datatree[k]->GetBranch("DataBranch"));
 
       if (numbgrd > 0) {
          SafeDelete(bgcell[k]);
+         bgrdtree[k]->DropBaskets();
          bgrdtree[k]->ResetBranchAddress(bgrdtree[k]->GetBranch("BgrdBranch"));
       }//if
    }//for_k

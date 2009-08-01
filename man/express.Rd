@@ -38,6 +38,7 @@ express(xps.data,
         exonlevel  = "",
         xps.scheme = NULL,
         add.data   = TRUE,
+        bufsize    = 32000,
         verbose    = TRUE)
 
 xpsPreprocess(object, ...)
@@ -71,6 +72,7 @@ xpsPreprocess(object, ...)
   \item{exonlevel}{exon annotation level determining which probes should be used for summarization; exon/genome arrays only.}
   \item{xps.scheme}{optional alternative \code{SchemeSet}.}
   \item{add.data}{logical. If \code{TRUE} expression data will be included as slot \code{data}.}
+  \item{bufsize}{integer which sets the buffer size of the tree branch baskets (default is 32000).}
   \item{verbose}{logical, if \code{TRUE} print status information.}
   \item{object}{object of class \code{DataSet}.}
   \item{\dots}{the arguments described above.}

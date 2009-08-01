@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 07/03/2009
+// File created: 05/18/2002                          last modified: 07/31/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -60,6 +60,7 @@
 *          - Add support for  verbose messages in XManager constructor
 * Feb 2008 - Add methods GetTreeHeader() and GetTreeInfo() to XManager.
 *          - Adapt source code to compile with MS VC++ on WinXP
+* Jul 2009 - Add methods Set/GetBufSize() to change bufsize of tree branches
 *
 ******************************************************************************/
 
@@ -78,7 +79,7 @@
 *    method turned out to be the most effective way to cleanup before exiting
 *    a method, and doing cleanup before exiting the program.
 * 3. "if (arr)" ensures that only already initialized arrays (objects) will be
-*   deleted.
+*    deleted.
 ******************************************************************************/
 
 //#ifndef ROOT_Varargs
@@ -106,6 +107,7 @@ ClassImp(XTreeSet);
 ClassImp(XAlgorithm);
 ClassImp(XManager);
 
+Int_t  XManager::fgBufSize = 32000;
 Int_t  XManager::fgVerbose = 1;
 Bool_t XTreeSet::fgPrintHeader = kTRUE;
 
@@ -3160,6 +3162,45 @@ void XManager::SetMaxFileSize(Long64_t maxsize)
 
    TTree::SetMaxTreeSize(1000*maxsize);
 }//SetMaxFileSize
+
+//______________________________________________________________________________
+void XManager::SetBufSize(Int_t bufsize)
+{
+   // Set buffer size for certain tree baskets
+   if(kCS) cout << "------XManager::SetBufSize------" << endl;
+
+   fgBufSize = (bufsize < 100) ? 100 : bufsize;
+}//SetBufSize
+
+//______________________________________________________________________________
+void XManager::SetVerbose(Int_t verbose)
+{
+   // Set verbose output
+   if(kCS) cout << "------XManager::SetVerbose------" << endl;
+
+   fgVerbose = verbose;
+}//SetVerbose
+
+//______________________________________________________________________________
+Int_t XManager::GetBufSize(Int_t n, Int_t m)
+{
+   // Get buffer size for certain tree baskets
+   // For default bufsize=32000 decrease bufsize for n trees in steps of m
+   if(kCS) cout << "------XManager::GetBufSize------" << endl;
+
+   if (fgBufSize == 32000) return (fgBufSize/(1 + n/m));
+
+   return fgBufSize;
+}//GetBufSize
+
+//______________________________________________________________________________
+Int_t XManager::GetVerbose()
+{
+   // Get verbose output
+   if(kCS) cout << "------XManager::GetVerbose------" << endl;
+
+   return fgVerbose;
+}//GetVerbose
 
 //______________________________________________________________________________
 Bool_t XManager::IsOpen(TFile *file, const char *filename)

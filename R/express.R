@@ -36,6 +36,7 @@ function(xps.data,
          exonlevel  = "",
          xps.scheme = NULL,
          add.data   = TRUE,
+         bufsize    = 32000,
          verbose    = TRUE)
 {
 
@@ -65,6 +66,7 @@ function(xps.data,
                            exonlevel         = exonlevel,
                            xps.scheme        = xps.scheme,
                            add.data          = add.data,
+                           bufsize           = bufsize,
                            verbose           = verbose);
       return(set);
    } else {

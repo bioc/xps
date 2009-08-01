@@ -359,7 +359,6 @@ void ExportData(char **filename, char **schemefile, char **chiptype,
 /*____________________________________________________________________________*/
 void PreprocessRMA(char **filename, char **dirname, char **chipname,
                    char **chiptype, char **schemefile, char **tmpdir,
-//old                   char **bgrdoption, char **exproption, char **treeset,
                    char **bgrdoption, char **exproption, char **treeset, char **datafile, 
                    char **treenames, int *ntrees, int *normalize, double *pars,
                    int *bgrdlevel, int *normlevel, int *exprlevel,
@@ -564,8 +563,8 @@ void PreprocessMAS4(char **filename, char **dirname, char **chipname,
 /*____________________________________________________________________________*/
 void PreprocessMAS5(char **filename, char **dirname, char **chipname,
                     char **chiptype, char **schemefile, char **tmpdir,
-                    char **exproption, char **treeset, char **treenames,
-                    int *ntrees, int *bgrdlevel, int *exprlevel,
+                    char **exproption, char **treeset, char **datafile,
+                    char **treenames, int *ntrees, int *bgrdlevel, int *exprlevel,
                     int *verbose, char **result)
 {
 // Preprocess trees using MAS5
@@ -619,6 +618,9 @@ void PreprocessMAS5(char **filename, char **dirname, char **chipname,
 // open root scheme file
    r += manager->OpenSchemes(schemefile[0], chipname[0]);
 
+// open root data file (to open data file only once)
+   r += manager->OpenData(datafile[0]);
+
 // add trees for rma
    for (int i=0; i<*ntrees; i++) {
       r += manager->AddTree(treeset[0], treenames[i]);
@@ -648,9 +650,10 @@ void PreprocessMAS5(char **filename, char **dirname, char **chipname,
 /*____________________________________________________________________________*/
 void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
                         char **chiptype, char **schemefile, char **tmpdir,
-                        char **calloption, char **treeset, char **treenames,
-                        int *ntrees, double *tau, double *alpha1, double *alpha2,
-                        int *ignore, int *bgrdlevel, int *callevel,
+                        char **calloption, char **treeset, char **datafile,
+                        char **treenames, int *ntrees, double *tau,
+                        double *alpha1, double *alpha2, int *ignore,
+                        int *bgrdlevel, int *callevel,
                         int *verbose, char **result)
 {
 // Preprocess trees using MAS5 call
@@ -713,6 +716,9 @@ void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
 // open root scheme file
    r += manager->OpenSchemes(schemefile[0], chipname[0]);
 
+// open root data file (to open data file only once)
+   r += manager->OpenData(datafile[0]);
+
 // add trees for rma
    for (int i=0; i<*ntrees; i++) {
       r += manager->AddTree(treeset[0], treenames[i]);
@@ -742,8 +748,8 @@ void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
 /*____________________________________________________________________________*/
 void PreprocessDABGCall(char **filename, char **dirname, char **chipname,
                         char **chiptype, char **schemefile, char **calloption,
-                        char **treeset, char **treenames, int *ntrees,
-                        double *alpha1, double *alpha2, int *level,
+                        char **treeset, char **datafile, char **treenames,
+                        int *ntrees, double *alpha1, double *alpha2, int *level,
                         int *verbose, char **result)
 {
 // Preprocess trees using DABG call
@@ -779,6 +785,9 @@ void PreprocessDABGCall(char **filename, char **dirname, char **chipname,
 // open root scheme file
    r += manager->OpenSchemes(schemefile[0], chipname[0]);
 
+// open root data file (to open data file only once)
+   r += manager->OpenData(datafile[0]);
+
 // add trees for rma
    for (int i=0; i<*ntrees; i++) {
       r += manager->AddTree(treeset[0], treenames[i]);
@@ -807,7 +816,7 @@ void PreprocessDABGCall(char **filename, char **dirname, char **chipname,
 /*____________________________________________________________________________*/
 void PreprocessINICall(char **filename, char **dirname, char **chipname,
                        char **chiptype, char **schemefile, char **tmpdir,
-                       char **option, char **treeset, char **treenames,
+                       char **option, char **treeset, char **datafile, char **treenames,
                        int *ntrees, int *version, double *weight, double *mu,
                        double *scale, double *tol, int *cyc, double *alpha1,
                        double *alpha2, int *normlevel, int *callevel,
@@ -868,6 +877,9 @@ void PreprocessINICall(char **filename, char **dirname, char **chipname,
 // open root scheme file
    r += manager->OpenSchemes(schemefile[0], chipname[0]);
 
+// open root data file (to open data file only once)
+   r += manager->OpenData(datafile[0]);
+
 // add trees for rma
    for (int i=0; i<*ntrees; i++) {
       r += manager->AddTree(treeset[0], treenames[i]);
@@ -905,9 +917,9 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
                 char **exprtype, char **exprselection, char **exproption,
                 int *nexprpar, double *exprpars,
                 char **reftree, char **refmethod, double *refparam,
-                char **treeset, char **treenames, int *ntrees,
+                char **treeset, char **datafile, char **treenames, int *ntrees,
                 int *bgrdlevel, int *normlevel, int *exprlevel,
-                int *verbose, char **result)
+                int *bufsize, int *verbose, char **result)
 {
 // Preprocess trees
    int    r = 0;
@@ -919,6 +931,9 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
 
 // increase default maximum file size from 1.9 GB to 2 TB
    manager->SetMaxFileSize(2000000000);
+
+// optional set bufsize (default is 32000)
+   manager->SetBufSize(*bufsize);
 
 // initialize chip type
    r += manager->Initialize(chiptype[0]);
@@ -1027,9 +1042,6 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
                                   exprfile, n, p0, p1, p2, p3, p4, p5, p6, p7);
    }//if
 
-// open root scheme file
-   r += manager->OpenSchemes(schemefile[0], chipname[0]);
-
 // create/update root data file 
    if (*update == 1) {
       r += manager->Update(filename[0], "preprocess", "R");
@@ -1038,6 +1050,12 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
    } else {
       r += manager->New(filename[0], dirname[0], chiptype[0], "preprocess");
    }//if
+
+// open root scheme file
+   r += manager->OpenSchemes(schemefile[0], chipname[0]);
+
+// open root data file (to open data file only once)
+   r += manager->OpenData(datafile[0]);
 
 // add trees
    for (int i=0; i<*ntrees; i++) {
@@ -1392,7 +1410,6 @@ void Summarize(char **filename, char **dirname, char **chipname, char **chiptype
 void Normxpress(char **filename, char **dirname, char **chiptype,
                 char **schemefile, char **tmpdir, char **seloption, double *pc,
                 char **type, char **option, int *npar, double *pars,
-//old                int *level, char **treeset, char **treenames, int *ntrees,
                 int *level, char **treeset, char **datafile, char **treenames, int *ntrees,
                 char **reftree, char **refmethod, int *update,
                 int *verbose, char **result)

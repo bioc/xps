@@ -79,11 +79,16 @@ setReplaceMethod("pvalData", signature(object="CallTreeSet", value="data.frame")
       ds <- value[, c("UNIT_ID", "UnitName")];
 
       ## remove columns "UNIT_ID" and "UnitName"
-      value <- value[, is.na(match(colnames(value), "UNIT_ID"))];
-      value <- value[, is.na(match(colnames(value), "UnitName"))];
+      value <- value[, is.na(match(colnames(value), "UNIT_ID")),  drop=FALSE];
+      value <- value[, is.na(match(colnames(value), "UnitName")), drop=FALSE];
 
       ## result dataframe ds
       if (is.null(treenames)) {
+         if (is.null(ds)) {ds <- value} else {ds <-cbind(ds, value)}
+      } else if (length(treenames) == 1) {
+         value <- value[, "PVALUE", drop=FALSE];
+         colnames(value) <- paste(treenames, colnames(value), sep="_");
+
          if (is.null(ds)) {ds <- value} else {ds <-cbind(ds, value)}
       } else {
          treenames <- namePart(treenames);
@@ -122,11 +127,16 @@ setReplaceMethod("presCall", signature(object="CallTreeSet", value="data.frame")
       ds <- value[, c("UNIT_ID", "UnitName")];
 
       ## remove columns "UNIT_ID" and "UnitName"
-      value <- value[, is.na(match(colnames(value), "UNIT_ID"))];
-      value <- value[, is.na(match(colnames(value), "UnitName"))];
+      value <- value[, is.na(match(colnames(value), "UNIT_ID")),  drop=FALSE];
+      value <- value[, is.na(match(colnames(value), "UnitName")), drop=FALSE];
 
       ## result dataframe ds
       if (is.null(treenames)) {
+         if (is.null(ds)) {ds <- value} else {ds <-cbind(ds, value)}
+      } else if (length(treenames) == 1) {
+         value <- value[, "CALL", drop=FALSE];
+         colnames(value) <- paste(treenames, colnames(value), sep="_");
+
          if (is.null(ds)) {ds <- value} else {ds <-cbind(ds, value)}
       } else {
          treenames <- namePart(treenames);
