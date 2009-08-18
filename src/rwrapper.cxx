@@ -1001,10 +1001,12 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
 // initialize normalizer
    if (strcmp(normtype[0], "none") != 0) {
       n  = *nnormpar;
-      p0 = p1 = p2 = 0.0;
+      // copy parameters: p0,p1 for normalizer (no bgrdoption) and p2,p3 for approx
+      p0 = p1 = p2 = p3 = 0.0;
       if (n > 0) p0 = normpars[0];
       if (n > 1) p1 = normpars[1];
       if (n > 2) p2 = normpars[2];
+      if (n > 3) p3 = normpars[3];
 
       if (strcmp(chiptype[0], "GeneChip") == 0) {
          r += manager->InitAlgorithm("selector", "probe", normselection[0], 0);
@@ -1014,8 +1016,10 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
          r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *normlevel);
       }//if
 
-      r += manager->InitAlgorithm("normalizer", normtype[0], normoption[0],
-                                  normfile, n, p0, p1, p2);
+      r += manager->InitAlgorithm("normalizer", normtype[0], normoption[0], normfile, 2, p0, p1);
+      if (strcmp(normtype[0], "lowess") == 0 || strcmp(normtype[0], "supsmu") == 0) {
+         r += manager->InitAlgorithm("normalizer", "approx", "linear:mean", "", 2, p2, p3);
+      }//if
    }//if
 
 // initialize expressor
@@ -1244,11 +1248,13 @@ void Normalize(char **filename, char **dirname, char **chiptype,
       tmpfile = strcpy(tmpfile, "\0");
    }//if
 
-// copy parameters
-   double p0, p1;
-   p0 = p1 = 0.0;
+// copy parameters: p0,p1 for normalizer (no bgrdoption) and p2,p3 for approx
+   double p0, p1, p2, p3;
+   p0 = p1 = p2 = p3 = 0.0;
    if (*npar > 0) p0 = pars[0];
    if (*npar > 1) p1 = pars[1];
+   if (*npar > 2) p2 = pars[2];
+   if (*npar > 3) p3 = pars[3];
 
 // initialize normalizer
    if (strcmp(chiptype[0], "GeneChip") == 0) {
@@ -1259,12 +1265,10 @@ void Normalize(char **filename, char **dirname, char **chiptype,
       r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *level);
    }//if
 
-   r += manager->InitAlgorithm("normalizer",type[0],option[0],tmpfile, *npar,p0,p1);
-//NEED TO TEST:
+   r += manager->InitAlgorithm("normalizer", type[0], option[0], tmpfile, 2, p0, p1);
    if (strcmp(type[0], "lowess") == 0 || strcmp(type[0], "supsmu") == 0) {
-      r += manager->InitAlgorithm("normalizer", "approx", "linear:mean", "", 2, 0.0, 0.0);
+      r += manager->InitAlgorithm("normalizer", "approx", "linear:mean", "", 2, p2, p3);
    }//if
-
 
 // open root scheme file
    r += manager->OpenSchemes(schemefile[0]);
@@ -1436,17 +1440,19 @@ void Normxpress(char **filename, char **dirname, char **chiptype,
       tmpfile = strcpy(tmpfile, "\0");
    }//if
 
-// copy parameters
-   double p0, p1;
-   p0 = p1 = 0.0;
+// copy parameters: p0,p1 for normalizer (no bgrdoption) and p2,p3 for approx
+   double p0, p1, p2, p3;
+   p0 = p1 = p2 = p3 = 0.0;
    if (*npar > 0) p0 = pars[0];
    if (*npar > 1) p1 = pars[1];
+   if (*npar > 2) p2 = pars[2];
+   if (*npar > 3) p3 = pars[3];
 
 // initialize algorithms
    r += manager->InitAlgorithm("selector","rank", seloption[0],"", 4, 0, 0.3, *pc, 0);
    r += manager->InitAlgorithm("normalizer", type[0], option[0], tmpfile, 2, p0, p1);
    if (strcmp(type[0], "lowess") == 0 || strcmp(type[0], "supsmu") == 0) {
-      r += manager->InitAlgorithm("normalizer", "approx", "linear:mean", "", 2, 0.0, 0.0);
+      r += manager->InitAlgorithm("normalizer", "approx", "linear:mean", "", 2, p2, p3);
    }//if
 
 // open root scheme file

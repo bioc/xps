@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 06/19/2009
+// File created: 08/05/2002                          last modified: 08/14/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -652,9 +652,14 @@ Int_t XSectorBackground::Calculate(Int_t n, Double_t *x, Double_t *y, Double_t *
          delete [] index;
 
          // mean and stdev of percent lowest data
+         Double_t mean = 0.0;
+         Double_t var  = 0.0;
          Int_t numCells4Bg = (Int_t)(numCells * percent);
-         Double_t mean = TStat::Mean(numCells4Bg, secSorted);
-         Double_t var  = TStat::Var(numCells4Bg, secSorted, mean);
+         if (numCells4Bg > 0) {
+            mean = TStat::Mean(numCells4Bg, secSorted);
+            var  = TStat::Var(numCells4Bg, secSorted, mean);
+         }//if
+
          ij = XY2Index(j, i, numRowSec);
 //or??         ij = XY2Index(i, j, numColSec);
          arrMean[ij] = mean;
@@ -943,9 +948,13 @@ Int_t XWeightedBackground::Calculate(Int_t n, Double_t *x, Double_t *y,
          delete [] index;
 
          // mean and stdev of percent lowest data
+         Double_t mean = 0.0;
+         Double_t var  = 0.0;
          Int_t numCells4Bg = (Int_t)(numCells * percent);
-         Double_t mean = TStat::Mean(numCells4Bg, secSorted);
-         Double_t var  = TStat::Var(numCells4Bg, secSorted, mean);
+         if (numCells4Bg > 0) {
+            mean = TStat::Mean(numCells4Bg, secSorted);
+            var  = TStat::Var(numCells4Bg, secSorted, mean);
+         }//if
 
          ij = XY2Index(j, i, numRowSec);
 //or?         ij = XY2Index(i, j, numColSec);

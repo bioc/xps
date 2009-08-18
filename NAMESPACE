@@ -213,6 +213,7 @@ export(getChipName, getChipType, getNameType, getProbeInfo)
 export(getNumberTrees, getTreeNames)
 export(isROOTFile, existsROOTFile)
 export(type2Exten, exonLevel)
+export(extenPart, namePart)
 export(metaProbesets)
 
 

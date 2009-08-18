@@ -46,7 +46,7 @@ function(x,
    } else {
       stop(paste("unknown device dev=", sQuote(dev)));
    }#if
-   oldpar <- par(no.readonly=TRUE);
+   oldpar <- par(no.readonly=TRUE, mar=mar);
 
    size <- function(x){c(ceiling(sqrt(x)), round(sqrt(x)))}
    nc <-size(ncol(ds))[1];

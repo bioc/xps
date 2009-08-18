@@ -46,12 +46,13 @@ function(x,
    } else {
       stop(paste("unknown device dev=", sQuote(dev)));
    }#if
-   oldpar <- par(no.readonly=TRUE);
+   oldpar <- par(no.readonly=TRUE, mar=mar);
 
    ## plot data
    boxplot(data.frame(m),
            range = range,
            names = names,
+           las   = las,
            ...)
 
    par(oldpar);

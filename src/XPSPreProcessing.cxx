@@ -746,8 +746,9 @@ Int_t XPreProcesSetting::InitNormalizer(const char *type, Option_t *options,
    //      - "subtractbg": subtract bgrd from intensity - result can be negative
    //      - "correctbg":  correct bgrd with noise fraction to avoid negative results
    //    parameters are: numpars, trim, (nfrac, l, h)
-   //    - numpars: number of other parameters as integer, i.e. numpars = 1-3:
+   //    - numpars: number of other parameters as integer, i.e. numpars = 1-5:
    //    - trim:    trim value for mean, in range [0, 0.5]
+   //    - delta:   for robust ties, defult 0.0 or 0.4
    //    - nfrac:   noise fraction for bgrd option "correctbg", or
    //    - l:       optional tunable parameter, 0<=l<=1 (default is 0.005), and     
    //    - h:       optional parameter (default is -1)
@@ -2511,7 +2512,7 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
 
    Int_t numsels = 0;  //number of selected entries
    Int_t exlevel = 0;
-   Int_t stepout = (Int_t)(10000.0/(Float_t)numdata); //step size for verbose output
+   Int_t stepout = (Int_t)((100000.0 + 10.0*numdata)/(Float_t)numdata); //step size for verbose output
 
 // Init min/max p-values
    Int_t numabsent  = 0;
@@ -3401,7 +3402,7 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
 
    Int_t numsels = 0;  //number of selected entries
    Int_t exlevel = 0;
-   Int_t stepout = (Int_t)(10000.0/(Float_t)numdata); //step size for verbose output
+   Int_t stepout = (Int_t)((100000.0 + 10.0*numdata)/(Float_t)numdata); //step size for verbose output
 
 // Init min/max expression levels
    Double_t min = DBL_MAX;  //defined in float.h

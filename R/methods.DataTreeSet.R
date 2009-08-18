@@ -1920,10 +1920,11 @@ function(object,
    if (is.null(normalize.method)) {
       normalize.method <- "none";
    } else {
-      TYPE <- c("mean", "median", "quantile");
+      TYPE <- c("mean", "median", "quantile", "lowess", "supsmu");
       if (is.na(match(normalize.method, TYPE))) {
-         cat("methods <lowess,supsmu> have not been tested yet for DataTreeSet\n");
-         stop(paste(sQuote("normalize.method"), "must be one of <mean,median,quantile>"));
+#         cat("methods <lowess,supsmu> have not been tested yet for DataTreeSet\n");
+         stop(paste(sQuote("normalize.method"), 
+                    "must be one of <mean,median,quantile,lowess,supsmu>"));
       }#if
 
       TYPE <- c("pmonly", "mmonly", "both", "all");
@@ -2346,10 +2347,10 @@ function(object,
    }#if
 
    ## check for valid normalization method
-   TYPE <- c("mean", "median", "quantile");
+   TYPE <- c("mean", "median", "quantile", "lowess", "supsmu");
    if (is.na(match(method, TYPE))) {
-      cat("methods <lowess,supsmu> have not been tested yet for DataTreeSet\n");
-      stop(paste(sQuote("method"), "must be one of <mean,median,quantile>"));
+#      cat("methods <lowess,supsmu> have not been tested yet for DataTreeSet\n");
+      stop(paste(sQuote("method"), "must be one of <mean,median,quantile,lowess,supsmu>"));
    }#if
 
    ## check for valid normalization "option:logbase"

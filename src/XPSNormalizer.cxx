@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 07/26/2009
+// File created: 08/05/2002                          last modified: 08/14/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -221,6 +221,7 @@ Int_t XNormalizer::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk)
    if (!(selY = new (nothrow) Double_t[length])) {err = errInitMemory; goto cleanup;} 
    if (!(arrX = new (nothrow) Double_t[n]))      {err = errInitMemory; goto cleanup;} 
    if (!(arrY = new (nothrow) Double_t[n]))      {err = errInitMemory; goto cleanup;} 
+   for (Int_t i=0; i<length; i++) {selX[i] = selY[i] = 0.0;}
 
 // Select non-varying genes
    length = 0;        
@@ -243,7 +244,7 @@ Int_t XNormalizer::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk)
 //PROBLEM!! negative values!!
 //but: x, y should no longer contain negative values!
 //////////
-   if (strcmp(fLogBase, "0") == 0) {
+   if (strcmp(fLogBase.Data(), "0") == 0) {
       for (Int_t i=0; i<n; i++) { 
          arrX[i] = x[i];
          arrY[i] = y[i];
@@ -252,7 +253,7 @@ Int_t XNormalizer::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk)
       for (Int_t i=0; i<length; i++) { 
          his2sel->Fill(selX[i], selY[i]);
       }//for_i
-   } else if (strcmp(fLogBase, "log10") == 0) {
+   } else if (strcmp(fLogBase.Data(), "log10") == 0) {
       for (Int_t i=0; i<n; i++) { 
          arrX[i] = TMath::Log10(x[i]);
          arrY[i] = TMath::Log10(y[i]);
@@ -263,7 +264,7 @@ Int_t XNormalizer::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk)
          selY[i] = TMath::Log10(selY[i]);
          his2sel->Fill(selX[i], selY[i]);
       }//for_i
-   } else if (strcmp(fLogBase, "log2") == 0) {
+   } else if (strcmp(fLogBase.Data(), "log2") == 0) {
       for (Int_t i=0; i<n; i++) { 
          arrX[i] = TMath::Log2(x[i]);
          arrY[i] = TMath::Log2(y[i]);
@@ -274,7 +275,7 @@ Int_t XNormalizer::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk)
          selY[i] = TMath::Log2(selY[i]);
          his2sel->Fill(selX[i], selY[i]);
       }//for_i
-   } else if (strcmp(fLogBase, "log") == 0) {
+   } else if (strcmp(fLogBase.Data(), "log") == 0) {
       for (Int_t i=0; i<n; i++) { 
          arrX[i] = TMath::Log(x[i]);
          arrY[i] = TMath::Log(y[i]);
@@ -291,13 +292,13 @@ Int_t XNormalizer::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk)
    err = this->DoNormalize(length, selX, selY, n, arrX, arrY);
 
 // Fill array y with normalized data (converted from logbase)
-   if (strcmp(fLogBase, "0") == 0) {
+   if (strcmp(fLogBase.Data(), "0") == 0) {
       for (Int_t i=0; i<n; i++) y[i] = arrY[i];
-   } else if (strcmp(fLogBase, "log10") == 0) {
+   } else if (strcmp(fLogBase.Data(), "log10") == 0) {
       for (Int_t i=0; i<n; i++) y[i] = TMath::Power(10, arrY[i]);
-   } else if (strcmp(fLogBase, "log2") == 0) {
+   } else if (strcmp(fLogBase.Data(), "log2") == 0) {
       for (Int_t i=0; i<n; i++) y[i] = TMath::Power(2, arrY[i]);
-   } else if (strcmp(fLogBase, "log") == 0) {
+   } else if (strcmp(fLogBase.Data(), "log") == 0) {
       for (Int_t i=0; i<n; i++) y[i] = TMath::Power(TMath::E(), arrY[i]);
    }//if
 
@@ -358,12 +359,20 @@ Int_t XMeanNormalizer::DoNormalize(Int_t nin, const Double_t *xin, const Double_
    // If targetinten > 0, scale mean(yin) to targetinten
    if(kCS) cout << "------XMeanNormalizer::DoNormalize------" << endl;
 
-// Test number of parameters
+// Test minimum number of parameters
    if (TestNumParameters(2) != errNoErr) return errInitParameters;
 
 // Parameters
    Double_t trim        = fPars[0];
    Double_t targetinten = fPars[1];
+
+   if (strcmp(fLogBase.Data(), "log10") == 0) {
+      targetinten = TMath::Log10(targetinten);
+   } else if (strcmp(fLogBase.Data(), "log2") == 0) {
+      targetinten = TMath::Log2(targetinten);
+   } else if (strcmp(fLogBase.Data(), "log") == 0) {
+      targetinten = TMath::Log(targetinten);
+   }//if
 
 // Calculate scaling factor
    Double_t sf = 1.0;
@@ -439,11 +448,19 @@ Int_t XMedianNormalizer::DoNormalize(Int_t nin, const Double_t *xin, const Doubl
    // If targetinten > 0, scale median(yin) to targetinten
    if(kCS) cout << "------XMedianNormalizer::DoNormalize------" << endl;
 
-// Test number of parameters
+// Test minimum number of parameters
    if (TestNumParameters(1) != errNoErr) return errInitParameters;
 
 // Parameters
-   Double_t targetinten = fPars[1];
+   Double_t targetinten = fPars[0];
+
+   if (strcmp(fLogBase.Data(), "log10") == 0) {
+      targetinten = TMath::Log10(targetinten);
+   } else if (strcmp(fLogBase.Data(), "log2") == 0) {
+      targetinten = TMath::Log2(targetinten);
+   } else if (strcmp(fLogBase.Data(), "log") == 0) {
+      targetinten = TMath::Log(targetinten);
+   }//if
 
 // Calculate scaling factor
    Double_t sf = 1.0;
@@ -524,7 +541,7 @@ Int_t XKernelNormalizer::DoNormalize(Int_t nin, const Double_t *xin, const Doubl
       return errAbort;
    }//if
 
-// Test number of parameters
+// Test minimum number of parameters
    if (TestNumParameters(1) != errNoErr) return errInitParameters;
 
 // Parameters
@@ -601,7 +618,7 @@ Int_t XLowessNormalizer::DoNormalize(Int_t nin, const Double_t *xin, const Doubl
       return errAbort;
    }//if
 
-// Test number of parameters
+// Test minimum number of parameters
    if (TestNumParameters(2) != errNoErr) return errInitParameters;
 
 // Parameters
@@ -680,7 +697,7 @@ Int_t XSuperNormalizer::DoNormalize(Int_t nin, const Double_t *xin, const Double
       return errAbort;
    }//if
 
-// Test number of parameters
+// Test minimum number of parameters
    if (TestNumParameters(2) != errNoErr) return errInitParameters;
 
 // Parameters
