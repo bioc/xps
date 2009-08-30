@@ -81,6 +81,9 @@ xpsPreprocess(object, ...)
  This function allows to combine different algorithms to compute expression levels,
  or to return the result for different algorithms only.
 
+ Please have a look at vignette \dQuote{xpsPreprocess.pdf} for details on how to use
+ function \code{express}. 
+
  \code{xpsPreprocess} is the \code{DataSet} method called by function \code{express},
  containing the same parameters.
 }

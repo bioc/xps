@@ -17,11 +17,11 @@ normalize(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", upd
 
 normalize.constant(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, method = "mean", logbase = "0", exonlevel = "", refindex = 0, refmethod = "mean", params = list(0.02, 0), add.data = TRUE, verbose = TRUE)
 
-normalize.lowess(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, logbase = "log2", exonlevel = "", refindex = 0, refmethod = "mean", params = list(0.67, 3), add.data = TRUE, verbose = TRUE)
+normalize.lowess(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, logbase = "log2", exonlevel = "", refindex = 0, refmethod = "mean", params = list(0.67, 3, 0.0, 0.0), add.data = TRUE, verbose = TRUE)
 
 normalize.quantiles(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, exonlevel = "", add.data = TRUE, verbose = TRUE)
 
-normalize.supsmu(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, logbase = "log2", exonlevel = "", refindex = 0, refmethod = "mean", params = list(0.67, 3), add.data = TRUE, verbose = TRUE)
+normalize.supsmu(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, logbase = "log2", exonlevel = "", refindex = 0, refmethod = "mean", params = list(0.0, 0.0, 0.0, 0.0), add.data = TRUE, verbose = TRUE)
 
 xpsNormalize(object, ...)
 }
@@ -51,6 +51,9 @@ xpsNormalize(object, ...)
  Functions that allow to normalize Affymetrix arrays both at the probe level
  (\dQuote{low-level normalization}) and/or at the expression level
  (\dQuote{high-level normalization}).
+
+ Please have a look at vignette \dQuote{xpsPreprocess.pdf} for details on how to use
+ function \code{normalize}. 
 
  \code{xpsNormalize} are the \code{DataTreeSet} or \code{\link{ExprTreeSet}} methods,
  respectively, called by function \code{normalize}, containing the same parameters.

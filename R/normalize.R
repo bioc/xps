@@ -64,14 +64,16 @@ function(xps.data,
          add.data  = TRUE,
          verbose   = TRUE)
 {
+   if (is(xps.data, "DataTreeSet")) {select <- "all"} else {select <- "separate"}
+
    set <- normalize(xps.data,
                     filename  = filename,
                     filedir   = filedir,
                     tmpdir    = tmpdir,
                     update    = update,
-                    select    = "transcript:all",
+                    select    = select,
                     method    = method,
-                    option    = "all",
+                    option    = "transcript:all",
                     logbase   = logbase,
                     exonlevel = exonlevel,
                     refindex  = refindex,
@@ -94,12 +96,14 @@ function(xps.data,
          add.data  = TRUE,
          verbose   = TRUE)
 {
+   if (is(xps.data, "DataTreeSet")) {select <- "pmonly"} else {select <- "separate"}
+
    set <- normalize(xps.data,
                     filename  = filename,
                     filedir   = filedir,
                     tmpdir    = tmpdir,
                     update    = update,
-                    select    = "pmonly",
+                    select    = select,
                     method    = "quantile",
                     option    = "transcript:together:none",
                     logbase   = "0",
@@ -124,16 +128,18 @@ function(xps.data,
          exonlevel = "",
          refindex  = 0,
          refmethod = "mean",
-         params    = list(0.67, 3),
+         params    = list(0.67, 3, 0.0, 0.0),
          add.data  = TRUE,
          verbose   = TRUE)
 {
+   if (is(xps.data, "DataTreeSet")) {select <- "all"} else {select <- "separate"}
+
    set <- normalize(xps.data,
                     filename  = filename,
                     filedir   = filedir,
                     tmpdir    = tmpdir,
                     update    = update,
-                    select    = "all",
+                    select    = select,
                     method    = "lowess",
                     option    = "transcript:all",
                     logbase   = logbase,
@@ -158,16 +164,18 @@ function(xps.data,
          exonlevel = "",
          refindex  = 0,
          refmethod = "mean",
-         params    = list(0.67, 3),
+         params    = list(0.0, 0.0, 0.0, 0.0),
          add.data  = TRUE,
          verbose   = TRUE)
 {
+   if (is(xps.data, "DataTreeSet")) {select <- "all"} else {select <- "separate"}
+
    set <- normalize(xps.data,
                     filename  = filename,
                     filedir   = filedir,
                     tmpdir    = tmpdir,
                     update    = update,
-                    select    = "all",
+                    select    = select,
                     method    = "supsmu",
                     option    = "transcript:all",
                     logbase   = logbase,

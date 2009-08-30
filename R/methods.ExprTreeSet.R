@@ -343,27 +343,35 @@ function(object,
          option <- paste(transcript, ifelse(pc<1, "sel", "all"), logbase, sep=":");
          exten  <- "med";
       }, lowess = {
-         if (!(length(params) == 2 &&
-               params[[1]] > 0 && params[[1]] <= 1 &&
-               params[[2]] > 0)) {
+         if (!(length(params) == 4 &&
+               params[[1]] >  0 && params[[1]] <= 1 &&
+               params[[2]] >= 0 &&
+               params[[3]] >= 0 && params[[3]] <= 2  &&
+               params[[4]] >= 0 && params[[4]] <= 1)) {
             warning(paste(sQuote("params"),
-                          "are not correct, using default parameters <0.67,3>"));
-            params[[1]] <- 0.67;
-            params[[2]] <- 3;
+                          "are not correct, using default parameters <0.67,3,0.,0.>"));
+            params[[1]] <- 0.67; # span for lowess
+            params[[2]] <- 3;    # iter for lowess
+            params[[3]] <- 0.0;  # rule for approx
+            params[[4]] <- 0.0;  # f    for approx
          }#if
-         params <- list(f=params[[1]], iter=params[[2]]);
+         params <- list(span=params[[1]], iter=params[[2]], rule=params[[3]], f=params[[4]]);
          option <- paste(transcript, option, logbase, sep=":");
          exten  <- "low";
       }, supsmu = {
-         if (!(length(params) == 2 &&
-               params[[1]] >= 0 && params[[1]] <= 1 &&
-               params[[2]] >= 0)) {
+         if (!(length(params) == 4 &&
+               params[[1]] >= 0 && params[[1]] <= 1  &&
+               params[[2]] >= 0 && params[[2]] <= 10 && 
+               params[[3]] >= 0 && params[[3]] <= 2  &&
+               params[[4]] >= 0 && params[[4]] <= 1)) {
             warning(paste(sQuote("params"),
-                          "are not correct, using default parameters <0.,0.>"));
-            params[[1]] <- 0.0;
-            params[[2]] <- 0.0;
+                          "are not correct, using default parameters <0.,0.,0.,0.>"));
+            params[[1]] <- 0.0;  # span for supsmu
+            params[[2]] <- 0.0;  # bass for supsmu
+            params[[3]] <- 0.0;  # rule for approx
+            params[[4]] <- 0.0;  # f    for approx
          }#if
-         params <- list(span=params[[1]], bass=params[[2]]);
+         params <- list(span=params[[1]], bass=params[[2]], rule=params[[3]], f=params[[4]]);
          option <- paste(transcript, option, logbase, sep=":");
          exten  <- "sup";
       }

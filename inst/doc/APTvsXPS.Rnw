@@ -48,7 +48,7 @@ normalization (linear scaling, quantile, sketch), and summarization (RMA, MAS5, 
 
 {\bf Note:} In order to keep this document short, only example code will be presented here, 
 the full source code is available in files "script4xps2apt.R" and "script4bestmatch.R" located 
-in directory "examples". 
+in directory "xps/examples". 
 
 
 \section{Comparison of results for the Human Genome U133 Plus 2.0 Array}

@@ -388,9 +388,9 @@ Int_t XNormationSetting::InitNormalizer(const char *type, Option_t *options,
    //      - "subtractbg": subtract bgrd from intensity - result can be negative
    //      - "correctbg":  correct bgrd with noise fraction to avoid negative results
    //    parameters are: numpars, trim, (nfrac)
-   //    - numpars: number of other parameters as integer, i.e. numpars = 1 (2):
+   //    - numpars: number of other parameters as integer, i.e. numpars = 1-2:
    //    - trim:    trim value for mean, in range [0, 0.5]
-   //    - nfrac:   noise fraction for bgrd correction if options = "correctbg"
+   //    - delta:   for robust ties, default 1.0 or 0.4
    if(kCS) cout << "------XNormationSetting::InitNormalizer------" << endl;
 
 // Delete default normalizer setting
@@ -992,7 +992,8 @@ Int_t XNormedGCSet::Normalize(const char *method)
 
 // Informing user
    if (XManager::fgVerbose) {
-      cout << "Normalizing expression data..." << endl;
+      cout << "Normalizing expression data using method <" 
+           << fNormalizer->GetName() << ">..." << endl;
    }//if
 
 // Change directory
@@ -1148,7 +1149,9 @@ Int_t XNormedGCSet::Normalize(const char *method)
 
          // informing user
          if (XManager::fgVerbose) {
-            cout << "   normalizing <" << selname.Data() << ">..." << endl;
+//            cout << "   normalizing <" << selname.Data() << ">..." << endl;
+            cout << "   normalizing tree " << k+1 << " of " << numsels << ": <"
+                 << selname.Data() << ">..." << endl;
          }//if
 
          // for mean/median the tree used as reference must be normalized, too!
@@ -1218,7 +1221,9 @@ Int_t XNormedGCSet::Normalize(const char *method)
 
          // informing user
          if (XManager::fgVerbose) {
-            cout << "   normalizing <" << selname.Data() << ">..." << endl;
+//            cout << "   normalizing <" << selname.Data() << ">..." << endl;
+            cout << "   normalizing tree " << k+1 << " of " << numsels << ": <"
+                 << selname.Data() << ">..." << endl;
          }//if
 
          // if not mean/median fill reference tree only
@@ -1250,7 +1255,9 @@ Int_t XNormedGCSet::Normalize(const char *method)
 
          // informing user
          if (XManager::fgVerbose) {
-            cout << "   normalizing <" << selname.Data() << ">..." << endl;
+//            cout << "   normalizing <" << selname.Data() << ">..." << endl;
+            cout << "   normalizing tree " << k+1 << " of " << numsels << ": <"
+                 << selname.Data() << ">..." << endl;
          }//if
 
          // if not mean/median fill reference tree only

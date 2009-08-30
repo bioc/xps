@@ -378,7 +378,7 @@ function(object,
    msk <- msk[order(msk[,"Y"], msk[,"X"]),];
 
    ## get data indices from scheme mask
-   id <- which(msk[,"Mask"] < 999999); ##all
+   id <- which(msk[,"Mask"] < 99999999); ##all
    if (chipType(object) == "GeneChip") {
       if (which == "pm") {
          id <- which(msk[,"Mask"] == 1);
@@ -433,10 +433,60 @@ function(object,
       stop(paste("slot", sQuote("bgrd"), "has no data"));
    }#if
 
+   ## get column number for chip
+   ncol <- ncols(object@scheme);
+
+   ## check for presence of scheme mask
+   msk <- chipMask(object@scheme);
+   if (nrow(msk) == 0 || ncol(msk) == 0) {
+      cat("slot", sQuote("mask"), "of", sQuote("scheme"),
+          "is empty, importing mask from scheme.root...\n");
+      msk <- export(object@scheme,
+                    treetype     = "scm",
+                    varlist      = "fMask",
+                    as.dataframe = TRUE,
+                    verbose      = FALSE);
+   }#if
+   ## need to sort msk to Y then X
+   msk <- msk[order(msk[,"Y"], msk[,"X"]),];
+
+   ## get data indices from scheme mask
+   id <- which(msk[,"Mask"] < 99999999); ##all
+   if (chipType(object) == "GeneChip") {
+      if (which == "pm") {
+         id <- which(msk[,"Mask"] == 1);
+      } else if (which == "mm") {
+         id <- which(msk[,"Mask"] == 0);
+      } else if (which == "both") {
+         id <- c(which(msk[,"Mask"] == 1), which(msk[,"Mask"] == 0));
+         id <- id[order(id)];
+      }#if
+   } else if (chipType(object) == "GenomeChip") {
+      if (which == "") {
+         id <- 1:nrow(data); ##all
+      } else if (which == "antigenomic") {
+         id <- exonLevelIDs(-2, bgrd, msk, ncol);
+      } else {
+         level <- exonLevel(which, "GenomeChip", as.sum=FALSE);
+         id    <- exonLevelIDs(level, bgrd, msk, ncol);
+      }#if
+   } else if (chipType(object) == "ExonChip") {
+      if (which == "") {
+         id <- 1:nrow(data); ##all
+      } else if (which == "genomic") {
+         id <- exonLevelIDs(-1, bgrd, msk, ncol);
+      } else if (which == "antigenomic") {
+         id <- exonLevelIDs(-2, bgrd, msk, ncol);
+      } else {
+         level <- exonLevel(which, "ExonChip", as.sum=FALSE);
+         id    <- exonLevelIDs(level, bgrd, msk, ncol);
+      }#if
+   }#if
+
    treenames <- namePart(object@bgtreenames);
    bgrdnames <- namePart(colnames(bgrd));
 
-   return(bgrd[,!is.na(match(bgrdnames, treenames))]);
+   return(bgrd[id, !is.na(match(bgrdnames, treenames))]);
 }#bgrdDataTreeSet
 
 setMethod("validBgrd", "DataTreeSet", bgrdDataTreeSet);

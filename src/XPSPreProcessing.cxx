@@ -748,7 +748,7 @@ Int_t XPreProcesSetting::InitNormalizer(const char *type, Option_t *options,
    //    parameters are: numpars, trim, (nfrac, l, h)
    //    - numpars: number of other parameters as integer, i.e. numpars = 1-5:
    //    - trim:    trim value for mean, in range [0, 0.5]
-   //    - delta:   for robust ties, defult 0.0 or 0.4
+   //    - delta:   for robust ties, default 1.0 or 0.4
    //    - nfrac:   noise fraction for bgrd option "correctbg", or
    //    - l:       optional tunable parameter, 0<=l<=1 (default is 0.005), and     
    //    - h:       optional parameter (default is -1)
