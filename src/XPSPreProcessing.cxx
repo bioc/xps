@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 06/07/2009
+// File created: 08/05/2002                          last modified: 09/09/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -2389,9 +2389,9 @@ Int_t XGCProcesSet::DoCall(Int_t numdata, TTree **datatree,
          if (!doGC && (p != m)) {
             cerr << "Error: UnitID <" << unitID << "> has different numbers of PM <"
                  << p << "> and MM <" << m << "> data." << endl;
-//          continue;
-            err = errAbort;
-            goto cleanup;
+          continue;
+//x            err = errAbort;
+//x            goto cleanup;
          }//if
 
          // calculate detection call
@@ -3264,9 +3264,9 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
          if (p != m) {
             cerr << "Error: UnitID <" << unitID << "> has different numbers of PM <"
                  << p << "> and MM <" << m << "> data." << endl;
-//            continue;
-            err = errAbort;
-            goto cleanup;
+            continue;
+//x            err = errAbort;
+//x            goto cleanup;
          }//if
 
          // calculate mean expression level
