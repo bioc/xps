@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 10/03/2008
+// File created: 08/05/2002                          last modified: 09/06/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -265,6 +265,7 @@ class XGCProcesSet: public XPreProcesSet {
                        ofstream &output, const char *sep);
       virtual Int_t ExportCallTrees(Int_t n, TString *names, const char *varlist,
                        ofstream &output, const char *sep);
+      virtual Int_t ProbeMask(XDNAChip *chip, Int_t n, Int_t *msk);
       virtual Int_t SchemeMask(XDNAChip *chip, Int_t level, Int_t n, Int_t *msk);
 
       virtual Int_t *FillMaskArray(XDNAChip *chip, TTree *scmtree, XScheme *scheme,
@@ -279,6 +280,7 @@ class XGCProcesSet: public XPreProcesSet {
       virtual TTree *SchemeTree(XAlgorithm *algorithm, void *scheme, TLeaf **scmleaf);
       virtual TTree *UnitTree(XAlgorithm *algorithm, void *unit, Int_t &numunits);
 
+      Int_t    InitTrees(Int_t &numdata, TTree **datatree, Int_t &numbgrd, TTree **bgrdtree);
       Double_t AdjustIntensity(Double_t inten, Double_t bgrd, Double_t stdv);
       Bool_t   BackgroundParameters(XAlgorithm *algorithm, const char *option);
       TString  ChipType(const char *type);

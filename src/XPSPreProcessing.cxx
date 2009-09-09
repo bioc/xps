@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 08/01/2009
+// File created: 08/05/2002                          last modified: 09/09/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -1358,56 +1358,13 @@ Int_t XGCProcesSet::Preprocess(const char *method)
       return errAbort;
    }//if
 
-// Create hash table to store datatree names
-   TString     tmpstr;
-   XIdxString *idxstr = 0;
-   THashTable *htable = 0;
-   if (!(htable = new THashTable(2*numdata))) return errInitMemory;
-
 // Initialize data trees and background trees
    TTree **datatree = new TTree*[numdata+1]; //for possible Reference tree for normalization
    TTree **bgrdtree = new TTree*[numdata];
-   TTree **temptree = new TTree*[numdata];
-   for (Int_t k=0; k<numdata; k++) datatree[k] = bgrdtree[k] = temptree[k] = 0;
+   for (Int_t k=0; k<numdata; k++) datatree[k] = bgrdtree[k] = 0;
 
-   numdata = 0;
-   numbgrd = 0;
-   for (Int_t k=0; k<numtrees; k++) {
-      TTree* tree = (TTree*)fTrees->At(k);
-//or?      TTree* tree = (TTree*)fSelections->At(k);
-      if ((tree->GetBranch("DataBranch")) != 0) {
-         datatree[numdata] = tree;
-         tmpstr = Path2Name(datatree[numdata]->GetName(), "", ".");
-         idxstr = new XIdxString(numdata, tmpstr.Data());
-         htable->Add(idxstr);
-         numdata++;
-      } else if ((tree->GetBranch("BgrdBranch")) != 0) {
-         temptree[numbgrd++] = tree;
-      }//if
-   }//for_k
-
-// Sort bgrdtrees in order of datatrees
-   if (numbgrd > 0) {
-      numbgrd = 0;
-      for (Int_t k=0; k<numdata; k++) {
-         tmpstr = Path2Name(temptree[k]->GetName(), "", ".");
-         idxstr = (XIdxString*)(htable->FindObject(tmpstr.Data()));
-         if (idxstr) {
-            bgrdtree[idxstr->GetIndex()] = temptree[k];
-            numbgrd++;
-         }//if
-      }//for_k
-   }//if
-
-   // delete idxstr before deleting htable
-   if (htable) {htable->Delete(); delete htable; htable = 0;}
-
-// Check again for equal number of bgrd trees and corresponding data trees
-   if ((numbgrd > 0) && (numbgrd != numdata)) {
-      cerr << "Error: <" << (numdata - numbgrd) 
-           << "> data trees have no corresponding background tree!" << endl;
-      err = errAbort; goto cleanup;
-   }//if
+   err = this->InitTrees(numdata, datatree, numbgrd, bgrdtree);
+   if (err != errNoErr) goto cleanup;
 
 // Detect present call based on raw datatree
    if (fCaller && fCallSelector && atRaw && (doCall || doAll)) {
@@ -1472,7 +1429,6 @@ Int_t XGCProcesSet::Preprocess(const char *method)
 
 // Cleanup
 cleanup:
-   delete [] temptree;
    delete [] bgrdtree;
    delete [] datatree;
 
@@ -1557,41 +1513,9 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
    if (err != errNoErr) goto cleanup;
 
 // For GCBackground only, fill arrMask with GC content:
-// for PM set GC >= 0 , i.e. GC = 0...kProbeLength,
-// for MM set GC < eINITMASK, i.e. GC = eINITMASK - (1...kProbeLength+1)
    if (strcmp(fBackgrounder->GetName(), "gccontent") == 0) {
-   // Get probe tree for scheme
-      XGCProbe *probe = 0;
-      TTree *probetree = (TTree*)gDirectory->Get(chip->GetProbeTree()); 
-      if (probetree == 0) {err = errGetTree; goto cleanup;}
-      probetree->SetBranchAddress("PrbBranch", &probe);
-
-   // Get GC content from probe tree and store in array
-      for (i=0; i<size; i++) {
-         probetree->GetEntry(i);
-
-         x  = probe->GetX();
-         y  = probe->GetY();
-         ij = XY2Index(x, y, numcols);
-
-// IMPORTANT NOTE: do not use the following code although it is faster:
-// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
-// Every tree contains the (x,y) coordinates as unique identifier, thus
-// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
-
-         if (arrMask[ij] == 1) {
-            arrMask[ij] = probe->GetNumberGC();
-         } else if (arrMask[ij] == 0) {
-            //need to use (numberGC + 1) to avoid setting arrMask=eINITMASK for GC=0!!
-            arrMask[ij] = eINITMASK - (probe->GetNumberGC() + 1);
-//no!!            arrMask[ij] = eINITMASK - probe->GetNumberGC();
-         }//if
-      }//for_i
-
-      // delete probetree
-      SafeDelete(probe);
-      probetree->ResetBranchAddress(probetree->GetBranch("PrbBranch"));
-      SafeDelete(probetree);
+      err = this->ProbeMask(chip, size, arrMask);
+      if (err != errNoErr) goto cleanup;
    }//if
 
 // Change directory
@@ -2043,6 +1967,7 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
                              numrows, numcols, arrInty, 0);
          if (datatree[k] == 0) {err = errCreateTree; goto cleanup;}
       }//for_k
+
       if (XManager::fgVerbose) {
          cout << "         finished filling <" << numdata << "> trees."
               << "                " << endl;
@@ -2402,9 +2327,9 @@ Int_t XGCProcesSet::DoCall(Int_t numdata, TTree **datatree,
          if (!doGC && (p != m)) {
             cerr << "Error: UnitID <" << unitID << "> has different numbers of PM <"
                  << p << "> and MM <" << m << "> data." << endl;
-//          continue;
-            err = errAbort;
-            goto cleanup;
+          continue;
+//x            err = errAbort;
+//x            goto cleanup;
          }//if
 
          // calculate detection call
@@ -3292,9 +3217,9 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
          if (p != m) {
             cerr << "Error: UnitID <" << unitID << "> has different numbers of PM <"
                  << p << "> and MM <" << m << "> data." << endl;
-//            continue;
-            err = errAbort;
-            goto cleanup;
+            continue;
+//x            err = errAbort;
+//x            goto cleanup;
          }//if
 
          // calculate mean expression level
@@ -4795,14 +4720,65 @@ cleanup:
 }//ExportCallTrees
 
 //______________________________________________________________________________
+Int_t XGCProcesSet::ProbeMask(XDNAChip *chip, Int_t n, Int_t *msk)
+{
+   // Get name of probe tree from "chip"
+   // For GCBackground fill array msk with GC content:
+   // for PM set GC >= 0 , i.e. GC = 0...kProbeLength,
+   // for MM set GC < eINITMASK, i.e. GC = eINITMASK - (1...kProbeLength+1)
+   if(kCS) cout << "------XGCProcesSet::ProbeMask------" << endl;
+
+// Change dir to scheme file
+   TDirectory *savedir = gDirectory;
+   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
+
+// Get probe tree for scheme
+   XGCProbe *probe = 0;
+   TTree *probetree = (TTree*)gDirectory->Get(chip->GetProbeTree()); 
+   if (probetree == 0) return errGetTree;
+   probetree->SetBranchAddress("PrbBranch", &probe);
+
+// Get GC content from probe tree and store in array
+   Int_t x, y, ij;
+   Int_t numcols = chip->GetNumColumns();
+   for (Int_t i=0; i<n; i++) {
+      probetree->GetEntry(i);
+
+      x  = probe->GetX();
+      y  = probe->GetY();
+      ij = XY2Index(x, y, numcols);
+
+// IMPORTANT NOTE: do not use the following code although it is faster:
+// for (i=0; i<size; i++) {xxtree->GetEntry(i); arrXX[i] = xx->GetXX();}
+// Every tree contains the (x,y) coordinates as unique identifier, thus
+// it is safer to get (x,y) coordinates and to use ij = x + y*numcols
+
+      if (msk[ij] == 1) {
+         msk[ij] = probe->GetNumberGC();
+      } else if (msk[ij] == 0) {
+         //need to use (numberGC + 1) to avoid setting arrMask=eINITMASK for GC=0!!
+         msk[ij] = eINITMASK - (probe->GetNumberGC() + 1);
+//no!!         msk[ij] = eINITMASK - probe->GetNumberGC();
+      }//if
+   }//for_i
+
+   // delete probetree
+   SafeDelete(probe);
+   probetree->ResetBranchAddress(probetree->GetBranch("PrbBranch"));
+   SafeDelete(probetree);
+
+   savedir->cd();
+
+   return errNoErr;
+}//ProbeMask
+
+//______________________________________________________________________________
 Int_t XGCProcesSet::SchemeMask(XDNAChip *chip, Int_t level, Int_t n, Int_t *msk)
 {
    // Get name of scheme tree from "chip"
    // "level=0" is cutoff to prevent PM to be redefined as MM for alternative CDFs
    // Fill array "msk" with mask from scheme tree
    if(kCS) cout << "------XGCProcesSet::SchemeMask------" << endl;
-
-   Int_t err = errNoErr;
 
 // Change dir to scheme file
    TDirectory *savedir = gDirectory;
@@ -4824,7 +4800,7 @@ Int_t XGCProcesSet::SchemeMask(XDNAChip *chip, Int_t level, Int_t n, Int_t *msk)
 
    savedir->cd();
 
-   return err;
+   return errNoErr;
 }//SchemeMask
 
 //______________________________________________________________________________
@@ -4948,6 +4924,67 @@ TTree *XGCProcesSet::UnitTree(XAlgorithm *algorithm, void *unit, Int_t &numunits
 
    return idxtree;
 }//UnitTree
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::InitTrees(Int_t &numdata, TTree **datatree,
+                    Int_t &numbgrd, TTree **bgrdtree)
+{
+   // Adjust intensity based on fOption
+   if(kCS) cout << "------XGCProcesSet::InitTrees------" << endl;
+
+// Create hash table to store datatree names
+   TString     tmpstr;
+   XIdxString *idxstr = 0;
+   THashTable *htable = 0;
+   if (!(htable = new THashTable(2*numdata))) return errInitMemory;
+
+// Initialize temporary trees for sorting background trees
+   TTree **temptree = new TTree*[numdata];
+   for (Int_t k=0; k<numdata; k++) temptree[k] = 0;
+
+   numdata = 0;
+   numbgrd = 0;
+   for (Int_t k=0; k<fTrees->GetSize(); k++) {
+      TTree* tree = (TTree*)fTrees->At(k);
+//or?      TTree* tree = (TTree*)fSelections->At(k);
+      if ((tree->GetBranch("DataBranch")) != 0) {
+         datatree[numdata] = tree;
+         tmpstr = Path2Name(datatree[numdata]->GetName(), "", ".");
+         idxstr = new XIdxString(numdata, tmpstr.Data());
+         htable->Add(idxstr);
+         numdata++;
+      } else if ((tree->GetBranch("BgrdBranch")) != 0) {
+         temptree[numbgrd++] = tree;
+      }//if
+   }//for_k
+
+// Sort bgrdtrees in order of datatrees
+   if (numbgrd > 0) {
+      numbgrd = 0;
+      for (Int_t k=0; k<numdata; k++) {
+         tmpstr = Path2Name(temptree[k]->GetName(), "", ".");
+         idxstr = (XIdxString*)(htable->FindObject(tmpstr.Data()));
+         if (idxstr) {
+            bgrdtree[idxstr->GetIndex()] = temptree[k];
+            numbgrd++;
+         }//if
+      }//for_k
+   }//if
+
+   delete [] temptree;
+
+   // delete idxstr before deleting htable
+   if (htable) {htable->Delete(); delete htable; htable = 0;}
+
+// Check again for equal number of bgrd trees and corresponding data trees
+   if ((numbgrd > 0) && (numbgrd != numdata)) {
+      cerr << "Error: <" << (numdata - numbgrd) 
+           << "> data trees have no corresponding background tree!" << endl;
+      return errAbort;
+   }//if
+
+   return errNoErr;
+}//InitTrees
 
 //______________________________________________________________________________
 Double_t XGCProcesSet::AdjustIntensity(Double_t inten, Double_t bgrd, Double_t stdv)

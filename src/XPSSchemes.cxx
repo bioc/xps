@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 06/21/2009
+// File created: 05/18/2002                          last modified: 09/09/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -3234,6 +3234,12 @@ Int_t XGeneChip::ReadData(ifstream &input, Option_t *option,
             input.getline(nextline, kBufSize, delim);
          }//while
 
+         // check for presence of PM/MM pairs
+         if (numcells != 2*numatoms) {
+            cout << "Warning: probeset <" << unitname.Data() << "> has NumAtoms="
+                 << numatoms << " and NumCells=" << numcells << endl;
+         }//if
+
          // get data
          for (k=0; k<numcells; k++) {
             input.getline(nextline, kBufSize, delim);
@@ -3278,6 +3284,12 @@ Int_t XGeneChip::ReadData(ifstream &input, Option_t *option,
 
    // Number of probes on array
       fNProbes = count;
+
+   // Increase max number of cells for odd max since maxpairs = max/2!!
+      if (TMath::Odd(max)) {
+         // necessary for Citrus.CDF array since it contains some PMs w/o MMs!!
+         max = max + 1;  //avoid buffer overflow if max is odd
+      }//if
 
    // Add tree info to tree
       this->AddUnitTreeInfo(unittree, unittree->GetName(), "",
