@@ -154,7 +154,7 @@ TString XProjectHandler::LoginInfo(XLoginInfo *info, Bool_t copy, Bool_t replace
    // If replace is kTRUE then replace existing XLoginInfo in content
    if(kCS) cout << "------XProjectHandler::LoginInfo------" << endl;
 
-   if (info == 0) return 0;
+   if (info == 0) return TString(0);
 
    XLoginInfo *loginfo = info;
    if (copy) {
@@ -188,7 +188,7 @@ TString XProjectHandler::ProjectInfo(XProjectInfo *info, Bool_t copy, Bool_t rep
    // If replace is kTRUE then replace existing XProjectInfo in content
    if(kCS) cout << "------XProjectHandler::ProjectInfo------" << endl;
 
-   if (info == 0) return 0;
+   if (info == 0) return TString(0);
 
    XProjectInfo *projectinfo = info;
    if (copy) {
@@ -222,7 +222,7 @@ TString XProjectHandler::AuthorInfo(XAuthorInfo *info, Bool_t copy, Bool_t repla
    // If replace is kTRUE then replace existing XAuthorInfo in content
    if(kCS) cout << "------XProjectHandler::AuthorInfo------" << endl;
 
-   if (info == 0) return 0;
+   if (info == 0) return TString(0);
 
    XAuthorInfo *authorinfo = info;
    if (copy) {
@@ -258,7 +258,7 @@ TString XProjectHandler::DatasetInfo(XDatasetInfo *info, Bool_t copy, Bool_t rep
    // If replace is kTRUE then replace existing XDatasetInfo in content
    if(kCS) cout << "------XProjectHandler::DatasetInfo------" << endl;
 
-   if (info == 0) return 0;
+   if (info == 0) return TString(0);
 
    XDatasetInfo *setinfo = info;
    if (copy) {
@@ -297,7 +297,7 @@ TString XProjectHandler::SourceInfo(XSourceInfo *info, Bool_t copy, Bool_t repla
    // If replace is kTRUE then replace existing XSourceInfo in content
    if(kCS) cout << "------XProjectHandler::SourceInfo------" << endl;
 
-   if (info == 0) return 0;
+   if (info == 0) return TString(0);
 
    XSourceInfo *sourceinfo = info;
    if (copy) {
@@ -333,7 +333,7 @@ TString XProjectHandler::SampleInfo(XSampleInfo *info, Bool_t copy, Bool_t repla
    // If replace is kTRUE then replace existing XSampleInfo in content
    if(kCS) cout << "------XProjectHandler::SampleInfo------" << endl;
 
-   if (info == 0) return 0;
+   if (info == 0) return TString(0);
 
    XSampleInfo *sampleinfo = info;
    if (copy) {
@@ -371,7 +371,7 @@ TString XProjectHandler::CellLineInfo(XCellLineInfo *info, Bool_t copy, Bool_t r
    // If replace is kTRUE then replace existing XCellLineInfo in content
    if(kCS) cout << "------XProjectHandler::CellLineInfo------" << endl;
 
-   if (info == 0) return 0;
+   if (info == 0) return TString(0);
 
    XCellLineInfo *cellinfo = info;
    if (copy) {
@@ -410,7 +410,7 @@ TString XProjectHandler::PrimaryCellInfo(XPrimaryCellInfo *info, Bool_t copy, Bo
    // If replace is kTRUE then replace existing XPrimaryCellInfo in content
    if(kCS) cout << "------XProjectHandler::PrimaryCellInfo------" << endl;
 
-   if (info == 0) return 0;
+   if (info == 0) return TString(0);
 
    XPrimaryCellInfo *cellinfo = info;
    if (copy) {
@@ -450,7 +450,7 @@ TString XProjectHandler::TissueInfo(XTissueInfo *info, Bool_t copy, Bool_t repla
    // If replace is kTRUE then replace existing XTissueInfo in content
    if(kCS) cout << "------XProjectHandler::TissueInfo------" << endl;
 
-   if (info == 0) return 0;
+   if (info == 0) return TString(0);
 
    XTissueInfo *tissueinfo = info;
    if (copy) {
@@ -492,7 +492,7 @@ TString XProjectHandler::BiopsyInfo(XBiopsyInfo *info, Bool_t copy, Bool_t repla
    // If replace is kTRUE then replace existing XBiopsyInfo in content
    if(kCS) cout << "------XProjectHandler::BiopsyInfo------" << endl;
 
-   if (info == 0) return 0;
+   if (info == 0) return TString(0);
 
    XBiopsyInfo *biopsyinfo = info;
    if (copy) {
@@ -533,7 +533,7 @@ TString XProjectHandler::ArrayInfo(XArrayInfo *info, Bool_t copy, Bool_t replace
    // If replace is kTRUE then replace existing XArrayInfo in content
    if(kCS) cout << "------XProjectHandler::ArrayInfo------" << endl;
 
-   if (info == 0) return 0;
+   if (info == 0) return TString(0);
 
    XArrayInfo *arrayinfo = info;
    if (copy) {
@@ -568,7 +568,7 @@ TString XProjectHandler::HybridizationInfo(XHybInfo *info, Bool_t copy,
    // If replace is kTRUE then replace existing XHybInfo
    if(kCS) cout << "------XProjectHandler::HybridizationInfo------" << endl;
 
-   if (info == 0) return 0;
+   if (info == 0) return TString(0);
 
    XHybInfo *hyb = info;
    if (copy) {
@@ -606,7 +606,7 @@ TString XProjectHandler::TreatmentInfo(XTreatmentInfo *info, Bool_t copy,
    // If replace is kTRUE then replace existing XTreatmentInfo
    if(kCS) cout << "------XProjectHandler::TreatmentInfo------" << endl;
 
-   if (info == 0) return 0;
+   if (info == 0) return TString(0);
 
    XTreatmentInfo *treatment = info;
    if (copy) {

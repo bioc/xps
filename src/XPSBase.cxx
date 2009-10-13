@@ -1142,7 +1142,7 @@ TString XTreeSet::FindTree(const char *name)
    XTreeHeader *header = 0;
    header = (XTreeHeader*)fHeaders->FindObject(name);
    if (header) return header->GetString();
-   return 0;
+   return TString(0);
 }//FindTree
 
 //______________________________________________________________________________

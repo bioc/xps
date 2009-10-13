@@ -3948,7 +3948,7 @@ TString Extension2Type(const char *exten, const char **types, const char **exten
       i++;
    }//while
 
-   return 0;
+   return TString(0);
 }//Extension2Type
 
 //______________________________________________________________________________
@@ -4361,7 +4361,7 @@ TString SubString(const char *str, char sep1, char sep2, Bool_t source)
    Int_t last  = outname.Last(sep2);
    Int_t len   = last - first;
 
-   if (len < 0) return source ? outname : 0;
+   if (len < 0) return source ? outname : TString(0);
 
    outname = &outname[first];
    if (last > 0) outname.Resize(len);
@@ -4446,7 +4446,7 @@ TString Type2Extension(const char *type, const char **types, const char **extens
       i++;
    }//while
 
-   return 0;
+   return TString(0);
 }//Type2Extension
 
 

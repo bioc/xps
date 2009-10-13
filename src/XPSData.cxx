@@ -1531,7 +1531,7 @@ TString XGeneChipHyb::ChipType(const char *header, Int_t toUpper)
    // For toUpper = 1 convert first letter to uppercase
    if(kCS) cout << "------XGeneChipHyb::ChipType------" << endl;
 
-   TString name = 0;
+   TString name = TString(0);
    if (strstr(header, "DatHeader")) {
       name = strstr(header, "DatHeader");
    } else {
