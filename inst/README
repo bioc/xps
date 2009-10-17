@@ -93,9 +93,9 @@ I. Install ROOT:
  Ib.  Install ROOT for Windows
 
    For Windows users it is important to install the recommended binary version
-   of ROOT, currently: root_v5.22.00.win32.vc90.msi
-   WindowsXP/NT/w2000 with VC++ 9.0 (runs with VC++6 and VC++7.1), version 5.22/00
-   from: http://root.cern.ch/root/Version522.html
+   of ROOT, currently: root_v5.24.00.win32.vc90.msi
+   WindowsXP/NT/w2000 with VC++ 9.0 (runs with VC++6 and VC++7.1), version 5.24/00
+   from: http://root.cern.ch/drupal/content/production-version-524
 
    It is recommended to install ROOT in the default directory C:\root.
    Furthermore, it is necessary to set the environment variable ROOTSYS:
@@ -140,15 +140,15 @@ I. Install ROOT:
 
    Furthermore, daily versions from ROOT can be downloaded via svn and
    should work fine with 'xps', however, the current versions 5.22/00 and
-   5.23/02 have been used to test 'xps' for both Linux openSUSE 11.1 and
+   5.24/00 have been used to test 'xps' for both Linux openSUSE 11.1 and
    MacOS X and WinXP.
 
    Note 4: ROOT fails to compile
    Like R, the ROOT framework can be installed on many architectures, see
    the list of supported architectures, when running  "./configure --help".
    However, ROOT may also compile on a number of other architectures. 
-   In case, the current official source files "root_v5.22.00.source.tar.gz"
-   or "root_v5.23.02.source.tar.gz" fail to compile, you can download the 
+   In case, the current official source files "root_v5.24.00.source.tar.gz"
+   or "root_v5.22.00.source.tar.gz" fail to compile, you can download the 
    current development version from svn, see:
       http://root.cern.ch/drupal/content/subversion-howto
 
@@ -205,13 +205,13 @@ II.  Install package 'xps':
 
  IIa.  Install 'xps' from source
 
-   Currently, xps can be downloaded as gezipped source file "xps_1.4.0.tar.gz"
+   Currently, xps can be downloaded as gezipped source file "xps_1.6.0.tar.gz"
    for MacOS X (Intel and PPC) and for Linux
 
    It can be installed with:
-      R CMD INSTALL xps_1.4.0.tar.gz
+      R CMD INSTALL xps_1.6.0.tar.gz
    or e.g. on a Mac in the User library:
-      R CMD INSTALL -l ~/Library/R/library xps_1.4.0.tar.gz
+      R CMD INSTALL -l ~/Library/R/library xps_1.6.0.tar.gz
 
    However, the recommended way to install packages from source is:
       source("http://bioconductor.org/biocLite.R")
@@ -226,8 +226,8 @@ II.  Install package 'xps':
       biocLite("xps")
 
    Important note: 
-   Please note that Bioconductor has built the xps binaries for release BioC 2.4
-   using ROOT version root_v5.22.00. Thus it is absolutely essential to install
+   Please note that Bioconductor has built the xps binaries for release BioC 2.6
+   using ROOT version root_v5.24.00. Thus it is absolutely essential to install
    this ROOT version first, and not the currently recommended version, otherwise
    calling xps will result in an error message.You can always download any version
    of root from: ftp://root.cern.ch/root
@@ -249,7 +249,7 @@ II.  Install package 'xps':
    by Microsoft:
       C:\Program Files (x86)\Microsoft Visual Studio 9\VC\vcvarsall.bat (or a similar path).
    Then you can install xps from source as usual:
-      R CMD INSTALL xps_1.4.0.tar.gz
+      R CMD INSTALL xps_1.6.0.tar.gz
 
 
  IId.  Tested architectures
