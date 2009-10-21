@@ -1259,6 +1259,7 @@ function(object,
          alpha1           = 0.04,
          alpha2           = 0.06,
          ignore.saturated = TRUE,
+         bgcorrect.option = "none",
          option           = "transcript",
          exonlevel        = "",
          xps.scheme       = NULL,
@@ -1309,6 +1310,12 @@ function(object,
       stop(paste(sQuote("ignore.saturated"), "must be TRUE or FALSE"));
    }#if
 
+   ## check for valid bgcorrect.option
+   OPTION <- c("none", "correctbg");
+   if (is.na(match(bgcorrect.option, OPTION))) {
+      stop(paste(sQuote("bgcorrect.option"), "must be <none, correctbg>"));
+   }#if
+
    ## check for presence of valid transcript option
    transcript <- validTranscriptOption(option);
 
@@ -1343,6 +1350,7 @@ function(object,
            as.double(alpha1),
            as.double(alpha2),
            as.integer(ignore.saturated),
+           as.character(bgcorrect.option),
            as.integer(exlevel[1]),
            as.integer(exlevel[3]),
            as.integer(verbose),

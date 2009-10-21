@@ -66,7 +66,7 @@ void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
                         char **calloption, char **treeset, char **datafile,
                         char **treenames, int *ntrees, double *tau,
                         double *alpha1, double *alpha2, int *ignore,
-                        int *bgrdlevel, int *callevel,
+                        char **bgrdoption, int *bgrdlevel, int *callevel,
                         int *verbose, char **result);
 void PreprocessDABGCall(char **filename, char **dirname, char **chipname,
                         char **chiptype, char **schemefile, char **calloption,

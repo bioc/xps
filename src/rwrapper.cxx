@@ -653,7 +653,7 @@ void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
                         char **calloption, char **treeset, char **datafile,
                         char **treenames, int *ntrees, double *tau,
                         double *alpha1, double *alpha2, int *ignore,
-                        int *bgrdlevel, int *callevel,
+                        char **bgrdoption, int *bgrdlevel, int *callevel,
                         int *verbose, char **result)
 {
 // Preprocess trees using MAS5 call
@@ -679,6 +679,13 @@ void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
 // initialize algorithms
    char *callopt = 0;
    if (strcmp(chiptype[0], "GeneChip") == 0) {
+      // initialize backgrounder
+      if (strcmp(bgrdoption[0], "none") != 0) {
+         r += manager->InitAlgorithm("selector", "probe", "both", 0, 0);
+         r += manager->InitAlgorithm("backgrounder","weightedsector", bgrdoption[0], bgrdfile, 6, 0.02, 4, 4, 0, 100, 0.5);
+      }//if
+
+      // initialize call detector
       r += manager->InitAlgorithm("selector", "probe", "none", 0, 0);
       r += manager->InitAlgorithm("calldetector", "dc5", "raw", 0, 6, *tau, *alpha1, *alpha2, *ignore, 0, 0); //tau,alpha1,alpha2,ignore,exact,correct
    } else if (strcmp(chiptype[0], "GenomeChip") == 0) {
@@ -688,9 +695,12 @@ void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
 
       // initialize backgrounder
       r += manager->InitAlgorithm("selector", "probe", "genome", 0, 1, *bgrdlevel);
-      // the following setting calculates bg but does not subtract bg from intensity:
-      r += manager->InitAlgorithm("backgrounder", "weightedsector", "correctbg", bgrdfile, 6, 0.02, 4, 4, 0, 100, 0.5);
-//?      r += manager->InitAlgorithm("backgrounder", "weightedsector", "none", bgrdfile, 6, 0.02, 4, 4, 0, 100, -1.0);
+      if (strcmp(bgrdoption[0], "none") != 0) {
+         r += manager->InitAlgorithm("backgrounder", "weightedsector", bgrdoption[0], bgrdfile, 6, 0.02, 4, 4, 0, 100, 0.5);
+      } else {
+         // the following setting calculates bg but does not subtract bg from intensity:
+         r += manager->InitAlgorithm("backgrounder", "weightedsector", "none", bgrdfile, 6, 0.02, 4, 4, 0, 100, -1.0);
+      }//if
 
       // initialize call detector
       r += manager->InitAlgorithm("selector", "probe", "genome", 0, 2, *callevel, -2); //??mm=antigenommic??
@@ -702,8 +712,12 @@ void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
 
       // initialize backgrounder
       r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *bgrdlevel);
-      // the following setting calculates bg but does not subtract bg from intensity:
-      r += manager->InitAlgorithm("backgrounder", "weightedsector", "none", bgrdfile, 6, 0.02, 4, 4, 0, 100, -1.0);
+      if (strcmp(bgrdoption[0], "none") != 0) {
+         r += manager->InitAlgorithm("backgrounder", "weightedsector", bgrdoption[0], bgrdfile, 6, 0.02, 4, 4, 0, 100, 0.5);
+      } else {
+         // the following setting calculates bg but does not subtract bg from intensity:
+         r += manager->InitAlgorithm("backgrounder", "weightedsector", "none", bgrdfile, 6, 0.02, 4, 4, 0, 100, -1.0);
+      }//if
 
       // initialize call detector
       r += manager->InitAlgorithm("selector", "probe", "exon", 0, 2, *callevel, -2); //??mm=antigenommic??

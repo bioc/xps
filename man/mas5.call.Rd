@@ -11,7 +11,7 @@
 \usage{
 mas5.call(xps.data,
           filename = character(0), filedir = getwd(), tmpdir = "",
-          tau = 0.015, alpha1 = 0.04, alpha2 = 0.06, ignore.saturated = TRUE,
+          tau = 0.015, alpha1 = 0.04, alpha2 = 0.06, ignore.saturated = TRUE, bgcorrect.option = "none", 
           option = "transcript", exonlevel = "", xps.scheme = NULL, add.data = TRUE, verbose = TRUE)
 
 xpsMAS5Call(object, ...)
@@ -25,6 +25,8 @@ xpsMAS5Call(object, ...)
   \item{alpha1}{a significance threshold in (0,alpha2).}
   \item{alpha2}{a significance threshold in (alpha1,0.5).}
   \item{ignore.saturated}{logical. If \code{TRUE} do the saturation correction described in the paper, with a saturation level of 46000.}
+  \item{bgcorrect.option}{bgcorrect option determining wether to subtract background first, one of 
+   \sQuote{none} or \sQuote{correctbg}.}
   \item{option}{option determining the grouping of probes for summarization, one of 
    \sQuote{transcript}, \sQuote{exon}, \sQuote{probeset}; exon arrays only.}
   \item{exonlevel}{exon annotation level determining which probes should be used for summarization;
