@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 09/09/2009
+// File created: 05/18/2002                          last modified: 11/21/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -3675,6 +3675,12 @@ Int_t XGeneChip::ReadBinaryData(ifstream &input, Option_t *option,
       // maximal number of cells
       if      (numcells >  max) {max = numcells; nummax = 1;}
       else if (numcells == max) {nummax++;}
+
+   // Increase max number of cells for odd max since maxpairs = max/2!!
+      if (TMath::Odd(max)) {
+         // necessary for plate array CDF since it contains PMs w/o MMs!!
+         max = max + 1;  //avoid buffer overflow if max is odd
+      }//if
 
       // fill unit tree with control data
       unit->SetUnitName(arrUnit[i]);

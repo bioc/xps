@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 09/09/2009
+// File created: 08/05/2002                          last modified: 11/22/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -2089,8 +2089,6 @@ Int_t XGCProcesSet::DoCall(Int_t numdata, TTree **datatree,
    Int_t err   = errNoErr;
    Int_t level = 0;
    Int_t idx   = 0;
-   Int_t x     = 0;
-   Int_t y     = 0;
    Int_t ij, start, end;
 
 // Init local arrays to store data from trees
@@ -2298,9 +2296,7 @@ Int_t XGCProcesSet::DoCall(Int_t numdata, TTree **datatree,
                goto cleanup;
             }//if
 
-            x  = scheme->GetX();
-            y  = scheme->GetY();
-            ij = XY2Index(x, y, numcols);
+            ij = XY2Index(scheme->GetX(), scheme->GetY(), numcols);
 
             if (doGC) {
                this->FillProbeSets(p, idx,
@@ -2320,14 +2316,28 @@ Int_t XGCProcesSet::DoCall(Int_t numdata, TTree **datatree,
                goto cleanup;
             }//if
          }//for_j
-         start += numcells;
+//         start += numcells;
 
          // continue if arrays arrPM etc are not filled
-         if (p == 0) continue;
-         if (!doGC && (p != m)) {
+         if (doGC || p == m) {
+            start += numcells;
+         } else if (p == 0) {
+            start += numcells;
+            continue;
+         } else if (!doGC && m == 0) {
+            // for m=0 refill arrMM with background values
+            for (Int_t j=start; j<end; j++) {
+               scmtree->GetEntry(j);
+               ij = XY2Index(scheme->GetX(), scheme->GetY(), numcols);
+               this->FillBgrdProbeSets(m, arrMM, arrSM, arrXM,
+                                       arrMask[ij], arrBgrd[ij], arrBgdev[ij], arrNPix[ij]);
+            }//for_j
+            start += numcells;
+         } else if (!doGC && p != m) {
             cerr << "Error: UnitID <" << unitID << "> has different numbers of PM <"
                  << p << "> and MM <" << m << "> data." << endl;
-          continue;
+            start += numcells;
+            continue;
 //x            err = errAbort;
 //x            goto cleanup;
          }//if
@@ -2796,12 +2806,6 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
          continue;
       }//if
 
-//TO DO
-//Better above: arrPM = new Double_t[maxnumcells*numdata]; 
-      // create array to store PM values for all probes with current unitID
-//x      Int_t  numatoms = unit->GetNumAtoms();
-//x      Double_t *arrPM = new Double_t[numcells*numdata]; 
-
       // fill arrPM with PM values of current unitID
       Int_t p = 0;
       end += numcells;
@@ -2840,10 +2844,7 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
       start += numcells;
 
       // fill arrPM or continue if it is not filled
-      if ((err = fCaller->SetArray(p, arrPM)) != errNoErr) {
-//x         delete [] arrPM;
-         continue;
-      }//if
+      if ((err = fCaller->SetArray(p, arrPM)) != errNoErr) continue;
 
       // calculate detection call for PMs of current unitID
       if ((err = fCaller->Calculate(numdata, prescall, pvalue, 0))) break;
@@ -2864,8 +2865,6 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
          call[k]->SetPValue(pvalue[k]);
          calltree[k]->Fill();
       }//for_k
-
-//x      delete [] arrPM;
 
       if (XManager::fgVerbose && (idx == 1 || id%stepout == 0)) {
          cout << "      calculating detection call for <" << idx << "> of <"
@@ -2993,8 +2992,6 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
    Int_t err   = errNoErr;
    Int_t level = 0;
    Int_t idx   = 0;
-   Int_t x     = 0;
-   Int_t y     = 0;
    Int_t ij, start, end;
 
 // Init local arrays to store data from trees
@@ -3194,9 +3191,7 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
                goto cleanup;
             }//if
 
-            x  = scheme->GetX();
-            y  = scheme->GetY();
-            ij = XY2Index(x, y, numcols);
+            ij = XY2Index(scheme->GetX(), scheme->GetY(), numcols);
 
             this->FillProbeSets(p, m, idx,
                                 arrPM, arrMM, arrSP, arrSM, arrXP, arrXM, 
@@ -3205,18 +3200,33 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
 
             if (p > maxnumcells || m > maxnumcells) {
                cerr << "Error: unitID <" << unitID << "> exceeds maximum number of cells <"
-                    << maxnumcells << ">. Buffer overflow!" << endl;
+                    << maxnumcells << ">.  (p/m = " << p << "/" << m << ")  Buffer overflow!"
+                    << endl;
                err = errAbort;
                goto cleanup;
             }//if
          }//for_j
-         start += numcells;
+//x         start += numcells;
 
          // continue if arrays arrPM etc are not filled
-         if (p == 0) continue;
-         if (p != m) {
+         if (p == m) {
+            start += numcells;
+         } else if (p == 0) {
+            start += numcells;
+            continue;
+         } else if (m == 0) {
+            // for m=0 refill arrMM with background values
+            for (Int_t j=start; j<end; j++) {
+               scmtree->GetEntry(j);
+               ij = XY2Index(scheme->GetX(), scheme->GetY(), numcols);
+               this->FillBgrdProbeSets(m, arrMM, arrSM, arrXM,
+                                       arrMask[ij], arrBgrd[ij], arrBgdev[ij], arrNPix[ij]);
+            }//for_j
+            start += numcells;
+         } else if (p != m) {
             cerr << "Error: UnitID <" << unitID << "> has different numbers of PM <"
                  << p << "> and MM <" << m << "> data." << endl;
+            start += numcells;
             continue;
 //x            err = errAbort;
 //x            goto cleanup;
@@ -4867,6 +4877,21 @@ void XGCProcesSet::FillProbeSets(Int_t &p, Int_t &m, Int_t &idx, Double_t *pm,
       m++;
    }//if
 }//FillProbeSets
+
+//______________________________________________________________________________
+void XGCProcesSet::FillBgrdProbeSets(Int_t &m, Double_t *mm, Double_t *sm, Int_t *xm,
+                   Int_t msk, Double_t bgrd, Double_t bgdev, Int_t npix)
+{
+   // Fill MM probesets with background values
+   if(kCSa) cout << "------XGCProcesSet::FillBgrdProbeSets------" << endl;
+
+   if (msk == 1) {
+      mm[m] = bgrd;
+      sm[m] = bgdev;
+      xm[m] = npix; //use numpix from datatree
+      m++;
+   }//if
+}//FillBgrdProbeSets
 
 //______________________________________________________________________________
 Int_t XGCProcesSet::MaxNumberCells(TTree *idxtree)
