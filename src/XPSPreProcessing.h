@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 09/06/2009
+// File created: 08/05/2002                          last modified: 11/22/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -276,6 +276,8 @@ class XGCProcesSet: public XPreProcesSet {
                         Double_t *mm, Double_t *sp, Double_t *sm, Int_t *xp, 
                         Int_t *xm, Int_t msk, Double_t inten, Double_t stdev,
                         Double_t bgrd, Double_t bgdev, Int_t npix);
+      virtual void   FillBgrdProbeSets(Int_t &m, Double_t *mm,  Double_t *sm, Int_t *xm,
+                        Int_t msk, Double_t bgrd, Double_t bgdev, Int_t npix);
       virtual Int_t  MaxNumberCells(TTree *idxtree);
       virtual TTree *SchemeTree(XAlgorithm *algorithm, void *scheme, TLeaf **scmleaf);
       virtual TTree *UnitTree(XAlgorithm *algorithm, void *unit, Int_t &numunits);

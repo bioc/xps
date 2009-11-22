@@ -679,15 +679,19 @@ void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
 // initialize algorithms
    char *callopt = 0;
    if (strcmp(chiptype[0], "GeneChip") == 0) {
-      // initialize backgrounder
-      if (strcmp(bgrdoption[0], "none") != 0) {
+      if (strcmp(bgrdoption[0], "none") == 0) {
+         // initialize call detector
+         r += manager->InitAlgorithm("selector", "probe", "none", 0, 0);
+         r += manager->InitAlgorithm("calldetector", "dc5", "raw", 0, 6, *tau, *alpha1, *alpha2, *ignore, 0, 0); //tau,alpha1,alpha2,ignore,exact,correct
+      } else {
+         // initialize backgrounder
          r += manager->InitAlgorithm("selector", "probe", "both", 0, 0);
          r += manager->InitAlgorithm("backgrounder","weightedsector", bgrdoption[0], bgrdfile, 6, 0.02, 4, 4, 0, 100, 0.5);
-      }//if
 
-      // initialize call detector
-      r += manager->InitAlgorithm("selector", "probe", "none", 0, 0);
-      r += manager->InitAlgorithm("calldetector", "dc5", "raw", 0, 6, *tau, *alpha1, *alpha2, *ignore, 0, 0); //tau,alpha1,alpha2,ignore,exact,correct
+         // initialize call detector
+         r += manager->InitAlgorithm("selector", "probe", "none", 0, 0);
+         r += manager->InitAlgorithm("calldetector", "dc5", "adjusted", 0, 6, *tau, *alpha1, *alpha2, *ignore, 0, 0); //tau,alpha1,alpha2,ignore,exact,correct
+      }//if
    } else if (strcmp(chiptype[0], "GenomeChip") == 0) {
       callopt = new char[strlen(calloption[0]) + 10];
       callopt = strcpy(callopt, calloption[0]);

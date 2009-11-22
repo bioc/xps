@@ -115,6 +115,9 @@ scheme.htmg430pm.na28 <- import.expr.scheme("Scheme_HTMG430PM_na28",filedir=scmd
 # HT_Rat230_PM
 scheme.htrat230.na28 <- import.expr.scheme("Scheme_HTRat230PM_na28",filedir=scmdir,paste(libdir,"HT_Rat230_PM.cdf",sep="/"),paste(libdir,"HT_Rat230_PM.probe.tab",sep="/"),paste(anndir,"Version09Mar/HT_Rat230_PM.na28.annot.csv",sep="/"))
 
+# HG-U219
+scheme.hgu219.na29 <- import.expr.scheme("Scheme_HGU219_na29",filedir=scmdir,paste(libdir,"HG-U219.cdf",sep="/"),paste(libdir,"HG-U219.probe.tab",sep="/"),paste(anndir,"Version09Oct/HG-U219.na29.annot.csv",sep="/"))
+
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # create ROOT scheme files for alternative CDF-files
@@ -680,6 +683,34 @@ celfiles <- c("plate_1_id9628_A01.CEL","plate_1_id9628_B02.CEL","plate_1_id9628_
 celnames <- c("Hela_A01","Hela_B02","Hela_C03","maqc_A_A07","maqc_A_B08","maqc_A_C09")
 # import CEL files
 data.genetitan <- import.data(scheme.u133ppm, "TestDataGeneTitan", filedir=datdir,celdir=celdir,celfiles=celfiles,celnames=celnames)
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# example 7: Sample data from Affymetrix "MAQC A and B" Dataset for HG-U219 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+### new R session: load library xps
+library(xps)
+
+### define directories:
+# directory of ROOT scheme files
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
+# directory containing sample CEL files
+celdir <- "/Volumes/GigaDrive/ChipData/Plate/hg-u219-ap-sampledata"
+# directory to store ROOT raw data files
+datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
+
+### HG-U219 data: import raw data
+# first, import ROOT scheme file
+scheme.u219 <- root.scheme(paste(scmdir,"Scheme_HGU219_na29.root",sep="/"))
+
+# subset of CEL files to import
+celfiles <- c("HG-U219_MaqcA_1.CEL","HG-U219_MaqcA_2.CEL","HG-U219_MaqcA_3.CEL",
+              "HG-U219_MaqcB_1.CEL","HG-U219_MaqcB_2.CEL","HG-U219_MaqcB_3.CEL")
+# rename CEL files
+celnames <- c("MaqcA1","MaqcA2","MaqcA3","MaqcB1","MaqcB2","MaqcB3")
+# import CEL files
+data.u219 <- import.data(scheme.u219, "MaqcDataHGU219", filedir=datdir,celdir=celdir,celfiles=celfiles,celnames=celnames)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1283,8 +1314,8 @@ data.u133ppm <- root.data(scheme.u133ppm, paste(datdir,"TestDataHTU133PPM_cel.ro
 # 1. RMA
 data.rma <- rma(data.u133ppm,"TestDataHTU133PPM_RMA",tmpdir="",background="pmonly",normalize=T)
 
-# 2. MAS5: not possible since no MM
-# data.mas5 <- mas5(data.u133ppm,"TestDataHTU133PPM_MAS5",,tmpdir="",normalize=T,sc=500)
+# 2. MAS5: 
+data.mas5 <- mas5(data.u133ppm,"TestDataHTU133PPM_MAS5",tmpdir="",normalize=T,sc=500)
 
 # get data.frames
 expr.rma <- validData(data.rma)
@@ -1318,17 +1349,70 @@ data.u133ppm <- root.data(scheme.u133ppm, paste(datdir,"TestDataGeneTitan_cel.ro
 # 1. RMA
 data.rma <- rma(data.u133ppm,"TestDataGeneTitan_RMA",tmpdir="",background="pmonly",normalize=T)
 
-# 2. MAS5: not possible since no MM
-# data.mas5 <- mas5(data.u133ppm,"TestDataGeneTitan_MAS5",,tmpdir="",normalize=T,sc=500)
+# 2. MAS5: 
+data.mas5 <- mas5(data.u133ppm,"TestDataHTU133PPM_MAS5",tmpdir="",normalize=T,sc=500)
+
+# 3. MAS5 detection call: need to use background-corrected data!!
+call.mas5 <- mas5.call(data.u133ppm,"TestDataHTU133PPM_Call",tmpdir="",bgcorrect.option="correctbg")
 
 # get data.frames
 expr.rma <- validData(data.rma)
+expr.mas5 <- validData(data.mas5)
+pval.mas5 <- pvalData(call.mas5)
+pres.mas5 <- presCall(call.mas5)
+
+# compare mas5 to rma
+plot(expr.rma[,1],expr.mas5[,1])
+plot(expr.rma[,1],expr.mas5[,1],log="xy",xlim=c(1,20000),ylim=c(1,20000))
+
+plot(expr.rma[,1],expr.rma[,2],log="xy")
+plot(expr.mas5[,1],expr.mas5[,2],log="xy")
 
 # density plots
 hist(data.rma)
+hist(data.mas5)
 
 # boxplots
 boxplot(data.rma)
+boxplot(data.mas5)
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# example 7: Sample data from Affymetrix "MAQC A and B" Dataset for HG-U219 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+### new R session: load library xps
+library(xps)
+
+### first, load ROOT scheme file and ROOT data file
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
+scheme.u219 <- root.scheme(paste(scmdir,"Scheme_HGU219_na29.root",sep="/"))
+datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
+data.u219 <- root.data(scheme.u219, paste(datdir,"MaqcDataHGU219_cel.root",sep="/"))
+
+### preprocess raw data ###
+# 1. RMA
+data.rma <- rma(data.u219,"MaqcDataHGU219_RMA",tmpdir="",background="pmonly",normalize=T)
+
+# 2. MAS5: not possible since no MM
+data.mas5 <- mas5(data.u219,"MaqcDataHGU219_MAS5",tmpdir="",normalize=T,sc=500)
+
+# 3. MAS5 detection call: need to use background-corrected data!!
+call.mas5 <- mas5.call(data.u219,"MaqcDataHGU219_Call",tmpdir="",bgcorrect.option="correctbg")
+
+# get data.frames
+expr.rma <- validData(data.rma)
+expr.mas5 <- validData(data.mas5)
+pval.mas5 <- pvalData(call.mas5)
+pres.mas5 <- presCall(call.mas5)
+
+# density plots
+hist(data.rma)
+hist(data.mas5)
+
+# boxplots
+boxplot(data.rma)
+boxplot(data.mas5)
 
 
 #------------------------------------------------------------------------------#
