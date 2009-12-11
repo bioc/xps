@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 11/21/2009
+// File created: 05/18/2002                          last modified: 12/11/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -8880,8 +8880,10 @@ Int_t XExonChip::ImportTransAnnotation(ifstream &input, Option_t *option,
       if (input.eof()) return errPrematureEOF;
    }//while
    annot_version = strtok((&((char*)nextline.c_str())[35]), sep);
+
    // compare annotation versions, but only main version, e.g. 27 for 27.2
    annps_version = fVersionAnnot;
+   if (annot_version.Index(".") > 0) annot_version.Resize(annot_version.Index("."));
    if (annps_version.Index(".") > 0) annps_version.Resize(annps_version.Index("."));
    if (strcmp(annot_version.Data(), annps_version.Data()) != 0) {
       return fManager->HandleError(errAnnVersion, annot_version);

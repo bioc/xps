@@ -203,6 +203,27 @@ scheme.mogene10stv1r3.na27 <- import.genome.scheme("Scheme_MoGene10stv1r3_na27",
                               paste(libdir,"MoGene-1_0-st-v1.r3.analysis-lib-files/MoGene-1_0-st-v1.r3.pgf",sep="/"),
                               paste(anndir,"Version08Nov/MoGene-1_0-st-v1.na27.mm9.transcript.csv",sep="/"))
 
+# MoGene-1_0-st-v1.r4: used as exon array
+# need to fix problem with annotation files first, see:
+# https://www.stat.math.ethz.ch/pipermail/bioconductor/2009-August/029049.html
+source(paste(.path.package("xps"),"examples/updateAnnotation.R",sep="/"))
+updateAnnotation("MoGene-1_0-st-v1.na29.mm9.probeset.csv", "MoGene-1_0-st-v1.na29.mm9.probeset.fixed.csv", probeset="10338063", skip=18, eol="\n")
+updateAnnotation("MoGene-1_0-st-v1.na29.mm9.transcript.csv", "MoGene-1_0-st-v1.na29.mm9.transcript.fixed.csv", probeset="10338063", skip=19, eol="\n")
+
+scheme.mogene10stv1r4.na29 <- import.exon.scheme("Scheme_MoGene10stv1r4_na29",filedir=scmdir,
+                              paste(libdir,"MoGene-1_0-st-v1.r4.analysis-lib-files/MoGene-1_0-st-v1.r4.clf",sep="/"),
+                              paste(libdir,"MoGene-1_0-st-v1.r4.analysis-lib-files/MoGene-1_0-st-v1.r4.pgf",sep="/"),
+                              paste(anndir,"Version09Jul/MoGene-1_0-st-v1.na29.mm9.probeset.fixed.csv",sep="/"),
+                              paste(anndir,"Version09Jul/MoGene-1_0-st-v1.na29.mm9.transcript.fixed.csv",sep="/"))
+
+# in Dec 2009 Affymetrix has corrected the annotation files for release "na30.1"
+scheme.mogene10stv1r4.na30 <- import.exon.scheme("Scheme_MoGene10stv1r4_na30_1",filedir=scmdir,
+                              paste(libdir,"MoGene-1_0-st-v1.r4.analysis-lib-files/MoGene-1_0-st-v1.r4.clf",sep="/"),
+                              paste(libdir,"MoGene-1_0-st-v1.r4.analysis-lib-files/MoGene-1_0-st-v1.r4.pgf",sep="/"),
+                              paste(anndir,"Version09Dec/MoGene-1_1-st-v1.na30.1.mm9.probeset.csv",sep="/"),
+                              paste(anndir,"Version09Dec/MoGene-1_1-st-v1.na30.1.mm9.transcript.csv",sep="/"))
+
+
 # RaGene-1_0-st-v1.r3:
 scheme.ragene10stv1r3.na24 <- import.genome.scheme("Scheme_RaGene10stv1r3_na24",filedir=scmdir,
                               paste(libdir,"RaGene-1_0-st-v1.r3.analysis-lib-files/RaGene-1_0-st-v1.r3.clf",sep="/"),
@@ -213,6 +234,26 @@ scheme.ragene10stv1r3.na25 <- import.genome.scheme("Scheme_RaGene10stv1r3_na25",
                               paste(libdir,"RaGene-1_0-st-v1.r3.analysis-lib-files/RaGene-1_0-st-v1.r3.clf",sep="/"),
                               paste(libdir,"RaGene-1_0-st-v1.r3.analysis-lib-files/RaGene-1_0-st-v1.r3.pgf",sep="/"),
                               paste(anndir,"Version08Mar/RaGene-1_0-st-v1.na25.rn4.transcript.csv",sep="/"))
+
+# RaGene-1_0-st-v1.r4: used as exon array
+# need to fix problem with annotation files first, see:
+# https://www.stat.math.ethz.ch/pipermail/bioconductor/2009-August/029049.html
+source(paste(.path.package("xps"),"examples/updateAnnotation.R",sep="/"))
+updateAnnotation("RaGene-1_0-st-v1.na29.rn4.probeset.csv", "RaGene-1_0-st-v1.na29.rn4.probeset.fixed.csv", probeset="10700063", skip=18, eol="\n")
+updateAnnotation("RaGene-1_0-st-v1.na29.rn4.transcript.csv", "RaGene-1_0-st-v1.na29.rn4.transcript.fixed.csv", probeset="10700063", skip=19, eol="\n")
+
+scheme.ragene10stv1r4.na29 <- import.exon.scheme("Scheme_RaGene10stv1r4_na29",filedir=scmdir,
+                              paste(libdir,"RaGene-1_0-st-v1.r4.analysis-lib-files/RaGene-1_0-st-v1.r4.clf",sep="/"),
+                              paste(libdir,"RaGene-1_0-st-v1.r4.analysis-lib-files/RaGene-1_0-st-v1.r4.pgf",sep="/"),
+                              paste(anndir,"Version09Jul/RaGene-1_0-st-v1.na29.rn4.probeset.fixed.csv",sep="/"),
+                              paste(anndir,"Version09Jul/RaGene-1_0-st-v1.na29.rn4.transcript.fixed.csv",sep="/"))
+
+# in Dec 2009 Affymetrix has corrected the annotation files for release "na30.1"
+scheme.ragene10stv1r4.na30 <- import.exon.scheme("Scheme_RaGene10stv1r4_na30_1",filedir=scmdir,
+                              paste(libdir,"RaGene-1_0-st-v1.r4.analysis-lib-files/RaGene-1_0-st-v1.r4.clf",sep="/"),
+                              paste(libdir,"RaGene-1_0-st-v1.r4.analysis-lib-files/RaGene-1_0-st-v1.r4.pgf",sep="/"),
+                              paste(anndir,"Version09Dec/RaGene-1_1-st-v1.na30.1.rn4.probeset.csv",sep="/"),
+                              paste(anndir,"Version09Dec/RaGene-1_1-st-v1.na30.1.rn4.transcript.csv",sep="/"))
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
