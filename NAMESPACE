@@ -121,9 +121,12 @@ exportMethods("attachExpr",
               "mvaplot",
               "normType",
               "normType<-",
+              "nuseplot",
+              "rleplot",
               "removeExpr",
               "se.exprs",
               "validExpr",
+              "validSE",
               "xpsPreFilter",
               "xpsUniFilter")
 

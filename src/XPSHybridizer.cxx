@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 08/14/2009
+// File created: 08/05/2002                          last modified: 12/30/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -434,9 +434,10 @@ XExpressor::XExpressor()
    // Default Expressor constructor
    if(kCS) cout << "---XExpressor::XExpressor(default)------" << endl;
 
-   fOption  = "";
-   fBgrdOpt = "";
-   fLogBase = "0";
+   fOption    = "";
+   fBgrdOpt   = "";
+   fLogBase   = "0";
+   fEstimator = 0;
 }//Constructor
 
 //______________________________________________________________________________
@@ -446,9 +447,10 @@ XExpressor::XExpressor(const char *name, const char *type)
    // Normal Expressor constructor
    if(kCS) cout << "---XExpressor::XExpressor------" << endl;
 
-   fOption  = "transcript"; //default for expressor
-   fBgrdOpt = "none"; //default for expressor
-   fLogBase = "0";
+   fOption    = "transcript"; //default for expressor
+   fBgrdOpt   = "none";       //default for expressor
+   fLogBase   = "0";
+   fEstimator = 0;
 }//Constructor
 
 //______________________________________________________________________________
@@ -457,6 +459,7 @@ XExpressor::~XExpressor()
    // Expressor destructor
    if(kCS) cout << "---XExpressor::~XExpressor------" << endl;
 
+   SafeDelete(fEstimator);
 }//Destructor
 
 //______________________________________________________________________________
@@ -486,15 +489,20 @@ void XExpressor::SetOptions(Option_t *opt)
 
    char *options = (char*)optcpy.Data();
    if (NumSeparators(opt, ":") == 0) {
-      fOption  = "transcript"; 
-      fLogBase = strtok(options, ":");
+      fOption    = "transcript"; 
+      fLogBase   = strtok(options, ":");
    } else if (NumSeparators(opt, ":") == 1) {
-      fOption  = strtok(options, ":");
-      fLogBase = strtok(NULL, ":");
+      fOption    = strtok(options, ":");
+      fLogBase   = strtok(NULL, ":");
+   } else if (NumSeparators(opt, ":") == 2) {
+      fOption    = strtok(options, ":");
+      fBgrdOpt   = strtok(NULL, ":");
+      fLogBase   = strtok(NULL, ":");
    } else {
-      fOption  = strtok(options, ":");
-      fBgrdOpt = strtok(NULL, ":");
-      fLogBase = strtok(NULL, ":");
+      fOption    = strtok(options, ":");
+      fEstimator = TMEstimator::Estimator((const char*)strtok(NULL, ":"));
+      fBgrdOpt   = strtok(NULL, ":");
+      fLogBase   = strtok(NULL, ":");
    }//if
 }//SetOptions
 
@@ -3508,7 +3516,7 @@ Int_t XMedianPolish::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk)
    Int_t nrow = (Int_t)(fLength / n);
    Int_t ncol = n;
 
-// Get parameters or use default values
+   // get parameters or use default values
    Int_t    iter   = (fNPar > 0) ? (Int_t)fPars[0] : 10;
    Double_t eps    = (fNPar > 1) ? fPars[1] : 0.01;
    Double_t totmed = 0;
@@ -3528,37 +3536,76 @@ Int_t XMedianPolish::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk)
 
    totmed = TStat::MedianPolish(nrow, ncol, fArray, rowmed, y, fResiduals, iter, eps);
 
-// Convert results
 /////////
 //ev better function Array2Power()??
 /////////
 //ev not necessary to convert x[j]??
 //ev only convert if option convert is set!?
+   // convert expression levels
    if (strcmp(fLogBase, "0") == 0) {
-      for (Int_t j=0; j<ncol; j++) {
-         x[j] = totmed + y[j];
-      }//for_j
+      for (Int_t j=0; j<ncol; j++)  x[j] = totmed + y[j];
    } else if (strcmp(fLogBase, "log2") == 0) {
-      for (Int_t j=0; j<ncol; j++) {
-         x[j] = TMath::Power(2, totmed + y[j]);
-         y[j] = TMath::Power(2, y[j]);
-      }//for_j
+      for (Int_t j=0; j<ncol; j++)  x[j] = TMath::Power(2, totmed + y[j]);
    } else if (strcmp(fLogBase, "log10") == 0) {
-      for (Int_t j=0; j<ncol; j++) {
-         x[j] = TMath::Power(10, totmed + y[j]);
-         y[j] = TMath::Power(10, y[j]);
-      }//for_j
+      for (Int_t j=0; j<ncol; j++)  x[j] = TMath::Power(10, totmed + y[j]);
    } else if (strcmp(fLogBase, "log") == 0) {
-      for (Int_t j=0; j<ncol; j++) {
-         x[j] = TMath::Power(TMath::E(), totmed + y[j]);
-         y[j] = TMath::Power(TMath::E(), y[j]);
-      }//for_j
+      for (Int_t j=0; j<ncol; j++)  x[j] = TMath::Power(TMath::E(), totmed + y[j]);
+   }//if
+
+   // standard error
+   if (fEstimator) {
+      y = this->StandardError(nrow, ncol, fResiduals, y);
+   }//if
+
+   // convert standard deviation/error
+//ev only for if(!fEstimator):
+   if (strcmp(fLogBase, "log2") == 0) {
+      for (Int_t j=0; j<ncol; j++)  y[j] = TMath::Power(2, y[j]);
+   } else if (strcmp(fLogBase, "log10") == 0) {
+      for (Int_t j=0; j<ncol; j++)  y[j] = TMath::Power(10, y[j]);
+   } else if (strcmp(fLogBase, "log") == 0) {
+      for (Int_t j=0; j<ncol; j++)  y[j] = TMath::Power(TMath::E(), y[j]);
    }//if
 
    if (rowmed) {delete [] rowmed; rowmed = 0;}
    
    return err;
 }//Calculate
+
+//______________________________________________________________________________
+Double_t *XMedianPolish::StandardError(Int_t nrow, Int_t ncol, Double_t *residu, Double_t *se)
+{
+   // Calculate standard error
+   // adapted from Bioconductor package "affyPLM" function "compute_pseudoSE()"
+   // created by: B. M. Bolstad <bolstad@stat.berkeley.edu>
+   if(kCSa) cout << "------XMedianPolish::StandardError------" << endl;
+
+   // use fArray (no longer needed) to convert residuals to absolute values
+   Int_t n = nrow*ncol;
+   for (Int_t i=0; i<n; i++) fArray[i] = TMath::Abs(residu[i]);
+
+   // median of absolute residuals (why 1/0.6745?)
+   Double_t md = TStat::Median(n, fArray)/0.6745;
+
+   Double_t residSE = 0.0;
+   for (Int_t i=0; i<nrow; i++){
+      for (Int_t j=0; j<ncol; j++){
+         Double_t r = residu[j + i*ncol];
+         residSE += fEstimator->Weight(r/md)*r*r;
+      }//for_j
+   }//for_i
+   residSE = TMath::Sqrt(residSE/(Double_t)(n - (nrow + ncol - 1)));
+
+   for (Int_t j=0; j<ncol; j++){
+      Double_t weight = 0.0;
+      for (Int_t i=0; i<nrow; i++){
+         weight += fEstimator->Weight(residu[j + i*ncol]/md);
+      }//for_i
+      se[j] = residSE/TMath::Sqrt(weight);
+   }//for_j
+
+   return se;
+}//StandardError
 
 
 //////////////////////////////////////////////////////////////////////////

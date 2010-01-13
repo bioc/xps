@@ -1,4 +1,4 @@
-// Author: Christian Stratowa 11/25/2002             last modified: 11/05/2007
+// Author: Christian Stratowa 11/25/2002             last modified: 12/30/2009
 
 /*
  *******************************************************************************
@@ -620,6 +620,28 @@ Double_t TStat::Median(Int_t n, const Double_t *arr)
 }//Median
 
 //______________________________________________________________________________
+Double_t TStat::Median(Int_t n, const Double_t *arr, const Int_t *index)
+{
+   // Calculate median of array "arr" with sort index "index"
+   if(kCSa) cout << "------TStat::Median(n)------" << endl;
+
+   if (n <= 0) return NA_REAL;
+   if (n == 1) return arr[0];
+
+   Int_t k;
+   Double_t median = 0.0;
+   if ((n % 2) == 0){
+      k = (Int_t)floor(n / 2.0) - 1;
+      median = (arr[index[k]] + arr[index[k+1]])/2.0;
+   } else {
+      k = (Int_t)floor(n / 2.0);
+      median = arr[index[k]];
+   }//if
+
+   return median;
+}//Median
+
+//______________________________________________________________________________
 Double_t TStat::MAD(Int_t n, const Double_t *arr, Float_t constant)
 {
    // Calculate median absolute deviation
@@ -918,6 +940,29 @@ Double_t TStat::Quantile(Int_t n, const Double_t *arr, const Double_t q)
 }//Quantile
 
 //______________________________________________________________________________
+Double_t TStat::Quantile(Int_t n, const Double_t *arr, const Int_t *index, const Double_t q)
+{
+   // Return value of array "arr" with sort index "index" at quantile q
+   if(kCSa) cout << "------TStat::Quantile------" << endl;
+
+   if (n == 1) return arr[0];
+
+   if (q < 0.0 || q > 1.0) {
+      cout << "Error: Quantile q is not within [0,1]!" << endl;
+      return NA_REAL;
+   }//if
+
+   Double_t qu = (n - 1) * q;
+   Int_t    lo = (Int_t)floor(qu);
+   Int_t    hi = (Int_t)ceil(qu);
+   Double_t ql = arr[index[lo]];
+   Double_t qh = arr[index[hi]];
+   Double_t qq = (ql == qh) ? 0.0 : qh - ql;
+
+   return ql + qq * (qu - lo);
+}//Quantile
+
+//______________________________________________________________________________
 Double_t TStat::IQR(Int_t n, const Double_t *arr, const Double_t qlo, const Double_t qhi)
 {
    // Return interquantile range of array arr between quantiles qlo and qhi
@@ -960,6 +1005,43 @@ Double_t TStat::IQR(Int_t n, const Double_t *arr, const Double_t qlo, const Doub
    qs = qs - ql - qq * (qu - lo);
 
    delete [] index;
+
+   return qs;
+}//IQR
+
+//______________________________________________________________________________
+Double_t TStat::IQR(Int_t n, const Double_t *arr, const Int_t *index,
+                    const Double_t qlo, const Double_t qhi)
+{
+   // Return interquantile range of array "arr" with sort index "index" between 
+   // quantiles qlo and qhi. Default setting returns interquartile range!
+   if(kCSa) cout << "------TStat::IQR------" << endl;
+
+   if (n == 1) return 0.0;
+
+   if (qlo < 0.0 || qlo > 1.0 || qhi < 0.0 || qhi > 1.0) {
+      cout << "Error: Quantile qlo or qhi is not within [0,1]!" << endl;
+      return NA_REAL;
+   }//if
+
+   Double_t qu, ql, qh, qq, qs;
+   Int_t    lo, hi;
+
+   qu = (n - 1) * qhi;
+   lo = (Int_t)floor(qu);
+   hi = (Int_t)ceil(qu);
+   ql = arr[index[lo]];
+   qh = arr[index[hi]];
+   qq = (ql == qh) ? 0.0 : qh - ql;
+   qs = ql + qq * (qu - lo);
+
+   qu = (n - 1) * qlo;
+   lo = (Int_t)floor(qu);
+   hi = (Int_t)ceil(qu);
+   ql = arr[index[lo]];
+   qh = arr[index[hi]];
+   qq = (ql == qh) ? 0.0 : qh - ql;
+   qs = qs - ql - qq * (qu - lo);
 
    return qs;
 }//IQR
@@ -1745,4 +1827,317 @@ Double_t TStat::PNormApprox(Double_t x)
    return n; 
 }//PNormApprox
 
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// TMEstimator                                                          //
+//                                                                      //
+// Base class for M-estimators                                          //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+Double_t TMEstimator::Calculate(Double_t x, Int_t type)
+{
+   if (type == TMEstimator::kRho) {
+      return Rho(x);
+   } else if (type == TMEstimator::kPsi) {
+      return Psi(x);
+   } else if (type == TMEstimator::kDeriv) {
+      return Derivative(x);
+   } else if (type == TMEstimator::kWeight) {
+      return Weight(x);
+   }//if
+
+   return 0;
+}//Calculate
+
+//______________________________________________________________________________
+TMEstimator *TMEstimator::Estimator(const char *name, Double_t c)
+{
+   TMEstimator *estimator = 0;
+   if (strcmp(name, "huber") == 0) {
+      if (c == 0.0) estimator = new THuberEstimator();
+      else          estimator = new THuberEstimator(c);
+   } else if (strcmp(name, "fair") == 0) {
+      if (c == 0.0) estimator = new TFairEstimator();
+      else          estimator = new TFairEstimator(c);
+   } else if (strcmp(name, "cauchy") == 0) {
+      if (c == 0.0) estimator = new TCauchyEstimator();
+      else          estimator = new TCauchyEstimator(c);
+   } else if (strcmp(name, "gemanmcclure") == 0) {
+      if (c == 0.0) estimator = new TGemanMcClureEstimator();
+      else          estimator = new TGemanMcClureEstimator(c);
+   } else if (strcmp(name, "welsch") == 0) {
+      if (c == 0.0) estimator = new TWelschEstimator();
+      else          estimator = new TWelschEstimator(c);
+   } else if (strcmp(name, "tukey") == 0) {
+      if (c == 0.0) estimator = new TTukeyEstimator();
+      else          estimator = new TTukeyEstimator(c);
+   } else if (strcmp(name, "andrew") == 0) {
+      if (c == 0.0) estimator = new TAndrewEstimator();
+      else          estimator = new TAndrewEstimator(c);
+   }//if
+
+   return estimator;
+}//Calculate
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// THuberEstimator                                                      //
+//                                                                      //
+// Class for M-estimator Huber                                          //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+THuberEstimator::THuberEstimator()
+                :TMEstimator()
+{
+   // Default HuberEstimator constructor
+   if(kCS) cout << "---THuberEstimator::THuberEstimator(default)------" << endl;
+
+   fConst = 1.345;
+   fName  = "Huber";
+}//Constructor
+
+//______________________________________________________________________________
+THuberEstimator::THuberEstimator(Double_t c)
+                :TMEstimator(c, "Huber")
+{
+   // Normal HuberEstimator constructor
+   if(kCS) cout << "---THuberEstimator::THuberEstimator------" << endl;
+
+}//Constructor
+
+//______________________________________________________________________________
+THuberEstimator::~THuberEstimator()
+{
+   // HuberEstimator destructor
+   if(kCS) cout << "---THuberEstimator::~THuberEstimator------" << endl;
+
+}//Destructor
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// TFairEstimator                                                       //
+//                                                                      //
+// Class for M-estimator Fair                                           //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+TFairEstimator::TFairEstimator()
+               :TMEstimator()
+{
+   // Default FairEstimator constructor
+   if(kCS) cout << "---TFairEstimator::TFairEstimator(default)------" << endl;
+
+   fConst = 1.3998;
+   fName  = "Fair";
+}//Constructor
+
+//______________________________________________________________________________
+TFairEstimator::TFairEstimator(Double_t c)
+               :TMEstimator(c, "Fair")
+{
+   // Normal FairEstimator constructor
+   if(kCS) cout << "---TFairEstimator::TFairEstimator------" << endl;
+
+}//Constructor
+
+//______________________________________________________________________________
+TFairEstimator::~TFairEstimator()
+{
+   // FairEstimator destructor
+   if(kCS) cout << "---TFairEstimator::~TFairEstimator------" << endl;
+
+}//Destructor
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// TCauchyEstimator                                                     //
+//                                                                      //
+// Class for M-estimator Cauchy                                         //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+TCauchyEstimator::TCauchyEstimator()
+                 :TMEstimator()
+{
+   // Default CauchyEstimator constructor
+   if(kCS) cout << "---TCauchyEstimator::TCauchyEstimator(default)------" << endl;
+
+   fConst = 2.3849;
+   fName  = "Cauchy";
+}//Constructor
+
+//______________________________________________________________________________
+TCauchyEstimator::TCauchyEstimator(Double_t c)
+                 :TMEstimator(c, "Cauchy")
+{
+   // Normal CauchyEstimator constructor
+   if(kCS) cout << "---TCauchyEstimator::TCauchyEstimator------" << endl;
+
+}//Constructor
+
+//______________________________________________________________________________
+TCauchyEstimator::~TCauchyEstimator()
+{
+   // CauchyEstimator destructor
+   if(kCS) cout << "---TCauchyEstimator::~TCauchyEstimator------" << endl;
+
+}//Destructor
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// TGemanMcClureEstimator                                               //
+//                                                                      //
+// Class for M-estimator GemanMcClure                                   //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+TGemanMcClureEstimator::TGemanMcClureEstimator()
+                       :TMEstimator()
+{
+   // Default GemanMcClureEstimator constructor
+   if(kCS) cout << "---TGemanMcClureEstimator::TGemanMcClureEstimator(default)------" << endl;
+
+   fConst = 1.0;
+   fName  = "GemanMcClure";
+}//Constructor
+
+//______________________________________________________________________________
+TGemanMcClureEstimator::TGemanMcClureEstimator(Double_t c)
+                       :TMEstimator(c, "GemanMcClure")
+{
+   // Normal GemanMcClureEstimator constructor
+   if(kCS) cout << "---TGemanMcClureEstimator::TGemanMcClureEstimator------" << endl;
+
+}//Constructor
+
+//______________________________________________________________________________
+TGemanMcClureEstimator::~TGemanMcClureEstimator()
+{
+   // GemanMcClureEstimator destructor
+   if(kCS) cout << "---TGemanMcClureEstimator::~TGemanMcClureEstimator------" << endl;
+
+}//Destructor
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// TWelschEstimator                                                     //
+//                                                                      //
+// Class for M-estimator Welsch                                         //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+TWelschEstimator::TWelschEstimator()
+                 :TMEstimator()
+{
+   // Default WelschEstimator constructor
+   if(kCS) cout << "---TWelschEstimator::TWelschEstimator(default)------" << endl;
+
+   fConst = 2.9846;
+   fName  = "Welsch";
+}//Constructor
+
+//______________________________________________________________________________
+TWelschEstimator::TWelschEstimator(Double_t c)
+                 :TMEstimator(c, "Welsch")
+{
+   // Normal WelschEstimator constructor
+   if(kCS) cout << "---TWelschEstimator::TWelschEstimator------" << endl;
+
+}//Constructor
+
+//______________________________________________________________________________
+TWelschEstimator::~TWelschEstimator()
+{
+   // WelschEstimator destructor
+   if(kCS) cout << "---TWelschEstimator::~TWelschEstimator------" << endl;
+
+}//Destructor
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// TTukeyEstimator                                                      //
+//                                                                      //
+// Class for M-estimator Tukey                                          //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+TTukeyEstimator::TTukeyEstimator()
+                :TMEstimator()
+{
+   // Default TukeyEstimator constructor
+   if(kCS) cout << "---TTukeyEstimator::TTukeyEstimator(default)------" << endl;
+
+   fConst = 4.6851;
+   fName  = "Tukey";
+}//Constructor
+
+//______________________________________________________________________________
+TTukeyEstimator::TTukeyEstimator(Double_t c)
+                :TMEstimator(c, "Tukey")
+{
+   // Normal TukeyEstimator constructor
+   if(kCS) cout << "---TTukeyEstimator::TTukeyEstimator------" << endl;
+
+}//Constructor
+
+//______________________________________________________________________________
+TTukeyEstimator::~TTukeyEstimator()
+{
+   // TukeyEstimator destructor
+   if(kCS) cout << "---TTukeyEstimator::~TTukeyEstimator------" << endl;
+
+}//Destructor
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// TAndrewEstimator                                                     //
+//                                                                      //
+// Class for M-estimator Andrew                                         //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+TAndrewEstimator::TAndrewEstimator()
+                 :TMEstimator()
+{
+   // Default AndrewEstimator constructor
+   if(kCS) cout << "---TAndrewEstimator::TAndrewEstimator(default)------" << endl;
+
+   fConst = 1.339;
+   fName  = "Andrew";
+}//Constructor
+
+//______________________________________________________________________________
+TAndrewEstimator::TAndrewEstimator(Double_t c)
+                 :TMEstimator(c, "Andrew")
+{
+   // Normal AndrewEstimator constructor
+   if(kCS) cout << "---TAndrewEstimator::TAndrewEstimator------" << endl;
+
+}//Constructor
+
+//______________________________________________________________________________
+TAndrewEstimator::~TAndrewEstimator()
+{
+   // AndrewEstimator destructor
+   if(kCS) cout << "---TAndrewEstimator::~TAndrewEstimator------" << endl;
+
+}//Destructor
 

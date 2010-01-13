@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 10/04/2008
+// File created: 08/05/2002                          last modified: 12/30/2009
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -41,6 +41,8 @@
 #ifndef __XPSProcessing__
 #include "XPSProcessing.h"
 #endif
+
+class TMEstimator;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -163,8 +165,9 @@ class XCallDetector: public XHybridizer {
 class XExpressor: public XHybridizer {
 
    protected:
-      TString    fBgrdOpt;      //option for background subtraction
-      TString    fLogBase;      //logbase: 0, log, log2, log10
+      TString      fBgrdOpt;    //option for background subtraction
+      TString      fLogBase;    //logbase: 0, log, log2, log10
+      TMEstimator *fEstimator;  //! optional M-estimator
 
    public:
       XExpressor();
@@ -612,6 +615,9 @@ class XMedianPolish: public XExpressor {
 
    protected:
       Double_t   *fResiduals;   //[fLength] Array of residuals
+
+   private:
+      Double_t *StandardError(Int_t nrow, Int_t ncol, Double_t *residu, Double_t *se);
 
    public:
       XMedianPolish();

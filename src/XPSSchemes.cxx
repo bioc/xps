@@ -4825,8 +4825,8 @@ Int_t XGenomeChip::ExportLayoutTree(Int_t n, TString *names, const char *varlist
    Int_t nentries = (Int_t)(fTree->GetEntries());
    Int_t size     = fNRows*fNCols;
    if (nentries != size) {
-      TString str = ""; str += size;
-      return fManager->HandleError(errNumTreeEntries, fTree->GetName(), str);
+      cout << "Warning: Number of entries <" << nentries << "> is not equal to rows*cols <"
+           << fNRows*fNCols << ">." << endl;
    }//if
 
 // Output header
@@ -5109,7 +5109,7 @@ Int_t XGenomeChip::ImportLayout(ifstream &input, Option_t *option,
    }//if
 
    if (idx != fNRows*fNCols) {
-      cerr << "Error: Number of entries <" << idx << "> is not equal to <"
+      cout << "Warning: Number of entries <" << idx << "> is not equal to <"
            << fNRows*fNCols << ">." << endl;
    }//if
 
@@ -9592,6 +9592,9 @@ Int_t XExonChip::ImportProbesetAnnotation(ifstream &input, Option_t *option,
       minorv = (Long64_t)start[idx];  //then sort for start position
       value[idx]  = majorv << 31;
       value[idx] += minorv;
+// TO DO:
+// ev. sort for "geneid" then "start" then "probesetid"
+// see e.g. "HuGene-1_1-st-v1.na30.hg19.probeset.csv"
 
       if (XManager::fgVerbose && idx%10000 == 0) {
          cout << "   <" << idx + 1 << "> records read...\r" << flush;

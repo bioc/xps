@@ -11,12 +11,15 @@
 # exprs<-:
 # se.exprs:
 # validExpr:
+# validSE:
 # attachExpr:
 # removeExpr:
 # xpsNormalize:
 # xpsPreFilter:
 # xpsUniFilter:
 # mvaplot:
+# nuseplot:
+# rleplot:
 #==============================================================================#
 
 
@@ -183,6 +186,22 @@ function(object,
 }#exprExprTreeSet
 
 setMethod("validExpr", "ExprTreeSet", exprExprTreeSet);
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+"seExprTreeSet" <-
+function(object, 
+         which = "UnitName") 
+{
+   if (debug.xps()) print("------seExprTreeSet------")
+
+   se <- se.exprs(object);
+   rownames(se) <- se[,which];
+
+   return(se[,3:ncol(se)]);
+}#seExprTreeSet
+
+setMethod("validSE", "ExprTreeSet", seExprTreeSet);
 
 
 #------------------------------------------------------------------------------#
@@ -1117,6 +1136,7 @@ setMethod("mvaplot", signature(x="ExprTreeSet"),
             xlab    = "A",
             ylab    = "M",
             pch     = '.',
+            las     = 2,
             ...) 
    {
       if (debug.xps()) print("------mvaplot.ExprTreeSet------")
@@ -1141,12 +1161,78 @@ setMethod("mvaplot", signature(x="ExprTreeSet"),
               xlab = xlab,
               ylab = ylab,
               pch  = pch,
+              las  = las,
               ...);
          abline(h=0);
       }#for
       par(ask=FALSE);
    }
 )#mvaplot
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("nuseplot", signature(x="ExprTreeSet"),
+   function(x,
+            size    = 0,
+            range   = 0,
+            ylim    = c(0.9,1.2),
+            outline = FALSE,
+            names   = "namepart",
+            las     = 2,
+            ...) 
+   {
+      if (debug.xps()) print("------nuseplot.ExprTreeSet------")
+
+      m <- validSE(x);
+      if (size > 1) m <- m[seq(1,nrow(m),len=size),];
+      m <- log2(m);
+
+      if (is.null(names))              names <- colnames(m)
+      else if (names[1] == "namepart") names <- namePart(colnames(m))
+      else                             m     <- m[, names, drop=F];
+
+      med  <- apply(m, 1, median, na.rm=TRUE);
+      nuse <- data.frame(sweep(m, MARGIN=1, STATS=med, FUN='/'));
+
+      boxplot(nuse,
+              range   = range,
+              xlab    = '',
+              xaxt    = 'n',
+              ylim    = ylim,
+              outline = outline,
+              las     = las);
+      abline(1, 0);
+      axis(side=1, outer=F, at=1:length(names), labels=names, ...);
+   }
+)#nuseplot
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("rleplot", signature(x="ExprTreeSet"),
+   function(x,
+            size    = 0,
+            range   = 0,
+            ylim    = c(-0.75,0.75),
+            outline = FALSE,
+            names   = "namepart",
+            las     = 2,
+            ...) 
+   {
+      if (debug.xps()) print("------rleplot.ExprTreeSet------")
+
+      mboxplot(x,
+               which   = "UnitName",
+               size    = size,
+               transfo = log2,
+               method  = "median",
+               range   = range,
+               ylim    = ylim,
+               outline = outline,
+               names   = names,
+               las     = las,
+               ...);
+   }
+)#rleplot
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

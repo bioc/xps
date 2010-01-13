@@ -12,11 +12,13 @@
    annot  <- read.csv(infile, colClasses="character", comment.char="", skip=skip);
 
    ## delete probeset
-   line  <- which(annot[,"probeset_id"] == probeset);
-   if (length(line) > 0) {
-      cat("deleting line", line, "for probeset", probeset, "...\n");
-      annot <- annot[-line,];
-   }#if
+   for (i in 1:length(probeset)) {
+      line  <- which(annot[,"probeset_id"] == probeset[i]);
+      if (length(line) > 0) {
+         cat("deleting line", line, "for probeset", probeset[i], "...\n");
+         annot <- annot[-line,];
+      }#if
+   }#for
 
    ## write header and append probesets
    cat("writing", outfile, "...\n");

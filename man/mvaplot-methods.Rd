@@ -9,7 +9,7 @@
 \emph{Usage}
 
 \code{
-mvaplot(x, transfo = log2, method  = "median", names = "namepart", ylim = c(-6,6), ...)
+mvaplot(x, transfo = log2, method  = "median", names = "namepart", ylim = c(-6,6), xlab = "A", ylab = "M", pch = '.', las = 2, ...)
 }
 }
 \arguments{
@@ -18,6 +18,10 @@ mvaplot(x, transfo = log2, method  = "median", names = "namepart", ylim = c(-6,6
   \item{method}{method to compute M, \dQuote{mean} or \dQuote{median}.}
   \item{names}{optional vector of sample names.}
   \item{ylim}{range for the plotted M values.}
+  \item{xlab}{a label for the x axis.}
+  \item{ylab}{a label for the y axis.}
+  \item{pch}{an integer specifying a symbol or a character to be used as the default in plotting points.}
+  \item{las}{the style of axis labels.}
   \item{\dots}{optional arguments to be passed to \code{plot}.}
 }
 \details{

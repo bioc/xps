@@ -425,9 +425,11 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
       r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *exprlevel);
    }//if
 
-   const char *expropt = new char[strlen(exproption[0]) + 6];
+//   const char *expropt = new char[strlen(exproption[0]) + 6];
+   const char *expropt = new char[strlen(exproption[0]) + 17];
    expropt = strcpy((char*)expropt, exproption[0]);
-   expropt = strcat((char*)expropt, ":log2");
+//   expropt = strcat((char*)expropt, ":log2");
+   expropt = strcat((char*)expropt, ":huber:none:log2");
    manager->InitAlgorithm("expressor", "medianpolish", expropt, tmpfile, 3, pars[3], pars[4], pars[5]);
 
 // create new root data file 

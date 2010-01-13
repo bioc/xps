@@ -247,11 +247,14 @@ setGeneric("exprs",        function(object) standardGeneric("exprs"));
 setGeneric("exprs<-",      function(object, ..., value) standardGeneric("exprs<-"));
 setGeneric("se.exprs",     function(object) standardGeneric("se.exprs"));
 setGeneric("validExpr",    function(object, ...) standardGeneric("validExpr"));
+setGeneric("validSE",      function(object, ...) standardGeneric("validSE"));
 setGeneric("attachExpr",   function(object, ...) standardGeneric("attachExpr"));
 setGeneric("removeExpr",   function(object) standardGeneric("removeExpr"));
 setGeneric("xpsPreFilter", function(object, ...) standardGeneric("xpsPreFilter"));
 setGeneric("xpsUniFilter", function(object, ...) standardGeneric("xpsUniFilter"));
 setGeneric("mvaplot",      function(x, ...) standardGeneric("mvaplot"));
+setGeneric("nuseplot",     function(x, ...) standardGeneric("nuseplot"));
+setGeneric("rleplot",      function(x, ...) standardGeneric("rleplot"));
 
 
 #------------------------------------------------------------------------------#

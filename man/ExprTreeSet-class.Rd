@@ -14,10 +14,13 @@
 \alias{normType}
 \alias{normType<-,ExprTreeSet,character-method}
 \alias{normType<-}
+\alias{nuseplot,ExprTreeSet-method}
+\alias{rleplot,ExprTreeSet-method}
 \alias{removeExpr,ExprTreeSet-method}
 \alias{se.exprs,ExprTreeSet-method}
 \alias{se.exprs}
 \alias{validExpr,ExprTreeSet-method}
+\alias{validSE,ExprTreeSet-method}
 \alias{xpsNormalize,ExprTreeSet-method}
 \alias{xpsPreFilter,ExprTreeSet-method}
 \alias{xpsUniFilter,ExprTreeSet-method}
@@ -71,11 +74,15 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
     \item{mvaplot}{\code{signature(x = "ExprTreeSet")}: creates an MvA-plot.}
     \item{normType}{\code{signature(object = "ExprTreeSet")}: extracts slot \code{normtype}.}
     \item{normType<-}{\code{signature(object = "ExprTreeSet", value = "character")}: replaces slot \code{normtype}.}
+    \item{nuseplot}{\code{signature(x = "ExprTreeSet")}: creates a NUSE-plot.}
+    \item{rleplot}{\code{signature(x = "ExprTreeSet")}: creates a RLE-plot.}
     \item{removeExpr}{\code{signature(object = "ExprTreeSet")}: replaces data.frame \code{data} 
      with an empty data.frame of dim(0,0).}
     \item{se.exprs}{\code{signature(object = "ExprTreeSet")}: extracts the standard deviation data.frame.}
     \item{validExpr}{\code{signature(object = "ExprTreeSet")}: extracts a subset of columns 
      from data.frame \code{data}.}
+    \item{validSE}{\code{signature(object = "ExprTreeSet")}: extracts data columns 
+     from data.frame \code{se.exprs}.}
     \item{xpsNormalize}{\code{signature(object = "ExprTreeSet")}: applies normalization methods.}
     \item{xpsPreFilter}{\code{signature(object = "ExprTreeSet")}: applies prefiltering methods.}
     \item{xpsUniFilter}{\code{signature(object = "ExprTreeSet")}: applies unifiltering methods.}

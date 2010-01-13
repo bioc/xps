@@ -294,9 +294,9 @@ setMethod("callplot", signature(x="CallTreeSet"),
             names  = "namepart",
             col    = c("red","green","blue"),
             legend = c("P","M","A"),
-            las    = 2,
             ylim   = c(0,100),
             ylab   = "detection call [%]",
+            las    = 2,
             ...) 
    {
       if (debug.xps()) print("------callplot.CallTreeSet------")
@@ -316,9 +316,9 @@ setMethod("callplot", signature(x="CallTreeSet"),
               col       = col,
               names.arg = names,
               legend    = legend,
-              las       = las,
               ylim      = ylim,
               ylab      = ylab,
+              las       = las,
               ...);
    }
 )#callplot

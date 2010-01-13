@@ -9,7 +9,7 @@ Creates a barplot of percent Present/Marginal/Absent calls.
 \emph{Usage}
 
 \code{
-callplot(x, beside = TRUE, names = "namepart", col = c("red","green","blue"), legend = c("P","M","A"), ...)
+callplot(x, beside = TRUE, names = "namepart", col = c("red","green","blue"), legend = c("P","M","A"), ylim = c(0,100), ylab = "detection call [\%]", las = 2, ...)
 }
 }
 \arguments{
@@ -19,6 +19,9 @@ callplot(x, beside = TRUE, names = "namepart", col = c("red","green","blue"), le
   \item{names}{optional vector of sample names.}
   \item{col}{color for P/M/A bars}
   \item{legend}{legend for the plot, defaults to P/M/A.}
+  \item{ylim}{the y limits of the plot.}
+  \item{ylab}{a label for the y axis.}
+  \item{las}{the style of axis labels.}
   \item{\dots}{optional arguments to be passed to \code{barplot}.}
 }
 \details{
