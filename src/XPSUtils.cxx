@@ -1,4 +1,4 @@
-// File created: 11/02/2002                          last modified: 07/03/2009
+// File created: 11/02/2002                          last modified: 02/11/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -55,6 +55,7 @@
    #define IS_BIG_ENDIAN 1
 #endif
 
+#include <cstdlib>
 #include <new>  //needed for new (nothrow)
 
 #include "TMath.h"

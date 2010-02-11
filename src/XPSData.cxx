@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 07/25/2009
+// File created: 08/05/2002                          last modified: 02/11/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -62,6 +62,7 @@
 *
 ******************************************************************************/
 
+#include <cstdlib>
 #include <cfloat>
 #include <new>  //needed for new (nothrow)
 

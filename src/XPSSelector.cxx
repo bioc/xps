@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 09/19/2008
+// File created: 08/05/2002                          last modified: 02/11/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -39,6 +39,7 @@
 #include "Varargs.h"
 //#endif
 
+#include <cstdlib>
 #include <new>  //needed for new (nothrow)
 
 #include "TF1.h"
