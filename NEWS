@@ -1,0 +1,346 @@
+                                NEWS
+
+This file documents major changes made between different development versions of xps
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.7.4
+- XPSUtils, XPSSchemes, XPSData, XPSSelector, XPSFilter add #include <cstdlib>
+- add XManager::GetTree(), move methods from XPSHybridizer to XAlgorithm
+- add file NEWS"
+
+# changed in xps-1.7.4
+DESCRIPTION
+NEWS
+XPSUtils, XPSSchemes, XPSData, XPSSelector, XPSFilter.cxx: add "#include <cstdlib>"
+XPSBase.h,cxx: add XManager::GetTree(), move methods from XPSHybridizer to XAlgorithm
+XPSSelector.h: add XPSSelector::Calculate()
+XPSHybridizer.h,cxx: move methods from XPSHybridizer to XAlgorithm
+XPSPreProcessing.cxx: add *dummy=0 to prevent compiler error
+XPSNormation.cxx: add *dummy=0 to prevent compiler error
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.7.3
+- add XMedianPolish::StandardError() for NUSE
+- add ExprTreeSet methods validSE(), nuseplot(), rleplot()
+- update XPSSchemes.cxx to allow to export layout trees for incomplete *.CLF files
+- update examples/updateAnnotation.R"
+
+# changed in xps-1.7.3
+DESCRIPTION
+/inst/rootdata/tmp_Test3RMA.root
+callplot-,mvaplot-,nuseplot-,rleplot-.Rd
+# in R code
+TreeSetClasses.R
+methods.ExprTreeSet.R: validSE(), nuseplot(), rleplot()
+updateAnnotation.R (for vector of probesets)
+# in rootcode:
+XPSSchemes.cxx 
+TStat.h,cxx: Quantile(), IQR(), Median()
+XPSHybridizer.h,cxx: XExpressor::SetOptions(), XMedianPolish::Calculate(), XMedianPolish::StandardError()
+rwrapper.cxx   PreprocessRMA
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.7.2
+- update XExonChip::ImportTransAnnotation() to correct annot_version
+- add examples/updateAnnotation.R
+- update script4xps.R"
+
+# changed in xps-1.7.2
+DESCRIPTION
+XPSSchemes.cxx 
+updateAnnotation.R
+script4xps.R
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.7.1
+- allow using mas5() and mas5.call() with plate arrays w/o MMs 
+- update XGeneChip::ReadBinaryData() for plate arrays
+- update XGCProcesSet::DoExpress() and XGCProcesSet::DoCall() for plate arrays
+- correct PreprocessMAS5Call() for using bgcorrect
+- update script4xps.R"
+
+# changed in xps-1.7.1
+DESCRIPTION
+XPSSchemes.cxx   XGeneChip::ReadBinaryData
+PreProcessing.cxx   XGCProcesSet::DoCall  XGCProcesSet::DoExpress
+rwrapper.cxx   PreprocessMAS5Call
+script4xps.R
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.5.19
+- update script4xps.R"
+
+# changed in xps-1.5.19
+DESCRIPTION
+script4xps.R
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.5.18
+- add parameter bgcorrect.option to function mas5.call()"
+
+# changed in xps-1.5.18
+DESCRIPTION
+mas5.call.R
+methods.DataTreeSet.R 
+rwrapper.h,cxx
+mas5.call.Rd
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.5.17
+- update README
+- update dates of vignettes"
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.5.16
+- allow handling of probesets w/o MMs on Citrus.CDF
+- update XGeneChip::ReadData() for Citrus.CDF
+- update XGCProcesSet::DoExpress() and XGCProcesSet::DoCall() for Citrus array"
+
+# changed in xps-1.5.16
+DESCRIPTION
+XPSPreprocessing.h,cxx 
+XPSSchemes.cxx   (max = max+1 to prevent buffer overflow with Citrus.CDF)
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.5.15
+- validBgrd() implement 'which'
+- add vignette xpsPreprocess.Rnw
+- add example macro4xpsPreprocess.R"
+
+# changed in xps-1.5.15
+DESCRIPTION
+methods.DataTreeSet.R  (validBgrd() implement "which")
+methods.ExprTreeSet.R  (supsmu, lowess)
+normalize.R  (select="separate" vs "all","pmonly")
+express.Rd
+normalize.Rd
+XPSPreprocessing.cxx   (???verbose, comments)
+XPSNormation.cxx   (verbose, comments)
+macro4xpsPreprocess.R
+xpsPreprocess.Rnw
+figures.png
+xps.bib 
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.5.14
+- update export() to include read.table(..,comment.char='')
+- update methods.DataTreeSet.R to allow probe-level lowess and supsmu normalization
+- update rwrapper.cxx to allow probe-level lowess and supsmu normalization
+- update DoMultichipExpress() to remove problem with step size stepout for more than 10000 trees
+- protect XSectorBackground, XWeightedBackground against numCells4Bg=0
+- in XPSNormalizer.cxx change targetinten for logbase
+- in image.dev and boxplot.dev correct missing mar and las
+- make utils namePart, extenPart public and add man"
+
+# changed in xps-1.5.14
+DESCRIPTION
+NAMESPACE  (expose extenPart, namePart)
+namePart.Rd
+extenPart.Rd
+methods.ProcesSet.R  (export: read.table(comment.char=""))
+methods.DataTreeSet.R  (allow lowess and supsmu)
+boxplot.dev.R  (las, mar)
+image.dev.R  (mar)
+XPSPreprocessing.cxx   (change stepout!!!!)
+XPSHybridizer.cxx   (XSectorBackground, XWeightedBackground) protect against numCells4Bg=0
+XPSNormalizer.cxx   (targetinten for logbase)
+rwrapper.cxx   (allow lowess and supsmu)
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.5.13
+- update export(), attachExpr(), attachCall(), attachPVal() to avoid too many open files
+- update mas5(), xxx.call() and rwrapper.cxx to open root file only once
+- update XPSBase, XPSData, XPSPreprocessing, rwrapper to allow setting bufsize for tree baskets
+- update express() to allow setting bufsize for tree baskets"
+
+# changed in xps-1.5.13
+DESCRIPTION
+README 2x!!
+methods.ProcesSet.R (remove print)
+methods.DataTreeSet.R (remove print) 
+methods.ExprTreeSet.R (remove print) attachExpr
+methods.CallTreeSet.R (remove print) attachCall, attachPVal
+express.R
+XPSBase.h,cxx  bufsize
+XPSData.cxx
+XPSPreprocessing.cxx   (remove print)
+rwrapper.h,cxx   in Express fManager->SetBufSize(bufsize)
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.5.12
+- add method XGeneChipHyb::CheckChipType() to satisfy miRNA-1_0.CDF
+- update XGCProcesSet::MaxNumberCells() for miRNA-1_0.CDF
+- update XGCProcesSet::DoMultichipExpress() to reduce memory when filling and reading temporary trees
+- update XQuantileNormalizer::Calculate() to reimplement trimmed mean"
+
+# changed in xps-1.5.12
+DESCRIPTION
+XPSData.h,cxx    new function CheckChipType()
+XPSPreprocessing.cxx
+XPSNormalizer.h,cxx
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.5.11
+- update DoMultichipExpress() to reduce memory when filling temporary trees"
+
+# changed in xps-1.5.11
+DESCRIPTION
+XPSPreprocessing.cxx
+script4xps.R
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.5.10
+- update XPSPreprocessing.cxx to reduce memory consumption"
+
+# changed in xps-1.5.10
+DESCRIPTION
+XPSPreprocessing.cxx
+XPSNormalizer.cxx  (separate: msk=0 must be fMean2)
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.5.9
+- update XQuantileNormalizer to reduce memory and increase speed
+- update validOption() to allow 'separate:none'"
+
+# changed in xps-1.5.9
+DESCRIPTION
+ACKNOWLEDGMENT 2x (inst): add Simon de Bernard
+XPSNormalizer.cxx
+utils.R
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.5.8
+- for root_v5.24.00 C++ functions returning TString must return TString(0) instead of 0
+- update XQuantileNormalizer to allow improved ties handling as option like preprocessCore
+- update rma() and rwrapper.cxx to allow ties handling and to open root file only once"
+
+# changed in xps-1.5.8
+DESCRIPTION
+rma.R
+methods.DataTreeSet.R
+methods.ExprTreeSet.R  => need to remove debug code in normalize.ExprTreeSet!!!
+rma.Rd
+rwrapper.h,cxx
+XPSNormalizer.cxx
+XPSBase.cxx
+XPSUtils.cxx
+XPSProjectHandler.cxx
+XPSData.cxx
+XPSPreprocessing.cxx
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.5.7
+- update XPSSchemes.cxx to allow using exon background controls
+- update method validCall()
+- add methods validExpr() and validPVal()
+- update vignette APTvsXPS.Rnw
+- update examples script4xps2apt.R and script4bestmatch.R"
+
+# changed in xps-1.5.7
+DESCRIPTION
+NAMESPACE
+ACKNOWLEDGMENT 2x (inst)
+XPSSchemes.cxx
+TreeSetClasses.R
+methods.ExprTreeSet.R
+methods.CallTreeSet.R
+ExprTreeSet-class.Rd
+CallTreeSet-class.Rd
+validData-methods.Rd
+validExpr-methods.Rd
+validCall-methods.Rd
+exonLevel.Rd
+APTvsXPS.Rnw + png
+script4xps2apt.R
+script4bestmatch.R
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.5.6
+- eliminate buffer overflow in XTukeyBiweight::Calculate()
+- update mas5.R and rwrapper.cxx to open root file only once"
+
+# changed in xps-1.5.6
+DESCRIPTION
+configure.in
+mas5.R
+rwrapper.h,cxx
+XPSHybridizer.cxx
+XPSBase.cxx
+XPSProcessing.cxx
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.5.5
+- eliminate memory leaks caused by branch addresses
+- update root.expr.R, root.call.R and rwrapper.cxx to open root file only once"
+
+# changed in xps-1.5.5
+DESCRIPTION
+root.expr.R
+root.call.R
+rwrapper.cxx
+XPSnnn.cxx
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.5.4
+- update function exonLevel() to use affx=c(4,8,16,32)
+- add new internal function exonLevelIDs()
+- update function dataDataTreeSet() to return correct ids for mask
+- in function image() correct potential bug nrows vs ncols"
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.5.3
+- correct memory leak in function XGCProcesSet::DoMultichipExpress()
+- update exonLevel.Rd"
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.5.2
+- correct memory leak in function XWeightedBackground::Calculate()
+- change vignette extension to .Rnw"
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.5.1
+- update validData() to check for duplicate rownames
+- update XGeneChip::ImportProbeInfo() to allow both headers of xxx_probe.tab
+- update XGeneChipHyb::ReadGenericDataHeader() for genetitan plate data"
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.3.13
+- update DESCRIPTION to mention root version
+- update README"
+
+
+#-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.3.12
+- correct bug in TUnivariateTest::FDR and Hochberg
+- add method TUnivariateTest::BY
+- update method.UniFilter.R and uniTest-methods.Rd"
+
+
+
+
+
+

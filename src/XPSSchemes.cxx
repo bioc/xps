@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 12/11/2009
+// File created: 05/18/2002                          last modified: 02/11/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2009 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2010 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -63,6 +63,7 @@
 #include "Varargs.h"
 //#endif
 
+#include <cstdlib>
 #include <new>  //needed for new (nothrow)
 
 #include "THashTable.h"

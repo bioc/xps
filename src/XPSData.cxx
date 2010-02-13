@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 07/25/2009
+// File created: 08/05/2002                          last modified: 02/11/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2009 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2010 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -62,6 +62,7 @@
 *
 ******************************************************************************/
 
+#include <cstdlib>
 #include <cfloat>
 #include <new>  //needed for new (nothrow)
 

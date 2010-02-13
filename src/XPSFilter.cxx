@@ -1,4 +1,4 @@
-// File created: 12/16/2002                          last modified: 11/11/2007
+// File created: 12/16/2002                          last modified: 02/11/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2010 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -38,6 +38,8 @@
 //#ifndef ROOT_Varargs
 #include "Varargs.h"
 //#endif
+
+#include <cstdlib>
 
 #include "XPSFilter.h"
 

@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 07/31/2009
+// File created: 05/18/2002                          last modified: 01/16/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2009 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2010 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -61,6 +61,8 @@
 * Feb 2008 - Add methods GetTreeHeader() and GetTreeInfo() to XManager.
 *          - Adapt source code to compile with MS VC++ on WinXP
 * Jul 2009 - Add methods Set/GetBufSize() to change bufsize of tree branches
+* Jan 2010 - Add further methods GetOption() to XAlgorithm.
+*          - Move methods from XHybridizer to XAlgorithm.
 *
 ******************************************************************************/
 
@@ -1144,7 +1146,6 @@ TString XTreeSet::FindTree(const char *name)
    XTreeHeader *header = 0;
    header = (XTreeHeader*)fHeaders->FindObject(name);
    if (header) return header->GetString();
-//x   return 0;
    return TString(0);
 }//FindTree
 
@@ -1271,6 +1272,60 @@ XAlgorithm::~XAlgorithm()
    if (fIsFileOwner) SafeDelete(fFile);
    fFile = 0;
 }//Destructor
+
+//______________________________________________________________________________
+Int_t XAlgorithm::Calculate(Double_t &/*value1*/, Double_t &/*value2*/, Int_t &/*num*/)
+{
+   return 0;
+}//Calculate
+
+//______________________________________________________________________________
+Int_t XAlgorithm::Calculate(Int_t /*n*/, Int_t * /*x*/, Int_t * /*msk*/)
+{
+   return 0;
+}//Calculate
+
+//______________________________________________________________________________
+Int_t XAlgorithm::Calculate(Int_t /*n*/, Double_t * /*x*/, Int_t * /*msk*/)
+{
+   return 0;
+}//Calculate
+
+//______________________________________________________________________________
+Int_t XAlgorithm::Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Int_t * /*msk*/)
+{
+   return 0;
+}//Calculate
+
+//______________________________________________________________________________
+Int_t XAlgorithm::Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Double_t * /*z*/, Int_t * /*msk*/)
+{
+   return 0;
+}//Calculate
+
+//______________________________________________________________________________
+Int_t XAlgorithm::Calculate(Int_t /*n*/, Double_t * /*x*/, Int_t * /*idx*/, Int_t * /*msk*/)
+{
+   return 0;
+}//Calculate
+
+//______________________________________________________________________________
+Int_t XAlgorithm::Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Int_t * /*idx*/, Int_t * /*msk*/)
+{
+   return 0;
+}//Calculate
+
+//______________________________________________________________________________
+Int_t XAlgorithm::Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Double_t * /*z*/, Int_t * /*idx*/, Int_t * /*msk*/)
+{
+   return 0;
+}//Calculate
+
+//______________________________________________________________________________
+Int_t XAlgorithm::Calculate(Int_t /*nrow*/, Int_t /*ncol*/, Double_t ** /*table*/)
+{
+   return 0;
+}//Calculate
 
 //______________________________________________________________________________
 Double_t **XAlgorithm::CreateTable(Int_t nrow, Int_t ncol)
@@ -1416,6 +1471,96 @@ void XAlgorithm::DeleteParameters()
    if (fPars) {delete [] fPars; fPars = 0;}
    fNPar = 0;
 }//DeleteParameters
+
+//______________________________________________________________________________
+Option_t *XAlgorithm::GetOptions(const char *sep)
+{
+   // Extract substring before sep
+   if(kCSa) cout << "------XAlgorithm::GetOptions------" << endl;
+
+   TString option = SubString(fOption.Data(), sep, 0);
+
+   return (Option_t*)option.Data();
+}//GetOptions
+
+//______________________________________________________________________________
+Option_t *XAlgorithm::GetOptions(TString &suboption, const char *sep)
+{
+   // Return substring before sep as option
+   // Pass substring after sep to parameter suboption
+   // Note: suboption must be created/deleted in calling function as:
+   //       TString *subopt = new TString[1]; delete [] subopt
+   if(kCSa) cout << "------XAlgorithm::GetOptions------" << endl;
+
+   TString option;
+
+   option    = SubString(fOption.Data(), sep, 0);
+   suboption = SubString(fOption.Data(), sep, 1);
+   if (strcmp(suboption.Data(), option.Data()) == 0) {
+      suboption = "";
+   }//if
+
+   return (Option_t*)option.Data();
+}//GetOptions
+
+//______________________________________________________________________________
+Double_t *XAlgorithm::Array2Log(Int_t n, Double_t *x, Double_t neglog, const char *base)
+{
+   // Convert array x to logarithm of base and return converted x
+   // Negative values will not be converted but set to neglog
+   if(kCSa) cout << "------XAlgorithm::Array2Log------" << endl;
+
+   if (n == 0 || x == 0) return 0;
+
+   if (strcmp(base, "0") == 0) {
+      return x;
+   } else if (strcmp(base, "log2") == 0) {
+      for (Int_t i=0; i<n; i++) { 
+         x[i] = (x[i] > 0) ? TMath::Log2(x[i]) : neglog;
+      }//for_i
+   } else if (strcmp(base, "log10") == 0) {
+      for (Int_t i=0; i<n; i++) { 
+         x[i] = (x[i] > 0) ? TMath::Log10(x[i]) : neglog;
+      }//for_i
+   } else if (strcmp(base, "log") == 0) {
+      for (Int_t i=0; i<n; i++) { 
+         x[i] = (x[i] > 0) ? TMath::Log(x[i]) : neglog;
+      }//for_i
+   } else {
+      cout << "Warning: LogBase <" << base
+           << "> is not known, using LogBase = 0." << endl;
+      base = "0";
+   }//if
+
+   return x;
+}//Array2Log
+
+//______________________________________________________________________________
+Double_t *XAlgorithm::Array2Pow(Int_t n, Double_t *x, const char *base)
+{
+   // Convert array x from logarithm of base and return converted  x
+   if(kCSa) cout << "------XAlgorithm::Array2Pow------" << endl;
+
+   if (n == 0 || x == 0) return 0;
+
+   if (strcmp(base, "0") == 0) {
+      return x;
+   } else if (strcmp(base, "log2") == 0) {
+      for (Int_t i=0; i<n; i++) { 
+         x[i] = TMath::Power(2, x[i]);
+      }//for_i
+   } else if (strcmp(base, "log10") == 0) {
+      for (Int_t i=0; i<n; i++) { 
+         x[i] = TMath::Power(10, x[i]);
+      }//for_i
+   } else if (strcmp(base, "log") == 0) {
+      for (Int_t i=0; i<n; i++) { 
+         x[i] = TMath::Power(TMath::E(), x[i]);
+      }//for_i
+   }//if
+
+   return x;
+}//Array2Pow
 
 //______________________________________________________________________________
 Int_t XAlgorithm::TestNumParameters(Int_t npar)
@@ -2994,6 +3139,60 @@ Int_t XManager::DrawLeaves(const char *canvasname, const char *leafname,
                               min, max, sort, down);
    return err;
 }//DrawLeaves
+
+//______________________________________________________________________________
+TTree *XManager::GetTree(const char *treename)
+{
+   // Get tree for tree with treename. Argument treename can be:
+   // "setname.treename.exten" - treename from set setname with exten is exported
+   // "filename.root/setname.treename.exten" - as above but including filename
+   if(kCS) cout << "------XManager::GetTree------" << endl;
+
+   if (fAbort) return 0;
+
+// Extract tree extension
+   TString tname = Path2Name(treename, dSEP, ";");
+   TString exten = Path2Name(tname.Data(), ".", "");
+   if ((strcmp(exten.Data(), "") == 0) || (strcmp(exten.Data(), "root") == 0)) {
+      cerr << "Error: Tree name is missing." << endl;
+      fAbort = kTRUE;
+      return 0;
+   }//if
+
+// Extract set name and tree name
+   TString setname = "";
+   TString trename = "";
+   Int_t   numsep  = NumSeparators(tname.Data(), ".");
+   if (numsep == 2) {
+      setname = SubString(tname.Data(), ".", 0);
+      trename = SubString(tname.Data(), ".", 1);
+   } else if (numsep == 1) {
+      setname = SubString(tname.Data(), ".", 0);
+      trename = SubString(tname.Data(), ".", 0);
+   } else if (numsep == 0) {
+      cerr << "Error: Tree name is missing." << endl;
+      fAbort = kTRUE;
+      return 0;
+   }//if
+   trename += "." + exten;
+
+// Extract root filename
+   TString filename = "";
+   if (strstr(treename,".root")) {
+      filename = GetROOTName(treename) + ".root";
+      this->Open(filename.Data());
+   }//if
+   if (!fFile) {fAbort = kTRUE; return 0;}
+
+   if (!fFile->cd(setname)) {
+//      this->HandleError(errGetDir, setname);
+      cerr << "Error: Tree set <" << setname.Data() 
+           << "> could not be found in file content" << endl;
+      return 0;
+   }//if
+
+   return (TTree*)gDirectory->Get(trename);
+}//GetTree
 
 //______________________________________________________________________________
 XTreeHeader *XManager::GetTreeHeader(const char *treename)

@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 12/30/2009
+// File created: 08/05/2002                          last modified: 01/03/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2009 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2010 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -35,6 +35,16 @@
  *******************************************************************************
  */
 
+/******************************************************************************
+* Major Revision History:
+* May 2002 - Initial versions finished
+* Aug 2008 - Add summarization algorithms FARMS and DFW, classes XFARMS, XDFW
+* Oct 2008 - Add I/NI-call algorithm class XINICall
+* Jan 2010 - Move methods from XHybridizer to XAlgorithm.
+*  TO DO   - Add exon splice/summarization algorithms, class XSpliceExpressor
+*
+******************************************************************************/
+
 //#ifndef ROOT_Varargs
 #include "Varargs.h"
 //#endif
@@ -52,7 +62,6 @@
 
 #include "XPSHybridizer.h"
 #include "TStat.h"
-//#include "TMLMath.h"
 
 //debug: print function names
 const Bool_t  kCS  = 0; 
@@ -98,7 +107,6 @@ XHybridizer::XHybridizer()
    // Default Hybridizer constructor
    if(kCS) cout << "---XHybridizer::XHybridizer(default)------" << endl;
 
-   fTreeInfo  = 0;
    fLength    = 0;
    fInten1    = 0;
    fStdev1    = 0;
@@ -118,7 +126,6 @@ XHybridizer::XHybridizer(const char *name, const char *type)
    // Normal Hybridizer constructor
    if(kCS) cout << "---XHybridizer::XHybridizer------" << endl;
 
-   fTreeInfo  = 0;
    fLength    = 0;
    fInten1    = 0;
    fStdev1    = 0;
@@ -139,7 +146,6 @@ XHybridizer::~XHybridizer()
 
    this->DeleteArray();
 
-   fTreeInfo = 0;
    fInten1   = 0;
    fStdev1   = 0;
    fNPix1    = 0;
@@ -193,65 +199,6 @@ Int_t XHybridizer::SetArray(Int_t length, Double_t *array)
 
    return errNoErr;
 }//SetArray
-
-//______________________________________________________________________________
-Double_t *XHybridizer::Array2Log(Int_t n, Double_t *x, Double_t neglog, const char *base)
-{
-   // Convert array x to logarithm of base and return converted x
-   // Negative values will not be converted but set to neglog
-   if(kCSa) cout << "------XHybridizer::Array2Log------" << endl;
-
-   if (n == 0 || x == 0) return 0;
-
-   if (strcmp(base, "0") == 0) {
-      return x;
-   } else if (strcmp(base, "log2") == 0) {
-      for (Int_t i=0; i<n; i++) { 
-         x[i] = (x[i] > 0) ? TMath::Log2(x[i]) : neglog;
-      }//for_i
-   } else if (strcmp(base, "log10") == 0) {
-      for (Int_t i=0; i<n; i++) { 
-         x[i] = (x[i] > 0) ? TMath::Log10(x[i]) : neglog;
-      }//for_i
-   } else if (strcmp(base, "log") == 0) {
-      for (Int_t i=0; i<n; i++) { 
-         x[i] = (x[i] > 0) ? TMath::Log(x[i]) : neglog;
-      }//for_i
-   } else {
-      cout << "Warning: LogBase <" << base
-           << "> is not known, using LogBase = 0." << endl;
-      base = "0";
-   }//if
-
-   return x;
-}//Array2Log
-
-//______________________________________________________________________________
-Double_t *XHybridizer::Array2Pow(Int_t n, Double_t *x, const char *base)
-{
-   // Convert array x from logarithm of base and return converted  x
-   if(kCSa) cout << "------XHybridizer::Array2Pow------" << endl;
-
-   if (n == 0 || x == 0) return 0;
-
-   if (strcmp(base, "0") == 0) {
-      return x;
-   } else if (strcmp(base, "log2") == 0) {
-      for (Int_t i=0; i<n; i++) { 
-         x[i] = TMath::Power(2, x[i]);
-      }//for_i
-   } else if (strcmp(base, "log10") == 0) {
-      for (Int_t i=0; i<n; i++) { 
-         x[i] = TMath::Power(10, x[i]);
-      }//for_i
-   } else if (strcmp(base, "log") == 0) {
-      for (Int_t i=0; i<n; i++) { 
-         x[i] = TMath::Power(TMath::E(), x[i]);
-      }//for_i
-   }//if
-
-   return x;
-}//Array2Pow
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -645,7 +592,7 @@ Int_t XSectorBackground::Calculate(Int_t n, Double_t *x, Double_t *y, Double_t *
          for (ix=startX; ix<=endX; ix++) {
             for (jy=startY; jy<=endY; jy++) {
             // sector array of all or only MM intensities
-               xy = XY2Index(ix, jy);
+               xy = XY2Index(ix, jy, fNCols);
                if (msk[xy] == 1) sector[numCells++] = x[xy];
             }//for_jy
          }//for_ix
@@ -704,7 +651,7 @@ Int_t XSectorBackground::Calculate(Int_t n, Double_t *x, Double_t *y, Double_t *
          numCells = 0;
          for (ix=startX; ix<=endX; ix++) {
             for (jy=startY; jy<=endY; jy++) {
-               xy = XY2Index(ix, jy);
+               xy = XY2Index(ix, jy, fNCols);
                ij = XY2Index(j, i, numRowSec);
 //or??               ij = XY2Index(i, j, numColSec);
                y[xy] = arrMean[ij];
@@ -927,7 +874,7 @@ Int_t XWeightedBackground::Calculate(Int_t n, Double_t *x, Double_t *y,
          numCells = 0;
          for (ix=startX; ix<=endX; ix++) {
             for (jy=startY; jy<=endY; jy++) {
-               ij = XY2Index(ix, jy);
+               ij = XY2Index(ix, jy, fNCols);
 
                // weight as reciprocal distance to each centroid
                for (k=0; k<numRowSec; k++) {
@@ -998,7 +945,7 @@ Int_t XWeightedBackground::Calculate(Int_t n, Double_t *x, Double_t *y,
 
          for (ix=startX; ix<=endX; ix++) {
             for (jy=startY; jy<=endY; jy++) {
-               ij = XY2Index(ix, jy);
+               ij = XY2Index(ix, jy, fNCols);
 
                // background and noise corrected by weights
                Double_t summ = 0;

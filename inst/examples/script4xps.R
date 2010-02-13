@@ -186,6 +186,11 @@ scheme.hugene10stv1r4.na29 <- import.exon.scheme("Scheme_HuGene10stv1r4_na29",fi
                               paste(anndir,"Version09Jul/HuGene-1_0-st-v1.na29.hg18.probeset.csv",sep="/"),
                               paste(anndir,"Version09Jul/HuGene-1_0-st-v1.na29.hg18.transcript.csv",sep="/"))
 
+scheme.hugene10stv1r4.na30 <- import.exon.scheme("Scheme_HuGene10stv1r4_na30_hg19",filedir=scmdir,
+                              paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.clf",sep="/"),
+                              paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.pgf",sep="/"),
+                              paste(anndir,"Version09Nov/HuGene-1_1-st-v1.na30.1.hg19.probeset.csv",sep="/"),
+                              paste(anndir,"Version09Nov/HuGene-1_1-st-v1.na30.hg19.transcript.csv",sep="/"))
 
 # MoGene-1_0-st-v1.r3:
 scheme.mogene10stv1r3.na24 <- import.genome.scheme("Scheme_MoGene10stv1r3_na24",filedir=scmdir,

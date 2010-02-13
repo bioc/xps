@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 07/31/2009
+// File created: 05/18/2002                          last modified: 01/16/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2009 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2010 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -413,7 +413,13 @@ class XAlgorithm: public TNamed {
       Bool_t     fIsFileOwner; //! delete fFile only if TRUE
 
    protected:
-      Int_t   TestNumParameters(Int_t npar);
+      Double_t *Array2Log(Int_t n, Double_t *x, Double_t neglog, const char *base);
+      Double_t *Array2Pow(Int_t n, Double_t *x, const char *base);
+      Int_t     TestNumParameters(Int_t npar);
+
+      Int_t     XY2Index(Int_t x, Int_t y, Int_t ncol) {return (x + y*ncol);  }
+      Int_t     Index2X(Int_t index, Int_t ncol)       {return (index % ncol);}
+      Int_t     Index2Y(Int_t index, Int_t ncol)       {return (index / ncol);}
 
    public:
       XAlgorithm();
@@ -424,19 +430,20 @@ class XAlgorithm: public TNamed {
 
       virtual Int_t InitType(const char * /*type*/, Option_t * /*options*/,
                        Int_t /*npars*/, Double_t * /*pars*/) {return 0;}
-      virtual Int_t Calculate(Double_t &/*value1*/, Double_t &/*value2*/, Int_t &/*num*/)
-                                                             {return 0;}
-      virtual Int_t Calculate(Int_t /*n*/, Int_t * /*x*/, Int_t * /*msk*/)
-                                                             {return 0;}
-      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Int_t * /*msk*/)
-                                                             {return 0;}
-      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Int_t * /*msk*/)
-                                                             {return 0;}
-      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Double_t * /*z*/,
-                       Int_t * /*msk*/)                      {return 0;}
-      virtual Int_t Calculate(Int_t /*nrow*/, Int_t /*ncol*/, Double_t ** /*table*/)
-                                                             {return 0;}
-      virtual void  SetOptions(Option_t *opt) {fOption = opt; fOption.ToLower();}
+
+      virtual Int_t Calculate(Double_t &value1, Double_t &value2, Int_t &num);
+      virtual Int_t Calculate(Int_t n, Int_t *x, Int_t *msk);
+      virtual Int_t Calculate(Int_t n, Double_t *x, Int_t *msk);
+      virtual Int_t Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk);
+      virtual Int_t Calculate(Int_t n, Double_t *x, Double_t *y, Double_t *z, Int_t *msk);
+      virtual Int_t Calculate(Int_t n, Double_t *x, Int_t *idx, Int_t *msk);
+      virtual Int_t Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *idx, Int_t *msk);
+      virtual Int_t Calculate(Int_t n, Double_t *x, Double_t *y, Double_t *z, Int_t *idx, Int_t *msk);
+      virtual Int_t Calculate(Int_t nrow, Int_t ncol, Double_t **table);
+
+      virtual void      SetOptions(Option_t *opt) {fOption = opt; fOption.ToLower();}
+      virtual Option_t *GetOptions(const char *sep);
+      virtual Option_t *GetOptions(TString &suboption, const char *sep);
 
       Double_t **CreateTable(Int_t nrow, Int_t ncol);
       void       DeleteTable(Double_t **table, Int_t nrow);
@@ -450,8 +457,8 @@ class XAlgorithm: public TNamed {
                                   {fFile = file; fIsFileOwner = isOwner;}
       void      SetTreeInfo(XTreeInfo *info)  {fTreeInfo = info;}
       void      SetOption(Option_t *opt)      {fOption  = opt; fOption.ToLower();}
-      TFile    *GetFile()               const {return fFile;}
       Option_t *GetOption()             const {return fOption.Data();}
+      TFile    *GetFile()               const {return fFile;}
       Int_t     GetNumParameters()      const {return fNPar;}
       Double_t *GetParameters()         const {return fPars;}
 
@@ -590,6 +597,7 @@ class XManager: public TNamed {
                         Double_t min = -1111, Double_t max = -1111,
                         Int_t sort = 0, Bool_t down = kFALSE);
 
+      virtual TTree       *GetTree(const char *treename);
       virtual XTreeHeader *GetTreeHeader(const char *treename);
       virtual XTreeInfo   *GetTreeInfo(const char *treename);
 

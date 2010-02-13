@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 11/22/2009
+// File created: 08/05/2002                          last modified: 01/03/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2009 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2010 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -1412,6 +1412,8 @@ Int_t XGCProcesSet::Preprocess(const char *method)
       err = errAbort; goto cleanup;
    }//if
 
+// Qualify
+
 // Condense
    if (fExpressor && fExprSelector && (doExpr || doAll)) {
 //? if () cerr << "Error: At least two trees need to be selected." << endl;
@@ -1477,6 +1479,7 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
    Double_t *arrStdev = 0;  //standard deviation of probe intensities
    Double_t *arrBgrd  = 0;  //background signal of probes
    Double_t *arrNoise = 0;  //standard deviation of probe background signal
+   Double_t *dummy    = 0;  //to prevent compilation error
 
 // Get chip parameters from scheme file (also for alternative CDFs)
    if (datatree[0] == 0) return errGetTree;
@@ -1509,7 +1512,7 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
    if (err != errNoErr) goto cleanup;
 
 // Calculate mask for background
-   err = fBgrdSelector->Calculate(size, 0, 0, arrMask);
+   err = fBgrdSelector->Calculate(size, dummy, dummy, arrMask);
    if (err != errNoErr) goto cleanup;
 
 // For GCBackground only, fill arrMask with GC content:
@@ -1786,6 +1789,7 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
    Int_t    *arrMask = 0;  //mask data
    Double_t *arrIntx = 0;  //intensities for tree x (e.g. raw intensities)
    Double_t *arrInty = 0;  //intensities for tree y (e.g. output intensities)
+   Double_t *dummy   = 0;  //to prevent compilation error
 
 // Initialize memory for local arrays
    if (!(arrMask = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
@@ -1815,7 +1819,7 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
    if (strcmp(fNormalizer->GetName(), "quantile") == 0) {
 
       // get mask for data to be used for normalization
-      err = fNormSelector->Calculate(size, 0, 0, arrMask);
+      err = fNormSelector->Calculate(size, dummy, dummy, arrMask);
       if (err != errNoErr) goto cleanup;
 /*
 //?? save mask tree???
@@ -2106,6 +2110,7 @@ Int_t XGCProcesSet::DoCall(Int_t numdata, TTree **datatree,
    Double_t *arrSM    = 0;
    Int_t    *arrXP    = 0;
    Int_t    *arrXM    = 0;
+   Double_t *dummy    = 0;  //to prevent compilation error
 
    TTree   *scmtree = 0; 
    TLeaf   *scmleaf = 0;
@@ -2212,7 +2217,7 @@ Int_t XGCProcesSet::DoCall(Int_t numdata, TTree **datatree,
    if (arrMask == 0) {err = errInitMemory; goto cleanup;}
 
 // Calculate mask for detection call (set arrMask to 1 or 0)
-   err = fCallSelector->Calculate(size, 0, 0, arrMask);
+   err = fCallSelector->Calculate(size, dummy, dummy, arrMask);
    if (err != errNoErr) goto cleanup;
 
 // For DABG only, fill arrMask with GC content (GC>=0 for PM)
@@ -2467,6 +2472,7 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
    Double_t **table   = 0;
    Double_t  *arrData = 0;
    Double_t  *arrPM   = 0; 
+   Double_t  *dummy   = 0;  //to prevent compilation error
 
    TTree   *scmtree = 0; 
    TLeaf   *scmleaf = 0;
@@ -2597,7 +2603,7 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
    if (arrMask == 0) {err = errInitMemory; goto cleanup;}
 
 // Calculate mask for expression
-   err = fCallSelector->Calculate(size, 0, 0, arrMask);
+   err = fCallSelector->Calculate(size, dummy, dummy, arrMask);
    if (err != errNoErr) goto cleanup;
 
 // Init branch addresses
@@ -2623,7 +2629,7 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
          arrIndx[ij] = idx++;
       }//if
    }//for_i
-   datatree[0]->DropBaskets();  //to remove baskets from memory
+//DB   datatree[0]->DropBaskets();  //to remove baskets from memory
 
 // Get number of selected entries
    for (Int_t i=0; i<size; i++) {
@@ -3009,6 +3015,7 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
    Double_t *arrSM    = 0;
    Int_t    *arrXP    = 0;
    Int_t    *arrXM    = 0;
+   Double_t *dummy    = 0;  //to prevent compilation error
 
    TTree   *scmtree = 0; 
    TLeaf   *scmleaf = 0;
@@ -3114,7 +3121,7 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
    if (arrMask == 0) {err = errInitMemory; goto cleanup;}
 
 // Calculate mask for expression
-   err = fExprSelector->Calculate(size, 0, 0, arrMask);
+   err = fExprSelector->Calculate(size, dummy, dummy, arrMask);
    if (err != errNoErr) goto cleanup;
 
 // Initialize maximum memory for PM/MM arrays (maxnumpairs+1 to avoid potential buffer overflow)
@@ -3354,6 +3361,7 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
    Double_t **table   = 0;
    Double_t  *arrData = 0;
    Double_t  *arrPM   = 0; 
+   Double_t  *dummy   = 0;  //to prevent compilation error
 
    TTree   *scmtree = 0; 
    TLeaf   *scmleaf = 0;
@@ -3482,7 +3490,7 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
    if (arrMask == 0) {err = errInitMemory; goto cleanup;}
 
 // Calculate mask for expression
-   err = fExprSelector->Calculate(size, 0, 0, arrMask);
+   err = fExprSelector->Calculate(size, dummy, dummy, arrMask);
    if (err != errNoErr) goto cleanup;
 
 // Init branch addresses
@@ -3508,7 +3516,7 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
          arrIndx[ij] = idx++;
       }//if
    }//for_i
-   datatree[0]->DropBaskets();  //to remove baskets from memory
+//DB   datatree[0]->DropBaskets();  //to remove baskets from memory
 
 // Get number of selected entries
    for (Int_t i=0; i<size; i++) {
