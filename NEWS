@@ -4,6 +4,11 @@ This file documents major changes made between different development versions of
 
 
 #-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.7.5
+- forgot to upload XPSHybridizer.h, XPSSelector.h, XPSNormation.cxx"
+
+
+#-----------------------------------------------------------------------------------#
 svn commit -m "update to xps-1.7.4
 - XPSUtils, XPSSchemes, XPSData, XPSSelector, XPSFilter add #include <cstdlib>
 - add XManager::GetTree(), move methods from XPSHybridizer to XAlgorithm

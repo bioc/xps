@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 12/30/2009
+// File created: 08/05/2002                          last modified: 01/03/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2010 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -55,7 +55,6 @@ class TMEstimator;
 class XHybridizer: public XAlgorithm {
 
    protected:
-      XTreeInfo  *fTreeInfo;    //! tree info for current tree
       Int_t       fLength;      //length of arrays
       Double_t   *fInten1;      //[fLength] Array of intensities
       Double_t   *fStdev1;      //[fLength] Array of StdDevs
@@ -66,10 +65,6 @@ class XHybridizer: public XAlgorithm {
       Double_t   *fArray;       //[fLength] Array to be used for calculation
       Int_t       fNDefPar;     //number of default parameters
       Bool_t      fMultichip;   //TRUE if multichip algorithm
- 
-   protected:
-      Double_t *Array2Log(Int_t n, Double_t *x, Double_t neglog, const char *base);
-      Double_t *Array2Pow(Int_t n, Double_t *x, const char *base);
 
    public:
       XHybridizer();
@@ -101,12 +96,6 @@ class XBackgrounder: public XHybridizer {
    protected:
       Int_t        fNRows;       //number of rows of chip-matrix
       Int_t        fNCols;       //number of columns of chip-matrix
-
-   protected:
-      Int_t XY2Index(Int_t x, Int_t y, Int_t ncol) {return (x + y*ncol);}
-      Int_t XY2Index(Int_t x, Int_t y)             {return (x + y*fNCols);}
-      Int_t Index2X(Int_t index)                   {return (index % fNCols);}
-      Int_t Index2Y(Int_t index)                   {return (index / fNCols);}
 
    public:
       XBackgrounder();
@@ -404,6 +393,12 @@ class XDABGCall: public XCallDetector {
                                                             {return 0;}
       virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Double_t * /*z*/,
                        Int_t * /*msk*/)                     {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/,
+                       Int_t * /*idx*/, Int_t * /*msk*/)     {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/,
+                      Int_t * /*idx*/, Int_t * /*msk*/)      {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Double_t * /*z*/,
+                      Int_t * /*idx*/, Int_t * /*msk*/)      {return 0;}
       virtual Int_t Calculate(Int_t /*nrow*/, Int_t /*ncol*/, Double_t ** /*table*/)
                                                             {return 0;}
 

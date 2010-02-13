@@ -62,8 +62,23 @@ class XSelector: public XAlgorithm {
       XSelector& operator=(const XSelector& rhs);
       virtual ~XSelector();
 
-      using XAlgorithm::Calculate;
       virtual Int_t Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk); 
+      virtual Int_t Calculate(Double_t &/*value1*/, Double_t &/*value2*/, Int_t &/*num*/)
+                                                             {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Int_t * /*x*/, Int_t * /*msk*/)
+                                                             {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Int_t * /*msk*/)
+                                                             {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Double_t * /*z*/,
+                       Int_t * /*msk*/)                      {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/,
+                       Int_t * /*idx*/, Int_t * /*msk*/)     {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/,
+                      Int_t * /*idx*/, Int_t * /*msk*/)      {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Double_t * /*z*/,
+                      Int_t * /*idx*/, Int_t * /*msk*/)      {return 0;}
+      virtual Int_t Calculate(Int_t /*nrow*/, Int_t /*ncol*/, Double_t ** /*table*/)
+                                                             {return 0;}
 
       virtual void   SetOptions(Option_t *opt);
       virtual Int_t *SetMask(Int_t n, Int_t *arr);
@@ -95,8 +110,23 @@ class XRankSelector: public XSelector {
       XRankSelector(const char *name, const char *type);
       virtual ~XRankSelector();
 
-      using XAlgorithm::Calculate;
       virtual Int_t Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk); 
+      virtual Int_t Calculate(Double_t &/*value1*/, Double_t &/*value2*/, Int_t &/*num*/)
+                                                             {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Int_t * /*x*/, Int_t * /*msk*/)
+                                                             {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Int_t * /*msk*/)
+                                                             {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Double_t * /*z*/,
+                       Int_t * /*msk*/)                      {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/,
+                       Int_t * /*idx*/, Int_t * /*msk*/)     {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/,
+                      Int_t * /*idx*/, Int_t * /*msk*/)      {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Double_t * /*z*/,
+                      Int_t * /*idx*/, Int_t * /*msk*/)      {return 0;}
+      virtual Int_t Calculate(Int_t /*nrow*/, Int_t /*ncol*/, Double_t ** /*table*/)
+                                                             {return 0;}
 
       ClassDef(XRankSelector,1) //RankSelector
 };
@@ -119,8 +149,24 @@ class XProbeSelector: public XSelector {
       XProbeSelector& operator=(const XProbeSelector& rhs);
       virtual ~XProbeSelector();
 
-      using XAlgorithm::Calculate;
-      virtual Int_t  Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk); 
+      virtual Int_t Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk); 
+      virtual Int_t Calculate(Double_t &/*value1*/, Double_t &/*value2*/, Int_t &/*num*/)
+                                                             {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Int_t * /*x*/, Int_t * /*msk*/)
+                                                             {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Int_t * /*msk*/)
+                                                             {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Double_t * /*z*/,
+                       Int_t * /*msk*/)                      {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/,
+                       Int_t * /*idx*/, Int_t * /*msk*/)     {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/,
+                      Int_t * /*idx*/, Int_t * /*msk*/)      {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Double_t * /*z*/,
+                      Int_t * /*idx*/, Int_t * /*msk*/)      {return 0;}
+      virtual Int_t Calculate(Int_t /*nrow*/, Int_t /*ncol*/, Double_t ** /*table*/)
+                                                             {return 0;}
+
       virtual Int_t *SetGenomeMask(Int_t n, Int_t *arr);
       virtual Int_t *SetExonMask(Int_t n, Int_t *arr);
 
@@ -146,8 +192,22 @@ class XUnitSelector: public XProbeSelector {
       XUnitSelector& operator=(const XUnitSelector& rhs);
       virtual ~XUnitSelector();
 
-      using XAlgorithm::Calculate;
       virtual Int_t Calculate(Int_t n, Int_t *x, Int_t *msk); 
+
+      virtual Int_t Calculate(Double_t &/*value1*/, Double_t &/*value2*/, Int_t &/*num*/)
+                                                             {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Int_t * /*msk*/)
+                                                             {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Double_t * /*z*/,
+                       Int_t * /*msk*/)                      {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/,
+                       Int_t * /*idx*/, Int_t * /*msk*/)     {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/,
+                      Int_t * /*idx*/, Int_t * /*msk*/)      {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Double_t * /*z*/,
+                      Int_t * /*idx*/, Int_t * /*msk*/)      {return 0;}
+      virtual Int_t Calculate(Int_t /*nrow*/, Int_t /*ncol*/, Double_t ** /*table*/)
+                                                             {return 0;}
 
       ClassDef(XUnitSelector,1) //UnitSelector
 };
@@ -173,9 +233,23 @@ class XUserSelector: public XSelector {
       virtual ~XUserSelector();
 
       virtual void  SetOptions(Option_t *opt);
-
-      using XAlgorithm::Calculate;
       virtual Int_t Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk); 
+      virtual Int_t Calculate(Double_t &/*value1*/, Double_t &/*value2*/, Int_t &/*num*/)
+                                                             {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Int_t * /*x*/, Int_t * /*msk*/)
+                                                             {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Int_t * /*msk*/)
+                                                             {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Double_t * /*z*/,
+                       Int_t * /*msk*/)                      {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/,
+                       Int_t * /*idx*/, Int_t * /*msk*/)     {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/,
+                      Int_t * /*idx*/, Int_t * /*msk*/)      {return 0;}
+      virtual Int_t Calculate(Int_t /*n*/, Double_t * /*x*/, Double_t * /*y*/, Double_t * /*z*/,
+                      Int_t * /*idx*/, Int_t * /*msk*/)      {return 0;}
+      virtual Int_t Calculate(Int_t /*nrow*/, Int_t /*ncol*/, Double_t ** /*table*/)
+                                                             {return 0;}
 
       ClassDef(XUserSelector,1) //UserSelector
 };

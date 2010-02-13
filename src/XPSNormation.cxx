@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 06/07/2009
+// File created: 08/05/2002                          last modified: 01/03/2010
 
 // Author: Christian Stratowa 06/18/2000
 
@@ -7,7 +7,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2009 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2010 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -1059,6 +1059,7 @@ Int_t XNormedGCSet::Normalize(const char *method)
 // Initialize local arrays
    Double_t *arrX   = 0;  //to store data of reference tree
    Double_t *arrY   = 0;  //to store data of selected tree
+   Double_t *dummy  = 0;  //to prevent compilation error
    Int_t    *arrIdx = 0;  //to store unitIDs
    Int_t    *arrMsk = 0;  //mask, set to 1 if unit is selected
    if (!(arrX   = new (nothrow) Double_t[entries])) {err = errInitMemory; goto cleanup;}
@@ -1245,7 +1246,7 @@ Int_t XNormedGCSet::Normalize(const char *method)
       }//for_k
    } else if (strcmp(fSelector->GetName(), "user") == 0) {
    // User-defined mask imported for all pairs [arrX,arrY] to be normalized
-      if ((err = fSelector->Calculate(entries, 0, 0, arrMsk))) goto cleanup;
+      if ((err = fSelector->Calculate(entries, dummy, dummy, arrMsk))) goto cleanup;
       treename = Path2Name(fSelector->GetOption(), dSEP, ".") + "." + fSelector->GetTitle();
       if ((err = FillMaskTree(treename.Data(), entries, arrIdx, arrMsk))) goto cleanup;
 
