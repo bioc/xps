@@ -4,6 +4,16 @@ This file documents major changes made between different development versions of
 
 
 #-----------------------------------------------------------------------------------#
+svn commit -m "update to xps-1.7.6
+- XPSPreProcessing.cxx add #include <cstdlib>"
+
+# changed in xps-1.7.6
+DESCRIPTION
+NEWS
+XPSPreProcessing.cxx: add "#include <cstdlib>"
+
+
+#-----------------------------------------------------------------------------------#
 svn commit -m "update to xps-1.7.5
 - forgot to upload XPSHybridizer.h, XPSSelector.h, XPSNormation.cxx"
 
