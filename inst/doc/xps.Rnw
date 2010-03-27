@@ -26,7 +26,7 @@
 \begin{document}
 
 \title{Introduction to the xps Package: Overview}
-\date{October, 2009}
+\date{April, 2010}
 \author{Christian Stratowa}
 \maketitle
 
@@ -432,7 +432,7 @@ First, we need to know the tree names stored in \Rclass{data.mas5}
 getTreeNames(rootFile(data.mas5))
 @
 We decide to use tree `TestA2.wbg' (extension `wbg' stands for `weighted background', 
-see \Rfunction{?validTreeType}).
+see \Rfunction{?validTreetype}).
 
 In this case we need to export the background intensities directly from \ROOT\ file
 \Rclass{tmp\_Test3MAS5.root}. We can do this in the following way:

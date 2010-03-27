@@ -61,7 +61,8 @@
 * Aug 2007 - Add support for whole genome arrays, class XGenomeProcesSet
 * Aug 2008 - Add summarization algorithms FARMS and DFW, classes XFARMS, XDFW
 * Oct 2008 - Add I/NI-call algorithm class XINICall
-* Jul 2009 - Allow to change bufsize of tree branches
+* Jul 2009 - Add tree->DrobBasket() to avoid memory increase for >2000 trees
+*          - Allow to change bufsize of tree branches
 *
 ******************************************************************************/
 

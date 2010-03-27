@@ -7,7 +7,7 @@ oriented framework developed at CERN. Thus, the prior installation of
 ROOT is a prerequisite for the usage of this package. ROOT can be
 downloaded from http://root.cern.ch. 
 
-Copyright (C) 2000-2009 Christian Stratowa, Vienna, Austria
+Copyright (C) 2000-2010 Christian Stratowa, Vienna, Austria
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -101,7 +101,8 @@ I. Install ROOT:
    Furthermore, it is necessary to set the environment variable ROOTSYS:
    under Windows 2000/XP/2003 you can use `System' in the control panel or the
    properties of `My Computer' (under the `Advanced' tab).
-   Simply add: ROOTSYS=C:\root\bin
+   Simply add: ROOTSYS=C:\root\bin 
+          (or: ROOTSYS=C:\root      if you add %ROOTSYS%\bin to PATH)
 
 
  Ic.  Notes on  ROOT:
@@ -205,13 +206,13 @@ II.  Install package 'xps':
 
  IIa.  Install 'xps' from source
 
-   Currently, xps can be downloaded as gezipped source file "xps_1.6.0.tar.gz"
+   Currently, xps can be downloaded as gezipped source file "xps_1.6.4.tar.gz"
    for MacOS X (Intel and PPC) and for Linux
 
    It can be installed with:
-      R CMD INSTALL xps_1.6.0.tar.gz
+      R CMD INSTALL xps_1.6.4.tar.gz
    or e.g. on a Mac in the User library:
-      R CMD INSTALL -l ~/Library/R/library xps_1.6.0.tar.gz
+      R CMD INSTALL -l ~/Library/R/library xps_1.6.4.tar.gz
 
    However, the recommended way to install packages from source is:
       source("http://bioconductor.org/biocLite.R")
@@ -226,7 +227,7 @@ II.  Install package 'xps':
       biocLite("xps")
 
    Important note: 
-   Please note that Bioconductor has built the xps binaries for release BioC 2.6
+   Please note that Bioconductor has built the xps binaries for release BioC 2.5
    using ROOT version root_v5.24.00. Thus it is absolutely essential to install
    this ROOT version first, and not the currently recommended version, otherwise
    calling xps will result in an error message.You can always download any version
@@ -237,6 +238,11 @@ II.  Install package 'xps':
 
    The Windows binary of xps can be downloaded from the Bioconductor web site, and
    installed using: biocLite("xps")
+
+   If you run xps from Rterm check if `System' in the control panel does contain the 
+   following environment variables:
+      PATH:   C:\Programs\R\R-2.10.1\bin;%ROOTSYS%\bin;
+      ROOTSYS:C:\root
 
    If you want to install xps from source, then you need to do the following:
    You can still install the binaries for ROOT and R but in addition you need 
@@ -249,7 +255,7 @@ II.  Install package 'xps':
    by Microsoft:
       C:\Program Files (x86)\Microsoft Visual Studio 9\VC\vcvarsall.bat (or a similar path).
    Then you can install xps from source as usual:
-      R CMD INSTALL xps_1.6.0.tar.gz
+      R CMD INSTALL xps_1.6.4.tar.gz
 
 
  IId.  Tested architectures
@@ -257,7 +263,7 @@ II.  Install package 'xps':
    Currently, package 'xps' has been built (with R CMD INSTALL) and
    passed R CMD check with no errors and no warnings on the following computers:
    1. MacBook Pro Core 2 Duo 2GHz with 2 GB RAM running MacOS X 10.4.8 and 10.4.11
-      R versions tested: R-2.7.x, R-2.8.x, R-2.9.0
+      R versions tested: R-2.7.x, R-2.8.x, R-2.9.x, R-2.10.x
    2. PowerBook Titanium G4 550MHz with 1 GB RAM running MacOS X 10.4.9 and 10.4.11
       R versions tested: R-2.5.0, R-2.6.0, R-2.8.0
    3. HP Compaq nx6110 Intel Centrino 1.4 GHz with 512 MB RAM with Fedora Core 4
@@ -265,7 +271,7 @@ II.  Install package 'xps':
    4. HP Compaq nx6110 Intel Centrino 1.4 GHz with 512 MB RAM with Windows XP
       R versions tested: R-2.6.2, R-2.7.0, R-2.7.1
    5. VMware Fusion on MacBook Pro running Windows XP or openSUSE 11.1
-      R versions tested: R-2.8.x, R-2.9.0
+      R versions tested: R-2.8.x, R-2.9.0, R-2.10.x
       
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

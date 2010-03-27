@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 06/19/2009
+// File created: 08/05/2002                          last modified: 02/26/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2009 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2010 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -1220,6 +1220,41 @@ void XProcesSet::AddExprTreeInfo(TTree *tree, const char *name, Option_t *option
 
    tree->GetUserInfo()->Add(info);
 }//AddExprTreeInfo
+
+//______________________________________________________________________________
+Int_t XProcesSet::InitGroups(Int_t &n, Int_t *gid, TTree **tree, const char **extens)
+{
+   // Initialize group IDs for n trees
+   // Only group IDs for trees with correct name and extension (from list extens)
+   // will be added to array gid.
+   // Note: n will return the array size of gid for correct trees only
+   if(kCS) cout << "------XProcesSet::InitGroups------" << endl;
+
+// Get group ID for trees with correct name and extension only
+   Int_t idx = 0;
+   for (Int_t k=0; k<n; k++) {
+      TString    name  = tree[k]->GetName();
+      TString    exten = Path2Name(tree[k]->GetName(),".","");
+      XIdxString *str  = (XIdxString*)(fSelections->FindObject(name));
+      if ((strcmp(name.Data(),str->GetName()) == 0) &&
+           HasExtension(exten.Data(), extens)) {
+         tree[idx] = tree[k];
+         gid[idx]  = str->GetIndex();
+         idx++;
+      }//if
+   }//for_k
+
+// Return size of array for correct trees only
+   n = idx;
+
+// Check if at least 2 trees are selected
+   if (n < 2) {
+      cout << "Error: Less than two trees selected" << endl;
+      return errGetTree;
+   }//if
+
+   return errNoErr;
+}//InitGroups
 
 //______________________________________________________________________________
 const char *XProcesSet::GetTranscriptID(XTransAnnotation *annot)

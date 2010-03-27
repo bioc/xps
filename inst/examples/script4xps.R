@@ -4,7 +4,7 @@
 # Note: please feel free to copy-paste the examples of interest and adapt the
 #       examples to your own needs
 #
-# Copyright (c) 2007-2009 Christian Stratowa, Vienna, Austria.
+# Copyright (c) 2007-2010 Christian Stratowa, Vienna, Austria.
 # All rights reserved.
 #
 #------------------------------------------------------------------------------#
@@ -186,6 +186,7 @@ scheme.hugene10stv1r4.na29 <- import.exon.scheme("Scheme_HuGene10stv1r4_na29",fi
                               paste(anndir,"Version09Jul/HuGene-1_0-st-v1.na29.hg18.probeset.csv",sep="/"),
                               paste(anndir,"Version09Jul/HuGene-1_0-st-v1.na29.hg18.transcript.csv",sep="/"))
 
+# note: need to use corrected the probeset annotation file "na30.1"
 scheme.hugene10stv1r4.na30 <- import.exon.scheme("Scheme_HuGene10stv1r4_na30_hg19",filedir=scmdir,
                               paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.clf",sep="/"),
                               paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.pgf",sep="/"),
@@ -321,6 +322,12 @@ scheme.huex10stv2r2.na29 <- import.exon.scheme("Scheme_HuEx10stv2r2_na29",filedi
                             paste(anndir,"Version09Jul/HuEx-1_0-st-v2.na29.hg18.probeset.csv",sep="/"),
                             paste(anndir,"Version09Jul/HuEx-1_0-st-v2.na29.hg18.transcript.csv",sep="/"))
 
+scheme.huex10stv2r2.na30 <- import.exon.scheme("Scheme_HuEx10stv2r2_na30",filedir=scmdir,
+                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
+                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
+                            paste(anndir,"Version09Jul/HuEx-1_0-st-v2.na30.hg19.probeset.csv",sep="/"),
+                            paste(anndir,"Version09Jul/HuEx-1_0-st-v2.na30.hg19.transcript.csv",sep="/"))
+
 # HuEx-1_0-st-v2.r2 old annotation:
 scheme.huex10stv2r2.old <- import.exon.scheme("Scheme_HuEx10stv2r2_old",filedir=scmdir,
                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
@@ -359,6 +366,12 @@ scheme.moex10stv1r2.na25 <- import.exon.scheme("Scheme_MoEx10stv2r2_na25",filedi
                             paste(libdir,"MoEx_libraryfile/MoEx-1_0-st-v1.r2.pgf",sep="/"),
                             paste(anndir,"Version08Mar/MoEx-1_0-st-v1.na25.mm9.probeset.csv",sep="/"),
                             paste(anndir,"Version08Mar/MoEx-1_0-st-v1.na25.mm9.transcript.csv",sep="/"))
+
+scheme.moex10stv1r2.na30 <- import.exon.scheme("Scheme_MoEx10stv2r2_na30",filedir=scmdir,
+                            paste(libdir,"MoEx_libraryfile/MoEx-1_0-st-v1.r2.clf",sep="/"),
+                            paste(libdir,"MoEx_libraryfile/MoEx-1_0-st-v1.r2.pgf",sep="/"),
+                            paste(anndir,"Version09Nov/MoEx-1_0-st-v1.na30.mm9.probeset.csv",sep="/"),
+                            paste(anndir,"Version09Nov/MoEx-1_0-st-v1.na30.mm9.transcript.csv",sep="/"))
 
 # RaEx-1_0-st-v1.r2:
 scheme.raex10stv1r2.na21 <- import.exon.scheme("Scheme_RaEx10stv2r2_na21",filedir=scmdir,
@@ -433,8 +446,8 @@ export(scheme.test3.na27, treetype="prb", outfile="Test3_prb.txt")
 export(scheme.test3.na27, treetype="ann", outfile="Test3_ann.txt")
 
 # export as table and import as data.frame
-idx <- export(scheme.test3.na27, treetype="idx", outfile="Test3_idx.txt",as.dataframe=T)
-ann <- export(scheme.test3.na27, treetype="ann", outfile="Test3_ann.txt",as.dataframe=T)
+idx <- export(scheme.test3.na27, treetype="idx", outfile="Test3_idx.txt",as.dataframe=TRUE)
+ann <- export(scheme.test3.na27, treetype="ann", outfile="Test3_ann.txt",as.dataframe=TRUE)
 
 ### attach mask later: if import parameter was: as.dataframe=FALSE
 scheme.test3.na27 <- attachMask(scheme.test3.na27)
@@ -896,12 +909,12 @@ data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataT
 ### preprocess raw data ###
 
 # 1. RMA
-data.rma <- rma(data.test3,"Test3RMA",tmpdir="",background="pmonly",normalize=T)
+data.rma <- rma(data.test3,"Test3RMA",tmpdir="",background="pmonly",normalize=TRUE)
 
 # 2. MAS5
-data.mas5 <- mas5(data.test3,"Test3MAS5",,tmpdir="",normalize=T,sc=500)
-# to store all trees (including e.g. background trees) in same ROOT file, use "update=T"
-data.mas5 <- mas5(data.test3,"Test3MAS5All",,tmpdir="",normalize=T,sc=500, update=T)
+data.mas5 <- mas5(data.test3,"Test3MAS5",,tmpdir="",normalize=TRUE,sc=500)
+# to store all trees (including e.g. background trees) in same ROOT file, use "update=TRUE"
+data.mas5 <- mas5(data.test3,"Test3MAS5All",,tmpdir="",normalize=TRUE,sc=500, update=TRUE)
 
 # 3. MAS5 detection call
 call.mas5 <- mas5.call(data.test3,"Test3Call",tmpdir="")
@@ -1002,12 +1015,12 @@ data.u133p2 <- root.data(scheme.u133p2, paste(datdir,"HuTissuesU133P2_cel.root",
 ### preprocess raw data ###
 
 # 1. RMA
-data.rma <- rma(data.u133p2,"MixU133P2RMA",tmpdir="",background="pmonly",normalize=T)
+data.rma <- rma(data.u133p2,"MixU133P2RMA",tmpdir="",background="pmonly",normalize=TRUE)
 
 # 2. MAS5
-data.mas5 <- mas5(data.u133p2,"MixU133P2MAS5",,tmpdir="",normalize=T,sc=500)
-# to store all trees (including e.g. background trees) in same ROOT file, use "update=T"
-data.mas5 <- mas5(data.u133p2,"MixU133P2MAS5All",,tmpdir="",normalize=T,sc=500, update=T)
+data.mas5 <- mas5(data.u133p2,"MixU133P2MAS5",,tmpdir="",normalize=TRUE,sc=500)
+# to store all trees (including e.g. background trees) in same ROOT file, use "update=TRUE"
+data.mas5 <- mas5(data.u133p2,"MixU133P2MAS5All",,tmpdir="",normalize=TRUE,sc=500, update=TRUE)
 
 # 3. MAS5 detection call
 call.mas5 <- mas5.call(data.u133p2,"MixU133P2Call",tmpdir="")
@@ -1066,7 +1079,7 @@ mvaplot.dev(data.mas5, pch=20, names="BreastA.tmn_LEVEL", dev="png",outfile="MvA
 
 # present call plots
 callplot(call.mas5)
-callplot(call.mas5, beside=F, ylim=c(0,125))
+callplot(call.mas5, beside=FALSE, ylim=c(0,125))
 #callplot(call.dabg)
 
 # image for rma background intensities
@@ -1113,21 +1126,21 @@ datdir <- getwd()
 # transcript: metacore
 # ok for 6 exon arrays in RAM
 data.rma <- rma(data.exon,"HuExonMixRMAMetacore",filedir=datdir,tmpdir="",background="antigenomic",
-                normalize=T,option="transcript",exonlevel="metacore+affx")
+                normalize=TRUE,option="transcript",exonlevel="metacore+affx")
 # for many exon arrays you may decide to use tmpdir (see helpfile for more information)
 tmpdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Exon/temp"
 data.rma.tmp <- rma(data.exon,"HuExonMixRMAtmpMetacore",filedir=datdir,tmpdir=tmpdir,background="antigenomic",
-                    normalize=T,option="transcript",exonlevel="metacore+affx")
+                    normalize=TRUE,option="transcript",exonlevel="metacore+affx")
 # probeset: metacore
 data.rma.ps <- rma(data.exon,"HuExonMixRMAMetacorePS",filedir=datdir,tmpdir="",background="antigenomic",
-                   normalize=T,option="probeset",exonlevel="metacore+affx")
+                   normalize=TRUE,option="probeset",exonlevel="metacore+affx")
 
 # 2. MAS5
 data.mas5 <- mas5(data.exon,"HuExonMixMAS5Metacore",filedir=datdir,tmpdir="",
-                  normalize=T,sc=500,option="transcript",exonlevel="metacore+affx")
-# to store all trees (including e.g. background trees) in same ROOT file, use "update=T"
+                  normalize=TRUE,sc=500,option="transcript",exonlevel="metacore+affx")
+# to store all trees (including e.g. background trees) in same ROOT file, use "update=TRUE"
 data.mas5 <- mas5(data.exon,"HuExonMixExonMAS5MetacoreAll",filedir=datdir,tmpdir="",
-                  normalize=T,sc=500,option="transcript",exonlevel="metacore+affx", update=T)
+                  normalize=TRUE,sc=500,option="transcript",exonlevel="metacore+affx", update=TRUE)
 
 # 3. MAS5 detection call (yes, this is possible for exon arrays)
 # note: alpha1 and alpha2 need to be adjusted to get usable P/M/A calls
@@ -1244,14 +1257,14 @@ datdir <- getwd()
 
 # 1. RMA
 data.rma <- rma(data.genome,"HuGeneMixRMAMetacore",filedir=datdir,tmpdir="",
-                background="antigenomic",normalize=T,exonlevel="metacore+affx")
+                background="antigenomic",normalize=TRUE,exonlevel="metacore+affx")
 
 # 2. MAS5
 data.mas5 <- mas5(data.genome,"HuGeneMixMAS5Metacore",filedir=datdir,tmpdir="",
-                  normalize=T,sc=500,exonlevel="metacore+affx")
-# to store all trees (including e.g. background trees) in same ROOT file, use "update=T"
+                  normalize=TRUE,sc=500,exonlevel="metacore+affx")
+# to store all trees (including e.g. background trees) in same ROOT file, use "update=TRUE"
 data.mas5 <- mas5(data.genome,"HuGeneMixExonMAS5MetacoreAll",filedir=datdir,tmpdir="",
-                  normalize=T,sc=500,exonlevel="metacore+affx", update=T)
+                  normalize=TRUE,sc=500,exonlevel="metacore+affx", update=TRUE)
 
 # 3. MAS5 detection call (yes, this is possible for exon arrays)
 # note: alpha1 and alpha2 need to be adjusted to get usable P/M/A calls
@@ -1358,10 +1371,10 @@ data.u133ppm <- root.data(scheme.u133ppm, paste(datdir,"TestDataHTU133PPM_cel.ro
 ### preprocess raw data ###
 
 # 1. RMA
-data.rma <- rma(data.u133ppm,"TestDataHTU133PPM_RMA",tmpdir="",background="pmonly",normalize=T)
+data.rma <- rma(data.u133ppm,"TestDataHTU133PPM_RMA",tmpdir="",background="pmonly",normalize=TRUE)
 
 # 2. MAS5: 
-data.mas5 <- mas5(data.u133ppm,"TestDataHTU133PPM_MAS5",tmpdir="",normalize=T,sc=500)
+data.mas5 <- mas5(data.u133ppm,"TestDataHTU133PPM_MAS5",tmpdir="",normalize=TRUE,sc=500)
 
 # get data.frames
 expr.rma <- validData(data.rma)
@@ -1393,10 +1406,10 @@ data.u133ppm <- root.data(scheme.u133ppm, paste(datdir,"TestDataGeneTitan_cel.ro
 
 ### preprocess raw data ###
 # 1. RMA
-data.rma <- rma(data.u133ppm,"TestDataGeneTitan_RMA",tmpdir="",background="pmonly",normalize=T)
+data.rma <- rma(data.u133ppm,"TestDataGeneTitan_RMA",tmpdir="",background="pmonly",normalize=TRUE)
 
 # 2. MAS5: 
-data.mas5 <- mas5(data.u133ppm,"TestDataHTU133PPM_MAS5",tmpdir="",normalize=T,sc=500)
+data.mas5 <- mas5(data.u133ppm,"TestDataHTU133PPM_MAS5",tmpdir="",normalize=TRUE,sc=500)
 
 # 3. MAS5 detection call: need to use background-corrected data!!
 call.mas5 <- mas5.call(data.u133ppm,"TestDataHTU133PPM_Call",tmpdir="",bgcorrect.option="correctbg")
@@ -1438,10 +1451,10 @@ data.u219 <- root.data(scheme.u219, paste(datdir,"MaqcDataHGU219_cel.root",sep="
 
 ### preprocess raw data ###
 # 1. RMA
-data.rma <- rma(data.u219,"MaqcDataHGU219_RMA",tmpdir="",background="pmonly",normalize=T)
+data.rma <- rma(data.u219,"MaqcDataHGU219_RMA",tmpdir="",background="pmonly",normalize=TRUE)
 
 # 2. MAS5: not possible since no MM
-data.mas5 <- mas5(data.u219,"MaqcDataHGU219_MAS5",tmpdir="",normalize=T,sc=500)
+data.mas5 <- mas5(data.u219,"MaqcDataHGU219_MAS5",tmpdir="",normalize=TRUE,sc=500)
 
 # 3. MAS5 detection call: need to use background-corrected data!!
 call.mas5 <- mas5.call(data.u219,"MaqcDataHGU219_Call",tmpdir="",bgcorrect.option="correctbg")
@@ -1483,7 +1496,7 @@ data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataT
 
 ### second, preprocess raw data if not already done
 # e.g. RMA and MAS5 detection call
-data.rma <- rma(data.test3,"Test3RMA",tmpdir="",background="pmonly",normalize=T)
+data.rma <- rma(data.test3,"Test3RMA",tmpdir="",background="pmonly",normalize=TRUE)
 call.mas5 <- mas5.call(data.test3,"Test3Call",tmpdir="")
 
 
@@ -1514,11 +1527,11 @@ dim(ds.all)
 head(ds.all)
 
 # alternatively use export.filter to export selected variables only
-ds.ufr <- export.filter(rma.ufr,treetype="stt",varlist="fUnitName:fName:fSymbol:mn1:mn2:fc:pval:mask",as.dataframe=T)
+ds.ufr <- export.filter(rma.ufr,treetype="stt",varlist="fUnitName:fName:fSymbol:mn1:mn2:fc:pval:mask",as.dataframe=TRUE)
 dim(ds.ufr)
 head(ds.ufr)
 
-ds.all <- export.filter(rma.ufr,treetype="stt",varlist="fUnitName:fName:fSymbol:mn1:mn2:fc:pval:flag",as.dataframe=T)
+ds.all <- export.filter(rma.ufr,treetype="stt",varlist="fUnitName:fName:fSymbol:mn1:mn2:fc:pval:flag",as.dataframe=TRUE)
 dim(ds.all)
 head(ds.all)
 
@@ -1548,7 +1561,7 @@ scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root
 data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
 
 ### 1.step: background - rma
-data.bg.rma <- bgcorrect.rma(data.test3,"Test3RMABgrd",filedir=datdir,tmpdir="")
+data.bg.rma <- bgcorrect.rma(data.test3,"Test3RMABgrd",filedir=datdir)
 
 # attach data
 data.bg.rma <- attachMask(data.bg.rma)
@@ -1572,7 +1585,7 @@ data.bg.rma <- removeInten(data.bg.rma)
 data.bg.rma <- removeBgrd(data.bg.rma)
 
 ### 2step: normalization - quantile
-data.qu.rma <- normalize.quantiles(data.bg.rma,"Test3RMANorm",filedir=datdir,tmpdir="")
+data.qu.rma <- normalize.quantiles(data.bg.rma,"Test3RMANorm",filedir=datdir)
 
 # plot intensities
 data.qu.rma <- attachInten(data.qu.rma)
@@ -1594,10 +1607,10 @@ mboxplot(data.mp.rma)
 mvaplot(data.mp.rma, pch=20, ylim=c(-4,4))
 mvaplot.dev(data.mp.rma, pch=20, ylim=c(-4,4))
 
-### alternatively save all data in same ROOT file using "update=T"
+### alternatively save all data in same ROOT file using "update=TRUE"
 data.bg.rmall <- bgcorrect.rma(data.test3,"Test3RMAall",filedir=datdir,tmpdir="")
-data.qu.rmall <- normalize.quantiles(data.bg.rmall,"Test3RMAall",filedir=datdir,tmpdir="",update=T)
-data.mp.rmall <- summarize.rma(data.qu.rmall,"Test3RMAall",filedir=datdir,tmpdir="",update=T)
+data.qu.rmall <- normalize.quantiles(data.bg.rmall,"Test3RMAall",filedir=datdir,tmpdir="",update=TRUE)
+data.mp.rmall <- summarize.rma(data.qu.rmall,"Test3RMAall",filedir=datdir,tmpdir="",update=TRUE)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1606,17 +1619,19 @@ data.mp.rmall <- summarize.rma(data.qu.rmall,"Test3RMAall",filedir=datdir,tmpdir
 
 ### compute rma stepwise:
 #   important: for stepwise computation tmpdir must be tmpdir="" otherwise the root file will be empty!
-expr.bg.rma <- express(data.test3,"Test3ExprsBgrd",filedir=datdir,tmpdir="",update=F,
+expr.bg.rma <- express(data.test3,"Test3ExprsBgrd",filedir=datdir,tmpdir="",update=FALSE,
                bgcorrect.method="rma",bgcorrect.select="none",bgcorrect.option="pmonly:epanechnikov",bgcorrect.params=c(16384))
 
-expr.qu.rma <- express(expr.bg.rma,"Test3ExprsNorm",filedir=datdir,tmpdir="",update=F,
+#   important: for stepwise computation tmpdir must be tmpdir="" otherwise the root file will be empty!
+expr.qu.rma <- express(expr.bg.rma,"Test3ExprsNorm",filedir=datdir,tmpdir="",update=FALSE,
                normalize.method="quantile",normalize.select="pmonly",normalize.option="transcript:together:none",normalize.logbase="0",normalize.params=c(0.0))
 
-expr.mp.rma <- express(expr.qu.rma,"Test3ExprsSum",filedir=datdir,tmpdir="",update=F,
+#   important: only for summarization step can tmpdir be defined!
+expr.mp.rma <- express(expr.qu.rma,"Test3ExprsSum",filedir=datdir,tmpdir="",update=FALSE,
                summarize.method="medianpolish",summarize.select="pmonly",summarize.option="transcript",summarize.logbase="log2",summarize.params=c(10, 0.01, 1.0))
 
 # rma
-data.rma <- rma(data.test3,"tmp_Test3RMA",tmpdir="",background="pmonly",normalize=T)
+data.rma <- rma(data.test3,"tmp_Test3RMA",tmpdir="",background="pmonly",normalize=TRUE)
 
 # compare results
 expr <- exprs(data.rma)
@@ -1625,7 +1640,8 @@ expr.mp <- exprs(expr.mp.rma)
 plot((expr.mp[,1] - expr[,1])/expr[,1], ylim=c(-0.0001,0.0001))
 
 ### compute rma with a single call to express()
-expr.rma <- express(data.test3,"Test3Exprs",filedir=datdir,tmpdir="",update=F,
+#   important: for single call to express() tmpdir can be defined!
+expr.rma <- express(data.test3,"Test3Exprs",filedir=datdir,tmpdir="",update=FALSE,
             bgcorrect.method="rma",bgcorrect.select="none",bgcorrect.option="pmonly:epanechnikov",bgcorrect.params=c(16384),
             normalize.method="quantile",normalize.select="pmonly",normalize.option="transcript:together:none",normalize.logbase="0",normalize.params=c(0.0),
             summarize.method="medianpolish",summarize.select="pmonly",summarize.option="transcript",summarize.logbase="log2",summarize.params=c(10, 0.01, 1.0))

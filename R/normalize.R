@@ -26,6 +26,11 @@ function(xps.data,
          verbose   = TRUE)
 {
    if (is(xps.data, "DataTreeSet") || is(xps.data, "ExprTreeSet")) {
+      if (tmpdir != "") {
+         warning(paste("setting <tmpdir> will result in empty file ",
+                 sQuote(paste(filename,".root", sep="")), sep=""));
+      }#if 
+
       set <- xpsNormalize(xps.data,
                           filename  = filename,
                           filedir   = filedir,

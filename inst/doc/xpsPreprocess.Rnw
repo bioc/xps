@@ -28,7 +28,7 @@
 %-----------------------------------------------------------------------
 \title{Introduction to the xps Package: Function \Rfunction{express()}}
 %-----------------------------------------------------------------------
-\date{October, 2009}
+\date{April, 2010}
 \author{Christian Stratowa}
 \maketitle
 

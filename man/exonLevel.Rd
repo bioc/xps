@@ -44,7 +44,7 @@ Exon levels can also be combined, with following combinations being most useful:
   \code{exonlevel="core+extended+full"}:  \tab supported plus predicted probesets \cr
 }
 
-Exon level annotations are described in the Affymetrix whitepaper exon\_probeset\_trans\_clust\_whitepaper.pdf: \cr 
+Exon level annotations are described in the Affymetrix whitepaper exon_probeset_trans_clust_whitepaper.pdf: \cr 
 \dQuote{Exon Probeset Annotations and Transcript Cluster Groupings}.
 
 Parameter \code{exonlevel} determines not only which probes are used for medianpolish, but also

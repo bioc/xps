@@ -1,4 +1,4 @@
-// File created: 12/16/2002                          last modified: 12/18/2007
+// File created: 12/16/2002                          last modified: 02/26/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2010 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -575,7 +575,6 @@ class XUnivarSet: public XAnalySet {
 
    private:
       void  AddHeader(const char *treename, Int_t treeid);
-      Int_t InitGroups(Int_t &n, Int_t *gid, TTree **tree, const char **extens);
       Int_t UniTest(Int_t n, TTree **tree, const char *leafname,
                const char *outtree, const char *varlist, Option_t *option);
       Int_t Filter(Int_t n, TTree **tree, const char *leafname, Int_t nc,

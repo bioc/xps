@@ -45,12 +45,12 @@ necessary to supply the requested \code{option} and \code{exonlevel}.
 Following \code{option}s are valid for exon arrays:
 \tabular{ll}{
   \code{transcript}: \tab expression levels are computed for transcript clusters,
-   i.e. probe sets containing the same \sQuote{transcript\_cluster\_id}. \cr
+   i.e. probe sets containing the same \sQuote{transcript_cluster_id}. \cr
   \code{exon}: \tab expression levels are computed for exon clusters,
-   i.e. probe sets containing the same \sQuote{exon\_id}, where each exon cluster
+   i.e. probe sets containing the same \sQuote{exon_id}, where each exon cluster
    consists of one or more \code{probeset}s. \cr
   \code{probeset}: \tab expression levels are computed for individual probe sets,
-   i.e. for each \sQuote{probeset\_id}. \cr
+   i.e. for each \sQuote{probeset_id}. \cr
 }
 Following \code{exonlevel} annotations are valid for exon arrays:
 \tabular{lll}{
@@ -77,7 +77,7 @@ Exon levels can also be combined, with following combinations being most useful:
   \code{exonlevel="core+extended+full"}:  \tab supported plus predicted probesets \cr
 }
 
-Exon level annotations are described in the Affymetrix whitepaper exon\_probeset\_trans\_clust\_whitepaper.pdf: \cr 
+Exon level annotations are described in the Affymetrix whitepaper exon_probeset_trans_clust_whitepaper.pdf: \cr 
 \dQuote{Exon Probeset Annotations and Transcript Cluster Groupings}.
 
 In order to use an alternative \code{\link{SchemeTreeSet}} set the corresponding SchemeSet \code{xps.scheme}.

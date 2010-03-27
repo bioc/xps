@@ -5,7 +5,7 @@
 # Note: please feel free to copy-paste the examples of interest and adapt the
 #       examples to your own needs
 #
-# Copyright (c) 2007-2009 Christian Stratowa, Vienna, Austria.
+# Copyright (c) 2007-2010 Christian Stratowa, Vienna, Austria.
 # All rights reserved.
 #
 #------------------------------------------------------------------------------#
@@ -368,14 +368,14 @@ datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Exon/hutissues/hugene"
 
 # 1. RMA
 data.g.rma <- rma(data.genome,"HuGeneMixRMAMetacore",filedir=datdir,tmpdir="",
-                  background="antigenomic",normalize=T,exonlevel="metacore+affx")
+                  background="antigenomic",normalize=TRUE,exonlevel="metacore+affx")
 
 # 2. MAS5
 data.g.mas5 <- mas5(data.genome,"HuGeneMixMAS5Metacore",filedir=datdir,tmpdir="",
-                    normalize=T,sc=500,exonlevel="metacore+affx")
+                    normalize=TRUE,sc=500,exonlevel="metacore+affx")
 # to store all trees (including e.g. background trees) in same ROOT file, use "update=T"
 data.g.mas5 <- mas5(data.genome,"HuGeneMixMAS5MetacoreAll",filedir=datdir,tmpdir="",
-                    normalize=T,sc=500,exonlevel="metacore+affx", update=T)
+                    normalize=TRUE,sc=500,exonlevel="metacore+affx", update=TRUE)
 
 # 3. MAS5 detection call (yes, this is possible for genome/exon arrays)
 # note: alpha1 and alpha2 need to be adjusted to get usable P/M/A calls
@@ -453,19 +453,19 @@ datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Exon/hutissues/exon"
 # transcript: metacore
 # ok for 6 exon arrays in RAM
 data.x.rma <- rma(data.exon,"MixRMAMetacore",filedir=datdir,tmpdir="",background="antigenomic",
-                  normalize=T,option="transcript",exonlevel="metacore")
+                  normalize=TRUE,option="transcript",exonlevel="metacore")
 # for many exon arrays you may decide to use tmpdir (see helpfile for more information)
 tmpdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Exon/temp"
 data.x.rma.tmp <- rma(data.exon,"MixRMAtmpMetacore",filedir=datdir,tmpdir=tmpdir,background="antigenomic",
-                      normalize=T,option="transcript",exonlevel="metacore")
+                      normalize=TRUE,option="transcript",exonlevel="metacore")
 # probeset: metacore
 data.x.rma.ps <- rma(data.exon,"MixRMAMetacorePS",filedir=datdir,tmpdir="",background="antigenomic",
-                     normalize=T,option="probeset",exonlevel="metacore")
+                     normalize=TRUE,option="probeset",exonlevel="metacore")
 
 # 2. MAS5
 # to store all trees (including e.g. background trees) in same ROOT file, use "update=T"
 data.x.mas5 <- mas5(data.exon,"MixExonMAS5MetacoreAll",filedir=datdir,tmpdir="",
-                    normalize=T,sc=500,option="transcript",exonlevel="metacore", update=T)
+                    normalize=TRUE,sc=500,option="transcript",exonlevel="metacore", update=TRUE)
 
 # 3. MAS5 detection call (yes, this is possible for exon arrays)
 # note: alpha1 and alpha2 need to be adjusted to get usable P/M/A calls
@@ -664,7 +664,7 @@ datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Exon/hutissues/exon"
 # 1. RMA
 # transcript: metacore
 data.x.rma <- rma(data.exon,"MixRMAMetacore",filedir=datdir,tmpdir="",background="antigenomic",
-                  normalize=T,option="transcript",exonlevel="metacore")
+                  normalize=TRUE,option="transcript",exonlevel="metacore")
 
 # root plots
 root.density(data.x.rma, "*", w=400, h=400)
@@ -714,18 +714,18 @@ data.x.rma <- rma(data.exon,"HuExonRMAMetacore",filedir=datdir,tmpdir="",backgro
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 ### 1.step: background - rma
-data.bg.rma <- bgcorrect.rma(data.exon, "HuExonRMABgrd", filedir=datdir, tmpdir="", 
+data.bg.rma <- bgcorrect.rma(data.exon, "HuExonRMABgrd", filedir=datdir, 
                select="antigenomic", exonlevel="metacore+affx")
 # or:
-data.bg.rma <- bgcorrect(data.exon, "HuExonRMABgrd", filedir=datdir, tmpdir="", 
+data.bg.rma <- bgcorrect(data.exon, "HuExonRMABgrd", filedir=datdir,  
                method="rma", select="antigenomic", option="pmonly:epanechnikov",
                params=c(16384), exonlevel="metacore+affx")
 
 ### 2step: normalization - quantile
 data.qu.rma <- normalize.quantiles(data.bg.rma, "HuExonRMANorm", filedir=datdir , 
-               tmpdir="", exonlevel="metacore+affx")
+               exonlevel="metacore+affx")
 # or:
-data.qu.rma <- normalize(data.bg.rma, "HuExonRMANorm", filedir=datdir, tmpdir="", 
+data.qu.rma <- normalize(data.bg.rma, "HuExonRMANorm", filedir=datdir,
                method="quantile", select="pmonly", option="transcript:together:none", 
                logbase="0", params=c(0.0), exonlevel="metacore+affx")
 
@@ -749,17 +749,20 @@ plot((expr.mp[,1] - expr.x[,1])/expr.x[,1], ylim=c(-0.0001,0.0001))
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 ### compute rma stepwise
-expr.bg.rma <- express(data.exon, "HuExonExprsBgrd", filedir=datdir, tmpdir="", update=F,
+#   important: for stepwise computation tmpdir must be tmpdir="" otherwise the root file will be empty!
+expr.bg.rma <- express(data.exon, "HuExonExprsBgrd", filedir=datdir, tmpdir="", update=FALSE,
                bgcorrect.method="rma", bgcorrect.select="antigenomic",
                bgcorrect.option="pmonly:epanechnikov", bgcorrect.params=c(16384),
                exonlevel="metacore+affx")
 
-expr.qu.rma <- express(expr.bg.rma, "HuExonExprsNorm", filedir=datdir, tmpdir="", update=F,
+#   important: for stepwise computation tmpdir must be tmpdir="" otherwise the root file will be empty!
+expr.qu.rma <- express(expr.bg.rma, "HuExonExprsNorm", filedir=datdir, tmpdir="", update=FALSE,
                normalize.method="quantile", normalize.select="pmonly",
                normalize.option="transcript:together:none", normalize.logbase="0",
                normalize.params=c(0.0), exonlevel="metacore+affx")
 
-expr.mp.rma <- express(expr.qu.rma, "HuExonExprsSum", filedir=datdir, tmpdir="", update=F,
+#   important: only for summarization step can tmpdir be defined!
+expr.mp.rma <- express(expr.qu.rma, "HuExonExprsSum", filedir=datdir, tmpdir="", update=FALSE,
                summarize.method="medianpolish", summarize.select="pmonly", 
                summarize.option="transcript", summarize.logbase="log2", 
                summarize.params=c(10, 0.01, 1.0), exonlevel="metacore+affx")
@@ -771,7 +774,7 @@ expr.mp <- exprs(expr.mp.rma)
 plot((expr.mp[,1] - expr.x[,1])/expr.x[,1], ylim=c(-0.0001,0.0001))
 
 ### compute rma with a single call to express()
-expr.rma <- express(data.exon,"HuExonExprs",filedir=datdir,tmpdir="",update=F,
+expr.rma <- express(data.exon,"HuExonExprs",filedir=datdir,tmpdir="",update=FALSE,
             bgcorrect.method="rma",bgcorrect.select="antigenomic",bgcorrect.option="pmonly:epanechnikov",bgcorrect.params=c(16384),
             normalize.method="quantile",normalize.select="pmonly",normalize.option="transcript:together:none",normalize.logbase="0",normalize.params=c(0.0),
             summarize.method="medianpolish",summarize.select="pmonly",summarize.option="transcript",summarize.logbase="log2",summarize.params=c(10, 0.01, 1.0),

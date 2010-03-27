@@ -4,7 +4,7 @@
 # Note: please feel free to copy-paste the examples of interest and adapt the
 #       examples to your own needs
 #
-# Copyright (c) 2009-2009 Christian Stratowa, Vienna, Austria.
+# Copyright (c) 2009-2010 Christian Stratowa, Vienna, Austria.
 # All rights reserved.
 #
 #------------------------------------------------------------------------------#
@@ -91,13 +91,13 @@ head(xps.rma)
 
 
 ## express: rma 
-expr.rma <- express(data.u133p2, "tmp_U133P2Exprs", filedir=outdir, tmpdir="", update=F,
+expr.rma <- express(data.u133p2, "tmp_U133P2Exprs", filedir=outdir, tmpdir="", update=FALSE,
             bgcorrect.method="rma", bgcorrect.select="none", bgcorrect.option="pmonly:epanechnikov", bgcorrect.params=c(16384),
             normalize.method="quantile", normalize.select="pmonly", normalize.option="transcript:together:none", normalize.logbase="0", normalize.params=c(0.0),
             summarize.method="medianpolish", summarize.select="pmonly", summarize.option="transcript", summarize.logbase="log2", summarize.params=c(10, 0.01, 1.0))
 
 ## xpsPreprocess: since express is only wrapper function
-expr.rma <- xpsPreprocess(data.u133p2,"tmp_U133P2Exprs",filedir=outdir,tmpdir="",update=F,
+expr.rma <- xpsPreprocess(data.u133p2,"tmp_U133P2Exprs",filedir=outdir,tmpdir="",update=FALSE,
             bgcorrect.method="rma", bgcorrect.select="none", bgcorrect.option="pmonly:epanechnikov", bgcorrect.params=c(16384),
             normalize.method="quantile", normalize.select="pmonly", normalize.option="transcript:together:none", normalize.logbase="0", normalize.params=c(0.0),
             summarize.method="medianpolish", summarize.select="pmonly", summarize.option="transcript", summarize.logbase="log2", summarize.params=c(10, 0.01, 1.0))
@@ -116,7 +116,7 @@ head(xprs.rma)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 ## rma background: numpoints=16384
-bgrd.rma <- express(data.u133p2, "tmp_BgrdRMA", filedir=outdir, update=F,
+bgrd.rma <- express(data.u133p2, "tmp_BgrdRMA", filedir=outdir, tmpdir="", update=FALSE,
             bgcorrect.method="rma", bgcorrect.select="none", bgcorrect.option="pmonly:epanechnikov",
             bgcorrect.params=c(16384))
 
@@ -202,7 +202,7 @@ root.hist2D(bgrd.rma, "BreastA.int", "BreastB.int", option="COLZ")
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 ## quantile normalization: trim=0.0
-norm.qu <- express(bgrd.rma, "tmp_NormQuan", filedir=outdir, update=FALSE, 
+norm.qu <- express(bgrd.rma, "tmp_NormQuan", filedir=outdir, tmpdir="", update=FALSE, 
            normalize.method="quantile", normalize.select="pmonly", normalize.option="transcript:together:none", normalize.logbase="0", normalize.params=c(0.0), 
            verbose=TRUE)
 
@@ -298,7 +298,7 @@ dev.off()
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 ## rma background: numpoints=16384
-bgrd.rma <- express(data.u133p2, "tmp_BgrdRMA", filedir=outdir, update=FALSE,
+bgrd.rma <- express(data.u133p2, "tmp_BgrdRMA", filedir=outdir, tmpdir="", update=FALSE,
             bgcorrect.method="rma", bgcorrect.select="none", bgcorrect.option="pmonly:epanechnikov",
             bgcorrect.params=c(16384))
 
@@ -609,14 +609,14 @@ gc()
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 ## quantile normalization: bgrd.rma, trim=0.0
-norm.qu <- express(bgrd.rma, "tmp_NormQuan", filedir=outdir, update=FALSE, 
+norm.qu <- express(bgrd.rma, "tmp_NormQuan", filedir=outdir, tmpdir="", update=FALSE, 
            normalize.method="quantile", normalize.select="pmonly", normalize.option="transcript:together:none",
            normalize.logbase="0", normalize.params=c(0.0, 1.0))
 
 ## see above
 
 ## quantile normalization: bgrd.mas, trim=0.0
-norm.qu <- express(bgrd.mas, "tmp_NormQuan", filedir=outdir, update=FALSE, 
+norm.qu <- express(bgrd.mas, "tmp_NormQuan", filedir=outdir, tmpdir="", update=FALSE, 
            normalize.method="quantile", normalize.select="all", normalize.option="transcript:together:none",
            normalize.logbase="0", normalize.params=c(0.0, 1.0))
 

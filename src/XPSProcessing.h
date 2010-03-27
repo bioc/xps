@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 04/27/2008
+// File created: 08/05/2002                          last modified: 02/26/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2010 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -278,6 +278,7 @@ class XProcesSet: public XTreeSet {
    protected:
       virtual void  AddExprTreeInfo(TTree *tree, const char *name, Option_t *option,
                        Int_t nunits, Double_t min, Double_t max);
+      virtual Int_t InitGroups(Int_t &n, Int_t *gid, TTree **tree, const char **extens);
 
       virtual const char *GetTranscriptID(XTransAnnotation *anno);
       virtual const char *GetTranscriptID(XUnit *unit, XTransAnnotation *annot, Int_t type);

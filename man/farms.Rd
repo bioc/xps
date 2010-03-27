@@ -53,8 +53,8 @@ This function computes the FARMS (Factor Analysis for Robust Microarray Summariz
 measure described in Hochreiter et al. for both expression arrays and exon arrays. 
 
 Parameter \code{version} currently allows the user to choose between the original implementation 
-of FARMS as implemented in package \sQuote{farms\_1.3.0} or enhanced FARMS as implemented in 
-package \sQuote{farms\_1.3.1}. By default \code{version="1.3.1"} is used.
+of FARMS as implemented in package \sQuote{farms_1.3.0} or enhanced FARMS as implemented in 
+package \sQuote{farms_1.3.1}. By default \code{version="1.3.1"} is used.
 
 Parameter \code{weight} is a hyperparameter which determines the influence of the prior. For 
 \code{version="1.3.1"} the value in the range of [0,1]. 
@@ -71,12 +71,12 @@ For exon arrays it is necessary to supply the requested \code{option} and \code{
 Following \code{option}s are valid for exon arrays:
 \tabular{ll}{
   \code{transcript}: \tab expression levels are computed for transcript clusters,
-   i.e. probe sets containing the same \sQuote{transcript\_cluster\_id}. \cr
+   i.e. probe sets containing the same \sQuote{transcript_cluster_id}. \cr
   \code{exon}: \tab expression levels are computed for exon clusters,
-   i.e. probe sets containing the same \sQuote{exon\_id}, where each exon cluster
+   i.e. probe sets containing the same \sQuote{exon_id}, where each exon cluster
    consists of one or more \code{probeset}s. \cr
   \code{probeset}: \tab expression levels are computed for individual probe sets,
-   i.e. for each \sQuote{probeset\_id}. \cr
+   i.e. for each \sQuote{probeset_id}. \cr
 }
 Following \code{exonlevel} annotations are valid for exon arrays:
 \tabular{lll}{
@@ -103,7 +103,7 @@ Exon levels can also be combined, with following combinations being most useful:
   \code{exonlevel="core+extended+full"}:  \tab supported plus predicted probesets \cr
 }
 
-Exon level annotations are described in the Affymetrix whitepaper exon\_probeset\_trans\_clust\_whitepaper.pdf: \cr 
+Exon level annotations are described in the Affymetrix whitepaper exon_probeset_trans_clust_whitepaper.pdf: \cr 
 \dQuote{Exon Probeset Annotations and Transcript Cluster Groupings}.
 
 In order to use an alternative \code{\link{SchemeTreeSet}} set the corresponding SchemeSet \code{xps.scheme}.

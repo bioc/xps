@@ -26,7 +26,7 @@
 \begin{document}
 
 \title{Introduction to the xps Package: Comparison to Affymetrix Power Tools (APT)}
-\date{June, 2009}
+\date{April, 2010}
 \author{Christian Stratowa}
 \maketitle
 

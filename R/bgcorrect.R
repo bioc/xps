@@ -22,6 +22,12 @@ function(xps.data,
          verbose   = TRUE)
 {
    if (is(xps.data, "DataTreeSet")) {
+      if (tmpdir != "") {
+         stop(paste("setting <tmpdir> will result in empty file ",
+              sQuote(paste(filename,".root", sep="")),
+              ":  <tmpdir> will be removed in the next release of xps!", sep=""));
+      }#if 
+
       set <- xpsBgCorrect(xps.data,
                           filename  = filename,
                           filedir   = filedir,

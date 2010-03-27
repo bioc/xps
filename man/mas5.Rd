@@ -44,19 +44,19 @@ xpsMAS5(object, ...)
 }
 \details{
 This function computes the Affymetrix MAS 5.0 expression measure as implemented in XPS.
-Although this implementation is based on the Affymetrix \sQuote{sadd\_whitepaper.pdf}, it 
+Although this implementation is based on the Affymetrix \sQuote{sadd_whitepaper.pdf}, it 
 can be used to compute an expression level for both expression arrays and exon arrays. 
 For exon arrays it is necessary to supply the requested \code{option} and \code{exonlevel}.
 
 Following \code{option}s are valid for exon arrays:
 \tabular{ll}{
   \code{transcript}: \tab expression levels are computed for transcript clusters,
-   i.e. probe sets containing the same \sQuote{transcript\_cluster\_id}. \cr
+   i.e. probe sets containing the same \sQuote{transcript_cluster_id}. \cr
   \code{exon}: \tab expression levels are computed for exon clusters,
-   i.e. probe sets containing the same \sQuote{exon\_id}, where each exon cluster
+   i.e. probe sets containing the same \sQuote{exon_id}, where each exon cluster
    consists of one or more \code{probeset}s. \cr
   \code{probeset}: \tab expression levels are computed for individual probe sets,
-   i.e. for each \sQuote{probeset\_id}. \cr
+   i.e. for each \sQuote{probeset_id}. \cr
 }
 Following \code{exonlevel} annotations are valid for exon arrays:
 \tabular{lll}{
@@ -85,7 +85,7 @@ Exon levels can also be combined, with following combinations being most useful:
 }
 
 Exon level annotations are described in the Affymetrix whitepaper 
-\sQuote{exon\_probeset\_trans\_clust\_whitepaper.pdf}.
+\sQuote{exon_probeset_trans_clust_whitepaper.pdf}.
 
 If \code{normalize=TRUE} then the expression levels will be scaled to \code{sc}. 
 For \code{sc=0} the expression levels will be scaled to the mean expression level.
@@ -113,7 +113,7 @@ Santa Clara, CA, whitepaper.
 \url{http://www.affymetrix.com/support/technical/whitepapers/sadd_whitepaper.pdf}
 
 Affymetrix (2005) Exon Probeset Annotations and Transcript Cluster Groupings, Affymetrix Inc., 
-Santa Clara, CA, exon\_probeset\_trans\_clust\_whitepaper.pdf.
+Santa Clara, CA, exon_probeset_trans_clust_whitepaper.pdf.
 }
 \seealso{\code{\link{express}}}
 \examples{
