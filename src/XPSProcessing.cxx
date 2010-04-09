@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 02/26/2010
+// File created: 08/05/2002                          last modified: 03/15/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -101,7 +101,7 @@ const char *kTypeCNrm[]  = { "mean",
 
 // expression trees after summarization
 const char *kExtenExpr[] = { "amn", "gmn", "wmn", "gcm", "wdf", "adf", "tbw",
-                             "mdp", "frm", "dfw", ""};
+                             "mdp", "frm", "dfw", "fir", ""};
 const char *kTypeExpr[]  = { "arithmeticmean",
                              "geometricmean",
                              "weightedmean",
@@ -112,6 +112,7 @@ const char *kTypeExpr[]  = { "arithmeticmean",
                              "medianpolish",
                              "farms",
                              "dfw",
+                             "firma",
                              ""};
 
 // detection call trees

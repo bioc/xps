@@ -57,29 +57,29 @@ setClass("ProjectInfo",
 )#ProjectInfo
 
 # generic methods for class ProjectInfo
-setGeneric("projectInfo",     function(object) standardGeneric("projectInfo"));
+setGeneric("projectInfo",     function(object)        standardGeneric("projectInfo"));
 setGeneric("projectInfo<-",   function(object, value) standardGeneric("projectInfo<-"));
-setGeneric("authorInfo",      function(object) standardGeneric("authorInfo"));
+setGeneric("authorInfo",      function(object)        standardGeneric("authorInfo"));
 setGeneric("authorInfo<-",    function(object, value) standardGeneric("authorInfo<-"));
-setGeneric("datasetInfo",     function(object) standardGeneric("datasetInfo"));
+setGeneric("datasetInfo",     function(object)        standardGeneric("datasetInfo"));
 setGeneric("datasetInfo<-",   function(object, value) standardGeneric("datasetInfo<-"));
-setGeneric("sourceInfo",      function(object) standardGeneric("sourceInfo"));
+setGeneric("sourceInfo",      function(object)        standardGeneric("sourceInfo"));
 setGeneric("sourceInfo<-",    function(object, value) standardGeneric("sourceInfo<-"));
-setGeneric("sampleInfo",      function(object) standardGeneric("sampleInfo"));
+setGeneric("sampleInfo",      function(object)        standardGeneric("sampleInfo"));
 setGeneric("sampleInfo<-",    function(object, value) standardGeneric("sampleInfo<-"));
-setGeneric("cellineInfo",     function(object) standardGeneric("cellineInfo"));
+setGeneric("cellineInfo",     function(object)        standardGeneric("cellineInfo"));
 setGeneric("cellineInfo<-",   function(object, value) standardGeneric("cellineInfo<-"));
-setGeneric("primcellInfo",    function(object) standardGeneric("primcellInfo"));
+setGeneric("primcellInfo",    function(object)        standardGeneric("primcellInfo"));
 setGeneric("primcellInfo<-",  function(object, value) standardGeneric("primcellInfo<-"));
-setGeneric("tissueInfo",      function(object) standardGeneric("tissueInfo"));
+setGeneric("tissueInfo",      function(object)        standardGeneric("tissueInfo"));
 setGeneric("tissueInfo<-",    function(object, value) standardGeneric("tissueInfo<-"));
-setGeneric("biopsyInfo",      function(object) standardGeneric("biopsyInfo"));
+setGeneric("biopsyInfo",      function(object)        standardGeneric("biopsyInfo"));
 setGeneric("biopsyInfo<-",    function(object, value) standardGeneric("biopsyInfo<-"));
-setGeneric("arrayInfo",       function(object) standardGeneric("arrayInfo"));
+setGeneric("arrayInfo",       function(object)        standardGeneric("arrayInfo"));
 setGeneric("arrayInfo<-",     function(object, value) standardGeneric("arrayInfo<-"));
-setGeneric("hybridizInfo",    function(object) standardGeneric("hybridizInfo"));
+setGeneric("hybridizInfo",    function(object)        standardGeneric("hybridizInfo"));
 setGeneric("hybridizInfo<-",  function(object, value) standardGeneric("hybridizInfo<-"));
-setGeneric("treatmentInfo",   function(object) standardGeneric("treatmentInfo"));
+setGeneric("treatmentInfo",   function(object)        standardGeneric("treatmentInfo"));
 setGeneric("treatmentInfo<-", function(object, value) standardGeneric("treatmentInfo<-"));
 
 
@@ -107,17 +107,17 @@ setClass("TreeSet",
 )#TreeSet
 
 # generic methods for class TreeSet
-setGeneric("rootFile",     function(object) standardGeneric("rootFile"));
+setGeneric("rootFile",     function(object)        standardGeneric("rootFile"));
 setGeneric("rootFile<-",   function(object, value) standardGeneric("rootFile<-"));
-setGeneric("fileDir",      function(object) standardGeneric("fileDir"));
+setGeneric("fileDir",      function(object)        standardGeneric("fileDir"));
 setGeneric("fileDir<-",    function(object, value) standardGeneric("fileDir<-"));
-setGeneric("setName",      function(object) standardGeneric("setName"));
+setGeneric("setName",      function(object)        standardGeneric("setName"));
 setGeneric("setName<-",    function(object, value) standardGeneric("setName<-"));
-setGeneric("setType",      function(object) standardGeneric("setType"));
+setGeneric("setType",      function(object)        standardGeneric("setType"));
 setGeneric("setType<-",    function(object, value) standardGeneric("setType<-"));
-setGeneric("treeNames",    function(object) standardGeneric("treeNames"));
-setGeneric("export",       function(object,...) standardGeneric("export"));
-setGeneric("root.browser", function(object) standardGeneric("root.browser"));
+setGeneric("treeNames",    function(object)        standardGeneric("treeNames"));
+setGeneric("export",       function(object,...)    standardGeneric("export"));
+setGeneric("root.browser", function(object)        standardGeneric("root.browser"));
 
 
 #------------------------------------------------------------------------------#
@@ -139,16 +139,16 @@ setClass("SchemeTreeSet",
 )#SchemeTreeSet
 
 # generic methods for class SchemeTreeSet
-setGeneric("chipName",   function(object) standardGeneric("chipName"));
-setGeneric("chipType",   function(object) standardGeneric("chipType"));
+setGeneric("chipName",   function(object)        standardGeneric("chipName"));
+setGeneric("chipType",   function(object)        standardGeneric("chipType"));
 setGeneric("chipType<-", function(object, value) standardGeneric("chipType<-"));
-setGeneric("chipMask",   function(object) standardGeneric("chipMask"));
+setGeneric("chipMask",   function(object)        standardGeneric("chipMask"));
 setGeneric("chipMask<-", function(object, value) standardGeneric("chipMask<-"));
-setGeneric("probeInfo",  function(object) standardGeneric("probeInfo"));
-setGeneric("nrows",      function(object) standardGeneric("nrows"));
-setGeneric("ncols",      function(object) standardGeneric("ncols"));
-setGeneric("attachMask", function(object) standardGeneric("attachMask"));
-setGeneric("removeMask", function(object) standardGeneric("removeMask"));
+setGeneric("probeInfo",  function(object)        standardGeneric("probeInfo"));
+setGeneric("nrows",      function(object)        standardGeneric("nrows"));
+setGeneric("ncols",      function(object)        standardGeneric("ncols"));
+setGeneric("attachMask", function(object)        standardGeneric("attachMask"));
+setGeneric("removeMask", function(object)        standardGeneric("removeMask"));
 
 
 #------------------------------------------------------------------------------#
@@ -168,15 +168,15 @@ setClass("ProcesSet",
 )#ProcesSet
 
 # generic methods for class ProcesSet
-setGeneric("schemeFile",  function(object) standardGeneric("schemeFile"));
+setGeneric("schemeFile",  function(object)        standardGeneric("schemeFile"));
 setGeneric("schemeFile<-",function(object, value) standardGeneric("schemeFile<-"));
-setGeneric("schemeSet",   function(object) standardGeneric("schemeSet"));
+setGeneric("schemeSet",   function(object)        standardGeneric("schemeSet"));
 setGeneric("schemeSet<-", function(object, value) standardGeneric("schemeSet<-"));
-setGeneric("getTreeData", function(object, ...) standardGeneric("getTreeData"));
-setGeneric("validData",   function(object, ...) standardGeneric("validData"));
-setGeneric("boxplot",     function(x, ...) standardGeneric("boxplot"));
-setGeneric("mboxplot",    function(x, ...) standardGeneric("mboxplot"));
-setGeneric("hist",        function(x, ...) standardGeneric("hist"));
+setGeneric("getTreeData", function(object, ...)   standardGeneric("getTreeData"));
+setGeneric("validData",   function(object, ...)   standardGeneric("validData"));
+setGeneric("boxplot",     function(x, ...)        standardGeneric("boxplot"));
+setGeneric("mboxplot",    function(x, ...)        standardGeneric("mboxplot"));
+setGeneric("hist",        function(x, ...)        standardGeneric("hist"));
 
 
 #------------------------------------------------------------------------------#
@@ -196,32 +196,33 @@ setClass("DataTreeSet",
 )#DataTreeSet
 
 # generic methods for class DataTreeSet
-setGeneric("intensity",     function(object) standardGeneric("intensity"));
+setGeneric("intensity",     function(object)             standardGeneric("intensity"));
 setGeneric("intensity<-",   function(object, ..., value) standardGeneric("intensity<-"));
-setGeneric("background",    function(object) standardGeneric("background"));
-setGeneric("background<-",  function(object, value) standardGeneric("background<-"));
-setGeneric("bgtreeNames",   function(object) standardGeneric("bgtreeNames"));
-setGeneric("attachInten",   function(object, ...) standardGeneric("attachInten"));
-setGeneric("removeInten",   function(object) standardGeneric("removeInten"));
-setGeneric("attachBgrd",    function(object, ...) standardGeneric("attachBgrd"));
-setGeneric("removeBgrd",    function(object) standardGeneric("removeBgrd"));
-setGeneric("validBgrd",     function(object, ...) standardGeneric("validBgrd"));
-setGeneric("addData",       function(object, ...) standardGeneric("addData"));
-setGeneric("pm",            function(object, ...) standardGeneric("pm"));
-setGeneric("mm",            function(object, ...) standardGeneric("mm"));
-setGeneric("rawCELName",    function(object, ...) standardGeneric("rawCELName"));
-setGeneric("xpsRMA",        function(object, ...) standardGeneric("xpsRMA"));
-setGeneric("xpsMAS4",       function(object, ...) standardGeneric("xpsMAS4"));
-setGeneric("xpsMAS5",       function(object, ...) standardGeneric("xpsMAS5"));
-setGeneric("xpsMAS5Call",   function(object, ...) standardGeneric("xpsMAS5Call"));
-setGeneric("xpsDABGCall",   function(object, ...) standardGeneric("xpsDABGCall"));
-setGeneric("xpsINICall",    function(object, ...) standardGeneric("xpsINICall"));
-setGeneric("xpsPreprocess", function(object, ...) standardGeneric("xpsPreprocess"));
-setGeneric("xpsBgCorrect",  function(object, ...) standardGeneric("xpsBgCorrect"));
-setGeneric("xpsNormalize",  function(object, ...) standardGeneric("xpsNormalize"));
-setGeneric("xpsSummarize",  function(object, ...) standardGeneric("xpsSummarize"));
-setGeneric("pmplot",        function(x, ...) standardGeneric("pmplot"));
-setGeneric("image",         function(x, ...) standardGeneric("image"));
+setGeneric("background",    function(object)             standardGeneric("background"));
+setGeneric("background<-",  function(object, value)      standardGeneric("background<-"));
+setGeneric("bgtreeNames",   function(object)             standardGeneric("bgtreeNames"));
+setGeneric("attachInten",   function(object, ...)        standardGeneric("attachInten"));
+setGeneric("removeInten",   function(object)             standardGeneric("removeInten"));
+setGeneric("attachBgrd",    function(object, ...)        standardGeneric("attachBgrd"));
+setGeneric("removeBgrd",    function(object)             standardGeneric("removeBgrd"));
+setGeneric("validBgrd",     function(object, ...)        standardGeneric("validBgrd"));
+setGeneric("addData",       function(object, ...)        standardGeneric("addData"));
+setGeneric("pm",            function(object, ...)        standardGeneric("pm"));
+setGeneric("mm",            function(object, ...)        standardGeneric("mm"));
+setGeneric("rawCELName",    function(object, ...)        standardGeneric("rawCELName"));
+setGeneric("xpsRMA",        function(object, ...)        standardGeneric("xpsRMA"));
+setGeneric("xpsFIRMA",      function(object, ...)        standardGeneric("xpsFIRMA"));
+setGeneric("xpsMAS4",       function(object, ...)        standardGeneric("xpsMAS4"));
+setGeneric("xpsMAS5",       function(object, ...)        standardGeneric("xpsMAS5"));
+setGeneric("xpsMAS5Call",   function(object, ...)        standardGeneric("xpsMAS5Call"));
+setGeneric("xpsDABGCall",   function(object, ...)        standardGeneric("xpsDABGCall"));
+setGeneric("xpsINICall",    function(object, ...)        standardGeneric("xpsINICall"));
+setGeneric("xpsPreprocess", function(object, ...)        standardGeneric("xpsPreprocess"));
+setGeneric("xpsBgCorrect",  function(object, ...)        standardGeneric("xpsBgCorrect"));
+setGeneric("xpsNormalize",  function(object, ...)        standardGeneric("xpsNormalize"));
+setGeneric("xpsSummarize",  function(object, ...)        standardGeneric("xpsSummarize"));
+setGeneric("pmplot",        function(x, ...)             standardGeneric("pmplot"));
+setGeneric("image",         function(x, ...)             standardGeneric("image"));
 
 
 #------------------------------------------------------------------------------#
@@ -239,22 +240,22 @@ setClass("ExprTreeSet",
 )#ExprTreeSet
 
 # generic methods for class ExprTreeSet
-setGeneric("exprType",     function(object) standardGeneric("exprType"));
-setGeneric("exprType<-",   function(object, value) standardGeneric("exprType<-"));
-setGeneric("normType",     function(object) standardGeneric("normType"));
-setGeneric("normType<-",   function(object, value) standardGeneric("normType<-"));
-setGeneric("exprs",        function(object) standardGeneric("exprs"));
+setGeneric("exprType",     function(object)             standardGeneric("exprType"));
+setGeneric("exprType<-",   function(object, value)      standardGeneric("exprType<-"));
+setGeneric("normType",     function(object)             standardGeneric("normType"));
+setGeneric("normType<-",   function(object, value)      standardGeneric("normType<-"));
+setGeneric("exprs",        function(object)             standardGeneric("exprs"));
 setGeneric("exprs<-",      function(object, ..., value) standardGeneric("exprs<-"));
-setGeneric("se.exprs",     function(object) standardGeneric("se.exprs"));
-setGeneric("validExpr",    function(object, ...) standardGeneric("validExpr"));
-setGeneric("validSE",      function(object, ...) standardGeneric("validSE"));
-setGeneric("attachExpr",   function(object, ...) standardGeneric("attachExpr"));
-setGeneric("removeExpr",   function(object) standardGeneric("removeExpr"));
-setGeneric("xpsPreFilter", function(object, ...) standardGeneric("xpsPreFilter"));
-setGeneric("xpsUniFilter", function(object, ...) standardGeneric("xpsUniFilter"));
-setGeneric("mvaplot",      function(x, ...) standardGeneric("mvaplot"));
-setGeneric("nuseplot",     function(x, ...) standardGeneric("nuseplot"));
-setGeneric("rleplot",      function(x, ...) standardGeneric("rleplot"));
+setGeneric("se.exprs",     function(object)             standardGeneric("se.exprs"));
+setGeneric("validExpr",    function(object, ...)        standardGeneric("validExpr"));
+setGeneric("validSE",      function(object, ...)        standardGeneric("validSE"));
+setGeneric("attachExpr",   function(object, ...)        standardGeneric("attachExpr"));
+setGeneric("removeExpr",   function(object)             standardGeneric("removeExpr"));
+setGeneric("xpsPreFilter", function(object, ...)        standardGeneric("xpsPreFilter"));
+setGeneric("xpsUniFilter", function(object, ...)        standardGeneric("xpsUniFilter"));
+setGeneric("mvaplot",      function(x, ...)             standardGeneric("mvaplot"));
+setGeneric("nuseplot",     function(x, ...)             standardGeneric("nuseplot"));
+setGeneric("rleplot",      function(x, ...)             standardGeneric("rleplot"));
 
 
 #------------------------------------------------------------------------------#
@@ -272,17 +273,17 @@ setClass("CallTreeSet",
 )#CallTreeSet
 
 # generic methods for class CallTreeSet
-setGeneric("pvalData",   function(object) standardGeneric("pvalData"));
+setGeneric("pvalData",   function(object)             standardGeneric("pvalData"));
 setGeneric("pvalData<-", function(object, ..., value) standardGeneric("pvalData<-"));
-setGeneric("presCall",   function(object) standardGeneric("presCall"));
+setGeneric("presCall",   function(object)             standardGeneric("presCall"));
 setGeneric("presCall<-", function(object, ..., value) standardGeneric("presCall<-"));
-setGeneric("validPVal",  function(object, ...) standardGeneric("validPVal"));
-setGeneric("validCall",  function(object, ...) standardGeneric("validCall"));
-setGeneric("attachPVal", function(object, ...) standardGeneric("attachPVal"));
-setGeneric("removePVal", function(object) standardGeneric("removePVal"));
-setGeneric("attachCall", function(object, ...) standardGeneric("attachCall"));
-setGeneric("removeCall", function(object) standardGeneric("removeCall"));
-setGeneric("callplot",   function(x, ...) standardGeneric("callplot"));
+setGeneric("validPVal",  function(object, ...)        standardGeneric("validPVal"));
+setGeneric("validCall",  function(object, ...)        standardGeneric("validCall"));
+setGeneric("attachPVal", function(object, ...)        standardGeneric("attachPVal"));
+setGeneric("removePVal", function(object)             standardGeneric("removePVal"));
+setGeneric("attachCall", function(object, ...)        standardGeneric("attachCall"));
+setGeneric("removeCall", function(object)             standardGeneric("removeCall"));
+setGeneric("callplot",   function(x, ...)             standardGeneric("callplot"));
 
 
 #------------------------------------------------------------------------------#
@@ -333,25 +334,25 @@ setClass("PreFilter",
 )#PreFilter
 
 # generic methods for class PreFilter
-setGeneric("madFilter",        function(object) standardGeneric("madFilter"));
+setGeneric("madFilter",        function(object)        standardGeneric("madFilter"));
 setGeneric("madFilter<-",      function(object, value) standardGeneric("madFilter<-"));
-setGeneric("cvFilter",         function(object) standardGeneric("cvFilter"));
+setGeneric("cvFilter",         function(object)        standardGeneric("cvFilter"));
 setGeneric("cvFilter<-",       function(object, value) standardGeneric("cvFilter<-"));
-setGeneric("varFilter",        function(object) standardGeneric("varFilter"));
+setGeneric("varFilter",        function(object)        standardGeneric("varFilter"));
 setGeneric("varFilter<-",      function(object, value) standardGeneric("varFilter<-"));
-setGeneric("diffFilter",       function(object) standardGeneric("diffFilter"));
+setGeneric("diffFilter",       function(object)        standardGeneric("diffFilter"));
 setGeneric("diffFilter<-",     function(object, value) standardGeneric("diffFilter<-"));
-setGeneric("ratioFilter",      function(object) standardGeneric("ratioFilter"));
+setGeneric("ratioFilter",      function(object)        standardGeneric("ratioFilter"));
 setGeneric("ratioFilter<-",    function(object, value) standardGeneric("ratioFilter<-"));
-setGeneric("gapFilter",        function(object) standardGeneric("gapFilter"));
+setGeneric("gapFilter",        function(object)        standardGeneric("gapFilter"));
 setGeneric("gapFilter<-",      function(object, value) standardGeneric("gapFilter<-"));
-setGeneric("lowFilter",        function(object) standardGeneric("lowFilter"));
+setGeneric("lowFilter",        function(object)        standardGeneric("lowFilter"));
 setGeneric("lowFilter<-",      function(object, value) standardGeneric("lowFilter<-"));
-setGeneric("highFilter",       function(object) standardGeneric("highFilter"));
+setGeneric("highFilter",       function(object)        standardGeneric("highFilter"));
 setGeneric("highFilter<-",     function(object, value) standardGeneric("highFilter<-"));
-setGeneric("quantileFilter",   function(object) standardGeneric("quantileFilter"));
+setGeneric("quantileFilter",   function(object)        standardGeneric("quantileFilter"));
 setGeneric("quantileFilter<-", function(object, value) standardGeneric("quantileFilter<-"));
-setGeneric("callFilter",       function(object) standardGeneric("callFilter"));
+setGeneric("callFilter",       function(object)        standardGeneric("callFilter"));
 setGeneric("callFilter<-",     function(object, value) standardGeneric("callFilter<-"));
 
 
@@ -375,11 +376,11 @@ setClass("UniFilter",
 )#UniFilter
 
 # generic methods for class UniFilter
-setGeneric("fcFilter",        function(object) standardGeneric("fcFilter"));
+setGeneric("fcFilter",        function(object)        standardGeneric("fcFilter"));
 setGeneric("fcFilter<-",      function(object, value) standardGeneric("fcFilter<-"));
-setGeneric("unitestFilter",   function(object) standardGeneric("unitestFilter"));
+setGeneric("unitestFilter",   function(object)        standardGeneric("unitestFilter"));
 setGeneric("unitestFilter<-", function(object, value) standardGeneric("unitestFilter<-"));
-setGeneric("uniTest",         function(object) standardGeneric("uniTest"));
+setGeneric("uniTest",         function(object)        standardGeneric("uniTest"));
 setGeneric("uniTest<-",       function(object, value) standardGeneric("uniTest<-"));
 
 

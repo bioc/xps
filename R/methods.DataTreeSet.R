@@ -23,6 +23,7 @@
 # mm:
 # rawCELName:
 # xpsRMA:
+# xpsFIRMA:
 # xpsMAS4:
 # xpsMAS5:
 # xpsMAS5Call:
@@ -955,6 +956,196 @@ function(object,
 }#rma.DataTreeSet
 
 setMethod("xpsRMA", "DataTreeSet", rma.DataTreeSet);
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+"firma.DataTreeSet" <-
+function(object,
+         filename   = character(0),
+         filedir    = getwd(),
+         tmpdir     = "",
+         background = "antigenomic",
+         normalize  = TRUE,
+         option     = "probeset",
+         exonlevel  = "metacore",
+         method     = "mdp",
+         params     = list(16384, 0.0, 1.0, 10, 0.01, 1.0),
+         xps.scheme = NULL,
+         add.data   = TRUE,
+         verbose    = TRUE) 
+{
+   if (debug.xps()) print("------firma.DataTreeSet------")
+
+   ## get schemefile and chipname
+   scheme     <- object@scheme;
+   schemefile <- schemeFile(object);
+   chipname   <- chipName(object);
+   chiptype   <- chipType(object);
+
+   ## check for presence of alternative root scheme file
+   if ((!is.null(xps.scheme)) &&
+       is(xps.scheme, "SchemeTreeSet") &&
+       (chipType(xps.scheme) == chiptype) &&
+       (file.exists(rootFile(xps.scheme)))) {
+      scheme     <- xps.scheme;
+      schemefile <- rootFile(xps.scheme);
+      chipname   <- chipName(xps.scheme);
+      chiptype   <- chipType(xps.scheme);
+   }#if
+
+   ## check for chiptype is ExonChip
+   if (is.na(match(chiptype, "ExonChip"))) {
+      stop("Chip type must be <ExonChip>.");
+   }#if
+
+   ## root file /filedir/filename.root
+   rootfile <- rootDirFile(filename, filedir);
+
+   ## check if root file exists (necessary for WinXP to test already here)
+   if (existsROOTFile(rootfile)) {
+      stop(paste("ROOT file", sQuote(rootfile), "does already exist."));
+   }#if
+
+   ## check for presence of temporary directory
+   tmpdir <- validTempDir(tmpdir);
+
+   ## check for presence of valid background option
+   if (!(identical(background, "genomic") ||
+         identical(background, "antigenomic") ||
+         identical(background, "none"))) {
+      stop(paste(sQuote(background), "is not a valid background option"));
+   }#if
+
+   ## check for valid normalize
+   if (!is.logical(normalize)) {
+      stop(paste(sQuote("normalize"), "must be TRUE or FALSE"));
+   }#if
+
+   ## check parameters
+   if (length(params) != 6) {
+      stop(paste("list", sQuote("params"), "has not length six"));
+   }#if
+
+   ## check for presence of valid transcript option
+   transcript <- as.character(option);
+   if (!(identical(transcript, "exon") ||
+         identical(transcript, "probeset"))) {
+      stop(paste(sQuote(transcript), "is not a valid probeset option"));
+   }#if
+
+   ## check for correct exonlevel
+   exlevel <- exonLevel(exonlevel, chiptype);
+
+   ## check for valid method
+   TYPE <- c("mdp", "plm");
+   if (is.na(match(method, TYPE))) {
+      stop(paste(sQuote("method"), "must be one of <mdp,plm>"));
+   }#if
+#######################
+# TO DO: method = "plm"
+if (method == "plm") stop(paste(sQuote("method"), "<plm> is not implemented yet."));
+#######################
+
+   ## get treenames to normalize as fullnames=/datadir/treenames
+   listnames <- listTreeNames(object);
+   treenames <- listnames$treenames;
+   fullnames <- paste(object@setname, treenames, sep="/");
+   numtrees  <- length(treenames);
+
+   ## define setname and settype for new treeset
+   setname <- "PreprocesSet";
+   settype <- "preprocess";
+
+   ## preprocess FIRMA
+   r <- .C("PreprocessFIRMA",
+           as.character(filename),
+           as.character(filedir),
+           as.character(chipname),
+           as.character(chiptype),
+           as.character(schemefile),
+           as.character(tmpdir),
+           as.character(background),
+           as.character(transcript),
+           as.character(setname),
+           as.character(object@rootfile),
+           as.character(fullnames),
+           as.integer(numtrees),
+           as.integer(normalize),
+           as.double(params),
+           as.integer(exlevel[1]),
+           as.integer(exlevel[2]),
+           as.integer(exlevel[3]),
+           as.integer(verbose),
+           result=character(2),
+           PACKAGE="xps")$result;
+
+   ## returned result: saved rootfile and error
+   rootfile <- r[1];
+   error    <- as.integer(r[2]);
+
+   if (error != 0) {
+      stop(paste("error in function", sQuote("PreprocessFIRMA")));
+      return(NULL);
+   }#if
+
+   ## export result to outfile and import as dataframe ds
+   ds <- data.frame(matrix(nr=0,nc=0));
+   if (add.data) {
+      outfile  <- sub("\\.root", ".txt", rootfile);
+      ## get treename "treeset.treename.treetype"
+      treetype <- "fir";
+      treename <- paste(setname, "*", treetype, sep=".");
+      numtrees <- 1; # must be one for treename="*"
+
+      r <- .C("ExportData",
+              as.character(rootfile),
+              as.character(schemefile),
+              as.character(chiptype),
+              as.character(settype),
+              as.character(treename),
+              as.integer(numtrees),
+              as.character(treetype),
+              as.character("fUnitName:fTranscriptID:fLevel:fScore"),
+              as.character(outfile),
+              as.character("\t"),
+              as.integer(verbose),
+              err=integer(1),
+              PACKAGE="xps")$err;
+
+      if (r != 0) {
+         stop(paste("error in function", sQuote("ExportData")));
+         return(NULL);
+      }#if
+
+      if (file.exists(outfile)) {
+         ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
+      } else {
+         warning(paste("could not export results as", sQuote(outfile)));
+      }#if
+   }#if
+
+   ## get treenames after preprocessing
+   treenames <- as.list(getTreeNames(rootfile, "fir"));
+   numtrees  <- length(treenames);
+
+   ## create new class ExprTreeSet
+   set <- new("ExprTreeSet",
+              setname   = setname,
+              settype   = settype,
+              rootfile  = rootfile,
+              filedir   = filedir,
+              numtrees  = numtrees,
+              treenames = as.list(treenames),
+              scheme    = scheme,
+              data      = ds,
+              params    = list(),
+              exprtype  = "firma",
+              normtype  = "none");
+
+   return(set);
+}#firma.DataTreeSet
+
+setMethod("xpsFIRMA", "DataTreeSet", firma.DataTreeSet);
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -2004,10 +2195,10 @@ function(object,
    if (is.null(summarize.method)) {
       summarize.method <- "none";
    } else {
-      TYPE <- c("avgdiff", "tukeybiweight", "medianpolish", "farms", "dfw");
+      TYPE <- c("avgdiff", "tukeybiweight", "medianpolish", "farms", "dfw", "firma");
       if (is.na(match(summarize.method, TYPE))) {
          stop(paste(sQuote("summarize.method"),
-              "must be one of <avgdiff,tukeybiweight,medianpolish,farms,dfw>"));
+              "must be one of <avgdiff,tukeybiweight,medianpolish,farms,dfw,firma>"));
       }#if
 
       TYPE <- c("pmonly", "mmonly", "both", "all", "none");
@@ -2567,10 +2758,10 @@ function(object,
    }#if
 
    ## check for valid summarization method
-   TYPE <- c("avgdiff", "tukeybiweight", "medianpolish", "farms", "dfw");
+   TYPE <- c("avgdiff", "tukeybiweight", "medianpolish", "farms", "dfw", "firma");
    if (is.na(match(method, TYPE))) {
       stop(paste(sQuote("method"),
-           "must be one of <avgdiff,tukeybiweight,medianpolish,farms,dfw>"));
+           "must be one of <avgdiff,tukeybiweight,medianpolish,farms,dfw, firma>"));
    }#if
 
    ## check for valid option "transcript:logbase"

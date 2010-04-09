@@ -89,7 +89,7 @@ Exon level annotations are described in the Affymetrix whitepaper exon_probeset_
 
 In order to use an alternative \code{\link{SchemeTreeSet}} set the corresponding SchemeSet \code{xps.scheme}.
 
-\code{xpsRMA} is the \code{DataSet} method called by function \code{rma}, 
+\code{xpsRMA} is the \code{DataTreeSet} method called by function \code{rma}, 
 containing the same parameters.
 }
 \value{

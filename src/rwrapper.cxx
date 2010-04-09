@@ -428,9 +428,8 @@ void PreprocessRMA(char **filename, char **dirname, char **chipname,
 //   const char *expropt = new char[strlen(exproption[0]) + 6];
    const char *expropt = new char[strlen(exproption[0]) + 17];
    expropt = strcpy((char*)expropt, exproption[0]);
-//   expropt = strcat((char*)expropt, ":log2");
    expropt = strcat((char*)expropt, ":huber:none:log2");
-   manager->InitAlgorithm("expressor", "medianpolish", expropt, tmpfile, 3, pars[3], pars[4], pars[5]);
+   r += manager->InitAlgorithm("expressor", "medianpolish", expropt, tmpfile, 3, pars[3], pars[4], pars[5]);
 
 // create new root data file 
    r += manager->New(filename[0], dirname[0], chiptype[0], "preprocess");
@@ -648,6 +647,109 @@ void PreprocessMAS5(char **filename, char **dirname, char **chipname,
    manager->Close();
    delete manager;
 }//PreprocessMAS5
+
+/*____________________________________________________________________________*/
+void PreprocessFIRMA(char **filename, char **dirname, char **chipname,
+                     char **chiptype, char **schemefile, char **tmpdir,
+                     char **bgrdoption, char **exproption, char **treeset, char **datafile, 
+                     char **treenames, int *ntrees, int *normalize, double *pars,
+                     int *bgrdlevel, int *normlevel, int *exprlevel,
+                     int *verbose, char **result)
+{
+// Preprocess trees using FIRMA
+
+// create new preprocessing manager
+   XPreProcessManager *manager = new XPreProcessManager("PreProcessManager","", *verbose);
+
+// increase default maximum file size from 1.9 GB to 2 TB
+   manager->SetMaxFileSize(2000000000);
+
+// initialize chip type
+   int r = 0;
+   r += manager->Initialize(chiptype[0]);
+
+// temporary files for background, normalization, expression algorithms
+   const char *tmpfile = new char[strlen(tmpdir[0]) + 22];
+   if (strcmp(tmpdir[0], "") != 0) {
+      tmpfile = strcpy((char*)tmpfile , tmpdir[0]);
+      tmpfile = strcat((char*)tmpfile , "/tmp_310151.root");
+   } else {
+      tmpfile = "";
+   }//if
+
+// initialize backgrounder
+   const char *bgrdopt = new char[strlen(bgrdoption[0]) + 14];
+   if (strcmp(bgrdoption[0], "genomic") == 0 || strcmp(bgrdoption[0], "antigenomic") == 0) {
+      int bgrdtype  = (strcmp(bgrdoption[0], "genomic") == 0) ? -1 : -2;
+
+      r += manager->InitAlgorithm("selector", "probe", "exon", 0, 2, *bgrdlevel, bgrdtype);
+      r += manager->InitAlgorithm("backgrounder", "rma", "pmonly:epanechnikov", tmpfile, 1, pars[0]);
+   }//if
+
+// initialize normalizer
+   const char *normopt = new char[strlen(exproption[0]) + 17];
+   if (*normalize) {
+      r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *normlevel);
+
+      normopt = strcpy((char*)normopt, exproption[0]);
+      normopt = strcat((char*)normopt, ":together:none:0");
+      r += manager->InitAlgorithm("normalizer", "quantile", normopt, tmpfile, 2, pars[1], pars[2]);
+   }//if
+
+// initialize expressor
+   r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *exprlevel);
+
+//   const char *expropt = new char[strlen(exproption[0]) + 6];
+   const char *expropt = new char[strlen(exproption[0]) + 17];
+   expropt = strcpy((char*)expropt, exproption[0]);
+   expropt = strcat((char*)expropt, ":huber:none:log2");
+   r += manager->InitAlgorithm("expressor", "firma", expropt, tmpfile, 3, pars[3], pars[4], pars[5]);
+
+// create new root data file 
+   r += manager->New(filename[0], dirname[0], chiptype[0], "preprocess");
+
+// open root scheme file
+   r += manager->OpenSchemes(schemefile[0], chipname[0]);
+
+// open root data file (to open data file only once)
+   r += manager->OpenData(datafile[0]);
+
+// add trees for rma
+   for (int i=0; i<*ntrees; i++) {
+      r += manager->AddTree(treeset[0], treenames[i]);
+
+      if (verbose[0] == 1 && i%100 == 0) {
+         cout << "Adding tree " << i+1 << " of " << *ntrees << "...   \r" << flush;
+      }//if
+   }//for_i
+   if (verbose[0] == 1) {
+      cout << "Added <" << *ntrees << "> trees to " << treeset[0] << "." << endl;
+   }//if
+
+// preprocess expression values and store as trees in new file
+   r += manager->Preprocess(treeset[0], "preprocess");
+
+// result[0]: file name
+   TString file = manager->GetFileName();
+   result[0] = new char[file.Length() + 1];
+   strcpy(result[0], (char*)file.Data());
+
+// result[1]: return error
+   TString err = ""; err += (int)r;
+   result[1] = new char[err.Length() + 1];
+   strcpy(result[1], (char*)err.Data());
+
+// cleanup
+   delete [] expropt;
+   delete [] normopt;
+   delete [] bgrdopt;
+   if (strcmp(tmpdir[0], "") != 0) {
+      delete [] tmpfile;
+   }//if
+
+   manager->Close();
+   delete manager;
+}//PreprocessFIRMA
 
 /*____________________________________________________________________________*/
 void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,

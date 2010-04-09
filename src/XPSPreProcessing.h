@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 11/22/2009
+// File created: 08/05/2002                          last modified: 04/02/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2010 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -367,6 +367,12 @@ class XExonProcesSet: public XGenomeProcesSet {
    protected:
 
    protected:
+      virtual Int_t Express(Int_t numdata, TTree **datatree,
+                       Int_t &numbgrd, TTree **bgrdtree);
+      virtual Int_t DoSpliceExpress(Int_t numdata, TTree **datatree,
+                       Int_t numbgrd, TTree **bgrdtree, TFile *file);
+      virtual Int_t ExportSplxTrees(Int_t n, TString *names, const char *varlist,
+                       ofstream &output, const char *sep);
       virtual Int_t *FillMaskArray(XDNAChip *chip, TTree *scmtree, XScheme *scheme,
                         Int_t level, Int_t n, Int_t *msk);
       virtual TTree *SchemeTree(XAlgorithm *algorithm, void *scheme, TLeaf **scmleaf);
@@ -378,6 +384,9 @@ class XExonProcesSet: public XGenomeProcesSet {
       XExonProcesSet();
       XExonProcesSet(const char *name, const char *type);
       virtual ~XExonProcesSet();
+
+      virtual Int_t ExportTreeType(const char *exten, Int_t n, TString *names,  
+                       const char *varlist, ofstream &output, const char *sep);
 
       ClassDef(XExonProcesSet,2) //ExonProcesSet
 };

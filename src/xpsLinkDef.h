@@ -4,7 +4,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-//StatUtils
+//StatUtils.h
 #pragma link C++ class TUnivariateTest+;
 #pragma link C++ class TStudentTest+;
 #pragma link C++ class TStat+;
@@ -110,6 +110,8 @@
 #pragma link C++ class XRankCell+;
 #pragma link C++ class XExpression+;
 #pragma link C++ class XGCExpression+;
+#pragma link C++ class XSpliceExpression+;
+//#pragma link C++ class XExonExpression+;
 #pragma link C++ class XCall+;
 #pragma link C++ class XPCall+;
 #pragma link C++ class XGPCell+;
@@ -123,23 +125,39 @@
 
 //XPSProcessing.h
 #pragma link C++ class XProcessManager+;
-#pragma link C++ class XProcesSetting+;
-#pragma link C++ class XProcesSet+;
-#pragma link C++ class XPreProcessManager+;
-#pragma link C++ class XNormationManager+;
 #pragma link C++ class XExpressionTreeInfo+;
 #pragma link C++ class XSelectionTreeInfo+;
+#pragma link C++ class XProcesSetting+;
+#pragma link C++ class XProcesSet+;
+
+//XPSPreProcessing.h
+#pragma link C++ class XPreProcessManager+;
 #pragma link C++ class XCallTreeInfo+;
 #pragma link C++ class XPreProcesSetting+;
-#pragma link C++ class XNormationSetting+;
 #pragma link C++ class XPreProcesSet+;
 #pragma link C++ class XGCProcesSet+;
 #pragma link C++ class XGenomeProcesSet+;
 #pragma link C++ class XExonProcesSet+;
+
+//XPSSelector.h
+#pragma link C++ class XSelector+;
+#pragma link C++ class XRankSelector+;
+#pragma link C++ class XProbeSelector+;
+#pragma link C++ class XUnitSelector+;
+#pragma link C++ class XUserSelector+;
+
+//XPSSplicer.h
+//#pragma link C++ class XSplicer+;
+//#pragma link C++ class XSpliceIndex+;
+//#pragma link C++ class XFIRMA+;
+
+//XPSHybridizer.h
 #pragma link C++ class XHybridizer+;
 #pragma link C++ class XBackgrounder+;
 #pragma link C++ class XCallDetector+;
 #pragma link C++ class XExpressor+;
+#pragma link C++ class XMultichipExpressor+;
+#pragma link C++ class XSpliceExpressor+;
 #pragma link C++ class XSectorBackground+;
 #pragma link C++ class XWeightedBackground+;
 #pragma link C++ class XRMABackground+;
@@ -159,15 +177,17 @@
 #pragma link C++ class XMedianPolish+;
 #pragma link C++ class XFARMS+;
 #pragma link C++ class XDFW+;
+#pragma link C++ class XFIRMA+;
+
+//XPSNormation.h
+#pragma link C++ class XNormationManager+;
+#pragma link C++ class XNormationSetting+;
 #pragma link C++ class XNormedSet+;
 #pragma link C++ class XNormedGCSet+;
 #pragma link C++ class XNormedGenomeSet+;
 #pragma link C++ class XNormedExonSet+;
-#pragma link C++ class XSelector+;
-#pragma link C++ class XRankSelector+;
-#pragma link C++ class XProbeSelector+;
-#pragma link C++ class XUnitSelector+;
-#pragma link C++ class XUserSelector+;
+
+//XPSNormalizer.h
 #pragma link C++ class XNormalizer+;
 #pragma link C++ class XMeanNormalizer+;
 #pragma link C++ class XMedianNormalizer+;
@@ -192,18 +212,22 @@
 #pragma link C++ class XMultivarSet+;
 #pragma link C++ class XClusterSet+;
 #pragma link C++ class XRegressionSet+;
+#pragma link C++ class XScore+;
+#pragma link C++ class XGrpMn+;
+#pragma link C++ class XChance+;
+#pragma link C++ class XAdjust+;
+
+//XPSAnalyzer.h
 #pragma link C++ class XAnalyser+;
 #pragma link C++ class XUniTester+;
 #pragma link C++ class XMultiTester+;
 #pragma link C++ class XClusterizer+;
 #pragma link C++ class XRegressor+;
+
+//XPSFilter.h
 #pragma link C++ class XFilter+;
 #pragma link C++ class XPreFilter+;
 #pragma link C++ class XUniFilter+;
 #pragma link C++ class XMultiFilter+;
-#pragma link C++ class XScore+;
-#pragma link C++ class XGrpMn+;
-#pragma link C++ class XChance+;
-#pragma link C++ class XAdjust+;
 
 #endif

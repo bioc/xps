@@ -65,10 +65,10 @@ setValidity("ExprTreeSet",
       }#if
 
       ## check expression method
-      TYPE <- c("none", "rma", "mas4", "mas5", "custom");
+      TYPE <- c("none", "rma", "mas4", "mas5", "firma", "custom");
       if (is.na(match(object@exprtype, TYPE))) {
          msg <- validMsg(msg, paste(sQuote("exprtype"), "must be one of",
-                         "<none,rma,mas4,mas5,custom>"));
+                         "<none,rma,mas4,mas5,firma,custom>"));
       }#if
 
       ## check normation method

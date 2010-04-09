@@ -52,7 +52,7 @@
                 "sbg", "wbg", "rbg", "gbg",
                 "cmn", "cmd", "clw", "css", "cqu",
                 "dc5", "dab", "ini",
-                "amn", "gmn", "wmn", "wdf", "adf", "tbw", "mdp", "frm", "dfw");
+                "amn", "gmn", "wmn", "wdf", "adf", "tbw", "mdp", "frm", "dfw", "fir");
    CALTYPE <- c("dc5", "dab");
    NRMTYPE <- c("tmn", "med", "ksm", "low", "sup", "qua", "mdp");
    FLRTYPE <- c("pfr", "ufr", "mfr");
@@ -652,9 +652,9 @@ type2Exten <- function(type, datatype) {
    if (datatype == "preprocess") {
       TYPE <- c("mean", "median", "lowess", "supsmu", "quantile",
                 "avgdiff", "tukeybiweight", "medianpolish",
-                "farms", "dfw");
+                "farms", "dfw", "firma");
       XTEN <- c("cmn", "cmd", "clw", "css", "cqu", "adf", "tbw",
-                "mdp", "frm", "dfw");
+                "mdp", "frm", "dfw", "fir");
    } else if (datatype == "normation") {
       TYPE <- c("mean", "median", "ksmooth", "lowess", "supsmu",
                 "quantile", "medianpolish");

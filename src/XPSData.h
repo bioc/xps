@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 07/25/2009
+// File created: 08/05/2002                          last modified: 02/27/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2009 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2010 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -1007,6 +1007,61 @@ class XGCExpression: public XExpression {
       ClassDef(XGCExpression,1) //GCExpression
 };
 
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XSpliceExpression                                                    //
+//                                                                      //
+// Class containing exon GeneChip expression and splice data            //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+class XSpliceExpression: public XExpression {
+
+   private:
+      Double32_t fStdev;   //standard deviation of single exon
+      Double32_t fScore;   //splice score
+
+   public:
+      XSpliceExpression() {}
+      virtual ~XSpliceExpression() {}
+
+      void SetStdev(Double_t stdev)  {fStdev = stdev;}
+      void SetScore(Double_t score)  {fScore = score;}
+
+      Double_t GetStdev()      const {return fStdev;}
+      Double_t GetScore()      const {return fScore;}
+
+      ClassDef(XSpliceExpression,1) //SpliceExpression
+};
+/*
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XExonExpression                                                      //
+//                                                                      //
+// Class containing exon GeneChip expression and splice data            //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+class XExonExpression: public XGCExpression {
+
+   private:
+      Double32_t fExonLevel;   //expression level of single exon
+      Double32_t fExonStdev;   //standard deviation of single exon
+      Double32_t fExonScore;   //exon score
+
+   public:
+      XExonExpression() {}
+      virtual ~XExonExpression() {}
+
+      void SetExonLevel(Double_t level)  {fExonLevel = level;}
+      void SetExonStdev(Double_t stdev)  {fExonStdev = stdev;}
+      void SetExonScore(Double_t score)  {fExonScore = score;}
+
+      Double_t GetExonLevel()      const {return fExonLevel;}
+      Double_t GetExonStdev()      const {return fExonStdev;}
+      Double_t GetExonScore()      const {return fExonScore;}
+
+      ClassDef(XExonExpression,1) //ExonExpression
+};
+*/
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
 // XCall                                                                //

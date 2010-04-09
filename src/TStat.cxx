@@ -1,11 +1,11 @@
-// Author: Christian Stratowa 11/25/2002             last modified: 12/30/2009
+// Author: Christian Stratowa 11/25/2002             last modified: 02/27/2010
 
 /*
  *******************************************************************************
  ***********************  Statistics Package for ROOT  *************************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2010 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -642,6 +642,42 @@ Double_t TStat::Median(Int_t n, const Double_t *arr, const Int_t *index)
 }//Median
 
 //______________________________________________________________________________
+Double_t TStat::Median(Int_t n, const Double_t *arr, Bool_t low, Bool_t high)
+{
+   // Calculate median
+   if(kCSa) cout << "------TStat::Median(lo,hi)------" << endl;
+
+   if (n <= 0) return NA_REAL;
+   if (n == 1) return arr[0];
+
+// Create index and sort array
+   Int_t *index = 0;
+   if (!(index = new (nothrow) Int_t[n])) {
+      cout << "Error: Could not initialize memory!" << endl;
+      return NA_REAL;
+   }//if
+   TMath::Sort(n, arr, index, kFALSE);
+
+// Find median
+   Int_t k;
+   Double_t median = 0.0;
+   if ((n % 2) == 0){
+      k = (Int_t)floor(n / 2.0) - 1;
+
+      if      (low && !high) median = arr[index[k]];
+      else if (high && !low) median = arr[index[k+1]];
+      else                   median = (arr[index[k]] + arr[index[k+1]])/2.0;
+   } else {
+      k = (Int_t)floor(n / 2.0);
+      median = arr[index[k]];
+   }//if
+
+   delete [] index;
+
+   return median;
+}//Median
+
+//______________________________________________________________________________
 Double_t TStat::MAD(Int_t n, const Double_t *arr, Float_t constant)
 {
    // Calculate median absolute deviation
@@ -691,6 +727,33 @@ Double_t TStat::MAD(Int_t n, const Double_t *arr, const Double_t trim, Float_t c
    }//for_i
 
    Double_t mad = TStat::Median(n, x);
+
+   delete [] x;
+
+   return constant * mad;
+}//MAD
+
+//______________________________________________________________________________
+Double_t TStat::MAD(Int_t n, const Double_t *arr, Double_t center, Double_t constant,
+                    Bool_t low, Bool_t high)
+{
+   // Calculate mean/median absolute deviation
+   if(kCSa) cout << "------TStat::MAD(center)------" << endl;
+
+   if (n <= 0) return NA_REAL;
+   if (n == 1) return 0;
+
+   Double_t *x = 0;
+   if (!(x = new (nothrow) Double_t[n])) {
+      cout << "Error: Could not initialize memory!" << endl;
+      return NA_REAL;
+   }//if
+
+   for (Int_t i=0; i<n; i++) {
+      x[i] = TMath::Abs(arr[i] - center);
+   }//for_i
+
+   Double_t mad = TStat::Median(n, x, low, high);
 
    delete [] x;
 

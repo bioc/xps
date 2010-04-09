@@ -2,6 +2,18 @@
 		CHANGES IN R VERSION 2.12.0
 
 
+VERSION xps-1.7.8
+
+    o	add method xpsFIRMA()
+    o	add functions firma(), firma.expr(), firma.score()
+
+
+VERSION xps-1.7.7
+
+    o	update bgcorrect.R to warn from using tmpdir resulting in empty root file
+    o	update normalize.R to warn from using tmpdir resulting in empty root file
+
+
 VERSION xps-1.7.6
 
     o	minor change to allow computation with g++ 4.4.x

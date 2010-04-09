@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 02/11/2010
+// File created: 08/05/2002                          last modified: 03/28/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -59,6 +59,7 @@
 * Nov 2007 - XDataManager now inherits from XManager and XProjectHandler
 *          - database methods ProjectInfo() etc are moved to XProjectHandler
 * Jan 2008 - Support to read Calvin (AGCC) *.CEL files.
+* Feb 2010 - Add support for alternative splicing, class XSpliceExpression.
 *
 ******************************************************************************/
 
@@ -155,6 +156,8 @@ ClassImp(XBgCell);
 ClassImp(XRankCell);
 ClassImp(XExpression);
 ClassImp(XGCExpression);
+ClassImp(XSpliceExpression);
+//ClassImp(XExonExpression);
 ClassImp(XCall);
 ClassImp(XPCall);
 ClassImp(XGPCell);
@@ -4583,7 +4586,6 @@ Int_t XGeneChipPlot::DrawUnit(const char *canvasname, const char *treename,
       cerr << "Error: Treename must be of form <treename.cel>." << endl;
       return perrTreeName;
    }//if
-cout << "tname = " << tname.Data() << endl;
 
 // Extract root filename and get datafile
    TString filename = "";
@@ -4597,7 +4599,6 @@ cout << "tname = " << tname.Data() << endl;
       cerr << "Error: Data file is not open." << endl;
       return perrOpenFile;
    }//if
-cout << "filename = " << filename.Data() << endl;
 
 // Get name of treeset and change directory
    TString setname  = "";
@@ -4608,7 +4609,6 @@ cout << "filename = " << filename.Data() << endl;
    } else if (strstr(treename, dSEP)) {
       setname = Path2Name(treename, "", dSEP);
    }//if
-cout << "setname = " << setname.Data() << endl;
 
    if (!fDataFile->cd(setname)) return perrGetDir;
 
@@ -4626,7 +4626,6 @@ cout << "setname = " << setname.Data() << endl;
       return errChipType;
    }//if
    if (!fSchemeFile->cd(scmname)) return errGetDir;
-cout << "scmname = " << scmname.Data() << endl;
 
 // Get chip parameters from scheme file
    XDNAChip *chip = 0;
@@ -4638,9 +4637,6 @@ cout << "scmname = " << scmname.Data() << endl;
    Int_t numunits = chip->GetNumUnits();
    Int_t numctrls = chip->GetNumControls();
    Int_t numcols  = chip->GetNumColumns();
-cout << "numunits = " << numunits << endl;
-cout << "numctrls = " << numctrls << endl;
-cout << "numcols = " << numcols << endl;
 
 // Get scheme tree for scheme
    XGCScheme *scheme = 0;
@@ -4712,7 +4708,6 @@ cout << "numcols = " << numcols << endl;
       symbol   = annot->GetSymbol();
    }//if
    TString title = tname + ": " + TString(unitname) + "  -  " + symbol;
-cout << "title = " << title.Data() << endl;
 
    TString *str = new TString[16];
    for (Int_t i=0; i<16; i++) str[i] = "";
@@ -4759,7 +4754,6 @@ cout << "title = " << title.Data() << endl;
       cout << "Warning: Logbase not known, using default." << endl;
       base = 0;
    }//if
-cout << "base = " << base << endl;
 
    Int_t x, y, ij;
    Int_t numpix;
@@ -4816,7 +4810,6 @@ cout << "base = " << base << endl;
       goto cleanup;
 */
    }//if
-cout << "entries = " << entries << endl;
 
 // Fill table
    for (Int_t i=0; i<entries; i++) {
@@ -4911,8 +4904,6 @@ cout << "entries = " << entries << endl;
          fMax  = (fMax  > fMaxZ)   ? fMax  : fMaxZ;
       }//if
    }//for_i
-cout << "fMin = " << fMin << endl;
-cout << "fMax = " << fMax << endl;
 
 // Set axes range
    if ((min == 0) && (max == 0)) {

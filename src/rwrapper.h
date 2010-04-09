@@ -61,6 +61,13 @@ void PreprocessMAS5(char **filename, char **dirname, char **chipname,
                     char **treenames, int *ntrees, int *bgrdlevel, int *exprlevel,
                     int *verbose, char **result);
 
+void PreprocessFIRMA(char **filename, char **dirname, char **chipname,
+                     char **chiptype, char **schemefile, char **tmpdir,
+                     char **bgrdoption, char **exproption, char **treeset, char **datafile, 
+                     char **treenames, int *ntrees, int *normalize, double *pars,
+                     int *bgrdlevel, int *normlevel, int *exprlevel,
+                     int *verbose, char **result);
+
 void PreprocessMAS5Call(char **filename, char **dirname, char **chipname,
                         char **chiptype, char **schemefile, char **tmpdir,
                         char **calloption, char **treeset, char **datafile,

@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 01/03/2010
+// File created: 08/05/2002                          last modified: 03/28/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -157,6 +157,7 @@ class XExpressor: public XHybridizer {
       TString      fBgrdOpt;    //option for background subtraction
       TString      fLogBase;    //logbase: 0, log, log2, log10
       TMEstimator *fEstimator;  //! optional M-estimator
+      Bool_t       fSplicexpr;  //TRUE if spliceexpressor algorithm
 
    public:
       XExpressor();
@@ -170,6 +171,11 @@ class XExpressor: public XHybridizer {
 ///////////
 //      virtual Int_t CreateArray(Int_t length);
 
+      using XAlgorithm::Calculate;
+      virtual Int_t Calculate(Int_t n, Double_t *x, Double_t *y, Double_t *z,
+                       Double_t *dx, Double_t *dy, Int_t *idx, Int_t nsub)
+                                                            {return 0;}
+
       virtual Int_t SetArray(Int_t length, Double_t *array);
       virtual void  SetOptions(Option_t *opt);
 
@@ -179,7 +185,58 @@ class XExpressor: public XHybridizer {
       TString GetBgrdOption()        const {return fBgrdOpt;}
       TString GetLogBase()           const {return fLogBase;}
 
-      ClassDef(XExpressor,1) //Expressor
+      Bool_t  IsSpliceXpressor()     const {return fSplicexpr;}
+
+      ClassDef(XExpressor,2) //Expressor
+};
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XMultichipExpressor                                                  //
+//                                                                      //
+// Base class for multichip expression analysis algorithm               //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+class XMultichipExpressor: public XExpressor {
+
+   protected:
+      Double_t   *fResiduals;   //[fLength] Array of residuals
+
+   protected:
+      Int_t     DoMedianPolish(Int_t nrow, Int_t ncol, Double_t *inten, Double_t *level, 
+                               Double_t *rowmed, Double_t *colmed, Double_t *residu);
+//      Int_t     DoPLM(Int_t nrow, Int_t ncol, Double_t *inten, Double_t *level, 
+//                      Double_t *rowmed, Double_t *colmed, Double_t *residu);
+      Double_t *PseudoError(Int_t nrow, Int_t ncol, Double_t *residu, Double_t *se);
+//      Double_t *StandardError(Int_t nrow, Int_t ncol, Double_t *residu, Double_t *se);
+
+   public:
+      XMultichipExpressor();
+      XMultichipExpressor(const char *name, const char *type);
+      virtual ~XMultichipExpressor();
+
+      Double_t *GetResiduals() {return fResiduals;}
+
+      ClassDef(XMultichipExpressor,1) //MultichipExpressor
+};
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XSpliceExpressor                                                     //
+//                                                                      //
+// Algorithms used for summarization and splice detection               //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+class XSpliceExpressor: public XMultichipExpressor {
+
+   protected:
+
+   public:
+      XSpliceExpressor();
+      XSpliceExpressor(const char *name, const char *type);
+      virtual ~XSpliceExpressor();
+
+      ClassDef(XSpliceExpressor,1) //SpliceExpressor
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -606,13 +663,9 @@ class XTukeyBiweight: public XExpressor {
 // Median polish expression algorithm used for RMA                      //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
-class XMedianPolish: public XExpressor {
+class XMedianPolish: public XMultichipExpressor {
 
    protected:
-      Double_t   *fResiduals;   //[fLength] Array of residuals
-
-   private:
-      Double_t *StandardError(Int_t nrow, Int_t ncol, Double_t *residu, Double_t *se);
 
    public:
       XMedianPolish();
@@ -621,8 +674,6 @@ class XMedianPolish: public XExpressor {
 
       using XAlgorithm::Calculate;
       virtual Int_t Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk);
-
-      Double_t *GetResiduals() {return fResiduals;}
 
       ClassDef(XMedianPolish,1) //MedianPolish
 };
@@ -634,7 +685,7 @@ class XMedianPolish: public XExpressor {
 // Factor Analysis for Robust Microarray Summarization (Hochreiter S)   //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
-class XFARMS: public XExpressor {
+class XFARMS: public XMultichipExpressor {
 
    protected:
 
@@ -665,7 +716,7 @@ class XFARMS: public XExpressor {
 // Distribution Free Weighted Fold Change (Chen Z)                      //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
-class XDFW: public XExpressor {
+class XDFW: public XMultichipExpressor {
 
    protected:
 
@@ -681,6 +732,30 @@ class XDFW: public XExpressor {
       virtual Int_t Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk);
 
       ClassDef(XDFW,1) //DFW
+};
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XFIRMA                                                               //
+//                                                                      //
+// Finding Isoforms using Robust Multichip Analysis (Purdom E)          //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+class XFIRMA: public XSpliceExpressor {
+
+   protected:
+
+   public:
+      XFIRMA();
+      XFIRMA(const char *name, const char *type);
+      virtual ~XFIRMA();
+
+//      using XAlgorithm::Calculate;
+      using XExpressor::Calculate;
+      virtual Int_t Calculate(Int_t n, Double_t *x, Double_t *y, Double_t *z,
+                       Double_t *dx, Double_t *dy, Int_t *idx, Int_t nsub);
+
+      ClassDef(XFIRMA,1) //FIRMA
 };
 
 #endif

@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 01/03/2010
+// File created: 08/05/2002                          last modified: 03/28/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -41,7 +41,7 @@
 * Aug 2008 - Add summarization algorithms FARMS and DFW, classes XFARMS, XDFW
 * Oct 2008 - Add I/NI-call algorithm class XINICall
 * Jan 2010 - Move methods from XHybridizer to XAlgorithm.
-*  TO DO   - Add exon splice/summarization algorithms, class XSpliceExpressor
+* Feb 2010 - Add exon splice/summarization algorithms, class XSpliceExpressor
 *
 ******************************************************************************/
 
@@ -60,8 +60,8 @@
 //for Benchmark test only:
 #include <TBenchmark.h>
 
-#include "XPSHybridizer.h"
 #include "TStat.h"
+#include "XPSHybridizer.h"
 
 //debug: print function names
 const Bool_t  kCS  = 0; 
@@ -71,6 +71,8 @@ ClassImp(XHybridizer);
 ClassImp(XBackgrounder);
 ClassImp(XCallDetector);
 ClassImp(XExpressor);
+ClassImp(XMultichipExpressor);
+ClassImp(XSpliceExpressor);
 ClassImp(XSectorBackground);
 ClassImp(XWeightedBackground);
 ClassImp(XRMABackground);
@@ -90,6 +92,7 @@ ClassImp(XTukeyBiweight);
 ClassImp(XMedianPolish);
 ClassImp(XFARMS);
 ClassImp(XDFW);
+ClassImp(XFIRMA);
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -385,6 +388,7 @@ XExpressor::XExpressor()
    fBgrdOpt   = "";
    fLogBase   = "0";
    fEstimator = 0;
+   fSplicexpr = kFALSE;
 }//Constructor
 
 //______________________________________________________________________________
@@ -398,6 +402,7 @@ XExpressor::XExpressor(const char *name, const char *type)
    fBgrdOpt   = "none";       //default for expressor
    fLogBase   = "0";
    fEstimator = 0;
+   fSplicexpr = kFALSE;
 }//Constructor
 
 //______________________________________________________________________________
@@ -452,6 +457,172 @@ void XExpressor::SetOptions(Option_t *opt)
       fLogBase   = strtok(NULL, ":");
    }//if
 }//SetOptions
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XMultichipExpressor                                                  //
+//                                                                      //
+// Base class for multichip expression analysis algorithm               //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+XMultichipExpressor::XMultichipExpressor()
+                    :XExpressor()
+{
+   // Default XMultichipExpressor constructor
+   if(kCS) cout << "---XMultichipExpressor::XMultichipExpressor(default)------" << endl;
+
+   fResiduals = 0;
+   fMultichip = kTRUE;
+}//Constructor
+
+//______________________________________________________________________________
+XMultichipExpressor::XMultichipExpressor(const char *name, const char *type)
+                    :XExpressor(name, type)
+{
+   // Normal MultichipExpressor constructor
+   if(kCS) cout << "---XMultichipExpressor::XMultichipExpressor------" << endl;
+
+   fResiduals = 0;
+   fMultichip = kTRUE;
+}//Constructor
+
+//______________________________________________________________________________
+XMultichipExpressor::~XMultichipExpressor()
+{
+   // MultichipExpressor destructor
+   if(kCS) cout << "---XMultichipExpressor::~XMultichipExpressor------" << endl;
+
+   if (fResiduals) {delete [] fResiduals; fResiduals = 0;}
+}//Destructor
+
+//______________________________________________________________________________
+Int_t XMultichipExpressor::DoMedianPolish(Int_t nrow, Int_t ncol, Double_t *inten, 
+                           Double_t *level, Double_t *rowmed, Double_t *colmed,
+                           Double_t *residu)
+{
+   // Calculate median polish
+   if(kCSa) cout << "------XMultichipExpressor::DoMedianPolish------" << endl;
+
+   Int_t err  = errNoErr;
+
+// Get parameters or use default values
+   Int_t    iter   = (fNPar > 0) ? (Int_t)fPars[0] : 10;
+   Double_t eps    = (fNPar > 1) ? fPars[1] : 0.01;
+   Double_t totmed = 0;
+
+   if (iter <= 0 || iter >= 100) {
+      cout << "Warning: Number of iterations <" << iter
+           << "> is not in range [1,99], setting iter to default, iter = 10."
+           << endl;
+      iter = 10;
+   }//if
+
+// Median polish
+   totmed = TStat::MedianPolish(nrow, ncol, inten, rowmed, colmed, residu, iter, eps);
+
+// Convert expression levels
+   for (Int_t j=0; j<ncol; j++) level[j] = totmed + colmed[j];
+   level = Array2Pow(ncol, level, fLogBase);
+
+// Standard error
+   if (fEstimator) {
+      colmed = this->PseudoError(nrow, ncol, residu, colmed);
+      if (colmed == 0) return errInitMemory;
+   }//if
+
+// Convert standard deviation/error
+   colmed = Array2Pow(ncol, colmed, fLogBase);
+ 
+   return err;
+}//DoMedianPolish
+
+//______________________________________________________________________________
+Double_t *XMultichipExpressor::PseudoError(Int_t nrow, Int_t ncol,  
+                               Double_t *residu, Double_t *se)
+{
+   // Calculate standard error
+   // adapted from Bioconductor package "affyPLM" function "compute_pseudoSE()"
+   // created by: B. M. Bolstad <bolstad@stat.berkeley.edu>
+   if(kCSa) cout << "------XMultichipExpressor::PseudoError------" << endl;
+
+   Int_t n = nrow*ncol;
+
+   Double_t *arr = 0;
+   if (!(arr = new (nothrow) Double_t[n])) return 0;
+
+   for (Int_t i=0; i<n; i++) arr[i] = TMath::Abs(residu[i]);
+
+   // median of absolute residuals (why 1/0.6745?)
+   Double_t md = TStat::Median(n, arr)/0.6745;
+
+   // protect against residuals = 0
+   if (md == 0) {
+      for (Int_t j=0; j<ncol; j++) se[j] = 0.0;
+      delete [] arr;
+      return se;
+   }//if
+
+   Double_t residSE = 0.0;
+   for (Int_t i=0; i<nrow; i++) {
+      for (Int_t j=0; j<ncol; j++) {
+         Double_t r = residu[j + i*ncol];
+         residSE += fEstimator->Weight(r/md)*r*r;
+      }//for_j
+   }//for_i
+   residSE = TMath::Sqrt(residSE/(Double_t)(n - (nrow + ncol - 1)));
+
+   for (Int_t j=0; j<ncol; j++) {
+      Double_t weight = 0.0;
+      for (Int_t i=0; i<nrow; i++) {
+         weight += fEstimator->Weight(residu[j + i*ncol]/md);
+      }//for_i
+      se[j] = residSE/TMath::Sqrt(weight);
+   }//for_j
+
+   delete [] arr;
+
+   return se;
+}//PseudoError
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XSpliceExpressor                                                     //
+//                                                                      //
+// Algorithms used for summarization and splice detection               //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+XSpliceExpressor::XSpliceExpressor()
+                 :XMultichipExpressor()
+{
+   // Default SpliceExpressor constructor
+   if(kCS) cout << "---XSpliceExpressor::XSpliceExpressor(default)------" << endl;
+
+   fSplicexpr = kTRUE;
+}//Constructor
+
+//______________________________________________________________________________
+XSpliceExpressor::XSpliceExpressor(const char *name, const char *type)
+                 :XMultichipExpressor(name, type)
+{
+   // Normal SpliceExpressor constructor
+   if(kCS) cout << "---XSpliceExpressor::XSpliceExpressor------" << endl;
+
+   fSplicexpr = kTRUE;
+}//Constructor
+
+//______________________________________________________________________________
+XSpliceExpressor::~XSpliceExpressor()
+{
+   // SpliceExpressor destructor
+   if(kCS) cout << "---XSpliceExpressor::~XSpliceExpressor------" << endl;
+
+}//Destructor
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -1202,7 +1373,6 @@ Int_t XRMABackground::ComputeParameters(Int_t n, Double_t *x, Double_t *w,
  
 // Estimate alpha 
    for (Int_t i=0; i<nhi; i++) arr[i] = arr[i] - max;
-//x   alpha = 1.0 / TStat::MaxDensity(nhi, arr, w, npts, fKernel);
    alpha = (nhi > 0) ? 1.0 / TStat::MaxDensity(nhi, arr, w, npts, fKernel) : 0.0;
  
    pars[0] = alpha;
@@ -3422,26 +3592,22 @@ Int_t XTukeyBiweight::Calculate(Double_t &value1, Double_t &value2, Int_t &num)
 
 //______________________________________________________________________________
 XMedianPolish::XMedianPolish()
-              :XExpressor()
+              :XMultichipExpressor()
 {
    // Default MedianPolish constructor
    if(kCS) cout << "---XMedianPolish::XMedianPolish(default)------" << endl;
 
    fNDefPar   = 2;
-   fMultichip = kTRUE;
-   fResiduals = 0;
 }//Constructor
 
 //______________________________________________________________________________
 XMedianPolish::XMedianPolish(const char *name, const char *type)
-              :XExpressor(name, type)
+              :XMultichipExpressor(name, type)
 {
    // Normal MedianPolish constructor
    if(kCS) cout << "---XMedianPolish::XMedianPolish------" << endl;
 
    fNDefPar   = 2;
-   fMultichip = kTRUE;
-   fResiduals = 0;
 }//Constructor
 
 //______________________________________________________________________________
@@ -3450,7 +3616,6 @@ XMedianPolish::~XMedianPolish()
    // MedianPolish destructor
    if(kCS) cout << "---XMedianPolish::~XMedianPolish------" << endl;
 
-   if (fResiduals) {delete [] fResiduals; fResiduals = 0;}
 }//Destructor
 
 //______________________________________________________________________________
@@ -3463,96 +3628,18 @@ Int_t XMedianPolish::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk)
    Int_t nrow = (Int_t)(fLength / n);
    Int_t ncol = n;
 
-   // get parameters or use default values
-   Int_t    iter   = (fNPar > 0) ? (Int_t)fPars[0] : 10;
-   Double_t eps    = (fNPar > 1) ? fPars[1] : 0.01;
-   Double_t totmed = 0;
-
-   if (iter <= 0 || iter >= 100) {
-      cout << "Warning: Number of iterations <" << iter
-           << "> is not in range [1,99], setting iter to default, iter = 10."
-           << endl;
-      iter = 10;
-   }//if
-
    if (fResiduals) {delete [] fResiduals; fResiduals = 0;}
    if (!(fResiduals = new (nothrow) Double_t[fLength])) return errInitMemory;
 
    Double_t *rowmed = 0;
    if (!(rowmed = new (nothrow) Double_t[nrow])) return errInitMemory;
 
-   totmed = TStat::MedianPolish(nrow, ncol, fArray, rowmed, y, fResiduals, iter, eps);
-
-/////////
-//ev better function Array2Power()??
-/////////
-//ev not necessary to convert x[j]??
-//ev only convert if option convert is set!?
-   // convert expression levels
-   if (strcmp(fLogBase, "0") == 0) {
-      for (Int_t j=0; j<ncol; j++)  x[j] = totmed + y[j];
-   } else if (strcmp(fLogBase, "log2") == 0) {
-      for (Int_t j=0; j<ncol; j++)  x[j] = TMath::Power(2, totmed + y[j]);
-   } else if (strcmp(fLogBase, "log10") == 0) {
-      for (Int_t j=0; j<ncol; j++)  x[j] = TMath::Power(10, totmed + y[j]);
-   } else if (strcmp(fLogBase, "log") == 0) {
-      for (Int_t j=0; j<ncol; j++)  x[j] = TMath::Power(TMath::E(), totmed + y[j]);
-   }//if
-
-   // standard error
-   if (fEstimator) {
-      y = this->StandardError(nrow, ncol, fResiduals, y);
-   }//if
-
-   // convert standard deviation/error
-//ev only for if(!fEstimator):
-   if (strcmp(fLogBase, "log2") == 0) {
-      for (Int_t j=0; j<ncol; j++)  y[j] = TMath::Power(2, y[j]);
-   } else if (strcmp(fLogBase, "log10") == 0) {
-      for (Int_t j=0; j<ncol; j++)  y[j] = TMath::Power(10, y[j]);
-   } else if (strcmp(fLogBase, "log") == 0) {
-      for (Int_t j=0; j<ncol; j++)  y[j] = TMath::Power(TMath::E(), y[j]);
-   }//if
+   err = DoMedianPolish(nrow, ncol, fArray, x, rowmed, y, fResiduals);
 
    if (rowmed) {delete [] rowmed; rowmed = 0;}
    
    return err;
 }//Calculate
-
-//______________________________________________________________________________
-Double_t *XMedianPolish::StandardError(Int_t nrow, Int_t ncol, Double_t *residu, Double_t *se)
-{
-   // Calculate standard error
-   // adapted from Bioconductor package "affyPLM" function "compute_pseudoSE()"
-   // created by: B. M. Bolstad <bolstad@stat.berkeley.edu>
-   if(kCSa) cout << "------XMedianPolish::StandardError------" << endl;
-
-   // use fArray (no longer needed) to convert residuals to absolute values
-   Int_t n = nrow*ncol;
-   for (Int_t i=0; i<n; i++) fArray[i] = TMath::Abs(residu[i]);
-
-   // median of absolute residuals (why 1/0.6745?)
-   Double_t md = TStat::Median(n, fArray)/0.6745;
-
-   Double_t residSE = 0.0;
-   for (Int_t i=0; i<nrow; i++){
-      for (Int_t j=0; j<ncol; j++){
-         Double_t r = residu[j + i*ncol];
-         residSE += fEstimator->Weight(r/md)*r*r;
-      }//for_j
-   }//for_i
-   residSE = TMath::Sqrt(residSE/(Double_t)(n - (nrow + ncol - 1)));
-
-   for (Int_t j=0; j<ncol; j++){
-      Double_t weight = 0.0;
-      for (Int_t i=0; i<nrow; i++){
-         weight += fEstimator->Weight(residu[j + i*ncol]/md);
-      }//for_i
-      se[j] = residSE/TMath::Sqrt(weight);
-   }//for_j
-
-   return se;
-}//StandardError
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -3565,24 +3652,22 @@ Double_t *XMedianPolish::StandardError(Int_t nrow, Int_t ncol, Double_t *residu,
 
 //______________________________________________________________________________
 XFARMS::XFARMS()
-       :XExpressor()
+       :XMultichipExpressor()
 {
    // Default FARMS constructor
    if(kCS) cout << "---XFARMS::XFARMS(default)------" << endl;
 
-   fNDefPar   = 5;
-   fMultichip = kTRUE;
+   fNDefPar = 5;
 }//Constructor
 
 //______________________________________________________________________________
 XFARMS::XFARMS(const char *name, const char *type)
-       :XExpressor(name, type)
+       :XMultichipExpressor(name, type)
 {
    // Normal FARMS constructor
    if(kCS) cout << "---XFARMS::XFARMS------" << endl;
 
-   fNDefPar   = 5;
-   fMultichip = kTRUE;
+   fNDefPar = 5;
 }//Constructor
 
 //______________________________________________________________________________
@@ -4140,24 +4225,22 @@ cleanup:
 
 //______________________________________________________________________________
 XDFW::XDFW()
-     :XExpressor()
+     :XMultichipExpressor()
 {
    // Default DFW constructor
    if(kCS) cout << "---XDFW::XDFW(default)------" << endl;
 
-   fNDefPar   = 3;
-   fMultichip = kTRUE;
+   fNDefPar = 3;
 }//Constructor
 
 //______________________________________________________________________________
 XDFW::XDFW(const char *name, const char *type)
-     :XExpressor(name, type)
+     :XMultichipExpressor(name, type)
 {
    // Normal DFW constructor
    if(kCS) cout << "---XDFW::XDFW------" << endl;
 
-   fNDefPar   = 3;
-   fMultichip = kTRUE;
+   fNDefPar = 3;
 }//Constructor
 
 //______________________________________________________________________________
@@ -4310,4 +4393,167 @@ Double_t *XDFW::Weight(Int_t n, const Double_t *arr, Double_t *w)
    return w;
 }//Weight
 
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XFIRMA                                                               //
+//                                                                      //
+// Finding Isoforms using Robust Multichip Analysis (Purdom E)          //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+XFIRMA::XFIRMA()
+       :XSpliceExpressor()
+{
+   // Default FIRMA constructor
+   if(kCS) cout << "---XFIRMA::XFIRMA(default)------" << endl;
+
+   fNDefPar = 0; //???
+}//Constructor
+
+//______________________________________________________________________________
+XFIRMA::XFIRMA(const char *name, const char *type)
+       :XSpliceExpressor(name, type)
+{
+   // Normal FIRMA constructor
+   if(kCS) cout << "---XFIRMA::XFIRMA------" << endl;
+
+   fNDefPar = 0;  //???
+}//Constructor
+
+//______________________________________________________________________________
+XFIRMA::~XFIRMA()
+{
+   // XFIRMA destructor
+   if(kCS) cout << "---XFIRMA::~XFIRMA------" << endl;
+
+}//Destructor
+
+//______________________________________________________________________________
+Int_t XFIRMA::Calculate(Int_t n, Double_t *x, Double_t *y, Double_t *z, 
+              Double_t *dx, Double_t *dy, Int_t *idx, Int_t nsub)
+{
+   // Calculate summarization and alternative splicing
+   // Reference: Purdom E, et al., Bioinformatics 2008 Aug 1;24(15):1707-14.
+   // Source code is based on R function firma() extracted from aroma.affymetrix, see:
+   // http://www.aroma-project.org/node/81
+   if(kCSa) cout << "------XFIRMA::Calculate------" << endl;
+
+   Int_t err  = errNoErr;
+   Int_t nrow = (Int_t)(fLength / n);
+   Int_t ncol = n;
+   Int_t cnt  = 0;
+
+   Double_t se = 0.0;
+
+// Initialize residuals array
+   if (fResiduals) {delete [] fResiduals; fResiduals = 0;}
+   if (!(fResiduals = new (nothrow) Double_t[fLength])) return errInitMemory;
+
+// Initialize memory for arrays
+   Double_t *inten   = 0;
+   Double_t *score   = 0;
+   Double_t *rowmed  = 0;
+   Double_t *trLevel = 0;
+   Double_t *trStdev = 0;
+   Double_t *psLevel = 0;
+   Double_t *psStdev = 0;
+   Double_t *psScore = 0;
+   if (!(inten   = new (nothrow) Double_t[fLength])) {err = errInitMemory; goto cleanup;}
+   if (!(score   = new (nothrow) Double_t[fLength])) {err = errInitMemory; goto cleanup;}
+   if (!(rowmed  = new (nothrow) Double_t[nrow]))    {err = errInitMemory; goto cleanup;}
+   if (!(trLevel = new (nothrow) Double_t[ncol]))    {err = errInitMemory; goto cleanup;}
+   if (!(trStdev = new (nothrow) Double_t[ncol]))    {err = errInitMemory; goto cleanup;}
+   if (!(psLevel = new (nothrow) Double_t[ncol]))    {err = errInitMemory; goto cleanup;}
+   if (!(psStdev = new (nothrow) Double_t[ncol]))    {err = errInitMemory; goto cleanup;}
+   if (!(psScore = new (nothrow) Double_t[ncol]))    {err = errInitMemory; goto cleanup;}
+
+// Calculate summarization for transcript intensities
+   err = DoMedianPolish(nrow, ncol, fArray, trLevel, rowmed, trStdev, score);
+   if (err != errNoErr) goto cleanup;
+
+   // affinities sum to zero (on log scale)
+   rowmed[nrow-1] = 0.0;
+   for (Int_t i=0; i<nrow-1; i++) rowmed[nrow-1] -= rowmed[i];
+   rowmed = Array2Pow(nrow, rowmed, fLogBase);
+
+// Compute residuals
+   cnt = 0;
+   if (strcmp(fLogBase, "0") == 0) {
+      for (Int_t i=0; i<nrow; i++) {
+         for (Int_t k=0; k<ncol; k++) {
+            fResiduals[cnt] = fArray[cnt]/(rowmed[i]*trLevel[k]);
+            cnt++;
+         }//for_k
+      }//for_i
+   } else if (strcmp(fLogBase, "log2") == 0) {
+      for (Int_t i=0; i<nrow; i++) {
+         for (Int_t k=0; k<ncol; k++) {
+            fResiduals[cnt] = TMath::Power(2, fArray[cnt])/(rowmed[i]*trLevel[k]);
+            fResiduals[cnt] = TMath::Log2(fResiduals[cnt]);
+            cnt++;
+         }//for_k
+      }//for_i
+   } else if (strcmp(fLogBase, "log10") == 0) {
+      for (Int_t i=0; i<nrow; i++) {
+         for (Int_t k=0; k<ncol; k++) {
+            fResiduals[cnt] = TMath::Power(10, fArray[cnt])/(rowmed[i]*trLevel[k]);
+            fResiduals[cnt] = TMath::Log10(fResiduals[cnt]);
+            cnt++;
+         }//for_k
+      }//for_i
+   } else if (strcmp(fLogBase, "log") == 0) {
+      for (Int_t i=0; i<nrow; i++) {
+         for (Int_t k=0; k<ncol; k++) {
+            fResiduals[cnt] = TMath::Power(TMath::E(), fArray[cnt])/(rowmed[i]*trLevel[k]);
+            fResiduals[cnt] = TMath::Log(fResiduals[cnt]);
+            cnt++;
+         }//for_k
+      }//for_i
+   } else {
+      cerr << "Error: LogBase <" << fLogBase << "> is not known." << endl;
+      err = errInitParameters; goto cleanup;
+   }//if
+
+// Estimate standard error of residuals (center=0)
+   se = TStat::MAD(fLength, fResiduals, 0.0, 1.4826, kFALSE, kFALSE);
+
+// Calculate summarization and score for probeset/exon intensities
+   cnt = 0;
+   for (Int_t i=0; i<nsub; i++) {
+      for (Int_t k=0; k<ncol; k++) {
+         for (Int_t j=0; j<idx[i]; j++) {
+            inten[j*ncol+k] = fArray[(j+cnt)*ncol + k];
+            score[j]        = fResiduals[(j+cnt)*ncol + k]/se;
+         }//for_j
+
+         psScore[k] = TMath::Median(idx[i], score);
+      }//for_k
+      cnt += idx[i];
+
+      err = DoMedianPolish(idx[i], ncol, inten, psLevel, rowmed, psStdev, score);
+      if (err != errNoErr) goto cleanup;
+
+      for (Int_t k=0; k<ncol; k++) {
+         x[i*ncol+k]  = trLevel[k];
+         y[i*ncol+k]  = psLevel[k];
+         z[i*ncol+k]  = psScore[k];
+         dx[i*ncol+k] = trStdev[k];
+         dy[i*ncol+k] = psStdev[k];
+      }//for_k
+   }//for_i
+
+cleanup:
+   if (psScore) {delete [] psScore; psScore = 0;}
+   if (psStdev) {delete [] psStdev; psStdev = 0;}
+   if (psLevel) {delete [] psLevel; psLevel = 0;}
+   if (trStdev) {delete [] trStdev; trStdev = 0;}
+   if (trLevel) {delete [] trLevel; trLevel = 0;}
+   if (rowmed)  {delete [] rowmed;  rowmed  = 0;}
+   if (score)   {delete [] score;   score   = 0;}
+   if (inten)   {delete [] inten;   inten   = 0;}
+
+   return err;
+}//Calculate
 
