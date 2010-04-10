@@ -56,7 +56,7 @@ export(object, ...)
   Following \code{varlist} annotation parameters are valid:
  \tabular{lll}{
   \tab \code{fUnitName}:\tab unit name (probeset ID). \cr
-  \tab \code{fTranscriptID}:\tab transcript\_id (probeset ID). \cr
+  \tab \code{fTranscriptID}:\tab transcript_id (probeset ID). \cr
   \tab \code{fName}:\tab gene name. \cr
   \tab \code{fSymbol}:\tab gene symbol. \cr
   \tab \code{fAccession}:\tab mRNA accession such as Refseq ID. \cr

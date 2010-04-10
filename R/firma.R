@@ -59,7 +59,7 @@ function(xps.data,
    option <- validTranscriptOption(option);
 
    if (is.na(match(type, c("LEVEL_TS", "LEVEL_PS", "SCORE_PS")))) {
-      stop(paste(sQuote("typs"), "must be one of <LEVEL_TS,LEVEL_PS,SCORE_PS>"));
+      stop(paste(sQuote("type"), "must be one of <LEVEL_TS,LEVEL_PS,SCORE_PS>"));
    }#if
 
    if (!is(xps.data, "ExprTreeSet")) {
@@ -89,8 +89,12 @@ function(xps.data,
       data <- data[1, , drop=FALSE];
       rownames(data) <- data[,"TranscriptID"];
    } else {
-#      data <- subset(data, UnitName == probeset, drop=FALSE);
-      data <- data[data[,"UnitName"] == probeset, , drop=FALSE];
+#      tmp <- subset(data, UnitName == probeset, drop=FALSE);
+      tmp <- data[data[,"UnitName"] == probeset, , drop=FALSE];
+
+      ## probeset can be UnitName or TranscriptID
+      if (nrow(tmp)) {data <- tmp;}
+      else           {data <-data[data[,"TranscriptID"] == probeset, , drop=FALSE];}
    }#if
 
    ## remove column TranscriptID

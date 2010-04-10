@@ -9,11 +9,12 @@
 \emph{Usage}
 
 \code{
-mvaplot(x, transfo = log2, method  = "median", names = "namepart", ylim = c(-6,6), xlab = "A", ylab = "M", pch = '.', las = 2, ...)
+mvaplot(x, which = "UnitName", transfo = log2, method  = "median", names = "namepart", ylim = c(-6,6), xlab = "A", ylab = "M", pch = '.', las = 2, ...)
 }
 }
 \arguments{
   \item{x}{object of class \code{\link{ExprTreeSet}}.}
+  \item{which}{type of probes to be used, for details see \code{\link{validData}}.}
   \item{transfo}{a valid function to transform the data, usually \dQuote{log2}, or \dQuote{0}.}
   \item{method}{method to compute M, \dQuote{mean} or \dQuote{median}.}
   \item{names}{optional vector of sample names.}

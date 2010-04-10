@@ -9,11 +9,12 @@
 \emph{Usage}
 
 \code{
-rleplot(x, size = 0, range = 0, ylim = c(-0.75,0.75), outline = FALSE, names = "namepart", las = 2, ...)
+rleplot(x, which = "UnitName", size = 0, range = 0, ylim = c(-0.75,0.75), outline = FALSE, names = "namepart", las = 2, ...)
 }
 }
 \arguments{
   \item{x}{object of class \code{\link{DataTreeSet}} or \code{\link{ExprTreeSet}}.}
+  \item{which}{type of probes to be used, for details see \code{\link{validData}}.}
   \item{size}{length of sequence to be generated as subset.}
   \item{range}{determines how far the plot whiskers extend out from the box.}
   \item{ylim}{range for the plotted y values.}

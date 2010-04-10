@@ -130,17 +130,19 @@ outdir <- getwd()
 sub.firma.ps <- firma(sub.exon,"HeartMuscleFIRMAcorePS",filedir=outdir,tmpdir="",background="antigenomic",
                       normalize=TRUE,option="probeset",exonlevel="core")
 
-## get transcript expression levels for all transcripts or transcript=2315373
+## get transcript expression levels for all transcripts or transcript=2429277
 expr.firma <- firma.expr(sub.firma.ps, probeset=NULL, option="transcript")
-expr.firma <- firma.expr(sub.firma.ps, probeset=2315373, option="transcript")
+expr.firma <- firma.expr(sub.firma.ps, probeset=2429277, option="transcript")
 
-## get probeset expression levels for all probeset or probeset=2315376
+## get probeset expression levels for all probeset or probeset=2429278 or transcript=2429277
 expr.firma <- firma.expr(sub.firma.ps, probeset=NULL, option="probeset")
-expr.firma <- firma.expr(sub.firma.ps, probeset=2315376, option="probeset")
+expr.firma <- firma.expr(sub.firma.ps, probeset=2429278, option="probeset")
+expr.firma <- firma.expr(sub.firma.ps, probeset=2429277, option="probeset")
 
-## get probeset splice scores for all probeset or probeset=2315376
+## get probeset splice scores for all probeset or probeset=2429278 or transcript=2429277
 score.firma <- firma.score(sub.firma.ps, probeset=NULL, option="probeset")
-score.firma <- firma.score(sub.firma.ps, probeset=2315376, option="probeset")
+score.firma <- firma.score(sub.firma.ps, probeset=2429278, option="probeset")
+score.firma <- firma.score(sub.firma.ps, probeset=2429277, option="probeset")
 }
 }
 \keyword{manip}

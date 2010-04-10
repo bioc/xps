@@ -195,10 +195,37 @@ function(object,
 {
    if (debug.xps()) print("------seExprTreeSet------")
 
+   ## get se
    se <- se.exprs(object);
-   rownames(se) <- se[,which];
 
-   return(se[,3:ncol(se)]);
+   ## get optional subset of columns
+   strg <- unlist(strsplit(which,":"));
+   if (length(strg) == 2) {
+      id   <- grep(strg[2], colnames(se));
+      se <- se[,c(strg[1], colnames(se)[id])];
+   }#if
+
+   ## use names from column "which" as rownames
+   if (!is.na(match(strg[1], colnames(se)))) {
+      len <- length(which(duplicated(se[,strg[1]]) == TRUE));
+      if (len == 0) {
+         rownames(se) <- se[, strg[1]];
+      } else {
+         warning(paste("cannot use ", sQuote(strg[1]), "as row.names since it has <",
+                       len, "> non-unique values.", sep=""));
+
+         ## use names from column "UNIT_ID" as rownames
+         if (!is.na(match("UNIT_ID", colnames(se)))) {
+            rownames(se) <- se[, "UNIT_ID"];
+         }#if
+      }#if
+   }#if
+
+   ## get name part for matching columns
+   treenames <- namePart(object@treenames);
+   datanames <- namePart(colnames(se));
+
+   return(se[,!is.na(match(datanames, treenames))]);
 }#seExprTreeSet
 
 setMethod("validSE", "ExprTreeSet", seExprTreeSet);
@@ -1129,6 +1156,7 @@ setMethod("xpsUniFilter", "ExprTreeSet", unifilter.ExprTreeSet);
 
 setMethod("mvaplot", signature(x="ExprTreeSet"),
    function(x,
+            which   = "UnitName",
             transfo = log2,
             method  = "median",
             names   = "namepart",
@@ -1141,7 +1169,7 @@ setMethod("mvaplot", signature(x="ExprTreeSet"),
    {
       if (debug.xps()) print("------mvaplot.ExprTreeSet------")
 
-      m <- validData(x);
+      m <- validData(x, which=which);
       if (is.function(transfo)) m <- transfo(m);
 
       if (method == "median") mn  <- apply(m, 1, median)
@@ -1173,6 +1201,7 @@ setMethod("mvaplot", signature(x="ExprTreeSet"),
 
 setMethod("nuseplot", signature(x="ExprTreeSet"),
    function(x,
+            which   = "UnitName",
             size    = 0,
             range   = 0,
             ylim    = c(0.9,1.2),
@@ -1183,7 +1212,7 @@ setMethod("nuseplot", signature(x="ExprTreeSet"),
    {
       if (debug.xps()) print("------nuseplot.ExprTreeSet------")
 
-      m <- validSE(x);
+      m <- validSE(x, which=which);
       if (size > 1) m <- m[seq(1,nrow(m),len=size),];
       m <- log2(m);
 
@@ -1210,6 +1239,7 @@ setMethod("nuseplot", signature(x="ExprTreeSet"),
 
 setMethod("rleplot", signature(x="ExprTreeSet"),
    function(x,
+            which   = "UnitName",
             size    = 0,
             range   = 0,
             ylim    = c(-0.75,0.75),
@@ -1221,7 +1251,7 @@ setMethod("rleplot", signature(x="ExprTreeSet"),
       if (debug.xps()) print("------rleplot.ExprTreeSet------")
 
       mboxplot(x,
-               which   = "UnitName",
+               which   = which,
                size    = size,
                transfo = log2,
                method  = "median",

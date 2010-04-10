@@ -158,6 +158,13 @@ function(object,
       stop(paste("slot", sQuote("data"), "has no data"));
    }#if
 
+   ## get optional subset of columns
+   strg <- unlist(strsplit(which,":"));
+   if (length(strg) == 2) {
+      id   <- grep(strg[2], colnames(data));
+      data <- data[,c(strg[1], colnames(data)[id])];
+   }#if
+
    ## use names from column "which" as rownames
    if (!is.na(match(which, colnames(data)))) {
       len <- length(which(duplicated(data[,which])==TRUE));
