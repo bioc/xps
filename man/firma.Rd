@@ -143,6 +143,19 @@ expr.firma <- firma.expr(sub.firma.ps, probeset=2429277, option="probeset")
 score.firma <- firma.score(sub.firma.ps, probeset=NULL, option="probeset")
 score.firma <- firma.score(sub.firma.ps, probeset=2429278, option="probeset")
 score.firma <- firma.score(sub.firma.ps, probeset=2429277, option="probeset")
+
+## different plots
+boxplot(sub.firma.ps, which="UnitName:LEVEL_PS")
+boxplot(sub.firma.ps, which="UnitName:LEVEL_TS")
+
+hist(sub.firma.ps, which="UnitName:LEVEL_PS")
+hist(sub.firma.ps, which="UnitName:LEVEL_TS")
+
+rleplot(sub.firma.ps, which="UnitName:LEVEL_PS")
+rleplot(sub.firma.ps, which="UnitName:LEVEL_TS")
+
+nuseplot(sub.firma.ps, which="UnitName:STDEV_PS")
+nuseplot(sub.firma.ps, which="UnitName:STDEV_TS")
 }
 }
 \keyword{manip}

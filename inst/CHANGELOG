@@ -4,6 +4,81 @@ This file documents major changes made between different development versions of
 
 
 #-----------------------------------------------------------------------------------#
+r45861 | c.stratowa | 2010-04-10 22:52:58 +0200 (Sat, 10 Apr 2010) | 3 lines
+
+svn commit -m "update to xps-1.7.9
+- update validData() to handle slot data containing different column types
+- update seExprTreeSet(), rleplot(), mvaplot(), nuseplot()"
+
+# changed in xps-1.7.9
+DESCRIPTION
+NEWS 
+firma.R
+methods.ProcesSet.R: validData
+methods.ExprTreeSet.R: seExprTreeSet, rleplot, mvaplot, nuseplot
+firma.Rd, firma.expr.Rd, firma.score.Rd
+rleplot-methods.Rd
+mvaplot-methods.Rd
+nuseplot-methods.Rd
+export.Rd
+
+
+#-----------------------------------------------------------------------------------#
+r45851 | c.stratowa | 2010-04-09 22:37:46 +0200 (Fri, 09 Apr 2010) | 4 lines
+
+svn commit -m "update to xps-1.7.8
+- add method xpsFIRMA()
+- add functions firma(), firma.expr(), firma.score()
+- add man files firma.Rd, firma.expr.Rd, firma.score.Rd"
+
+# changed in xps-1.7.8
+DESCRIPTION: firma.R
+NAMESPACE
+NEWS 
+CHANGELOG 
+TreeSetClasses.R:  xpsFIRMA
+methods.DataTreeSet.R: xpsFIRMA
+firma.R
+utils.R:  "firma"
+DataTreeSet-class.Rd, rma.Rd
+firma.Rd, firma.expr.Rd, firma.score.Rd
+TStat.h,cxx:   MAD()
+XPSData.h,cxx:  XSpliceExpression
+XPSHybridizer.h,cxx:  XMultichipExpressor, XSpliceExpressor, XFIRMA
+XPSProcessing.cxx: add kTypeExpr="firma"
+XPSPreProcessing.h,cxx:  XExonProcesSet::DoSpliceExpress(), XExonProcesSet::ExportSplxTrees()
+rwrapper.h,cxx:  PreprocessFIRMA()
+xpsLinkDef.h
+
+
+#-----------------------------------------------------------------------------------#
+r45549 | c.stratowa | 2010-03-27 19:11:04 +0100 (Sat, 27 Mar 2010) | 7 lines
+
+svn commit -m "update to xps-1.7.7
+- update bgcorrect.R and normalize.R to warn from using tmpdir resulting in empty root file
+- update NEWS, README
+- add CHANGELOG
+- move InitGroups() from XPSAnalysis to XPSProcessing
+- update script4xps.R, script4exon.R, script4xpsPreprocess.R
+- update man files for exonLevel, dfw, farms, mas5, rma"
+
+# changed in xps-1.7.7
+DESCRIPTION
+NEWS
+CHANGELOG
+README
+bgcorrect.R   tmpdir
+normalize.R   tmpdir
+zzz.R
+xps.Rnw:  validTreetype; 
+XPSProcessing.h,cxx, XPSAnalysis.h,cxx: move InitGroups() to XPSProcessing
+script4xps.R
+script4exon.R
+script4xpsPreprocess.R
+*.Rd: exonLevel,dfw,farms,mas5,rma
+
+
+#-----------------------------------------------------------------------------------#
 r44716 | c.stratowa | 2010-02-15 20:40:17 +0100 (Mon, 15 Feb 2010) | 2 lines
 
 svn commit -m "update to xps-1.7.6
