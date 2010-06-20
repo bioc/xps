@@ -464,7 +464,7 @@ function(object,
       }#if
    } else if (chipType(object) == "GenomeChip") {
       if (which == "") {
-         id <- 1:nrow(data); ##all
+         id <- 1:nrow(bgrd); ##all
       } else if (which == "antigenomic") {
          id <- exonLevelIDs(-2, bgrd, msk, ncol);
       } else {
@@ -473,7 +473,7 @@ function(object,
       }#if
    } else if (chipType(object) == "ExonChip") {
       if (which == "") {
-         id <- 1:nrow(data); ##all
+         id <- 1:nrow(bgrd); ##all
       } else if (which == "genomic") {
          id <- exonLevelIDs(-1, bgrd, msk, ncol);
       } else if (which == "antigenomic") {

@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 01/03/2010
+// File created: 08/05/2002                          last modified: 06/20/2010
 
 // Author: Christian Stratowa 06/18/2000
 
@@ -1429,7 +1429,7 @@ Int_t XNormedGCSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
 // Get unit tree for scheme (needed for annotation)
    XGCUnit *unit   = 0;
 //?   XExonUnit *unit = 0;
-   TTree *unittree = this->GetUnitTree(chip, type);
+   TTree *unittree = GetUnitTree(chip, type);
    if (unittree == 0) return errGetTree;
    unittree->SetBranchAddress("IdxBranch", &unit);
 
@@ -1447,7 +1447,7 @@ Int_t XNormedGCSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
       numannot = (Int_t)(anntree->GetEntries());
 
       if (!(htable = new THashTable(2*numannot))) return errInitMemory;
-      htable = this->FillHashTable(htable, anntree, annot, type);
+      htable = FillHashTable(htable, anntree, annot, type);
    } else {
       if (hasAnnot) {
          cout << "Warning: Missing annotation, gene info not exported." << endl;
@@ -1517,7 +1517,7 @@ Int_t XNormedGCSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
             idxstr = FindUnitID(htable, unit);
             if (idxstr) {
                anntree->GetEntry(idxstr->GetIndex());
-               if (hasTrans  == j) output << sep << this->GetTranscriptID(unit, annot, type);
+               if (hasTrans  == j) output << sep << GetTranscriptID(unit, annot, type);
                if (hasName   == j) output << sep << annot->GetName();
                if (hasSymbol == j) output << sep << annot->GetSymbol();
                if (hasAccess == j) output << sep << annot->GetAccession();
@@ -1825,15 +1825,3 @@ XNormedExonSet::~XNormedExonSet()
    if(kCS) cout << "---XNormedExonSet::~XNormedExonSet------" << endl;
 
 }//Destructor
-
-//______________________________________________________________________________
-const char *XNormedExonSet::GetTranscriptID(XUnit *unit, XTransAnnotation *annot, Int_t type)
-{
-   // Get transcript IDs from unit tree
-
-   Int_t id = (type == eTRANSCRIPT) 
-            ? ((XExonUnit*)unit)->GetSubUnitID()
-            : ((XProbesetAnnotation*)annot)->GetTranscriptIX();
-
-   return Form("%d", id);
-}//GetTranscriptID

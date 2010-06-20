@@ -1268,9 +1268,17 @@ const char *XProcesSet::GetTranscriptID(XTransAnnotation *annot)
 //______________________________________________________________________________
 const char *XProcesSet::GetTranscriptID(XUnit *unit, XTransAnnotation *annot, Int_t type)
 {
-   // Get transcript IDs from annotation tree
+   // Get transcript IDs from unit tree
 
-   return annot->GetTranscriptID();
+   if (strcmp(this->GetTitle(), "GeneChip") == 0) {
+      return annot->GetTranscriptID();
+   }//if
+
+   Int_t id = (type == eTRANSCRIPT) 
+            ? ((XExonUnit*)unit)->GetSubUnitID()
+            : ((XProbesetAnnotation*)annot)->GetTranscriptIX();
+
+   return Form("%d", id);
 }//GetTranscriptID
 
 //______________________________________________________________________________

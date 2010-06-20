@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 10/03/2008
+// File created: 08/05/2002                          last modified: 06/20/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2008 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2010 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -210,9 +210,6 @@ class XNormedGenomeSet: public XNormedGCSet {
 class XNormedExonSet: public XNormedGenomeSet {
 
    protected:
-
-   protected:
-      virtual const char *GetTranscriptID(XUnit *unit, XTransAnnotation *annot, Int_t type);
 
    public:
       XNormedExonSet();

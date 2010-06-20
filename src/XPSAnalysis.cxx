@@ -1,4 +1,4 @@
-// File created: 12/16/2002                          last modified: 02/26/2010
+// File created: 12/16/2002                          last modified: 06/20/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -1338,6 +1338,14 @@ Int_t XAnalySet::ExportFilterTrees(Int_t n, TString *names, const char *varlist,
       }//for_k
    }//if
 
+// Get treeinfo and its option for selection of unittree and anntree
+   XTreeInfo *info   = (XTreeInfo*)tree[0]->GetUserInfo()->At(0);
+   Option_t  *option = info->GetOption();
+
+   Int_t type = eTRANSCRIPT;
+   if      (strcmp(option, "exon")     == 0) type = eEXONTYPE; 
+   else if (strcmp(option, "probeset") == 0) type = ePROBESET; 
+
 // Find fUnitID from tree[0]
    TLeaf   *idleaf = tree[0]->FindLeaf("fUnitID");
    TBranch *idbrch = (idleaf != 0) ? idleaf->GetBranch() : 0;
@@ -1348,8 +1356,8 @@ Int_t XAnalySet::ExportFilterTrees(Int_t n, TString *names, const char *varlist,
    Int_t nentries = (Int_t)(tree[0]->GetEntries());
 
 // Get scheme name
-   TString scmname = tree[0]->GetTitle();
-   if (strcmp(scmname.Data(), "")  == 0) {
+   fSchemeName = tree[0]->GetTitle();
+   if (strcmp(fSchemeName.Data(), "")  == 0) {
       cerr << "Error: No scheme name is present. Please report error." << endl;
       hasUnit  = 0;
    }//if
@@ -1363,17 +1371,15 @@ Int_t XAnalySet::ExportFilterTrees(Int_t n, TString *names, const char *varlist,
       return fManager->HandleError(errMissingContent, "Scheme", kContent);
    }//if
 
-   XGeneChip *chip = (XGeneChip*)schemes->FindObject(scmname, kTRUE);
+   XGeneChip *chip = (XGeneChip*)schemes->FindObject(fSchemeName, kTRUE);
    if (chip == 0) return errAbort;
-
-   if (!fSchemeFile->cd(scmname)) return errGetDir;
 
 // Get unit tree for scheme
    XGCUnit *unit     = 0;
    TTree   *unittree = 0; 
    Int_t numunits    = 0;
    if (hasUnit) {
-      unittree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
+      unittree = GetUnitTree(chip, type);
       if (unittree == 0) return errGetTree;
       unittree->SetBranchAddress("IdxBranch", &unit);
 
@@ -2187,10 +2193,10 @@ Int_t XUnivarSet::ExportUnivarTrees(Int_t n, TString *names, const char *varlist
 // Get treeinfo and its option for selection of unittree and anntree
    XTreeInfo *info   = (XTreeInfo*)tree[0]->GetUserInfo()->At(0);
    Option_t  *option = info->GetOption();
-//cout << "option= " << option << endl;
-////////////////
-//ev use fSchemeType==ExonChip and/or option="probeset" for exon annotation
-////////////////
+
+   Int_t type = eTRANSCRIPT;
+   if      (strcmp(option, "exon")     == 0) type = eEXONTYPE; 
+   else if (strcmp(option, "probeset") == 0) type = ePROBESET; 
 
 // Find fUnitID from tree[0]
    TLeaf   *idleaf = tree[0]->FindLeaf("fUnitID");
@@ -2259,8 +2265,8 @@ Int_t XUnivarSet::ExportUnivarTrees(Int_t n, TString *names, const char *varlist
    hasFC   = hasFC   ? (hasLeafMn1 && hasLeafMn2) : kFALSE;
 
 // Get scheme name
-   TString scmname = tree[0]->GetTitle();
-   if (strcmp(scmname.Data(), "")  == 0) {
+   fSchemeName = tree[0]->GetTitle();
+   if (strcmp(fSchemeName.Data(), "")  == 0) {
       cerr << "Error: No scheme name is present. Please report error." << endl;
       hasUnit  = 0;
       hasAnnot = 0;
@@ -2275,20 +2281,15 @@ Int_t XUnivarSet::ExportUnivarTrees(Int_t n, TString *names, const char *varlist
       return fManager->HandleError(errMissingContent, "Scheme", kContent);
    }//if
 
-   XGeneChip *chip = (XGeneChip*)schemes->FindObject(scmname, kTRUE);
+   XGeneChip *chip = (XGeneChip*)schemes->FindObject(fSchemeName, kTRUE);
    if (chip == 0) return errAbort;
-
-//   Int_t numgenes = chip->GetNumGenes();
-//   Int_t numctrls = chip->GetNumControls();
-
-   if (!fSchemeFile->cd(scmname)) return errGetDir;
 
 // Get unit tree for scheme
    XGCUnit *unit     = 0;
    TTree   *unittree = 0; 
    Int_t    numunits = 0;
    if (hasUnit) {
-      unittree = (TTree*)gDirectory->Get(chip->GetUnitTree()); 
+      unittree = GetUnitTree(chip, type);
       if (unittree == 0) return errGetTree;
       unittree->SetBranchAddress("IdxBranch", &unit);
 
@@ -2299,7 +2300,7 @@ Int_t XUnivarSet::ExportUnivarTrees(Int_t n, TString *names, const char *varlist
    XTransAnnotation *annot = 0;
    TTree          *anntree = 0; 
    if (hasAnnot) {
-      anntree = (TTree*)gDirectory->Get(chip->GetAnnotTree()); 
+      anntree = GetAnnotationTree(chip, type);
       if (anntree) {
          anntree->SetBranchAddress("AnnBranch", &annot);
       } else {
@@ -2310,21 +2311,10 @@ Int_t XUnivarSet::ExportUnivarTrees(Int_t n, TString *names, const char *varlist
 
 // Create hash table to store unit names from anntree
    THashTable *htable = 0;
-   XIdxString *idxstr = 0;
    if (hasAnnot) {
       Int_t numannot = (Int_t)(anntree->GetEntries());
       if (!(htable = new THashTable(2*numannot))) return errInitMemory;
-      if (XManager::fgVerbose) {
-         cout << "Reading entries from <" << anntree->GetName() << "> ...";
-      }//if
-      for (Int_t i=0; i<numannot; i++) {
-         anntree->GetEntry(i);
-         idxstr = new XIdxString(i, annot->GetTranscriptID());
-         htable->Add(idxstr);
-      }//for_i
-      if (XManager::fgVerbose) {
-         cout << "Finished" << endl;
-      }//if
+      htable = FillHashTable(htable, anntree, annot, type);
    }//if
 
 // Output header
@@ -2333,7 +2323,7 @@ Int_t XUnivarSet::ExportUnivarTrees(Int_t n, TString *names, const char *varlist
       if (hasUnit == j)      output << sep << "UnitName";
 
       if (hasAnnot > 0) {
-         if (hasTrans  == j) output << sep << "ProbesetID";
+         if (hasTrans  == j) output << sep << "TranscriptID";
          if (hasName   == j) output << sep << "GeneName";
          if (hasSymbol == j) output << sep << "GeneSymbol";
          if (hasAccess == j) output << sep << "GeneAccession";
@@ -2378,6 +2368,7 @@ Int_t XUnivarSet::ExportUnivarTrees(Int_t n, TString *names, const char *varlist
    output << endl;
 
 // Loop over tree entries and tree branches
+   XIdxString *idxstr = 0;
    TBranch *brch = 0;
    Int_t  unitID = 0;
    Double_t mn1, mn2, fc;
@@ -2414,7 +2405,7 @@ Int_t XUnivarSet::ExportUnivarTrees(Int_t n, TString *names, const char *varlist
             idxstr = (XIdxString*)(htable->FindObject(unit->GetUnitName()));
             if (idxstr) {
                anntree->GetEntry(idxstr->GetIndex());
-               if (hasTrans  == j) output << sep << annot->GetTranscriptID();
+               if (hasTrans  == j) output << sep << GetTranscriptID(unit, annot, type);
                if (hasName   == j) output << sep << annot->GetName();
                if (hasSymbol == j) output << sep << annot->GetSymbol();
                if (hasAccess == j) output << sep << annot->GetAccession();
