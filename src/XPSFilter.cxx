@@ -1,4 +1,4 @@
-// File created: 12/16/2002                          last modified: 02/11/2010
+// File created: 12/16/2002                          last modified: 06/19/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -832,9 +832,9 @@ Int_t XPreFilter::Calculate(Int_t n, TTree **intree, const char *leafname,
    //            default is "*": all initialized filters will be used 
    if(kCS) cout << "------XPreFilter::Calculate(tree)------" << endl;
 
-   Int_t   err  = errNoErr;
-   Short_t flag = 0;
-   Short_t okay = 0;
+   Int_t err  = errNoErr;
+   Int_t flag = 0;
+   Int_t okay = 0;
 
    if (intree == 0 || outtree == 0) {
       cerr << "Error: Intree and/or outtree is missing." << endl;
@@ -1020,8 +1020,8 @@ Int_t XPreFilter::CallFlag(Int_t n, TTree **intree, const char *varlist,
    //            note: if CallFlag() is called before Calculate() set outtree=0
    if(kCS) cout << "------XPreFilter::CallFlag------" << endl;
 
-   Int_t   err  = errNoErr;
-   Short_t okay = 0;
+   Int_t err  = errNoErr;
+   Int_t okay = 0;
 
    if (intree == 0) {
       cerr << "Error: Intree is missing." << endl;
@@ -1657,9 +1657,9 @@ Int_t XUniFilter::Calculate(TTree *intree, const char *leafname, TTree *outtree,
    // Calculate filter
    if(kCS) cout << "------XUniFilter::Calculate------" << endl;
 
-   Int_t   err  = errNoErr;
-   Int_t   flag = 0;
-   Short_t okay = 0;
+   Int_t err  = errNoErr;
+   Int_t flag = 0;
+   Int_t okay = 0;
 
    if (intree == 0 || outtree == 0) {
       cerr << "Error: Intree and/or outtree is missing." << endl;

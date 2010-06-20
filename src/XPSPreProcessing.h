@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 04/02/2010
+// File created: 08/05/2002                          last modified: 06/20/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -377,8 +377,6 @@ class XExonProcesSet: public XGenomeProcesSet {
                         Int_t level, Int_t n, Int_t *msk);
       virtual TTree *SchemeTree(XAlgorithm *algorithm, void *scheme, TLeaf **scmleaf);
       virtual TTree *UnitTree(XAlgorithm *algorithm, void *unit, Int_t &numunits);
-
-      virtual const char *GetTranscriptID(XUnit *unit, XTransAnnotation *annot, Int_t type);
 
    public:
       XExonProcesSet();

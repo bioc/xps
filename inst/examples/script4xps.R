@@ -20,6 +20,9 @@
 #          in a common system directory and use function "root.scheme()"
 #          to load the desired scheme into the current R session to analyse
 #          a project.
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#    Note: See script "script4schemes.R" how to create root scheme files
+#          for the latest Affymetrix annotation files.
 #------------------------------------------------------------------------------#
 
 ### new R session: load library xps
