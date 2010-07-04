@@ -677,6 +677,103 @@ root.graph2D(data.x.rma, "BreastA.mdp", "BreastB.mdp", w=400, h=400)
 root.mvaplot(data.x.rma, "BreastA.mdp", "BreastB.mdp", w=400, h=400)
 
 
+#------------------------------------------------------------------------------#
+# 4. step: apply filters to expression levels
+#------------------------------------------------------------------------------#
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Tissues from Affymetrix Exon Array Dataset for HuEx-1_0-st-v2
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+### new R session: load library xps
+library(xps)
+
+### first, load ROOT scheme file and ROOT data file
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
+scheme.exon <- root.scheme(file.path(scmdir, "huex10stv2_na30.root"))
+datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
+data.exon   <- root.data(scheme.exon, file.path(datdir, "HuTissuesExon_cel.root"))
+
+### RMA for transcription and probeset
+rma.tc.core <- rma(data.exon, "MixExonRMAcore", filedir=outdir, tmpdir="", background="antigenomic",
+                  normalize=TRUE, option="transcript", exonlevel="affx+core")
+rma.ps.core <- rma(data.exon, "MixExonRMAcorePS", filedir=outdir, tmpdir="", background="antigenomic",
+                  normalize=TRUE, option="probeset", exonlevel="affx+core")
+
+### apply non-specific filters, e.g. mad
+# create PreFilter
+prefltr <- PreFilter(mad=c(0.5,0.01))
+# apply prefilter to rma
+pfr.tc.core <- prefilter(rma.tc.core, filename="PrefilterExonCore", filedir=getwd(), filter=prefltr)
+pfr.ps.core <- prefilter(rma.ps.core, filename="PrefilterExonCorePS", filedir=getwd(), filter=prefltr)
+
+# test
+pre <- validData(pfr.tc.core)
+pre <- pre[pre[, "FLAG"] == 1,]
+
+### apply univariate filters
+# create UniFilter
+unifltr <- UniFilter(unitest=c("t.test","two.sided","none",0,0.0,FALSE,0.95,TRUE),
+                     foldchange=c(1.3,"both"), unifilter=c(0.1,"pval"))
+
+# a, apply unifilter only
+ufr.tc.core <- unifilter(rma.tc.core, filename="UnifilterExonCore", filedir=getwd(), filter=unifltr,
+                         group=c("Breast","Breast","Breast","Prostate","Prostate","Prostate"))
+ufr.ps.core <- unifilter(rma.ps.core, filename="UnifilterExonCorePS", filedir=getwd(), filter=unifltr,
+                         group=c("Breast","Breast","Breast","Prostate","Prostate","Prostate"))
+
+# b, apply unifilter to pre-filtered data
+puf.tc.core <- unifilter(rma.tc.core, filename="tmp_PreUnifilterExonCoreTC", filedir=getwd(), filter=unifltr,
+                         group=c("Breast","Breast","Breast","Prostate","Prostate","Prostate"),xps.fltr=pfr.tc.core)
+puf.s.core <- unifilter(rma.ps.core, filename="tmp_PreUnifilterExonCorePS", filedir=getwd(), filter=unifltr,
+                         group=c("Breast","Breast","Breast","Prostate","Prostate","Prostate"),xps.fltr=pfr.ps.core)
+
+
+### advanced example: include present calls
+## DABG detection call
+dabg.tc <- dabg.call(data.exon, "MixDABGcoreTC", filedir=outdir, option="transcript", exonlevel="affx+core")
+dabg.ps <- dabg.call(data.exon, "MixDABGcorePS", filedir=outdir, option="probeset", exonlevel="affx+core")
+
+### prefilter: mad and dabg.call
+prefltr <- PreFilter(mad=c(0.5,0.01), prescall=c(0.002, 6,"samples"))
+pfr.tc.dabg <- prefilter(rma.tc.core, filename="tmp_PrefilterExonCore", filedir=getwd(), filter=prefltr, xps.call=dabg.tc)
+
+pre <- validData(pfr.tc.dabg)
+pre <- pre[pre[, "FLAG"] == 1,]
+dim(pre)
+
+flag <- validData(pfr.tc.dabg)
+flag <- flag[, "FLAG"] == 1
+
+pval <- validData(callTreeset(pfr.tc.dabg))
+pval <- pval[flag,]
+range(pval)
+
+pres <- presCall(callTreeset(pfr.tc.dabg))
+pres <- pres[flag,]
+rownames(pres) <- pres[,"UnitName"]
+pres <- pres[,3:ncol(pres)]
+
+### unifilter for pre-filtered data
+unifltr <- UniFilter(unitest=c("t.test","two.sided","none",0,0.0,FALSE,0.95,TRUE),
+                     foldchange=c(1.5,"both"), unifilter=c(0.001,"pval"))
+puf.tc.dabg <- unifilter(rma.tc.core, filename="tmp_PreUnifilterExonDABG", filedir=getwd(), filter=unifltr,
+                         group=c("Breast","Breast","Breast","Prostate","Prostate","Prostate"),xps.fltr=pfr.tc.dabg)
+
+puf <- validData(puf.tc.dabg, which = "UnitName")
+dim(puf)
+
+ufr <- validFilter(puf.tc.dabg)
+tmp <- puf[ufr[,"FLAG"] == 1,]
+dim(tmp)
+
+### export all data
+export.filter(puf.tc.dabg, treetype="stt", outfile="PreUnifilterExonDABG_stt.txt")
+
+### export only data with flag=1
+export.filter(puf.tc.dabg, treetype="stt", varlist="fUnitName:fTranscriptID:fSymbol:mn1:mn2:fc:pval:mask", outfile="PreUnifilterExonDABG_stt_mask.txt")
+
+
 
 #------------------------------------------------------------------------------#
 # Demonstrations of advanced methods

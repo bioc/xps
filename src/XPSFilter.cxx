@@ -1,4 +1,4 @@
-// File created: 12/16/2002                          last modified: 06/19/2010
+// File created: 12/16/2002                          last modified: 07/03/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -915,8 +915,8 @@ Int_t XPreFilter::Calculate(Int_t n, TTree **intree, const char *leafname,
            << endl;
    }//if
 
-   TLeaf   *leafUnit = intree[0]->FindLeaf("fUnitID");
-   TBranch *brchUnit = leafUnit->GetBranch();
+//   TLeaf   *leafUnit = intree[0]->FindLeaf("fUnitID");
+//   TBranch *brchUnit = leafUnit->GetBranch();
 
    TBranch **brchj = new TBranch*[fNData];
    TLeaf   **leafj = new TLeaf*[fNData];
@@ -944,12 +944,13 @@ Int_t XPreFilter::Calculate(Int_t n, TTree **intree, const char *leafname,
 
 // Read intree entries, calculate mask and fill outtree
    for (Int_t i=0; i<nentries; i++) {
-      // read entry i from tree plus friends
-      brchUnit->GetEntry(i);
-      Int_t id = (Int_t)leafUnit->GetValue();
+//      brchUnit->GetEntry(i);
+//      Int_t id = (Int_t)leafUnit->GetValue();
 
+      // read entry i from tree plus friends
       for (Int_t j=0; j<fNData; j++) {
-         brchj[j]->GetEntry(id);
+//no         brchj[j]->GetEntry(id);
+         brchj[j]->GetEntry(i);
          arrExpr[j] = leafj[j]->GetValue();
       }//for_j
 
@@ -1119,12 +1120,13 @@ Int_t XPreFilter::CallFlag(Int_t n, TTree **intree, const char *varlist,
 
 // Read intree entries, calculate mask and fill outtree
    for (Int_t i=0; i<nentries; i++) {
-      // read entry i from tree plus friends
       brchUnit->GetEntry(i);
       Int_t id = (Int_t)leafUnit->GetValue();
 
+      // read entry i from tree plus friends
       for (Int_t j=0; j<fNCall; j++) {
-         intree[j]->GetEntry(id);
+//no         intree[j]->GetEntry(id);
+         intree[j]->GetEntry(i);
          arrCall[j] = callj[j]->GetCall();
          arrPVal[j] = callj[j]->GetPValue();
       }//for_j
@@ -1778,6 +1780,7 @@ Int_t XUniFilter::Calculate(TTree *intree, const char *leafname, TTree *outtree,
    if (hasLeafPCha) intree->SetBranchAddress("pchaBr", &pcha);
    if (hasLeafPAdj) intree->SetBranchAddress("padjBr", &padj);
 
+   // needed for FillMaskTree(intree,...)
    intree->SetBranchStatus("fUnitID*",  1);
    XUnitID *uid = 0;
    intree->SetBranchAddress("UnitBranch", &uid);
@@ -1797,12 +1800,12 @@ Int_t XUniFilter::Calculate(TTree *intree, const char *leafname, TTree *outtree,
 
 // Read intree entries, calculate mask and fill outtree
    for (Int_t i=0; i<nentries; i++) {
-      // read entry i from tree
-      brchUnit->GetEntry(i);
-      Int_t id = uid->GetUnitID();
+//      brchUnit->GetEntry(i);
+//      Int_t id = uid->GetUnitID();
 
+      // read entry i from tree
       intree->GetEntry(i);
-//??      intree->GetEntry(id);
+//no      intree->GetEntry(id);
 
       flag = 0;
       if (fHasStat) flag += this->Statistic(stat);
@@ -1888,10 +1891,10 @@ Int_t XUniFilter::CallFlag(Int_t n, Int_t *gid, TTree **intree,
 // Init trees
    Int_t nentries = (Int_t)(intree[0]->GetEntries());
 
-   TLeaf   *leafUnit  = 0;
-   TBranch *brchUnit  = 0;
-   leafUnit = intree[0]->FindLeaf("fUnitID");
-   brchUnit = leafUnit->GetBranch();
+//   TLeaf   *leafUnit  = 0;
+//   TBranch *brchUnit  = 0;
+//   leafUnit = intree[0]->FindLeaf("fUnitID");
+//   brchUnit = leafUnit->GetBranch();
 
    XPCall **call = new XPCall*[n];
    for (Int_t j=0; j<n; j++) {
@@ -1941,16 +1944,17 @@ Int_t XUniFilter::CallFlag(Int_t n, Int_t *gid, TTree **intree,
 
 // Read intree entries, calculate mask and fill outtree
    for (Int_t i=0; i<nentries; i++) {
-      // read entry i from tree plus friends
-      brchUnit->GetEntry(i);
-      Int_t id = (Int_t)leafUnit->GetValue();
+//      brchUnit->GetEntry(i);
+//      Int_t id = (Int_t)leafUnit->GetValue();
 
+      // read entry i from tree plus friends
       Int_t id1 = 0;
       Int_t id2 = 0;
       for (Int_t j=0; j<n; j++) {
          if (gid[j] <= 0) continue;
 
-         intree[j]->GetEntry(id);
+         intree[j]->GetEntry(i);
+//no         intree[j]->GetEntry(id);
 
          // get either call or detection p-value
          cp = (fCallPValue >= 1.0) ? call[j]->GetCall() : call[j]->GetPValue();

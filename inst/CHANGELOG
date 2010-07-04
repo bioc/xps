@@ -4,6 +4,51 @@ This file documents major changes made between different development versions of
 
 
 #-----------------------------------------------------------------------------------#
+r47560 | c.stratowa | 2010-06-20 22:50:07 +0200 (Sun, 20 Jun 2010) | 2 lines
+
+svn commit -m "update to xps-1.9.2
+- update Makefile and Makefile.arch"
+
+# changed in xps-1.9.2
+DESCRIPTION
+Makefile.arch  (from svn trunk)
+
+
+#-----------------------------------------------------------------------------------#
+r47559 | c.stratowa | 2010-06-20 22:04:39 +0200 (Sun, 20 Jun 2010) | 6 lines
+
+svn commit -m "update to xps-1.9.1
+- update XProcesSet::GetTranscriptID(unit,..)
+- in XPSPreprocessing, XPSNormation remove GetTranscriptID(unit,..)
+- update XAnalySet::ExportFilterTrees() and XUnivarSet::ExportUnivarTrees() for exon arrays
+- in validBgrd() replace data with bgrd
+- add script4schemes.R to examples"
+
+# changed in xps-1.9.1
+DESCRIPTION
+NEWS
+script4xps.R
+script4schemes.R
+methods.DataTreeSet.R:  validBgrd (data->bgrd)
+XPSFilter.cxx:   Short_t okay -> Int_t okay
+XPSAnalysis.cxx: update  XAnalySet::ExportFilterTrees(), XUnivarSet::ExportUnivarTrees() for exon arrays
+XPSPreprocessing, XPSNormation: remove GetTranscriptID(unit,..) since present in XPSProcessing
+XPSProcessing.cxx: update GetTranscriptID(unit,..)
+
+
+#-----------------------------------------------------------------------------------#
+r46108 | c.stratowa | 2010-04-16 22:16:15 +0200 (Fri, 16 Apr 2010) | 2 lines
+
+svn commit -m "update to xps-1.7.10
+- update firma.Rd"
+
+# changed in xps-1.7.10
+DESCRIPTION
+CHANGELOG 
+firma.Rd
+
+
+#-----------------------------------------------------------------------------------#
 r45861 | c.stratowa | 2010-04-10 22:52:58 +0200 (Sat, 10 Apr 2010) | 3 lines
 
 svn commit -m "update to xps-1.7.9
