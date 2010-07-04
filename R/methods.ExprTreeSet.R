@@ -954,7 +954,7 @@ function(object,
 
    ## unitestFilter
    unifltr <- unitestFilter(filter);
-   if (length(foldchange) == 2) {
+   if (length(unifltr) > 0 & length(foldchange) == 2) {
       nufparams <- 1;
       ufparams <- unifltr[1];
       ufoption <- unifltr[2];
