@@ -286,7 +286,7 @@ function(object,
    ds <- NULL;
    if (as.dataframe) {
       ds <- read.table(outfile, header=TRUE, row.names=NULL, sep=sep, 
-                       check.names=FALSE, comment.char="", ...);
+                       check.names=FALSE, stringsAsFactors=FALSE, comment.char="", ...);
    }#if
 
    return(ds);
