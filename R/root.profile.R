@@ -22,15 +22,15 @@ function(x,
    exten <- unlist(strsplit(exten, "\\."))[2];
 
    ## test for valid treename
-   namepart <- unlist(strsplit(treename, "\\."))[1];
-   if (namepart == "*") {
-      treename <- paste(namepart, exten, sep=".");
-   } else if (treename%in%treenames == FALSE) {
-      stop(paste("treename", sQuote(treename), "is not present in", sQuote(rootfile)));
+   namepart <- unlist(sapply(treename, function(x)strsplit(x, "\\.")[[1]][1]));
+   hastrees <- unique(treename%in%treenames);
+   if (namepart[1] == "*") {
+      namepart <- namepart[1];
+   } else if (length(hastrees) == 1 & hastrees == TRUE) {
+      namepart <- paste(namepart, collapse=":");
+   } else {
+      stop(paste("at least one treename is not present in", sQuote(rootfile)));
    }#if
-
-   ## add ROOT directory in rootfile
-   treename <- paste(setName(x), treename, sep="/");
 
    ## select leafname as varlist
    if (is.null(varlist)) {
@@ -72,7 +72,9 @@ function(x,
    xpsso       <- paste(dq, xpsso, dq, sep="");
    rootfile    <- paste(dq, rootfile, dq, sep="");
    canvasname  <- paste(dq, canvasname, dq, sep="");
-   treename    <- paste(dq, treename, dq, sep="");
+   setname     <- paste(dq, setName(x), dq, sep="");
+   treename    <- paste(dq, namepart, dq, sep="");
+   exten       <- paste(dq, exten, dq, sep="");
    varlist     <- paste(dq, varlist, dq, sep="");
    savename    <- paste(dq, savename, dq, sep="");
    miny        <- as.double(miny);
@@ -85,9 +87,9 @@ function(x,
 
    ## call ROOT macro
    macro <- paste(system.file(package="xps"), "rootsrc/macroDrawProfilePlot.C", sep="/");
-   macro <- paste(sq, macro, "(", xpsso,",", rootfile,",", canvasname,",",
-                  treename,",", varlist,",", savename,",", miny,",", maxy,",", aslog,",",
-                  globalscale,",", boxes,",", w,",", h, ")", sq, sep="");
+   macro <- paste(sq, macro, "(", xpsso,",", rootfile,",", canvasname,",", setname,",",
+                  treename,",", exten,",", varlist,",", savename,",", miny,",", maxy,",",
+                  aslog,",", globalscale,",", boxes,",", w,",", h, ")", sq, sep="");
 
    if (save.as == "") {
       system(paste("root -l", macro));

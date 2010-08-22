@@ -2,6 +2,11 @@
 		CHANGES IN R VERSION 2.12.0
 
 
+VERSION xps-1.9.4
+
+    o	update root.profile.R, macroDrawProfilePlot.C to allow selecting subset of trees
+    o	in read.table() set stringsAsFactors=FALSE
+
 VERSION xps-1.9.3
 
     o	update method XPreFilter::Calculate() to handle exon arrays correctly

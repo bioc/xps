@@ -22,11 +22,13 @@ root.profile(x, treename = "*", varlist = NULL, as.log = TRUE, globalscale = TRU
   \item{h}{the height of the device in pixels.}
 }
 \details{
- Creates a ROOT profile plot for all trees \code{treename="*"} present in \code{rootfile}. In this 
- case \code{varlist} must be the name of one tree leaf only; for \code{varlist=NULL} leaf "fInten"
- will be used for class \code{\link{DataTreeSet}} and leaf "fLevel" will be used for class
- \code{\link{ExprTreeSet}}. If \code{treename} is the name of one tree only then \code{varlist}
- can contain up to all leaves of the tree, separated by colons, e.g. \code{varlist="fLevel:fStdev"}.
+ Creates a ROOT profile plot for all trees \code{treename="*"} present in \code{rootfile}, or for 
+ a subset of trees. In this case \code{varlist} must be the name of one tree leaf only;
+ for \code{varlist=NULL} leaf "fInten" will be used for class \code{\link{DataTreeSet}} and
+ leaf "fLevel" will be used for class \code{\link{ExprTreeSet}}.
+
+ If \code{treename} is the name of one tree only then \code{varlist} can contain up to all leaves
+ of the tree, separated by colons, e.g. \code{varlist="fLevel:fStdev"}.
 
  For \code{boxes=TRUE} the profile plot draws box-and-whisker plots and can thus be considered the
  equivalent of the  usual \code{boxplot}.
