@@ -85,12 +85,6 @@ function(xps.scheme,
       celnames <- unlist(strsplit(celnames, "\\.[cC][eE][lL]"));
    }#if
 
-   ## check celnames for presence of characters [.:#] and replace with "_"
-   if (length(grep("[.:#]", celnames)) > 0) {
-      if (verbose) warning("characters  [.:#] in celnames will be replaced  with [_]");
-      celnames <- gsub("[.:#]", "_", celnames);
-   }#if
-
    ## concatenate celfiles with celdir
    tmpfiles <- unlist(celfiles);
    celfiles <- paste(celdir, celfiles, sep="");
@@ -98,6 +92,13 @@ function(xps.scheme,
    ## tree names from celfiles
    if (length(celnames) == 1 && celnames == "") {
       celnames <- unique(unlist(strsplit(tmpfiles, "\\.[cC][eE][lL]")));
+   }#if
+
+   ## check celnames for presence of characters [](){}.:# etc and replace with "_"
+   tmpnames <- make.names(celnames);
+   if (length(unique(tmpnames %in% celnames)) > 1 || unique(tmpnames %in% celnames) == FALSE) {
+      if (verbose) warning("characters [](){}.:# etc in 'celnames' will be replaced  with '_'");
+      celnames <- gsub("\\.", "_", tmpnames);
    }#if
 
    ## project information

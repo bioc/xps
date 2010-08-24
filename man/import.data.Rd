@@ -32,6 +32,9 @@ import.data(xps.scheme,
  To import CEL-files from different directories, vector \code{celfiles} must contain the
  full path for each CEL-file and \code{celdir} must be \code{celdir=NULL}. 
 
+ The optional parameter \code{celnames} allows you to replace the original CEL-file names with
+ names of your choice, otherwise the names of the CEL-files will be used as \code{celnames}.  
+
  Currently, the following types of Affymetrix CEL-files can be imported: 
  text (version 3), xml, binary (xda), generic (agcc,calvin)
 
@@ -62,9 +65,9 @@ import.data(xps.scheme,
  manually first. Only \code{\link{ROOT}} files called \dQuote{tmp} or with \code{filename} 
  starting with \dQuote{tmp\_} will be re-created automatically.
 
- If CEL-file names contain dots and/or colons as characters, these characters will be replaced
- by underscores. It is recommended to use parameter \code{celnames} to create shorter CEL names
- and to replace special characters. 
+ If CEL-file names contain dots, colons, parenthesis, etc. as characters, these characters will be
+ replaced by underscores. It is recommended to use parameter \code{celnames} to create shorter CEL
+ names and to replace special characters. 
 }
 \seealso{\code{\link{root.data}}, \code{\link{DataTreeSet}}}
 \examples{
