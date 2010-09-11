@@ -4,6 +4,52 @@ This file documents major changes made between different development versions of
 
 
 #-----------------------------------------------------------------------------------#
+r49005 | c.stratowa | 2010-08-24 22:55:46 +0200 (Tue, 24 Aug 2010) | 2 lines
+
+svn commit -m "update to xps-1.9.5
+- update import.data to use make.names(celnames) to protect against certain characters"
+
+# changed in xps-1.9.5
+DESCRIPTION
+import.data.R: use make.names(celnames) to protect against certain characters
+import.data.Rd
+
+
+#-----------------------------------------------------------------------------------#
+r48972 | c.stratowa | 2010-08-22 19:21:14 +0200 (Sun, 22 Aug 2010) | 3 lines
+
+svn commit -m "update to xps-1.9.4
+- update root.profile.R, macroDrawProfilePlot.C to select subset of trees
+- in read.table set stringsAsFactors=FALSE"
+
+# changed in xps-1.9.4
+DESCRIPTION
+NEWS
+methods.SchemeTreeSet.R: read.table(..,stringsAsFactors=FALSE,)
+methods.ProcesSet.R: read.table(..,stringsAsFactors=FALSE,)
+export.R: read.table(..,stringsAsFactors=FALSE,)
+root.profile.R, macroDrawProfilePlot.C: subset of trees
+root.profile.Rd
+
+
+#-----------------------------------------------------------------------------------#
+r47906 | c.stratowa | 2010-07-04 16:34:32 +0200 (Sun, 04 Jul 2010) | 4 lines
+
+svn commit -m "update to xps-1.9.3
+- update method XPreFilter::Calculate() to handle exon arrays correctly
+- in xpsUniFilter() update part for unitestFilter
+- update script4exon.R"
+
+# changed in xps-1.9.3
+DESCRIPTION
+NEWS
+CHANGELOG 
+methods.ExprTreeSet.R: xpsUniFilter() update part for unitestFilter
+XPSFilter.cxx:   XPreFilter::Calculate(): brchj[j]->GetEntry(id); id->i !!
+script4exon.R
+
+
+#-----------------------------------------------------------------------------------#
 r47560 | c.stratowa | 2010-06-20 22:50:07 +0200 (Sun, 20 Jun 2010) | 2 lines
 
 svn commit -m "update to xps-1.9.2

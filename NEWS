@@ -2,6 +2,14 @@
 		CHANGES IN R VERSION 2.12.0
 
 
+VERSION xps-1.9.6
+
+    o	update information files for new ROOT Version 5.27/04 (root_v5.27/04)
+
+VERSION xps-1.9.5
+
+    o	update import.data to use make.names(celnames) to protect against certain characters
+
 VERSION xps-1.9.4
 
     o	update root.profile.R, macroDrawProfilePlot.C to allow selecting subset of trees

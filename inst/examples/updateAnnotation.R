@@ -29,3 +29,23 @@
 }#updateAnnotation
 
 #------------------------------------------------------------------------------#
+"deleteNegControlFromAffxControl" <- function(infile, outfile, eol="\n") {
+   ifile <- file(infile, "r");
+   ofile <- file(outfile, "wb");
+
+   line <- "";
+   while (length(line) > 0) {
+      line <- readLines(ifile, n=1);
+
+      skip <- grep("control->affx",line) & grep("neg_control",line);
+      if (length(skip) && skip) next;
+
+      writeLines(line, con=ofile, sep=eol);
+   }#while
+
+   close(ifile);
+   close(ofile);
+}#deleteNegControlFromAffxControl
+
+
+#------------------------------------------------------------------------------#

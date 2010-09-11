@@ -28,7 +28,7 @@
 %-----------------------------------------------------------------------
 \title{Introduction to the xps Package: Function \Rfunction{express()}}
 %-----------------------------------------------------------------------
-\date{April, 2010}
+\date{September, 2010}
 \author{Christian Stratowa}
 \maketitle
 
@@ -71,8 +71,8 @@ In the following subsections we will demonstrate how to compute RMA using the ge
 \Rfunction{express}. However, first it is necessary to load the \ROOT\ \Rclass{scheme} and \ROOT\ 
 \Rclass{data} files, as explained in vignette "xps.pdf" (Overview): 
 <<eval=FALSE>>=
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na28.root",sep="/"))
-data.u133p2   <- root.data(scheme.u133p2, paste(datdir,"HuTissuesU133P2_cel.root",sep="/"))
+scheme.u133p2 <- root.scheme(file.path(scmdir, "Scheme_HGU133p2_na28.root"))
+data.u133p2   <- root.data(scheme.u133p2, file.path(datdir, "HuTissuesU133P2_cel.root"))
 @
 
 Usually, RMA is computed with a simple call to function \Rfunction{rma}:

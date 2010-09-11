@@ -40,86 +40,86 @@ scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # create ROOT scheme files for expression arrays
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# note: as of March 2009 the latest Affymetrix annotation is na27
+# note: see script "script4schemes.R" how to create the newest scheme files
+#       for many Affymetrix expression arrays
 # note: do not separate name of ROOT files with dots, use underscores,
-#       e.g. do not use "Scheme.Test3.na27" but "Scheme_Test3_na27"
+#       e.g. do not use "Scheme.Test3.na31" but "Scheme_Test3_na31"
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# create ROOT scheme files for ivt expression arrays
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # Test3:
-scheme.test3.na21 <- import.expr.scheme("Scheme_Test3_na21",filedir=scmdir,paste(libdir,"Test3.CDF",sep="/"),paste(libdir,"Test3_probe.tab",sep="/"),paste(anndir,"Version06Nov/Test3.na21.annot.csv",sep="/"))
-scheme.test3.na22 <- import.expr.scheme("Scheme_Test3_na22",filedir=scmdir,paste(libdir,"Test3.CDF",sep="/"),paste(libdir,"Test3_probe.tab",sep="/"),paste(anndir,"Version07May/Test3.na22.annot.csv",sep="/"))
-scheme.test3.na23 <- import.expr.scheme("Scheme_Test3_na23",filedir=scmdir,paste(libdir,"Test3.CDF",sep="/"),paste(libdir,"Test3_probe.tab",sep="/"),paste(anndir,"Version07Jul/Test3.na23.annot.csv",sep="/"))
-scheme.test3.na24 <- import.expr.scheme("Scheme_Test3_na24",filedir=scmdir,paste(libdir,"Test3.CDF",sep="/"),paste(libdir,"Test3_probe.tab",sep="/"),paste(anndir,"Version07Nov/Test3.na24.annot.csv",sep="/"))
-scheme.test3.na25 <- import.expr.scheme("Scheme_Test3_na25",filedir=scmdir,paste(libdir,"Test3.CDF",sep="/"),paste(libdir,"Test3_probe.tab",sep="/"),paste(anndir,"Version08Mar/Test3.na25.annot.csv",sep="/"))
-scheme.test3.na26 <- import.expr.scheme("Scheme_Test3_na26",filedir=scmdir,paste(libdir,"Test3.CDF",sep="/"),paste(libdir,"Test3_probe.tab",sep="/"),paste(anndir,"Version08Jul/Test3.na26.annot.csv",sep="/"))
-scheme.test3.na27 <- import.expr.scheme("Scheme_Test3_na27",filedir=scmdir,paste(libdir,"Test3.CDF",sep="/"),paste(libdir,"Test3_probe.tab",sep="/"),paste(anndir,"Version08Nov/Test3.na27.annot.csv",sep="/"))
-scheme.test3.na29 <- import.expr.scheme("Scheme_Test3_na29",filedir=scmdir,paste(libdir,"Test3.CDF",sep="/"),paste(libdir,"Test3_probe.tab",sep="/"),paste(anndir,"Version09Jul/Test3.na29.annot.csv",sep="/"))
-
-# Hu6800:
-scheme.hu6800.na21 <- import.expr.scheme("Scheme_Hu6800_na21",filedir=scmdir,paste(libdir,"Hu6800.CDF",sep="/"),paste(libdir,"HuGeneFL_probe.tab",sep="/"),paste(anndir,"Version06Nov/Hu6800.na21.annot.csv",sep="/"))
-scheme.hu6800.na22 <- import.expr.scheme("Scheme_Hu6800_na22",filedir=scmdir,paste(libdir,"Hu6800.CDF",sep="/"),paste(libdir,"HuGeneFL_probe.tab",sep="/"),paste(anndir,"Version07May/Hu6800.na22.annot.csv",sep="/"))
-scheme.hu6800.na23 <- import.expr.scheme("Scheme_Hu6800_na23",filedir=scmdir,paste(libdir,"Hu6800.CDF",sep="/"),paste(libdir,"HuGeneFL_probe.tab",sep="/"),paste(anndir,"Version07Jul/Hu6800.na23.annot.csv",sep="/"))
-scheme.hu6800.na24 <- import.expr.scheme("Scheme_Hu6800_na24",filedir=scmdir,paste(libdir,"Hu6800.CDF",sep="/"),paste(libdir,"HuGeneFL_probe.tab",sep="/"),paste(anndir,"Version07Nov/Hu6800.na24.annot.csv",sep="/"))
-scheme.hu6800.na25 <- import.expr.scheme("Scheme_Hu6800_na25",filedir=scmdir,paste(libdir,"Hu6800.CDF",sep="/"),paste(libdir,"HuGeneFL_probe.tab",sep="/"),paste(anndir,"Version08Mar/Hu6800.na25.annot.csv",sep="/"))
-
-# HG_U95A:
-scheme.hgu95a <- import.expr.scheme("Scheme_HGU95A",filedir=scmdir,paste(libdir,"HG_U95A.CDF",sep="/"),paste(libdir,"HG-U95A_probe.tab",sep="/"),annotfile="")
-scheme.hgu95a.na23 <- import.expr.scheme("Scheme_HGU95A_na23",filedir=scmdir,paste(libdir,"HG_U95A.CDF",sep="/"),paste(libdir,"HG-U95A_probe.tab",sep="/"),paste(anndir,"Version07Jul/HG_U95A.na23.annot.csv",sep="/"))
-scheme.hgu95a.na24 <- import.expr.scheme("Scheme_HGU95A_na24",filedir=scmdir,paste(libdir,"HG_U95A.CDF",sep="/"),paste(libdir,"HG-U95A_probe.tab",sep="/"),paste(anndir,"Version07Nov/HG_U95A.na24.annot.csv",sep="/"))
-scheme.hgu95a.na25 <- import.expr.scheme("Scheme_HGU95A_na25",filedir=scmdir,paste(libdir,"HG_U95A.CDF",sep="/"),paste(libdir,"HG-U95A_probe.tab",sep="/"),paste(anndir,"Version08Mar/HG_U95A.na25.annot.csv",sep="/"))
-
-# HG_U95Av2:
-scheme.hgu95av2.na21 <- import.expr.scheme("Scheme_HGU95Av2_na21",filedir=scmdir,paste(libdir,"HG_U95Av2.CDF",sep="/"),paste(libdir,"HG-U95Av2_probe.tab",sep="/"),paste(anndir,"Version06Nov/HG_U95Av2.na21.annot.csv",sep="/"))
-scheme.hgu95av2.na22 <- import.expr.scheme("Scheme_HGU95Av2_na22",filedir=scmdir,paste(libdir,"HG_U95Av2.CDF",sep="/"),paste(libdir,"HG-U95Av2_probe.tab",sep="/"),paste(anndir,"Version07May/HG_U95Av2.na22.annot.csv",sep="/"))
-scheme.hgu95av2.na23 <- import.expr.scheme("Scheme_HGU95Av2_na23",filedir=scmdir,paste(libdir,"HG_U95Av2.CDF",sep="/"),paste(libdir,"HG-U95Av2_probe.tab",sep="/"),paste(anndir,"Version07Jul/HG_U95Av2.na23.annot.csv",sep="/"))
-scheme.hgu95av2.na24 <- import.expr.scheme("Scheme_HGU95Av2_na24",filedir=scmdir,paste(libdir,"HG_U95Av2.CDF",sep="/"),paste(libdir,"HG-U95Av2_probe.tab",sep="/"),paste(anndir,"Version07Nov/HG_U95Av2.na24.annot.csv",sep="/"))
-scheme.hgu95av2.na25 <- import.expr.scheme("Scheme_HGU95Av2_na25",filedir=scmdir,paste(libdir,"HG_U95Av2.CDF",sep="/"),paste(libdir,"HG-U95Av2_probe.tab",sep="/"),paste(anndir,"Version08Mar/HG_U95Av2.na25.annot.csv",sep="/"))
-
-# HG-U133A:
-scheme.hgu133a.na21 <- import.expr.scheme("Scheme_HGU133A_na21",filedir=scmdir,paste(libdir,"HG-U133A.CDF",sep="/"),paste(libdir,"HG-U133A_probe.tab",sep="/"),paste(anndir,"Version06Nov/HG-U133A.na21.annot.csv",sep="/"))
-scheme.hgu133a.na22 <- import.expr.scheme("Scheme_HGU133A_na22",filedir=scmdir,paste(libdir,"HG-U133A.CDF",sep="/"),paste(libdir,"HG-U133A_probe.tab",sep="/"),paste(anndir,"Version07May/HG-U133A.na22.annot.csv",sep="/"))
-scheme.hgu133a.na23 <- import.expr.scheme("Scheme_HGU133A_na23",filedir=scmdir,paste(libdir,"HG-U133A.CDF",sep="/"),paste(libdir,"HG-U133A_probe.tab",sep="/"),paste(anndir,"Version07Jul/HG-U133A.na23.annot.csv",sep="/"))
-scheme.hgu133a.na24 <- import.expr.scheme("Scheme_HGU133A_na24",filedir=scmdir,paste(libdir,"HG-U133A.CDF",sep="/"),paste(libdir,"HG-U133A_probe.tab",sep="/"),paste(anndir,"Version07Nov/HG-U133A.na24.annot.csv",sep="/"))
-scheme.hgu133a.na25 <- import.expr.scheme("Scheme_HGU133A_na25",filedir=scmdir,paste(libdir,"HG-U133A.CDF",sep="/"),paste(libdir,"HG-U133A_probe.tab",sep="/"),paste(anndir,"Version08Mar/HG-U133A.na25.annot.csv",sep="/"))
-
-# HG-U133B:
-scheme.hgu133b.na21 <- import.expr.scheme("Scheme_HGU133B_na21",filedir=scmdir,paste(libdir,"HG-U133B.CDF",sep="/"),paste(libdir,"HG-U133B_probe.tab",sep="/"),paste(anndir,"Version06Nov/HG-U133B.na21.annot.csv",sep="/"))
-scheme.hgu133b.na22 <- import.expr.scheme("Scheme_HGU133B_na22",filedir=scmdir,paste(libdir,"HG-U133B.CDF",sep="/"),paste(libdir,"HG-U133B_probe.tab",sep="/"),paste(anndir,"Version07May/HG-U133B.na22.annot.csv",sep="/"))
-scheme.hgu133b.na23 <- import.expr.scheme("Scheme_HGU133B_na23",filedir=scmdir,paste(libdir,"HG-U133B.CDF",sep="/"),paste(libdir,"HG-U133B_probe.tab",sep="/"),paste(anndir,"Version07Jul/HG-U133B.na23.annot.csv",sep="/"))
-scheme.hgu133b.na24 <- import.expr.scheme("Scheme_HGU133B_na24",filedir=scmdir,paste(libdir,"HG-U133B.CDF",sep="/"),paste(libdir,"HG-U133B_probe.tab",sep="/"),paste(anndir,"Version07Nov/HG-U133B.na24.annot.csv",sep="/"))
-scheme.hgu133b.na25 <- import.expr.scheme("Scheme_HGU133B_na25",filedir=scmdir,paste(libdir,"HG-U133B.CDF",sep="/"),paste(libdir,"HG-U133B_probe.tab",sep="/"),paste(anndir,"Version08Mar/HG-U133B.na25.annot.csv",sep="/"))
+scheme.test3.na31 <- import.expr.scheme("Scheme_Test3_na31", filedir = file.path(scmdir, "na31"),
+                     schemefile = file.path(libdir, "Test3.CDF"), 
+                     probefile  = file.path(libdir, "Test3_probe.tab"), 
+                     annotfile  = file.path(anndir, "Version10Sep", "Test3.na31.annot.csv"))
 
 # HG-U133_Plus_2:
-scheme.hgu133p2.na21 <- import.expr.scheme("Scheme_HGU133p2_na21",filedir=scmdir,paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),paste(anndir,"Version06Nov/HG-U133_Plus_2.na21.annot.csv",sep="/"))
-scheme.hgu133p2.na22 <- import.expr.scheme("Scheme_HGU133p2_na22",filedir=scmdir,paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),paste(anndir,"Version07May/HG-U133_Plus_2.na22.annot.csv",sep="/"))
-scheme.hgu133p2.na23 <- import.expr.scheme("Scheme_HGU133p2_na23",filedir=scmdir,paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),paste(anndir,"Version07Jul/HG-U133_Plus_2.na23.annot.csv",sep="/"))
-scheme.hgu133p2.na24 <- import.expr.scheme("Scheme_HGU133p2_na24",filedir=scmdir,paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),paste(anndir,"Version07Nov/HG-U133_Plus_2.na24.annot.csv",sep="/"))
-scheme.hgu133p2.na25 <- import.expr.scheme("Scheme_HGU133p2_na25",filedir=scmdir,paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),paste(anndir,"Version08Mar/HG-U133_Plus_2.na25.annot.csv",sep="/"))
-scheme.hgu133p2.na26 <- import.expr.scheme("Scheme_HGU133p2_na26",filedir=scmdir,paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),paste(anndir,"Version08Jul/HG-U133_Plus_2.na26.annot.csv",sep="/"))
-scheme.hgu133p2.na27 <- import.expr.scheme("Scheme_HGU133p2_na27",filedir=scmdir,paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),paste(anndir,"Version08Nov/HG-U133_Plus_2.na27.annot.csv",sep="/"))
-scheme.hgu133p2.na28 <- import.expr.scheme("Scheme_HGU133p2_na28",filedir=scmdir,paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),paste(anndir,"Version09Mar/HG-U133_Plus_2.na28.annot.csv",sep="/"))
-scheme.hgu133p2.na29 <- import.expr.scheme("Scheme_HGU133p2_na29",filedir=scmdir,paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),paste(anndir,"Version09Jul/HG-U133_Plus_2.na29.annot.csv",sep="/"))
+scheme.hgu133plus2.na31 <- import.expr.scheme("Scheme_HGU133p2_na31", filedir = file.path(scmdir, "na31"),
+                           schemefile = file.path(libdir, "HG-U133_Plus_2.CDF"), 
+                           probefile  = file.path(libdir, "HG-U133-PLUS_probe.tab"), 
+                           annotfile  = file.path(anndir, "Version10Sep", "HG-U133_Plus_2.na31.annot.csv"))
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # create ROOT scheme files for ivt plate arrays
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# HT_HG-U133A
-scheme.hthgu133A.na28 <- import.expr.scheme("Scheme_HTHGU133A_na28",filedir=scmdir,paste(libdir,"HT_HG-U133A.cdf",sep="/"),paste(libdir,"HT_HG-U133A.probe.tab",sep="/"),paste(anndir,"Version09Mar/HT_HG-U133A.na28.annot.csv",sep="/"))
-
 # HT_HG-U133_Plus_PM
-scheme.hthgu133ppm.na27 <- import.expr.scheme("Scheme_HTHGU133pPM_na27",filedir=scmdir,paste(libdir,"HT_HG-U133_Plus_PM.CDF",sep="/"),paste(libdir,"HT_HG-U133_Plus_PM.probe.tab",sep="/"),paste(anndir,"Version09Feb/HT_HG-U133_Plus_PM.na27.1.annot.csv",sep="/"))
-scheme.hthgu133ppm.na28 <- import.expr.scheme("Scheme_HTHGU133pPM_na28",filedir=scmdir,paste(libdir,"HT_HG-U133_Plus_PM.CDF",sep="/"),paste(libdir,"HT_HG-U133_Plus_PM.probe.tab",sep="/"),paste(anndir,"Version09Mar/HT_HG-U133_Plus_PM.na28.annot.csv",sep="/"))
+scheme.hthgu133pluspm.na31 <- import.expr.scheme("Scheme_HTHGU133pPM_na31", filedir = file.path(scmdir, "na31"),
+                              schemefile = file.path(libdir, "HT_HG-U133_Plus_PM.CDF"), 
+                              probefile  = file.path(libdir, "HT_HG-U133_Plus_PM.probe.tab"), 
+                              annotfile  = file.path(anndir, "Version10Sep", "HT_HG-U133_Plus_PM.na31.annot.csv"))
 
-# HT_MG-430_PM
-scheme.htmg430pm.na28 <- import.expr.scheme("Scheme_HTMG430PM_na28",filedir=scmdir,paste(libdir,"HT_MG-430_PM.cdf",sep="/"),paste(libdir,"HT_MG-430_PM.probe.tab",sep="/"),paste(anndir,"Version09Mar/HT_MG-430_PM.na28.annot.csv",sep="/"))
 
-# HT_Rat230_PM
-scheme.htrat230.na28 <- import.expr.scheme("Scheme_HTRat230PM_na28",filedir=scmdir,paste(libdir,"HT_Rat230_PM.cdf",sep="/"),paste(libdir,"HT_Rat230_PM.probe.tab",sep="/"),paste(anndir,"Version09Mar/HT_Rat230_PM.na28.annot.csv",sep="/"))
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# create ROOT scheme files for whole genome and exon arrays
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# HG-U219
-scheme.hgu219.na29 <- import.expr.scheme("Scheme_HGU219_na29",filedir=scmdir,paste(libdir,"HG-U219.cdf",sep="/"),paste(libdir,"HG-U219.probe.tab",sep="/"),paste(anndir,"Version09Oct/HG-U219.na29.annot.csv",sep="/"))
+# HuGene-1_0-st-v1.r4: used as exon array
+scheme.hugene10stv1.na31 <- import.exon.scheme("Scheme_HuGene10stv1r4_na31", filedir = file.path(scmdir, "na31"),
+                            file.path(libdir, "HuGene-1_0-st-v1.r4.analysis-lib-files", "HuGene-1_0-st-v1.r4.clf"),
+                            file.path(libdir, "HuGene-1_0-st-v1.r4.analysis-lib-files", "HuGene-1_0-st-v1.r4.pgf"),
+                            file.path(anndir, "Version10Sep", "HuGene-1_0-st-v1.na31.hg19.probeset.csv"),
+                            file.path(anndir, "Version10Sep", "HuGene-1_0-st-v1.na31.hg19.transcript.csv"))
+
+# HuEx-1_0-st-v2.r2:
+scheme.huex10stv2.na31 <- import.exon.scheme("Scheme_HuEx10stv2r2_na31", filedir = file.path(scmdir, "na31"),
+                          file.path(libdir, "HuEx-1_0-st-v2_libraryfile", "HuEx-1_0-st-r2", "HuEx-1_0-st-v2.r2.clf"),
+                          file.path(libdir, "HuEx-1_0-st-v2_libraryfile", "HuEx-1_0-st-r2", "HuEx-1_0-st-v2.r2.pgf"),
+                          file.path(anndir, "Version10Sep", "HuEx-1_0-st-v2.na31.hg19.probeset.csv"),
+                          file.path(anndir, "Version10Sep", "HuEx-1_0-st-v2.na31.hg19.transcript.csv"))
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# create ROOT scheme files for whole genome and exon plate arrays
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# HuGene-1_1-st-v1:
+scheme.hugene11stv1.na31 <- import.exon.scheme("Scheme_HuGene11stv1_na31", filedir = file.path(scmdir, "na31"),
+                            file.path(libdir, "HuGene-1_1-st-v1.r4.analysis-lib-files", "HuGene-1_1-st-v1.r4.clf"),
+                            file.path(libdir, "HuGene-1_1-st-v1.r4.analysis-lib-files", "HuGene-1_1-st-v1.r4.pgf"),
+                            file.path(anndir, "Version10Sep", "HuGene-1_1-st-v1.na31.hg19.probeset.csv"),
+                            file.path(anndir, "Version10Sep", "HuGene-1_1-st-v1.na31.hg19.transcript.csv"))
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# create ROOT scheme files for other Affymetrix arrays
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# Yeast_2:
+scheme.yeast2.na31 <- import.expr.scheme("Scheme_Yeast2_na31", filedir = file.path(scmdir, "na31"),
+                      schemefile = file.path(libdir, "Yeast_2.cdf"),
+                      probefile  = file.path(libdir, "Yeast_2.probe.tab"),
+                      annotfile  = file.path(anndir, "Version10Sep", "Yeast_2.na31.annot.csv"))
+
+# miRNA-1_0:
+# note: you need to rename "miRNA-1_0.probe_list.20081203.txt" to "miRNA-1_0.probe.tab"
+scheme.mirna10 <- import.expr.scheme("Scheme_miRNA_1_0", filedir = file.path(scmdir, "na31"),
+                  schemefile = file.path(libdir, "miRNA-1_0.CDF"),
+                  probefile  = file.path(libdir, "miRNA-1_0.probe.tab"))
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -135,307 +135,6 @@ umidir <- "/Volumes/GigaDrive/Affy/CDF_alternative/UniMichigan"
 scheme.hgu133p2.umi <- import.expr.scheme("Scheme_HGU133p2_umi_refseq_v10",filedir=scmdir,paste(umidir,"Version10/Hs133P_Hs_REFSEQ/Hs133P_Hs_REFSEQ.cdf",sep="/"),paste(umidir,"Version10/Hs133P_Hs_REFSEQ/Hs133P_Hs_REFSEQ_probe.tab",sep="/"),"","HG-U133_Plus_2_umi_refseq")
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# create ROOT scheme files for whole genome arrays
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-# HuGene-1_0-st-v1.r3: used as whole genome array
-scheme.hugene10stv1r3.na23 <- import.genome.scheme("Scheme_HuGene10stv1r3_na23",filedir=scmdir,
-                              paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.clf",sep="/"),
-                              paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.pgf",sep="/"),
-                              paste(anndir,"Version07Jul/HuGene-1_0-st-v1.na23.hg18.transcript.csv",sep="/"))
-
-scheme.hugene10stv1r3.na24 <- import.genome.scheme("Scheme_HuGene10stv1r3_na24",filedir=scmdir,
-                              paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.clf",sep="/"),
-                              paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.pgf",sep="/"),
-                              paste(anndir,"Version07Nov/HuGene-1_0-st-v1.na24.hg18.transcript.csv",sep="/"))
-
-scheme.hugene10stv1r3.na25 <- import.genome.scheme("Scheme_HuGene10stv1r3_na25",filedir=scmdir,
-                              paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.clf",sep="/"),
-                              paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.pgf",sep="/"),
-                              paste(anndir,"Version08Mar/HuGene-1_0-st-v1.na25.hg18.transcript.csv",sep="/"))
-
-scheme.hugene10stv1r3.na26 <- import.genome.scheme("Scheme_HuGene10stv1r3_na26",filedir=scmdir,
-                              paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.clf",sep="/"),
-                              paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.pgf",sep="/"),
-                              paste(anndir,"Version08Jul/HuGene-1_0-st-v1.na26.hg18.transcript.csv",sep="/"))
-
-scheme.hugene10stv1r3.na27 <- import.genome.scheme("Scheme_HuGene10stv1r3_na27",filedir=scmdir,
-                              paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.clf",sep="/"),
-                              paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.pgf",sep="/"),
-                              paste(anndir,"Version08Nov/HuGene-1_0-st-v1.na27.hg18.transcript.csv",sep="/"))
-
-scheme.hugene10stv1r3.na28 <- import.genome.scheme("Scheme_HuGene10stv1r3_na28",filedir=scmdir,
-                              paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.clf",sep="/"),
-                              paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.pgf",sep="/"),
-                              paste(anndir,"Version09Mar/HuGene-1_0-st-v1.na28.hg18.transcript.csv",sep="/"))
-
-# HuGene-1_0-st-v1.r4: used as exon array
-scheme.hugene10stv1r4.na27 <- import.exon.scheme("Scheme_HuGene10stv1r4_na27",filedir=scmdir,
-                              paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.clf",sep="/"),
-                              paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.pgf",sep="/"),
-                              paste(anndir,"Version09Feb/HuGene-1_0-st-v1.na27.2.hg18.probeset.csv",sep="/"),
-                              paste(anndir,"Version09Feb/HuGene-1_0-st-v1.na27.hg18.transcript.csv",sep="/"))
-
-scheme.hugene10stv1r4.na28 <- import.exon.scheme("Scheme_HuGene10stv1r4_na28",filedir=scmdir,
-                              paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.clf",sep="/"),
-                              paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.pgf",sep="/"),
-                              paste(anndir,"Version09Mar/HuGene-1_0-st-v1.na28.hg18.probeset.csv",sep="/"),
-                              paste(anndir,"Version09Mar/HuGene-1_0-st-v1.na28.hg18.transcript.csv",sep="/"))
-
-scheme.hugene10stv1r4.na29 <- import.exon.scheme("Scheme_HuGene10stv1r4_na29",filedir=scmdir,
-                              paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.clf",sep="/"),
-                              paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.pgf",sep="/"),
-                              paste(anndir,"Version09Jul/HuGene-1_0-st-v1.na29.hg18.probeset.csv",sep="/"),
-                              paste(anndir,"Version09Jul/HuGene-1_0-st-v1.na29.hg18.transcript.csv",sep="/"))
-
-# note: need to use corrected the probeset annotation file "na30.1"
-scheme.hugene10stv1r4.na30 <- import.exon.scheme("Scheme_HuGene10stv1r4_na30_hg19",filedir=scmdir,
-                              paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.clf",sep="/"),
-                              paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.pgf",sep="/"),
-                              paste(anndir,"Version09Nov/HuGene-1_1-st-v1.na30.1.hg19.probeset.csv",sep="/"),
-                              paste(anndir,"Version09Nov/HuGene-1_1-st-v1.na30.hg19.transcript.csv",sep="/"))
-
-# MoGene-1_0-st-v1.r3:
-scheme.mogene10stv1r3.na24 <- import.genome.scheme("Scheme_MoGene10stv1r3_na24",filedir=scmdir,
-                              paste(libdir,"MoGene-1_0-st-v1.r3.analysis-lib-files/MoGene-1_0-st-v1.r3.clf",sep="/"),
-                              paste(libdir,"MoGene-1_0-st-v1.r3.analysis-lib-files/MoGene-1_0-st-v1.r3.pgf",sep="/"),
-                              paste(anndir,"Version07Nov/MoGene-1_0-st-v1.na24.mm8.transcript.csv",sep="/"))
-
-scheme.mogene10stv1r3.na25 <- import.genome.scheme("Scheme_MoGene10stv1r3_na25",filedir=scmdir,
-                              paste(libdir,"MoGene-1_0-st-v1.r3.analysis-lib-files/MoGene-1_0-st-v1.r3.clf",sep="/"),
-                              paste(libdir,"MoGene-1_0-st-v1.r3.analysis-lib-files/MoGene-1_0-st-v1.r3.pgf",sep="/"),
-                              paste(anndir,"Version08Mar/MoGene-1_0-st-v1.na25.mm9.transcript.csv",sep="/"))
-
-scheme.mogene10stv1r3.na27 <- import.genome.scheme("Scheme_MoGene10stv1r3_na27",filedir=scmdir,
-                              paste(libdir,"MoGene-1_0-st-v1.r3.analysis-lib-files/MoGene-1_0-st-v1.r3.clf",sep="/"),
-                              paste(libdir,"MoGene-1_0-st-v1.r3.analysis-lib-files/MoGene-1_0-st-v1.r3.pgf",sep="/"),
-                              paste(anndir,"Version08Nov/MoGene-1_0-st-v1.na27.mm9.transcript.csv",sep="/"))
-
-# MoGene-1_0-st-v1.r4: used as exon array
-# need to fix problem with annotation files first, see:
-# https://www.stat.math.ethz.ch/pipermail/bioconductor/2009-August/029049.html
-source(paste(.path.package("xps"),"examples/updateAnnotation.R",sep="/"))
-updateAnnotation("MoGene-1_0-st-v1.na29.mm9.probeset.csv", "MoGene-1_0-st-v1.na29.mm9.probeset.fixed.csv", probeset="10338063", skip=18, eol="\n")
-updateAnnotation("MoGene-1_0-st-v1.na29.mm9.transcript.csv", "MoGene-1_0-st-v1.na29.mm9.transcript.fixed.csv", probeset="10338063", skip=19, eol="\n")
-
-scheme.mogene10stv1r4.na29 <- import.exon.scheme("Scheme_MoGene10stv1r4_na29",filedir=scmdir,
-                              paste(libdir,"MoGene-1_0-st-v1.r4.analysis-lib-files/MoGene-1_0-st-v1.r4.clf",sep="/"),
-                              paste(libdir,"MoGene-1_0-st-v1.r4.analysis-lib-files/MoGene-1_0-st-v1.r4.pgf",sep="/"),
-                              paste(anndir,"Version09Jul/MoGene-1_0-st-v1.na29.mm9.probeset.fixed.csv",sep="/"),
-                              paste(anndir,"Version09Jul/MoGene-1_0-st-v1.na29.mm9.transcript.fixed.csv",sep="/"))
-
-# in Dec 2009 Affymetrix has corrected the annotation files for release "na30.1"
-scheme.mogene10stv1r4.na30 <- import.exon.scheme("Scheme_MoGene10stv1r4_na30_1",filedir=scmdir,
-                              paste(libdir,"MoGene-1_0-st-v1.r4.analysis-lib-files/MoGene-1_0-st-v1.r4.clf",sep="/"),
-                              paste(libdir,"MoGene-1_0-st-v1.r4.analysis-lib-files/MoGene-1_0-st-v1.r4.pgf",sep="/"),
-                              paste(anndir,"Version09Dec/MoGene-1_1-st-v1.na30.1.mm9.probeset.csv",sep="/"),
-                              paste(anndir,"Version09Dec/MoGene-1_1-st-v1.na30.1.mm9.transcript.csv",sep="/"))
-
-
-# RaGene-1_0-st-v1.r3:
-scheme.ragene10stv1r3.na24 <- import.genome.scheme("Scheme_RaGene10stv1r3_na24",filedir=scmdir,
-                              paste(libdir,"RaGene-1_0-st-v1.r3.analysis-lib-files/RaGene-1_0-st-v1.r3.clf",sep="/"),
-                              paste(libdir,"RaGene-1_0-st-v1.r3.analysis-lib-files/RaGene-1_0-st-v1.r3.pgf",sep="/"),
-                              paste(anndir,"Version07Nov/RaGene-1_0-st-v1.na24.rn4.transcript.csv",sep="/"))
-
-scheme.ragene10stv1r3.na25 <- import.genome.scheme("Scheme_RaGene10stv1r3_na25",filedir=scmdir,
-                              paste(libdir,"RaGene-1_0-st-v1.r3.analysis-lib-files/RaGene-1_0-st-v1.r3.clf",sep="/"),
-                              paste(libdir,"RaGene-1_0-st-v1.r3.analysis-lib-files/RaGene-1_0-st-v1.r3.pgf",sep="/"),
-                              paste(anndir,"Version08Mar/RaGene-1_0-st-v1.na25.rn4.transcript.csv",sep="/"))
-
-# RaGene-1_0-st-v1.r4: used as exon array
-# need to fix problem with annotation files first, see:
-# https://www.stat.math.ethz.ch/pipermail/bioconductor/2009-August/029049.html
-source(paste(.path.package("xps"),"examples/updateAnnotation.R",sep="/"))
-updateAnnotation("RaGene-1_0-st-v1.na29.rn4.probeset.csv", "RaGene-1_0-st-v1.na29.rn4.probeset.fixed.csv", probeset="10700063", skip=18, eol="\n")
-updateAnnotation("RaGene-1_0-st-v1.na29.rn4.transcript.csv", "RaGene-1_0-st-v1.na29.rn4.transcript.fixed.csv", probeset="10700063", skip=19, eol="\n")
-
-scheme.ragene10stv1r4.na29 <- import.exon.scheme("Scheme_RaGene10stv1r4_na29",filedir=scmdir,
-                              paste(libdir,"RaGene-1_0-st-v1.r4.analysis-lib-files/RaGene-1_0-st-v1.r4.clf",sep="/"),
-                              paste(libdir,"RaGene-1_0-st-v1.r4.analysis-lib-files/RaGene-1_0-st-v1.r4.pgf",sep="/"),
-                              paste(anndir,"Version09Jul/RaGene-1_0-st-v1.na29.rn4.probeset.fixed.csv",sep="/"),
-                              paste(anndir,"Version09Jul/RaGene-1_0-st-v1.na29.rn4.transcript.fixed.csv",sep="/"))
-
-# in Dec 2009 Affymetrix has corrected the annotation files for release "na30.1"
-scheme.ragene10stv1r4.na30 <- import.exon.scheme("Scheme_RaGene10stv1r4_na30_1",filedir=scmdir,
-                              paste(libdir,"RaGene-1_0-st-v1.r4.analysis-lib-files/RaGene-1_0-st-v1.r4.clf",sep="/"),
-                              paste(libdir,"RaGene-1_0-st-v1.r4.analysis-lib-files/RaGene-1_0-st-v1.r4.pgf",sep="/"),
-                              paste(anndir,"Version09Dec/RaGene-1_1-st-v1.na30.1.rn4.probeset.csv",sep="/"),
-                              paste(anndir,"Version09Dec/RaGene-1_1-st-v1.na30.1.rn4.transcript.csv",sep="/"))
-
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# create ROOT scheme files for exon arrays
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Note: not possible on the Compaq Laptop with 512 MB RAM
-
-# HuEx-1_0-st-v2.r2:
-scheme.huex10stv2r2.na21 <- import.exon.scheme("Scheme_HuEx10stv2r2_na21",filedir=scmdir,
-                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
-                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
-                            paste(anndir,"Version06Nov/HuEx-1_0-st-v2.na21.hg18.probeset.csv",sep="/"),
-                            paste(anndir,"Version06Nov/HuEx-1_0-st-v2.na21.hg18.transcript.csv",sep="/"))
-
-scheme.huex10stv2r2.na22 <- import.exon.scheme("Scheme_HuEx10stv2r2_na22",filedir=scmdir,
-                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
-                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
-                            paste(anndir,"Version07Mar/HuEx-1_0-st-v2.na22.hg18.probeset.csv",sep="/"),
-                            paste(anndir,"Version07Mar/HuEx-1_0-st-v2.na22.hg18.transcript.csv",sep="/"))
-
-scheme.huex10stv2r2.na23 <- import.exon.scheme("Scheme_HuEx10stv2r2_na23",filedir=scmdir,
-                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
-                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
-                            paste(anndir,"Version07Jul/HuEx-1_0-st-v2.na23.hg18.probeset.csv",sep="/"),
-                            paste(anndir,"Version07Jul/HuEx-1_0-st-v2.na23.hg18.transcript.csv",sep="/"))
-
-scheme.huex10stv2r2.na24 <- import.exon.scheme("Scheme_HuEx10stv2r2_na24",filedir=scmdir,
-                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
-                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
-                            paste(anndir,"Version07Nov/HuEx-1_0-st-v2.na24.hg18.probeset.csv",sep="/"),
-                            paste(anndir,"Version07Nov/HuEx-1_0-st-v2.na24.hg18.transcript.csv",sep="/"))
-
-scheme.huex10stv2r2.na25 <- import.exon.scheme("Scheme_HuEx10stv2r2_na25",filedir=scmdir,
-                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
-                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
-                            paste(anndir,"Version08Mar/HuEx-1_0-st-v2.na25.hg18.probeset.csv",sep="/"),
-                            paste(anndir,"Version08Mar/HuEx-1_0-st-v2.na25.hg18.transcript.csv",sep="/"))
-
-scheme.huex10stv2r2.na26 <- import.exon.scheme("Scheme_HuEx10stv2r2_na26",filedir=scmdir,
-                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
-                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
-                            paste(anndir,"Version08Jul/HuEx-1_0-st-v2.na26.hg18.probeset.csv",sep="/"),
-                            paste(anndir,"Version08Jul/HuEx-1_0-st-v2.na26.hg18.transcript.csv",sep="/"))
-
-scheme.huex10stv2r2.na27 <- import.exon.scheme("Scheme_HuEx10stv2r2_na27",filedir=scmdir,
-                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
-                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
-                            paste(anndir,"Version08Nov/HuEx-1_0-st-v2.na27.hg18.probeset.csv",sep="/"),
-                            paste(anndir,"Version08Nov/HuEx-1_0-st-v2.na27.hg18.transcript.csv",sep="/"))
-
-scheme.huex10stv2r2.na28 <- import.exon.scheme("Scheme_HuEx10stv2r2_na28",filedir=scmdir,
-                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
-                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
-                            paste(anndir,"Version09Mar/HuEx-1_0-st-v2.na28.hg18.probeset.csv",sep="/"),
-                            paste(anndir,"Version09Mar/HuEx-1_0-st-v2.na28.hg18.transcript.csv",sep="/"))
-
-scheme.huex10stv2r2.na29 <- import.exon.scheme("Scheme_HuEx10stv2r2_na29",filedir=scmdir,
-                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
-                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
-                            paste(anndir,"Version09Jul/HuEx-1_0-st-v2.na29.hg18.probeset.csv",sep="/"),
-                            paste(anndir,"Version09Jul/HuEx-1_0-st-v2.na29.hg18.transcript.csv",sep="/"))
-
-scheme.huex10stv2r2.na30 <- import.exon.scheme("Scheme_HuEx10stv2r2_na30",filedir=scmdir,
-                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
-                            paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
-                            paste(anndir,"Version09Jul/HuEx-1_0-st-v2.na30.hg19.probeset.csv",sep="/"),
-                            paste(anndir,"Version09Jul/HuEx-1_0-st-v2.na30.hg19.transcript.csv",sep="/"))
-
-# HuEx-1_0-st-v2.r2 old annotation:
-scheme.huex10stv2r2.old <- import.exon.scheme("Scheme_HuEx10stv2r2_old",filedir=scmdir,
-                           paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
-                           paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
-                           paste(anndir,"Version06Jun/HuEx-1_0-st-probeset-annot.csv",sep="/"),
-                           paste(anndir,"Version06Jun/HuEx-1_0-st-transcript-annot.csv",sep="/"),
-                           paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.controls.ps",sep="/"))
-
-# MoEx-1_0-st-v1.r2:
-scheme.moex10stv1r2.na21 <- import.exon.scheme("Scheme_MoEx10stv2r2_na21",filedir=scmdir,
-                            paste(libdir,"MoEx_libraryfile/MoEx-1_0-st-v1.r2.clf",sep="/"),
-                            paste(libdir,"MoEx_libraryfile/MoEx-1_0-st-v1.r2.pgf",sep="/"),
-                            paste(anndir,"Version06Nov/MoEx-1_0-st-v1.na21.mm8.probeset.csv",sep="/"),
-                            paste(anndir,"Version06Nov/MoEx-1_0-st-v1.na21.mm8.transcript.csv",sep="/"))
-
-scheme.moex10stv1r2.na22 <- import.exon.scheme("Scheme_MoEx10stv2r2_na22",filedir=scmdir,
-                            paste(libdir,"MoEx_libraryfile/MoEx-1_0-st-v1.r2.clf",sep="/"),
-                            paste(libdir,"MoEx_libraryfile/MoEx-1_0-st-v1.r2.pgf",sep="/"),
-                            paste(anndir,"Version07May/MoEx-1_0-st-v1.na22.mm8.probeset.csv",sep="/"),
-                            paste(anndir,"Version07May/MoEx-1_0-st-v1.na22.mm8.transcript.csv",sep="/"))
-
-scheme.moex10stv1r2.na23 <- import.exon.scheme("Scheme_MoEx10stv2r2_na23",filedir=scmdir,
-                            paste(libdir,"MoEx_libraryfile/MoEx-1_0-st-v1.r2.clf",sep="/"),
-                            paste(libdir,"MoEx_libraryfile/MoEx-1_0-st-v1.r2.pgf",sep="/"),
-                            paste(anndir,"Version07Jul/MoEx-1_0-st-v1.na23.mm8.probeset.csv",sep="/"),
-                            paste(anndir,"Version07Jul/MoEx-1_0-st-v1.na23.mm8.transcript.csv",sep="/"))
-
-scheme.moex10stv1r2.na24 <- import.exon.scheme("Scheme_MoEx10stv2r2_na24",filedir=scmdir,
-                            paste(libdir,"MoEx_libraryfile/MoEx-1_0-st-v1.r2.clf",sep="/"),
-                            paste(libdir,"MoEx_libraryfile/MoEx-1_0-st-v1.r2.pgf",sep="/"),
-                            paste(anndir,"Version07Nov/MoEx-1_0-st-v1.na24.mm8.probeset.csv",sep="/"),
-                            paste(anndir,"Version07Nov/MoEx-1_0-st-v1.na24.mm8.transcript.csv",sep="/"))
-
-scheme.moex10stv1r2.na25 <- import.exon.scheme("Scheme_MoEx10stv2r2_na25",filedir=scmdir,
-                            paste(libdir,"MoEx_libraryfile/MoEx-1_0-st-v1.r2.clf",sep="/"),
-                            paste(libdir,"MoEx_libraryfile/MoEx-1_0-st-v1.r2.pgf",sep="/"),
-                            paste(anndir,"Version08Mar/MoEx-1_0-st-v1.na25.mm9.probeset.csv",sep="/"),
-                            paste(anndir,"Version08Mar/MoEx-1_0-st-v1.na25.mm9.transcript.csv",sep="/"))
-
-scheme.moex10stv1r2.na30 <- import.exon.scheme("Scheme_MoEx10stv2r2_na30",filedir=scmdir,
-                            paste(libdir,"MoEx_libraryfile/MoEx-1_0-st-v1.r2.clf",sep="/"),
-                            paste(libdir,"MoEx_libraryfile/MoEx-1_0-st-v1.r2.pgf",sep="/"),
-                            paste(anndir,"Version09Nov/MoEx-1_0-st-v1.na30.mm9.probeset.csv",sep="/"),
-                            paste(anndir,"Version09Nov/MoEx-1_0-st-v1.na30.mm9.transcript.csv",sep="/"))
-
-# RaEx-1_0-st-v1.r2:
-scheme.raex10stv1r2.na21 <- import.exon.scheme("Scheme_RaEx10stv2r2_na21",filedir=scmdir,
-                            paste(libdir,"RaEx_libraryfile/RaEx-1_0-st-v1.r2.clf",sep="/"),
-                            paste(libdir,"RaEx_libraryfile/RaEx-1_0-st-v1.r2.pgf",sep="/"),
-                            paste(anndir,"Version06Nov/RaEx-1_0-st-v1.na21.rn4.probeset.csv",sep="/"),
-                            paste(anndir,"Version06Nov/RaEx-1_0-st-v1.na21.rn4.transcript.csv",sep="/"))
-
-scheme.raex10stv1r2.na22 <- import.exon.scheme("Scheme_RaEx10stv2r2_na22",filedir=scmdir,
-                            paste(libdir,"RaEx_libraryfile/RaEx-1_0-st-v1.r2.clf",sep="/"),
-                            paste(libdir,"RaEx_libraryfile/RaEx-1_0-st-v1.r2.pgf",sep="/"),
-                            paste(anndir,"Version07May/RaEx-1_0-st-v1.na22.rn4.probeset.csv",sep="/"),
-                            paste(anndir,"Version07May/RaEx-1_0-st-v1.na22.rn4.transcript.csv",sep="/"))
-
-scheme.raex10stv1r2.na23 <- import.exon.scheme("Scheme_RaEx10stv2r2_na23",filedir=scmdir,
-                            paste(libdir,"RaEx_libraryfile/RaEx-1_0-st-v1.r2.clf",sep="/"),
-                            paste(libdir,"RaEx_libraryfile/RaEx-1_0-st-v1.r2.pgf",sep="/"),
-                            paste(anndir,"Version07Jul/RaEx-1_0-st-v1.na23.rn4.probeset.csv",sep="/"),
-                            paste(anndir,"Version07Jul/RaEx-1_0-st-v1.na23.rn4.transcript.csv",sep="/"))
-
-scheme.raex10stv1r2.na24 <- import.exon.scheme("Scheme_RaEx10stv2r2_na24",filedir=scmdir,
-                            paste(libdir,"RaEx_libraryfile/RaEx-1_0-st-v1.r2.clf",sep="/"),
-                            paste(libdir,"RaEx_libraryfile/RaEx-1_0-st-v1.r2.pgf",sep="/"),
-                            paste(anndir,"Version07Nov/RaEx-1_0-st-v1.na24.rn4.probeset.csv",sep="/"),
-                            paste(anndir,"Version07Nov/RaEx-1_0-st-v1.na24.rn4.transcript.csv",sep="/"))
-
-scheme.raex10stv1r2.na25 <- import.exon.scheme("Scheme_RaEx10stv2r2_na25",filedir=scmdir,
-                            paste(libdir,"RaEx_libraryfile/RaEx-1_0-st-v1.r2.clf",sep="/"),
-                            paste(libdir,"RaEx_libraryfile/RaEx-1_0-st-v1.r2.pgf",sep="/"),
-                            paste(anndir,"Version08Mar/RaEx-1_0-st-v1.na25.rn4.probeset.csv",sep="/"),
-                            paste(anndir,"Version08Mar/RaEx-1_0-st-v1.na25.rn4.transcript.csv",sep="/"))
-
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# create ROOT scheme files for other Affymetrix arrays
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-# Yeast_2:
-scheme.yeast2.na28 <- import.expr.scheme("Scheme_Yeast2_na27",filedir=scmdir,
-                      paste(libdir,"Yeast_2.cdf",sep="/"),
-                      paste(libdir,"Yeast_2.probe.tab",sep="/"),
-                      paste(anndir,"Version09Mar/Yeast_2.na28.annot.csv",sep="/"))
-
-# Pae_G1a:
-scheme.paeg1a.na28 <- import.expr.scheme("Scheme_PaeG1a_na28",filedir=scmdir,
-                      paste(libdir,"Pae_G1a.CDF",sep="/"),
-                      paste(libdir,"Pae_G1a.probe.tab",sep="/"), 
-                      paste(anndir,"Version09Mar/Pae_G1a.na28.annot.csv",sep="/"))
-
-# Mouse430_2:
-scheme.mouse430.2.na28 <- import.expr.scheme("Scheme_Mouse430_2_na28",filedir=scmdir,
-                          paste(libdir,"Mouse430_2.cdf",sep="/"),
-                          paste(libdir,"Mouse430_2.probe.tab",sep="/"),
-                          paste(anndir,"Version09Mar/Mouse430_2.na28.annot.csv",sep="/"))
-
-# miRNA-1_0:
-# note: you need to rename "miRNA-1_0.probe_list.20081203.txt" to "miRNA-1_0.probe.tab"
-scheme.mirna <- import.expr.scheme("Scheme_miRNA_1_0",filedir=scmdir,
-                paste(libdir,"miRNA-1_0.CDF",sep="/"),
-                paste(libdir,"miRNA-1_0.probe.tab",sep="/"))
-
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # utility functions to demonstrate how to access scheme files
@@ -443,31 +142,31 @@ scheme.mirna <- import.expr.scheme("Scheme_miRNA_1_0",filedir=scmdir,
 
 ### export different trees from ROOT scheme file
 # Test3: export as table only
-export(scheme.test3.na27, treetype="idx", outfile="Test3_idx.txt")
-export(scheme.test3.na27, treetype="scm", outfile="Test3_scm.txt")
-export(scheme.test3.na27, treetype="prb", outfile="Test3_prb.txt")
-export(scheme.test3.na27, treetype="ann", outfile="Test3_ann.txt")
+export(scheme.test3.na31, treetype="idx", outfile="Test3_idx.txt")
+export(scheme.test3.na31, treetype="scm", outfile="Test3_scm.txt")
+export(scheme.test3.na31, treetype="prb", outfile="Test3_prb.txt")
+export(scheme.test3.na31, treetype="ann", outfile="Test3_ann.txt")
 
 # export as table and import as data.frame
-idx <- export(scheme.test3.na27, treetype="idx", outfile="Test3_idx.txt",as.dataframe=TRUE)
-ann <- export(scheme.test3.na27, treetype="ann", outfile="Test3_ann.txt",as.dataframe=TRUE)
+idx <- export(scheme.test3.na31, treetype="idx", outfile="Test3_idx.txt",as.dataframe=TRUE)
+ann <- export(scheme.test3.na31, treetype="ann", outfile="Test3_ann.txt",as.dataframe=TRUE)
 
 ### attach mask later: if import parameter was: as.dataframe=FALSE
-scheme.test3.na27 <- attachMask(scheme.test3.na27)
-str(scheme.test3.na27)
+scheme.test3.na31 <- attachMask(scheme.test3.na31)
+str(scheme.test3.na31)
 ### export scheme mask
-msk <- chipMask(scheme.test3.na27)
-scheme.test3.na27 <- removeMask(scheme.test3.na27)
-str(scheme.test3.na27)
+msk <- chipMask(scheme.test3.na31)
+scheme.test3.na31 <- removeMask(scheme.test3.na31)
+str(scheme.test3.na31)
 
 ### scheme accessors
-rootFile(scheme.test3.na27)
-chipName(scheme.test3.na27)
-chipType(scheme.test3.na27)
-probeInfo(scheme.test3.na27)
+rootFile(scheme.test3.na31)
+chipName(scheme.test3.na31)
+chipType(scheme.test3.na31)
+probeInfo(scheme.test3.na31)
 
 ### browse ROOT scheme files
-root.browser(scheme.test3.na27)
+root.browser(scheme.test3.na31)
 
 
 
@@ -639,7 +338,7 @@ datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 
 ### HG-U133_Plus_2 data: import raw data
 # first, import ROOT scheme file
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na27.root",sep="/"))
+scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na31.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("u1332plus_ivt_breast_A.CEL","u1332plus_ivt_breast_B.CEL","u1332plus_ivt_breast_C.CEL",
@@ -658,7 +357,7 @@ data.mix.u133p2 <- import.data(scheme.u133p2, "HuTissuesU133P2", filedir=datdir,
 
 ### HuEx-1_0-st-v2 data: import raw data
 # first, import ROOT scheme file
-scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na27.root",sep="/"))
+scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na31.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("huex_wta_breast_A.CEL","huex_wta_breast_B.CEL","huex_wta_breast_C.CEL",
@@ -680,7 +379,7 @@ celdir <- "/Volumes/GigaDrive/ChipData/Exon/HuGene"
 
 ### HuGene-1_0-st-v1 data: import raw data
 # first, import ROOT scheme file
-scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na27.root",sep="/"))
+scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na31.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("TisMap_Breast_01_v1_WTGene1.CEL","TisMap_Breast_02_v1_WTGene1.CEL","TisMap_Breast_03_v1_WTGene1.CEL",
@@ -708,7 +407,7 @@ datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 
 ### HT_HG-U133_Plus_PM data: import raw data
 # first, import ROOT scheme file
-scheme.u133ppm <- root.scheme(paste(scmdir,"Scheme_HTHGU133pPM_na27.root",sep="/"))
+scheme.u133ppm <- root.scheme(paste(scmdir,"Scheme_HTHGU133pPM_na31.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("Human_PM_TestData.A01.CEL","Human_PM_TestData.A02.CEL","Human_PM_TestData.A03.CEL",
@@ -736,7 +435,7 @@ datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 
 ### HT_HG-U133_Plus_PM data: import raw data
 # first, import ROOT scheme file
-scheme.u133ppm <- root.scheme(paste(scmdir,"Scheme_HTHGU133pPM_na28.root",sep="/"))
+scheme.u133ppm <- root.scheme(paste(scmdir,"Scheme_HTHGU133pPM_na31.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("plate_1_id9628_A01.CEL","plate_1_id9628_B02.CEL","plate_1_id9628_C03.CEL",
@@ -764,7 +463,7 @@ datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 
 ### HG-U219 data: import raw data
 # first, import ROOT scheme file
-scheme.u219 <- root.scheme(paste(scmdir,"Scheme_HGU219_na29.root",sep="/"))
+scheme.u219 <- root.scheme(paste(scmdir,"Scheme_HGU219_na31.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("HG-U219_MaqcA_1.CEL","HG-U219_MaqcA_2.CEL","HG-U219_MaqcA_3.CEL",
@@ -784,9 +483,9 @@ library(xps)
 
 # import ROOT scheme files
 scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na27.root",sep="/"))
-scheme.exon   <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na27.root",sep="/"))
-scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na27.root",sep="/"))
+scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na31.root",sep="/"))
+scheme.exon   <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na31.root",sep="/"))
+scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na31.root",sep="/"))
 
 # import ROOT data files
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
@@ -1010,7 +709,7 @@ library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
 scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na27.root",sep="/"))
+scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na31.root",sep="/"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.u133p2 <- root.data(scheme.u133p2, paste(datdir,"HuTissuesU133P2_cel.root",sep="/"))
 
@@ -1117,7 +816,7 @@ library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
 scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na27.root",sep="/"))
+scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na31.root",sep="/"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.exon <- root.data(scheme.exon, paste(datdir,"HuTissuesExon_cel.root",sep="/"))
 
@@ -1250,7 +949,7 @@ library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
 scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na27.root",sep="/"))
+scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na31.root",sep="/"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.genome <- root.data(scheme.genome, paste(datdir,"HuTissuesGenome_cel.root",sep="/"))
 
@@ -1366,7 +1065,7 @@ library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
 scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.u133ppm <- root.scheme(paste(scmdir,"Scheme_HTHGU133pPM_na27.root",sep="/"))
+scheme.u133ppm <- root.scheme(paste(scmdir,"Scheme_HTHGU133pPM_na31.root",sep="/"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.u133ppm <- root.data(scheme.u133ppm, paste(datdir,"TestDataHTU133PPM_cel.root",sep="/"))
 
@@ -1403,7 +1102,7 @@ library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
 scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.u133ppm <- root.scheme(paste(scmdir,"Scheme_HTHGU133pPM_na28.root",sep="/"))
+scheme.u133ppm <- root.scheme(paste(scmdir,"Scheme_HTHGU133pPM_na31.root",sep="/"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.u133ppm <- root.data(scheme.u133ppm, paste(datdir,"TestDataGeneTitan_cel.root",sep="/"))
 
@@ -1448,7 +1147,7 @@ library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
 scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.u219 <- root.scheme(paste(scmdir,"Scheme_HGU219_na29.root",sep="/"))
+scheme.u219 <- root.scheme(paste(scmdir,"Scheme_HGU219_na31.root",sep="/"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.u219 <- root.data(scheme.u219, paste(datdir,"MaqcDataHGU219_cel.root",sep="/"))
 

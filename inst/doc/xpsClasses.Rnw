@@ -56,7 +56,7 @@
  developed at CERN for distributed data warehousing and data mining of particle 
  data in the petabyte range. Data are stored as sets of objects in machine-independent 
  files, and a specialized class, called a \ROOT\ tree, has been designed to store large
- quantities of data, see The ROOT \cite{root:2007}. 
+ quantities of data, see The ROOT \cite{root:2009}. 
 
 
 \subsection{ROOT File}
@@ -82,7 +82,7 @@
 
  The \Cclass{TTree} class is optimized to reduce disk space and enhance access speed. When
  using a TTree, you fill its branch buffers with leaf data and the buffers are written to
- disk when it is full. Branches, buffers, and leaves are explained in: The ROOT \cite{root:2007};
+ disk when it is full. Branches, buffers, and leaves are explained in: The ROOT \cite{root:2009};
  here it is important to realize that each object is not written individually, but rather
  collected and written a bunch at a time. This is where \Cclass{TTree} takes advantage of
  compression and will produce a much smaller file than if the objects were written individually.

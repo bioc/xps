@@ -24,7 +24,7 @@ reviewing my package and for making helpful suggestions.
 
 Furthermore I want to thank Prof. Brian Ripley (R Core Development), Patrick 
 Aboyoun (Bioconductor), Philippe Canal, and especially Bertrand Bellenot for 
-their help when porting my package to Windows.
+their help when porting my package to Windows XP.
 
 I am also greatful to Djork Clevert who provided me the latest implementation 
 of the farms package (farms_1.3.1) prior to publication.
