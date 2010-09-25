@@ -2,9 +2,15 @@
 		CHANGES IN R VERSION 2.12.0
 
 
+VERSION xps-1.9.7
+
+    o	update Makefile.win to clean xpsLinkDef.h
+    o	update script4schemes.R for annotation na31 (updated release)
+
 VERSION xps-1.9.6
 
     o	update information files for new ROOT Version 5.27/04 (root_v5.27/04)
+    o	update script4xps.R, script4schemes.R for annotation na31
 
 VERSION xps-1.9.5
 

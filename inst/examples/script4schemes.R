@@ -242,7 +242,14 @@ scheme.huex10stv2.na31 <- import.exon.scheme("huex10stv2", filedir = file.path(s
                           file.path(anndir, "Version10Sep", "HuEx-1_0-st-v2.na31.hg19.transcript.csv"))
 
 # MoEx-1_0-st-v1.r2:
-# need to fix problem with annotation files first (delete control->affx which are neg_control):
+# use updated Affymetrix annotation files from 09/08/10
+scheme.moex10stv1.na31 <- import.exon.scheme("moex10stv1",filedir = file.path(scmdir, "na31"),
+                          file.path(libdir, "MoEx_libraryfile", "MoEx-1_0-st-v1.r2.clf"),
+                          file.path(libdir, "MoEx_libraryfile", "MoEx-1_0-st-v1.r2.pgf"),
+                          file.path(anndir, "Version10Sep", "MoEx-1_0-st-v1.na31.mm9.probeset.csv"),
+                          file.path(anndir, "Version10Sep", "MoEx-1_0-st-v1.na31.mm9.transcript.csv"))
+
+# original annotation files from 08/30/10: need to delete control->affx which are neg_control
 source(paste(.path.package("xps"),"examples/updateAnnotation.R",sep="/"))
 deleteNegControlFromAffxControl("MoEx-1_0-st-v1.na31.mm9.probeset.csv", "MoEx-1_0-st-v1.na31.mm9.probeset.fixed.csv", eol="\n")
 deleteNegControlFromAffxControl("MoEx-1_0-st-v1.na31.mm9.transcript.csv", "MoEx-1_0-st-v1.na31.mm9.transcript.fixed.csv", eol="\n")
@@ -280,7 +287,14 @@ scheme.mogene11stv1.na31 <- import.exon.scheme("mogene11stv1", filedir = file.pa
                             file.path(anndir, "Version10Sep", "MoGene-1_1-st-v1.na31.mm9.transcript.csv"))
 
 # RaGene-1_1-st-v1.r4
-# need to add missing header lines to annotation files
+# use updated Affymetrix annotation files from 09/17/10
+scheme.ragene11stv1.na31 <- import.exon.scheme("ragene11stv1", filedir = file.path(scmdir, "na31"),
+                            file.path(libdir, "RaGene-1_1-st-v1.r4.analysis-lib-files", "RaGene-1_1-st-v1.r4.clf"),
+                            file.path(libdir, "RaGene-1_1-st-v1.r4.analysis-lib-files", "RaGene-1_1-st-v1.r4.pgf"),
+                            file.path(anndir, "Version10Sep", "RaGene-1_1-st-v1.na31.rn4.probeset.csv"),
+                            file.path(anndir, "Version10Sep", "RaGene-1_1-st-v1.na31.rn4.transcript.csv"))
+
+# original annotation files from 08/27/10: need to add missing header lines
 scheme.ragene11stv1.na31 <- import.exon.scheme("ragene11stv1", filedir = file.path(scmdir, "na31"),
                             file.path(libdir, "RaGene-1_1-st-v1.r4.analysis-lib-files", "RaGene-1_1-st-v1.r4.clf"),
                             file.path(libdir, "RaGene-1_1-st-v1.r4.analysis-lib-files", "RaGene-1_1-st-v1.r4.pgf"),
