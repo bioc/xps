@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 09/29/2007
+// File created: 05/18/2002                          last modified: 10/17/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -738,7 +738,7 @@ class XExonChip: public XGenomeChip {
       Int_t   LayoutToY(Int_t index);
       Int_t   ControlchipType(const char *type);
       TString LevelID2Level(Short_t id);
-      Int_t   ProbesetLevel(const char *level);
+      Int_t   ProbesetLevel(const char *level, Short_t type);
       Int_t   SchemeMask(Short_t xtype, Short_t level, Short_t bound);
 
    public:

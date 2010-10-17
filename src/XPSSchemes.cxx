@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 02/11/2010
+// File created: 05/18/2002                          last modified: 10/17/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -9561,15 +9561,15 @@ Int_t XExonChip::ImportProbesetAnnotation(ifstream &input, Option_t *option,
          if (strcmp(genesymbol[idx].Data(),"") == 0) {genesymbol[idx] = "NA";}
       }//if
 
-      // convert level to level_id
-      levelid[idx] = this->ProbesetLevel(level);
-
       // get bounded as combination of bounded and noBoundedEvidence
       bounded[idx] = nobound ? (bound ? eBND_T_NOBND_T : eBND_F_NOBND_T)
                              : (bound ? eBND_T_NOBND_F : eBND_F_NOBND_F);
 
       // convert probesettype to probesettype_id
       psettype[idx] = ProbesetType(probesettype);
+
+      // convert level to level_id
+      levelid[idx] = this->ProbesetLevel(level, psettype[idx]);
 
       // get mrna accession for genes or for control->affx 
       if (psettype[idx] != eCONTROLAFFX) {
@@ -10089,7 +10089,7 @@ TString XExonChip::LevelID2Level(Short_t id)
 }//LevelID2Level
 
 //______________________________________________________________________________
-Int_t XExonChip::ProbesetLevel(const char *level)
+Int_t XExonChip::ProbesetLevel(const char *level, Short_t type)
 {
    // Convert probeset level to level_id ELevel
    if(kCSa) cout << "------XExonChip::ProbesetLevel------" << endl;
@@ -10105,6 +10105,10 @@ Int_t XExonChip::ProbesetLevel(const char *level)
    } else if (strcmp(level,"free") == 0) {
       return eFREE;
    } else if (strcmp(level,"NA") == 0) {
+      // for whole genome arrays with annotation <= na30
+      return ePARACORE;
+   } else if (strcmp(level,"---") == 0 && type == eMAIN) {
+      // for whole genome arrays with annotation >= na31
       return ePARACORE;
    }//if
 
