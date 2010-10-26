@@ -1,4 +1,4 @@
-// File created: 11/02/2002                          last modified: 02/11/2010
+// File created: 11/02/2002                          last modified: 10/26/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -4641,7 +4641,11 @@ void READ_WSTRING(std::ifstream &input, AWSTRING *value, Bool_t isBE)
    if (value->len > 0) {
       for (Int_t i=0; i<value->len; i++){
          input.read((char *)&val, sizeof(UShort_t));
+#ifdef IS_BIG_ENDIAN
+         value->value[i] = val;
+#else
          value->value[i] = Swap16Bit(val);
+#endif
       }//for_i
    } else {
       value->value = 0;
