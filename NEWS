@@ -1,4 +1,14 @@
 
+		CHANGES IN R VERSION 2.14.0
+
+
+VERSION xps-1.11.1
+
+    o update DESCRIPTION to correct SystemRequirements to root_v5.27.04
+    o update function READ_WSTRING() to handle big endian for PPC
+
+
+
 		CHANGES IN R VERSION 2.12.0
 
 
