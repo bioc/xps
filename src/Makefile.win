@@ -126,7 +126,8 @@ xpsDict.obj: xpsDict.cxx xpsDict.h
 	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c xpsDict.cxx
 
 clean:
-	rm -f $(MYOBJ) *.a *.d *.rc 
+#	rm -f $(MYOBJ) *.a *.d *.rc 
+	rm -f $(MYOBJ) *.a *.d *.rc xpsDict.*
 
 clobber:
 	rm -f $(RLIB) $(MYOBJ) *.a *.d *.rc *.dll 
