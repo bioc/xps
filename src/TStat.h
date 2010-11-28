@@ -1,4 +1,4 @@
-// Author: Christian Stratowa 11/25/2002             last modified: 02/27/2010
+// Author: Christian Stratowa 11/25/2002             last modified: 11/27/2010
 
 /*
  *******************************************************************************
@@ -123,6 +123,10 @@ class TStat {
                          Int_t &len, const Double_t na);
 
       static Double_t MedianPolish(Int_t nrow, Int_t ncol, Double_t *x,
+                         Double_t *rowmed, Double_t *colmed, Double_t *residu,
+                         Int_t maxiter = 10, Double_t eps = 0.01,
+                         Bool_t verbose = kFALSE);
+      static Double_t MedianPolishTranspose(Int_t nrow, Int_t ncol, Double_t *x,
                          Double_t *rowmed, Double_t *colmed, Double_t *residu,
                          Int_t maxiter = 10, Double_t eps = 0.01,
                          Bool_t verbose = kFALSE);

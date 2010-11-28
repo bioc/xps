@@ -2,6 +2,10 @@
 		CHANGES IN R VERSION 2.14.0
 
 
+VERSION xps-1.11.3
+
+    o add function trma()
+
 VERSION xps-1.11.1
 
     o update DESCRIPTION to correct SystemRequirements to root_v5.27.04

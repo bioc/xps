@@ -893,15 +893,16 @@ Int_t XPreProcesSetting::InitExpressor(const char *type, Option_t *options,
    //    - c:        a tuning constant, default is 5
    //    - eps:      small value to avoid zeros in division, default is 0.0001
    //    - neglog:   substitution for logarithm of negative values
-   //    - nfrac:   noise fraction for bgrd option "correctbg", or
-   //    - l:       optional tunable parameter, 0<=l<=1 (default is 0.005), and     
-   //    - h:       optional parameter (default is -1) for "attenuatebg"
+   //    - nfrac:    noise fraction for bgrd option "correctbg", or
+   //    - l:        optional tunable parameter, 0<=l<=1 (default is 0.005), and     
+   //    - h:        optional parameter (default is -1) for "attenuatebg"
    //
    // type = "MedianPolish": median polish (multichip algorithm), with parameters:
    //    parameters are: numpars, maxiter, eps, neglog, (nfrac, l, h)
-   //    - numpars: number of other parameters as integer, i.e. numpars = 3-5:
+   //    - numpars: number of other parameters as integer, i.e. numpars = 3-6:
    //    - maxiter: maximal number of iterations, default is 10
    //    - eps:     epsilon of test for convergence, default is 0.01
+   //    - medpol:  =1:  MedianPolish(); =2: MedianPolishTranspose()
    //    - neglog:  substitution for logarithm of negative values
    //    - nfrac:   noise fraction for bgrd option "correctbg", or
    //    - l:       optional tunable parameter, 0<=l<=1 (default is 0.005), and     
@@ -929,9 +930,10 @@ Int_t XPreProcesSetting::InitExpressor(const char *type, Option_t *options,
    //
    // type = "FIRMA": splice/summarization (multichip algorithm), with parameters:
    //    parameters are: numpars, maxiter, eps, neglog, (nfrac, l, h)
-   //    - numpars: number of other parameters as integer, i.e. numpars = 3-5:
+   //    - numpars: number of other parameters as integer, i.e. numpars = 3-6:
    //    - maxiter: maximal number of iterations, default is 10
    //    - eps:     epsilon of test for convergence, default is 0.01
+   //    - medpol:  =1:  MedianPolish(); =2: MedianPolishTranspose()
    //    - neglog:  substitution for logarithm of negative values
    //    - nfrac:   noise fraction for bgrd option "correctbg", or
    //    - l:       optional tunable parameter, 0<=l<=1 (default is 0.005), and     

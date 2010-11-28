@@ -16,7 +16,7 @@ rma(xps.data,
     normalize  = TRUE,
     option     = "transcript",
     exonlevel  = "",
-    params     = list(16384, 0.0, 1.0, 10, 0.01, 1.0),
+    params     = list(16384, 0.0, 1.0, 10, 0.01, 1),
     xps.scheme = NULL,
     add.data   = TRUE,
     verbose    = TRUE)
@@ -103,7 +103,7 @@ analogously to the expression measures computed with \code{\link{mas5}} and \cod
 Please note that the default settings of \code{params} gives results which are identical to the 
 results obtained with APT (Affymetrix Power Tools) and with package \code{affy_1.14.2} or earlier.
 If you want to obtain results which are identical to the results obtained with \code{affy_1.16.0} 
-or later then you need to set \code{params = list(16384, 0.0, 0.4, 10, 0.01, 1.0)}. 
+or later then you need to set \code{params = list(16384, 0.0, 0.4, 10, 0.01, 1)}. 
 
 By setting parameter \code{background="none"} it is possible to skip background correction .
 

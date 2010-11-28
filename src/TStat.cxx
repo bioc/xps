@@ -1,4 +1,4 @@
-// Author: Christian Stratowa 11/25/2002             last modified: 02/27/2010
+// Author: Christian Stratowa 11/25/2002             last modified: 11/27/2010
 
 /*
  *******************************************************************************
@@ -818,6 +818,9 @@ Double_t TStat::MedianPolish(Int_t nrow, Int_t ncol, Double_t *x, Double_t *rowm
    // Return value is the total median; 
    // row medians and column medians are returned in arrays rowmed and colmed
    // residuals are returned in array residu of size nrow*ncol
+   // Median polish alternately removes the row and column medians until the 
+   // proportional reduction in the sum of absolute residuals is less than eps
+   // or until there have been maxiter iterations. 
    if(kCSa) cout << "------TStat::MedianPolish------" << endl;
 
    Int_t i, j, k, iter;
@@ -903,6 +906,106 @@ Double_t TStat::MedianPolish(Int_t nrow, Int_t ncol, Double_t *x, Double_t *rowm
 
    return totmed;
 }//MedianPolish
+
+//______________________________________________________________________________
+Double_t TStat::MedianPolishTranspose(Int_t nrow, Int_t ncol, Double_t *x, 
+                Double_t *rowmed, Double_t *colmed, Double_t *residu,
+                Int_t maxiter, Double_t eps, Bool_t verbose)
+{
+   // Compute median polish algorithm for a table of size nrow*ncol, whereby
+   // the table is imported as array x[ij] with ij = i*ncol + j
+   // Return value is the total median; 
+   // row medians and column medians are returned in arrays rowmed and colmed
+   // residuals are returned in array residu of size nrow*ncol
+   // Note for transposed algorithm:
+   // Median polish alternately removes the column and row medians, starting
+   // with removal of columns, until the proportional reduction in the sum of 
+   // absolute residuals is less than eps or until there have been maxiter iterations. 
+   if(kCSa) cout << "------TStat::MedianPolishTranspose------" << endl;
+
+   Int_t i, j, k, iter;
+   Int_t size = nrow*ncol;
+
+// Init return values
+   for (i=0; i<nrow; i++) rowmed[i] = 0;
+   for (j=0; j<ncol; j++) colmed[j] = 0;
+   for (k=0; k<size; k++) residu[k] = x[k];
+
+   Double_t totmed = 0.0;
+   Double_t delta  = 0.0;
+   Double_t oldsum = 0.0;
+   Double_t newsum = 0.0;
+
+   Double_t *array  = new Double_t[nrow >= ncol ? nrow : ncol]; 
+   Double_t *rdelta = new Double_t[nrow]; 
+   Double_t *cdelta = new Double_t[ncol]; 
+
+// Loop until converged or maxiter is reached  
+   for (iter=1; iter<=maxiter; iter++){
+      // get medians of columns
+      for (j=0; j<ncol; j++){
+         for (i=0; i<nrow; i++) array[i] = residu[i*ncol + j];
+//         cdelta[j] = TStat::Median(nrow, array);
+         cdelta[j] = TMath::Median(nrow, array);
+      }//for_j
+
+      // subtract column medians from each column
+      for (j=0; j<ncol; j++){
+         for (i=0; i<nrow; i++) residu[i*ncol + j] -= cdelta[j];
+      }//for_j
+
+      // add cdelta to colmed
+      for (j=0; j<ncol; j++) colmed[j] += cdelta[j];
+
+      // subtract median of rowmed from rowmed
+//      delta = TStat::Median(nrow, rowmed);
+      delta = TMath::Median(nrow, rowmed);
+      for (i=0; i<nrow; i++) rowmed[i] -= delta;
+      totmed = totmed + delta;
+
+      // get medians of rows
+      for (i=0; i<nrow; i++) { 
+         for (j=0; j<ncol; j++) array[j] = residu[i*ncol + j];
+//         rdelta[i] = TStat::Median(ncol, array);
+         rdelta[i] = TMath::Median(ncol, array);
+      }//for_i
+
+      // subtract row medians from each row
+      for (i=0; i<nrow; i++) { 
+         for (j=0; j<ncol; j++) residu[i*ncol + j] -= rdelta[i];
+      }//for_i
+
+      // add rdelta to rowmed
+      for (i=0; i<nrow; i++) rowmed[i] += rdelta[i];
+
+      // subtract median of colmed from colmed
+//      delta = TStat::Median(ncol, colmed);
+      delta = TMath::Median(ncol, colmed);
+      for (j=0; j<ncol; j++) colmed[j] -= delta;
+      totmed = totmed + delta;
+
+      // sum of the absolute values of all elements
+      newsum = 0.0;
+//??      for (k=0; k<size; k++) newsum += residu[k];
+      for (k=0; k<size; k++) newsum += TMath::Abs(residu[k]);
+
+      // test for convergence
+      if (newsum == 0.0 || fabs(newsum - oldsum) < eps*newsum) break;
+      oldsum = newsum;
+   }//for_iter
+
+   if (verbose && (iter >= maxiter)) {
+      cout << "Warning: MedianPolish did not converge in <" << maxiter
+           << "> iterations." << endl;
+   }//if
+
+// Cleanup
+   delete [] array;
+   delete [] cdelta;
+   delete [] rdelta;
+
+   return totmed;
+}//MedianPolishTranspose
 
 //______________________________________________________________________________
 Double_t TStat::TukeyBiweight(Int_t n, const Double_t *x, Double_t &var,

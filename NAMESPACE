@@ -192,6 +192,7 @@ export(export.scheme, export.data, export.expr, export.call, export.filter, expo
 export(rma, mas4, mas5, mas5.call, dabg.call)
 export(dfw, farms, ini.call)
 export(firma, firma.expr, firma.score)
+export(trma)
 export(bgcorrect, normalize, summarize, express)
 export(bgcorrect.mas4, bgcorrect.mas5, bgcorrect.rma, bgcorrect.gc)
 export(normalize.constant, normalize.quantiles, normalize.lowess, normalize.supsmu)

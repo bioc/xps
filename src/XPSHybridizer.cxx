@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 03/28/2010
+// File created: 08/05/2002                          last modified: 11/27/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -511,6 +511,7 @@ Int_t XMultichipExpressor::DoMedianPolish(Int_t nrow, Int_t ncol, Double_t *inte
 // Get parameters or use default values
    Int_t    iter   = (fNPar > 0) ? (Int_t)fPars[0] : 10;
    Double_t eps    = (fNPar > 1) ? fPars[1] : 0.01;
+   Int_t    medpol = (fNPar > 2) ? (Int_t)fPars[2] : 1;
    Double_t totmed = 0;
 
    if (iter <= 0 || iter >= 100) {
@@ -521,7 +522,15 @@ Int_t XMultichipExpressor::DoMedianPolish(Int_t nrow, Int_t ncol, Double_t *inte
    }//if
 
 // Median polish
-   totmed = TStat::MedianPolish(nrow, ncol, inten, rowmed, colmed, residu, iter, eps);
+   if (medpol == 1) {
+      totmed = TStat::MedianPolish(nrow, ncol, inten, rowmed, colmed, residu, iter, eps);
+   } else if (medpol == 2) {
+      totmed = TStat::MedianPolishTranspose(nrow, ncol, inten, rowmed, colmed, residu, iter, eps);
+   } else {
+      cout << "Warning: <medpol = " << medpol
+           << "> is not valid, setting medpol to default <medpol = 1>."
+           << endl;
+   }//if
 
 // Convert expression levels
    for (Int_t j=0; j<ncol; j++) level[j] = totmed + colmed[j];
@@ -3597,7 +3606,7 @@ XMedianPolish::XMedianPolish()
    // Default MedianPolish constructor
    if(kCS) cout << "---XMedianPolish::XMedianPolish(default)------" << endl;
 
-   fNDefPar   = 2;
+   fNDefPar = 3;
 }//Constructor
 
 //______________________________________________________________________________
@@ -3607,7 +3616,7 @@ XMedianPolish::XMedianPolish(const char *name, const char *type)
    // Normal MedianPolish constructor
    if(kCS) cout << "---XMedianPolish::XMedianPolish------" << endl;
 
-   fNDefPar   = 2;
+   fNDefPar = 3;
 }//Constructor
 
 //______________________________________________________________________________
@@ -4409,7 +4418,7 @@ XFIRMA::XFIRMA()
    // Default FIRMA constructor
    if(kCS) cout << "---XFIRMA::XFIRMA(default)------" << endl;
 
-   fNDefPar = 0; //???
+   fNDefPar = 3;
 }//Constructor
 
 //______________________________________________________________________________
@@ -4419,7 +4428,7 @@ XFIRMA::XFIRMA(const char *name, const char *type)
    // Normal FIRMA constructor
    if(kCS) cout << "---XFIRMA::XFIRMA------" << endl;
 
-   fNDefPar = 0;  //???
+   fNDefPar = 3;
 }//Constructor
 
 //______________________________________________________________________________

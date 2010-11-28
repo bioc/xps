@@ -1,10 +1,10 @@
 #==============================================================================#
-# rma.R: 
+# trma.R: 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# rma: RMA preprocessing
+# trma: transposedRMA preprocessing
 #==============================================================================#
 
-"rma" <-
+"trma" <-
 function(xps.data,
          filename   = character(0),
          filedir    = getwd(),
@@ -13,7 +13,7 @@ function(xps.data,
          normalize  = TRUE,
          option     = "transcript",
          exonlevel  = "",
-         params     = list(16384, 0.0, 1.0, 10, 0.01, 1),
+         params     = list(16384, 0.0, 1.0, 10, 0.01, 2),
          xps.scheme = NULL,
          add.data   = TRUE,
          verbose    = TRUE)
