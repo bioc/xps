@@ -74,7 +74,7 @@ xpsPreprocess(object, ...)
   \item{add.data}{logical. If \code{TRUE} expression data will be included as slot \code{data}.}
   \item{bufsize}{integer which sets the buffer size of the tree branch baskets (default is 32000).}
   \item{verbose}{logical, if \code{TRUE} print status information.}
-  \item{object}{object of class \code{DataSet}.}
+  \item{object}{object of class \code{DataTreeSet}.}
   \item{\dots}{the arguments described above.}
 }
 \details{
@@ -84,7 +84,7 @@ xpsPreprocess(object, ...)
  Please have a look at vignette \dQuote{xpsPreprocess.pdf} for details on how to use
  function \code{express}. 
 
- \code{xpsPreprocess} is the \code{DataSet} method called by function \code{express},
+ \code{xpsPreprocess} is the \code{DataTreeSet} method called by function \code{express},
  containing the same parameters.
 }
 \value{

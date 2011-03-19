@@ -90,7 +90,7 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
 }
 \author{Christian Stratowa}
 \seealso{
-related classes \code{\linkS4class{DataTreeSet}}, \code{\linkS4class{CallTreeSet}}.
+related classes \code{\linkS4class{DataTreeSet}}, \code{\linkS4class{CallTreeSet}}, \code{\linkS4class{QualTreeSet}}.
 }
 \examples{
 showClass("ExprTreeSet")

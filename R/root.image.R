@@ -13,8 +13,8 @@ function(x,
    if (debug.xps()) print("------root.image------")
 
    ## check for correct class
-   if (!is (x, "DataTreeSet")) {
-      stop(paste(sQuote("x"), "is not  class", sQuote("DataTreeSet")));
+   if (!(is(x, "DataTreeSet") | is(x, "QualTreeSet"))) {
+      stop(paste(sQuote("x"), "must be one of class <DataTreeSet, QualTreeSet>"));
    }#if
 
    rootfile <- rootFile(x);
@@ -26,6 +26,11 @@ function(x,
    if (treename%in%treenames == FALSE) {
       stop(paste("treename", sQuote(treename), "is not present in", sQuote(rootfile)));
    }#if
+
+### to do ###
+# test for extenPart suitable for images, ev validImageExtension()
+#############
+
    ## need to add ROOT directory in rootfile
    treename <- paste(setName(x), treename, sep="/");
 

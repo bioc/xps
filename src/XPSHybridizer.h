@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 03/28/2010
+// File created: 08/05/2002                          last modified: 12/29/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2010 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2011 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -79,7 +79,9 @@ class XHybridizer: public XAlgorithm {
                 Int_t *npix1, Double_t *inten2, Double_t *stdev2, Int_t *npix2);
       void   InitTreeInfo(XTreeInfo *info) {fTreeInfo = info;}
 
-      Bool_t IsMultichip()          const {return fMultichip;}
+      Int_t     GetLength()    const {return fLength;}
+      Double_t *GetArray()     const {return fArray;}
+      Bool_t    IsMultichip()  const {return fMultichip;}
 
       ClassDef(XHybridizer,1) //Hybridizer
 };
@@ -202,18 +204,21 @@ class XMultichipExpressor: public XExpressor {
    protected:
       Double_t   *fResiduals;   //[fLength] Array of residuals
 
-   protected:
-      Int_t     DoMedianPolish(Int_t nrow, Int_t ncol, Double_t *inten, Double_t *level, 
-                               Double_t *rowmed, Double_t *colmed, Double_t *residu);
-//      Int_t     DoPLM(Int_t nrow, Int_t ncol, Double_t *inten, Double_t *level, 
-//                      Double_t *rowmed, Double_t *colmed, Double_t *residu);
-      Double_t *PseudoError(Int_t nrow, Int_t ncol, Double_t *residu, Double_t *se);
-//      Double_t *StandardError(Int_t nrow, Int_t ncol, Double_t *residu, Double_t *se);
-
    public:
       XMultichipExpressor();
       XMultichipExpressor(const char *name, const char *type);
       virtual ~XMultichipExpressor();
+
+      Int_t     DoMedianPolish(Int_t nrow, Int_t ncol, Double_t *inten,
+                   Double_t *level, Double_t *rowmed, Double_t *colmed,
+                   Double_t *residu, Double_t *weight);
+//      Int_t     DoPLM(Int_t nrow, Int_t ncol, Double_t *inten,
+//                   Double_t *level, Double_t *rowmed, Double_t *colmed,
+//                   Double_t *residu, Double_t *weight);
+      Double_t *PseudoError(Int_t nrow, Int_t ncol, Double_t *residu, Double_t *se);
+      Double_t *PseudoWeight(Int_t nrow, Int_t ncol, Double_t *residu, Double_t *weight);
+//      Double_t *StandardError(Int_t nrow, Int_t ncol, Double_t *residu, Double_t *se);
+//      Double_t *StandardWeight(Int_t nrow, Int_t ncol, Double_t *residu, Double_t *weight);
 
       Double_t *GetResiduals() {return fResiduals;}
 
@@ -237,6 +242,49 @@ class XSpliceExpressor: public XMultichipExpressor {
       virtual ~XSpliceExpressor();
 
       ClassDef(XSpliceExpressor,1) //SpliceExpressor
+};
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XQualifier                                                           //
+//                                                                      //
+// Base class for microarray quality control algorithms                 //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+class XQualifier: public XAlgorithm {
+
+   protected:
+      Double_t             fCoefHi;        //coefficient for high cutoff
+      Double_t             fCoefLo;        //coefficient for low cutoff
+//      TString              fDataOpt;       //option to apply to data type
+      TString              fQualOpt;       //option  to apply to data type
+//?      Int_t                fNQuantiles;   //length of quantiles array
+//?      Double_t            *fQuantiles;    //[fNQuantiles] Array of quantiles
+      XMultichipExpressor *fExpressor;    //! expressor used
+
+   public:
+      XQualifier();
+      XQualifier(const char *name, const char *type);
+      virtual ~XQualifier();
+
+      using XAlgorithm::Calculate;
+      virtual Int_t Calculate(Int_t n, Double_t *x, Double_t *y, Double_t *z,
+                       Double_t *w, Int_t *msk);
+      virtual Int_t SetArray(Int_t length, Double_t *array);
+      virtual void  SetOptions(Option_t *opt);
+
+      Double_t  MeanBorder(Int_t begin, Int_t end, Double_t *arr);
+      void      HiLoBorder(Int_t begin, Int_t end, Double_t *arr, Short_t *msk,
+                       Double_t mean, Double_t &meanhi, Double_t &meanlo);
+
+//      void      SetDataOption(Option_t *opt) {fDataOpt = opt; fDataOpt.ToLower();}
+      void      SetQualOption(Option_t *opt) {fQualOpt = opt; fQualOpt.ToLower();}
+//      TString   GetDataOption()        const {return fDataOpt;}
+      TString   GetQualOption()        const {return fQualOpt;}
+//      Int_t     GetLength()        const {return fExpressor->GetLength();}
+      Option_t *GetOption()            const {return fExpressor->GetOption();}
+
+      ClassDef(XQualifier,1) //Qualifier
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -756,6 +804,44 @@ class XFIRMA: public XSpliceExpressor {
                        Double_t *dx, Double_t *dy, Int_t *idx, Int_t nsub);
 
       ClassDef(XFIRMA,1) //FIRMA
+};
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XRMAQualifier                                                        //
+//                                                                      //
+// Class for GeneChip RMA quality control algorithms                    //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+class XRMAQualifier: public XQualifier {
+
+   protected:
+
+   public:
+      XRMAQualifier();
+      XRMAQualifier(const char *name, const char *type);
+      virtual ~XRMAQualifier();
+
+      ClassDef(XRMAQualifier,1) //RMAQualifier
+};
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XPLMQualifier                                                        //
+//                                                                      //
+// Class for GeneChip PLM quality control algorithms                    //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+class XPLMQualifier: public XQualifier {
+
+   protected:
+
+   public:
+      XPLMQualifier();
+      XPLMQualifier(const char *name, const char *type);
+      virtual ~XPLMQualifier();
+
+      ClassDef(XPLMQualifier,1) //PLMQualifier
 };
 
 #endif

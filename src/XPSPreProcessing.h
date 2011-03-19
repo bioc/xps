@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 06/20/2010
+// File created: 08/05/2002                          last modified: 02/20/2011
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2010 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2011 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -47,6 +47,7 @@ class XSelector;
 class XNormalizer;
 class XExpressor;
 class XCallDetector;
+class XQualifier;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -79,6 +80,41 @@ class XPreProcessManager: public XProcessManager {
       void  MacroTest(const char *name);
       
       ClassDef(XPreProcessManager,1) //PreProcessManager
+};
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XBorderTreeInfo                                                      //
+//                                                                      //
+// Class containing info about border tree stored in fUserInfo          //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+class XBorderTreeInfo: public XTreeInfo {
+
+   protected:
+      Double_t   fMean;        //mean total
+      Double_t   fMeanLeft;    //mean left
+      Double_t   fMeanRight;   //mean right
+      Double_t   fMeanTop;     //mean top
+      Double_t   fMeanBottom;  //mean bottom
+      Double_t   fCOIXhi;      //center of intensity high X
+      Double_t   fCOIYhi;      //center of intensity high Y
+      Double_t   fCOIXlo;      //center of intensity low  X
+      Double_t   fCOIYlo;      //center of intensity low  Y
+
+   public :
+      XBorderTreeInfo();
+      XBorderTreeInfo(const char *name, const char *title);
+      virtual ~XBorderTreeInfo();
+
+      using XTreeInfo::AddUserInfo;
+      virtual void     AddUserInfo(Double_t mean, Double_t lmean,
+                          Double_t rmean, Double_t tmean, Double_t bmean,
+                          Double_t xcoihi, Double_t ycoihi,
+                          Double_t xcoilo, Double_t ycoilo);
+      virtual Double_t GetValue(const char *name);
+
+      ClassDef(XBorderTreeInfo,1) //BorderTreeInfo
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -116,6 +152,74 @@ class XCallTreeInfo: public XTreeInfo {
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
+// XQualityTreeInfo                                                     //
+//                                                                      //
+// Class containing info about quality tree stored in fUserInfo         //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+class XQualityTreeInfo: public XExpressionTreeInfo {
+
+   protected:
+      Double_t  *fNUSEQuant;    //[fNQuantiles] Array of residual quantiles
+      Double_t  *fRLEQuant;     //[fNQuantiles] Array of weight quantiles
+      TString    fQualOption;   //Quality option
+
+   public :
+      XQualityTreeInfo();
+      XQualityTreeInfo(const char *name, const char *title);
+      virtual ~XQualityTreeInfo();
+
+      virtual void AddQualInfo(Int_t nquant, Double_t *quantSE, Double_t *quantLE);
+
+      void      SetQualOption(Option_t *option) {fQualOption = option;}
+      Option_t *GetQualOption()           const {return fQualOption.Data();}
+
+      Double_t *GetNUSEQuantiles();
+      Double_t *GetRLEQuantiles();
+
+      ClassDef(XQualityTreeInfo,1) //QualityTreeInfo
+};
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XResidualTreeInfo                                                    //
+//                                                                      //
+// Class containing info about residual tree stored in fUserInfo        //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+class XResidualTreeInfo: public XTreeInfo {
+
+   protected:
+      Int_t      fNRows;        //number of rows
+      Int_t      fNCols;        //number of columns
+      Int_t      fNQuantiles;   //number of quantiles
+      Double_t  *fQuantiles;    //[fNQuantiles] Array of quantile values
+      Double_t  *fResiduQuant;  //[fNQuantiles] Array of residual quantiles
+      Double_t  *fWeightQuant;  //[fNQuantiles] Array of weight quantiles
+      TString    fQualOption;   //Quality option
+
+   public :
+      XResidualTreeInfo();
+      XResidualTreeInfo(const char *name, const char *title);
+      virtual ~XResidualTreeInfo();
+
+      using XTreeInfo::AddUserInfo;
+      virtual void     AddUserInfo(Int_t nrows, Int_t ncols, Int_t nquant, 
+                          Double_t *q, Double_t *quantR, Double_t *quantW);
+      virtual Double_t GetValue(const char *name);
+
+      void      SetQualOption(Option_t *option) {fQualOption = option;}
+      Option_t *GetQualOption()           const {return fQualOption.Data();}
+
+      Double_t *GetQuantiles();
+      Double_t *GetResiduQuantiles();
+      Double_t *GetWeightQuantiles();
+
+      ClassDef(XResidualTreeInfo,1) //ResidualTreeInfo
+};
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
 // XPreProcesSetting                                                    //
 //                                                                      //
 // Class for initialization of pre-processing parameter settings        //
@@ -133,6 +237,8 @@ class XPreProcesSetting: public XProcesSetting {
       XExpressor    *fExpressor;     //expression algorithm
       XSelector     *fCallSelector;  //selector for call algorithm
       XCallDetector *fCaller;        //present call algorithm
+      XSelector     *fQualSelector;  //selector for quality control algorithm
+      XQualifier    *fQualifier;     //quality control algorithm
 //      XRatioAlgorithm *fRatio;        //ratio algorithm
 
    protected:
@@ -147,6 +253,8 @@ class XPreProcesSetting: public XProcesSetting {
                const char *filename, Int_t npars, Double_t *pars);
       Int_t InitCallDetector(const char *type, Option_t *options,
                Int_t npars, Double_t *pars);
+      Int_t InitQualifier(const char *type, Option_t *options,
+               const char *filename, Int_t npars, Double_t *pars);
 
    public:
       XPreProcesSetting();
@@ -166,8 +274,10 @@ class XPreProcesSetting: public XProcesSetting {
       XExpressor    *GetExpressor()    const {return fExpressor;}
       XSelector     *GetCallSelector() const {return fCallSelector;}
       XCallDetector *GetCallDetector() const {return fCaller;}
+      XSelector     *GetQualSelector() const {return fQualSelector;}
+      XQualifier    *GetQualifier()    const {return fQualifier;}
 
-      ClassDef(XPreProcesSetting,1) //PreProcesSetting
+      ClassDef(XPreProcesSetting,2) //PreProcesSetting
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -188,6 +298,8 @@ class XPreProcesSet: public XProcesSet {
       XExpressor    *fExpressor;     //! expression algorithm
       XSelector     *fCallSelector;  //! selector for call algorithm
       XCallDetector *fCaller;        //! present call algorithm
+      XSelector     *fQualSelector;  //! selector for quality control algorithm
+      XQualifier    *fQualifier;     //! quality control algorithm
 //      XRatioAlgorithm *fRatio;        //! ratio algorithm
 
    protected:
@@ -199,15 +311,29 @@ class XPreProcesSet: public XProcesSet {
                        Int_t &/*numbgrd*/, TTree ** /*bgrdtree*/) {return 0;}
       virtual Int_t DetectCall(Int_t /*numdata*/, TTree ** /*datatree*/,
                        Int_t &/*numbgrd*/, TTree ** /*bgrdtree*/) {return 0;}
+      virtual Int_t QualityControl(Int_t /*numdata*/, TTree ** /*datatree*/,
+                       Int_t &/*numbgrd*/, TTree ** /*bgrdtree*/) {return 0;}
 
       virtual void  AddDataTreeInfo(TTree *tree, const char *name, Option_t *option,
                        Int_t nrows, Int_t ncols, Int_t nmin, Double_t min, Int_t nmax,
-                       Double_t max, Int_t maxnpix);
+                       Double_t max, Int_t maxnpix, Int_t nquant, Double_t *q,
+                       Double_t *quant);
       virtual void  AddMaskTreeInfo(TTree *tree, const char *name, Option_t *option,
                        Int_t nrows, Int_t ncols, Int_t nflags);
+      virtual void  AddBordTreeInfo(TTree *tree, const char *name, Option_t *option,
+                       Double_t mean, Double_t lmean, Double_t rmean, Double_t tmean,
+                       Double_t bmean, Double_t xcoihi, Double_t ycoihi, 
+                       Double_t xcoilo, Double_t ycoilo);
       virtual void  AddCallTreeInfo(TTree *tree, const char *name, Option_t *option,
                        Int_t nunits, Int_t nabsent, Int_t nmarginal, Int_t npresent,
                        Double_t minpval, Double_t maxpval);
+      virtual void  AddQualTreeInfo(TTree *tree, const char *name, Option_t *option,
+                       Option_t *qualopt, Int_t nunits, Double_t min, Double_t max,
+                       Int_t nquant, Double_t *q, Double_t *quantL, Double_t *quantSE,
+                       Double_t *quantLE);
+      virtual void  AddResdTreeInfo(TTree *tree, const char *name, Option_t *option,
+                       Option_t *qualopt, Int_t nrows, Int_t ncols, Int_t nquant,
+                       Double_t *q, Double_t *quantR, Double_t *quantW);
 
       Int_t XY2Index(Int_t x, Int_t y, Int_t ncol) {return (x + y*ncol);}
       Int_t Index2X(Int_t index, Int_t ncol)       {return (index % ncol);}
@@ -222,7 +348,7 @@ class XPreProcesSet: public XProcesSet {
                        const char *infile = "", const char *treename = "");
       virtual Int_t Preprocess(const char * /*method*/)          {return 0;}
 
-      ClassDef(XPreProcesSet,2) //PreProcesSet
+      ClassDef(XPreProcesSet,3) //PreProcesSet
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -255,9 +381,23 @@ class XGCProcesSet: public XPreProcesSet {
                        Int_t numbgrd, TTree **bgrdtree);
       virtual Int_t DoMultichipExpress(Int_t numdata, TTree **datatree,
                        Int_t numbgrd, TTree **bgrdtree, TFile *file);
+      virtual Int_t QualityControl(Int_t numdata, TTree **datatree,
+                       Int_t numbgrd, TTree **bgrdtree, const char *option);
+      virtual Int_t DoDataQualityControl(Int_t numdata, TTree **datatree,
+                       TTree **resdtree, TTree **exprtree,
+                       XDNAChip *chip, TFile *file);
+      virtual Int_t DoBorderElements(Int_t numdata, TTree **datatree,
+                       TTree **bordtree, XDNAChip *chip, TFile *file);
+      virtual Int_t DoBgrdQualityControl(Int_t numbgrd, TTree **bgrdtree,
+                       XDNAChip *chip, TFile *file);
+
       virtual Int_t ExportBgrdTrees(Int_t n, TString *names, const char *varlist,
                        ofstream &output, const char *sep);
       virtual Int_t ExportIntnTrees(Int_t n, TString *names, const char *varlist,
+                       ofstream &output, const char *sep);
+      virtual Int_t ExportResdTrees(Int_t n, TString *names, const char *varlist,
+                       ofstream &output, const char *sep);
+      virtual Int_t ExportBordTrees(Int_t n, TString *names, const char *varlist,
                        ofstream &output, const char *sep);
       virtual Int_t ExportNormTrees(Int_t n, TString *names, const char *varlist,
                        ofstream &output, const char *sep);
@@ -265,6 +405,24 @@ class XGCProcesSet: public XPreProcesSet {
                        ofstream &output, const char *sep);
       virtual Int_t ExportCallTrees(Int_t n, TString *names, const char *varlist,
                        ofstream &output, const char *sep);
+      virtual Int_t ExportQualTrees(Int_t n, TString *names, const char *varlist,
+                       ofstream &output, const char *sep);
+
+      virtual Int_t ExportBgrdTreeInfo(Int_t n, TString *names, const char *varlist,
+                       ofstream &output, const char *sep);
+      virtual Int_t ExportIntnTreeInfo(Int_t n, TString *names, const char *varlist,
+                       ofstream &output, const char *sep);
+      virtual Int_t ExportResdTreeInfo(Int_t n, TString *names, const char *varlist,
+                       ofstream &output, const char *sep);
+      virtual Int_t ExportBordTreeInfo(Int_t n, TString *names, const char *varlist,
+                       ofstream &output, const char *sep);
+      virtual Int_t ExportNormTreeInfo(Int_t n, TString *names, const char *varlist,
+                       ofstream &output, const char *sep);
+      virtual Int_t ExportCallTreeInfo(Int_t n, TString *names, const char *varlist,
+                       ofstream &output, const char *sep);
+      virtual Int_t ExportQualTreeInfo(Int_t n, TString *names, const char *varlist,
+                       ofstream &output, const char *sep);
+
       virtual Int_t ProbeMask(XDNAChip *chip, Int_t n, Int_t *msk);
       virtual Int_t SchemeMask(XDNAChip *chip, Int_t level, Int_t n, Int_t *msk);
 
@@ -278,6 +436,7 @@ class XGCProcesSet: public XPreProcesSet {
                         Double_t bgrd, Double_t bgdev, Int_t npix);
       virtual void   FillBgrdProbeSets(Int_t &m, Double_t *mm,  Double_t *sm, Int_t *xm,
                         Int_t msk, Double_t bgrd, Double_t bgdev, Int_t npix);
+
       virtual Int_t  MaxNumberCells(TTree *idxtree);
       virtual TTree *SchemeTree(XAlgorithm *algorithm, void *scheme, TLeaf **scmleaf);
       virtual TTree *UnitTree(XAlgorithm *algorithm, void *unit, Int_t &numunits);
@@ -286,6 +445,12 @@ class XGCProcesSet: public XPreProcesSet {
       Double_t AdjustIntensity(Double_t inten, Double_t bgrd, Double_t stdv);
       Bool_t   BackgroundParameters(XAlgorithm *algorithm, const char *option);
       TString  ChipType(const char *type);
+
+      Int_t    BgrdQuantiles(TTree *tree, XBgCell *cell, Int_t nquant, Double_t *q, Double_t *quant);
+      Int_t    DataQuantiles(TTree *tree, XGCCell *cell, Int_t nquant, Double_t *q, Double_t *quant);
+      Int_t    CallStatistics(TTree *tree, XPCall *call, Int_t &nabsent, Int_t &nmarginal,
+                  Int_t &npresent, Double_t &minpval, Double_t &maxpval);
+
       Int_t    FillDataArrays(TTree *datatree, TTree *bgrdtree, Bool_t doBg,
                   Int_t nrow, Int_t ncol, Double_t *inten, Double_t *stdev,
                   Int_t *npix, Double_t *bgrd, Double_t *bgdev);
@@ -303,6 +468,7 @@ class XGCProcesSet: public XPreProcesSet {
                   Int_t ncol, Int_t *arr);
       void     FillProbeSets(Int_t &p, Int_t &idx, Double_t *pm, Double_t *sp, 
                   Int_t *xp, Int_t msk, Double_t inten, Double_t stdev);
+
       Int_t    MaskArray2GC(XDNAChip *chip, Int_t *msk);
       Int_t    MeanReference(Int_t numdata, TTree **datatree,
                   Int_t numbgrd, TTree **bgrdtree,
@@ -310,6 +476,10 @@ class XGCProcesSet: public XPreProcesSet {
       Int_t    MedianReference(Int_t numdata, TTree **datatree,
                   Int_t numbgrd, TTree **bgrdtree,
                   Int_t nrow, Int_t ncol, Double_t *arr, Bool_t doBg);
+      Int_t    QualityQuantiles(TTree *exprtree, XQCExpression *expr, Int_t nquant,
+                  Double_t *q, Double_t *quantL, Double_t *quantSE, Double_t *quantLE);
+      Int_t    ResiduQuantiles(TTree *resdtree, XResidual *resd,
+                  Int_t nquant, Double_t *q, Double_t *quantR, Double_t *quantW);
 
    public:
       XGCProcesSet();
@@ -317,6 +487,8 @@ class XGCProcesSet: public XPreProcesSet {
       virtual ~XGCProcesSet();
 
       virtual Int_t Preprocess(const char *method);
+      virtual Int_t ExportTreeInfo(const char *exten, Int_t n, TString *names,  
+                       const char *varlist, ofstream &output, const char *sep);
       virtual Int_t ExportTreeType(const char *exten, Int_t n, TString *names,  
                        const char *varlist, ofstream &output, const char *sep);
       virtual Int_t ExportTreeXML(const char *exten, Int_t n, TString *names,  
@@ -345,6 +517,7 @@ class XGenomeProcesSet: public XGCProcesSet {
                         Double_t *mm, Double_t *sp, Double_t *sm, Int_t *xp, 
                         Int_t *xm, Int_t msk, Double_t inten, Double_t stdev,
                         Double_t bgrd, Double_t bgdev, Int_t npix);
+
       virtual Int_t  MaxNumberCells(TTree *idxtree);
 
    public:
@@ -371,10 +544,13 @@ class XExonProcesSet: public XGenomeProcesSet {
                        Int_t &numbgrd, TTree **bgrdtree);
       virtual Int_t DoSpliceExpress(Int_t numdata, TTree **datatree,
                        Int_t numbgrd, TTree **bgrdtree, TFile *file);
+
       virtual Int_t ExportSplxTrees(Int_t n, TString *names, const char *varlist,
                        ofstream &output, const char *sep);
+
       virtual Int_t *FillMaskArray(XDNAChip *chip, TTree *scmtree, XScheme *scheme,
                         Int_t level, Int_t n, Int_t *msk);
+
       virtual TTree *SchemeTree(XAlgorithm *algorithm, void *scheme, TLeaf **scmleaf);
       virtual TTree *UnitTree(XAlgorithm *algorithm, void *unit, Int_t &numunits);
 

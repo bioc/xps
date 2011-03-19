@@ -1,13 +1,29 @@
 /*
  *******************************************************************************
+ *  An R wrapper for the XPS libraries
  *
- * File: rwrapper.cpp
+ * File: rwrapper.cxx
+ *******************************************************************************
  *
- * Implementation by: Christian Stratowa
+ *  Copyright (C) 2000-2011 Dr. Christian Stratowa
  *
- * Copyright (C) Christian Stratowa 2002-2009
+ *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
- * A wrapper for the XPS libraries
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, a copy of the GNU General Public
+ *  License is available at http://www.gnu.org/copyleft/gpl.html. You
+ *  can also obtain it by writing to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA.
  *
  *******************************************************************************
 */
@@ -1036,11 +1052,11 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
                 int *nbgrdpar, double *bgrdpars,
                 char **normtype, char **normselection, char **normoption,
                 int *nnormpar, double *normpars,
-                char **exprtype, char **exprselection, char **exproption,
-                int *nexprpar, double *exprpars,
+                char **algorithm, char **sumtype, char **sumselection, char **sumoption,
+                int *nsumpar, double *sumpars,
                 char **reftree, char **refmethod, double *refparam,
                 char **treeset, char **datafile, char **treenames, int *ntrees,
-                int *bgrdlevel, int *normlevel, int *exprlevel,
+                int *bgrdlevel, int *normlevel, int *sumlevel,
                 int *bufsize, int *verbose, char **result)
 {
 // Preprocess trees
@@ -1060,7 +1076,7 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
 // initialize chip type
    r += manager->Initialize(chiptype[0]);
 
-// temporary files for background, normalization, expression algorithms
+// temporary files for background, normalization, summarization algorithms
    char *bgrdfile = new char[strlen(tmpdir[0]) + 22];
    if (strcmp(tmpdir[0], "") != 0) {
       bgrdfile = strcpy(bgrdfile, tmpdir[0]);
@@ -1079,13 +1095,13 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
       normfile = strcpy(normfile, "\0");
    }//if
 
-   char *exprfile = new char[strlen(tmpdir[0]) + 22];
+   char *sumfile = new char[strlen(tmpdir[0]) + 22];
    if (strcmp(tmpdir[0], "") != 0) {
-      exprfile = strcpy(exprfile, tmpdir[0]);
-      exprfile = strcat(exprfile, "/tmp_expr_310151.root");
+      sumfile = strcpy(sumfile, tmpdir[0]);
+      sumfile = strcat(sumfile, "/tmp_sum_310151.root");
    } else {
-//      exprfile = "";
-      exprfile = strcpy(exprfile, "\0");
+//      sumfile = "";
+      sumfile = strcpy(sumfile, "\0");
    }//if
 
 // initialize backgrounder
@@ -1144,28 +1160,28 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
       }//if
    }//if
 
-// initialize expressor
-   if (strcmp(exprtype[0], "none") != 0) {
-      n  = *nexprpar;
+// initialize summarizer (expressor/qualifier)
+   if (strcmp(sumtype[0], "none") != 0) {
+      n  = *nsumpar;
       p0 = p1 = p2 = p3 = p4 = p5 = p6 = p7 = 0.0;
-      if (n > 0) p0 = exprpars[0];
-      if (n > 1) p1 = exprpars[1];
-      if (n > 2) p2 = exprpars[2];
-      if (n > 3) p3 = exprpars[3];
-      if (n > 4) p4 = exprpars[4];
-      if (n > 5) p5 = exprpars[5];
-      if (n > 6) p6 = exprpars[6];
-      if (n > 7) p7 = exprpars[7];
+      if (n > 0) p0 = sumpars[0];
+      if (n > 1) p1 = sumpars[1];
+      if (n > 2) p2 = sumpars[2];
+      if (n > 3) p3 = sumpars[3];
+      if (n > 4) p4 = sumpars[4];
+      if (n > 5) p5 = sumpars[5];
+      if (n > 6) p6 = sumpars[6];
+      if (n > 7) p7 = sumpars[7];
 
       if (strcmp(chiptype[0], "GeneChip") == 0) {
-         r += manager->InitAlgorithm("selector", "probe", exprselection[0], 0, 0);
+         r += manager->InitAlgorithm("selector", "probe", sumselection[0], 0, 0);
       } else if (strcmp(chiptype[0], "GenomeChip") == 0) {
-         r += manager->InitAlgorithm("selector", "probe", "genome", 0, 1, *exprlevel);
+         r += manager->InitAlgorithm("selector", "probe", "genome", 0, 1, *sumlevel);
       } else if (strcmp(chiptype[0], "ExonChip") == 0) {
-         r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *exprlevel);
+         r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *sumlevel);
       }//if
-      r += manager->InitAlgorithm("expressor", exprtype[0], exproption[0],
-                                  exprfile, n, p0, p1, p2, p3, p4, p5, p6, p7);
+      r += manager->InitAlgorithm(algorithm[0], sumtype[0], sumoption[0],
+                                  sumfile, n, p0, p1, p2, p3, p4, p5, p6, p7);
    }//if
 
 // create/update root data file 
@@ -1208,7 +1224,7 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
 
 // cleanup
    if (strcmp(tmpdir[0], "") != 0) {
-      delete [] exprfile;
+      delete [] sumfile;
       delete [] normfile;
       delete [] bgrdfile;
    }//if
@@ -1436,8 +1452,8 @@ void Normalize(char **filename, char **dirname, char **chiptype,
 
 /*____________________________________________________________________________*/
 void Summarize(char **filename, char **dirname, char **chipname, char **chiptype,
-               char **schemefile, char **tmpdir, char **seloption, char **type,
-               char **option, int *npar, double *pars, int *level,
+               char **schemefile, char **tmpdir, char **seloption, char **algorithm,
+               char **type, char **option, int *npar, double *pars, int *level,
                char **treeset, char **treenames, int *ntrees,
                int *update, int *verbose, char **result)
 {
@@ -1483,7 +1499,7 @@ void Summarize(char **filename, char **dirname, char **chipname, char **chiptype
    } else if (strcmp(chiptype[0], "ExonChip") == 0) {
       r += manager->InitAlgorithm("selector", "probe", "exon", 0, 1, *level);
    }//if
-   r += manager->InitAlgorithm("expressor", type[0], option[0], tmpfile,
+   r += manager->InitAlgorithm(algorithm[0], type[0], option[0], tmpfile,
                                *npar, p0, p1, p2, p3, p4, p5, p6, p7);
 
 // open root scheme file

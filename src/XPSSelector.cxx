@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 02/11/2010
+// File created: 08/05/2002                          last modified: 12/30/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -665,9 +665,13 @@ void XUserSelector::SetOptions(Option_t *opt)
    // Fill msk with user-defined mask to select non-varying genes
    if(kCS) cout << "------XUserSelector::SetOptions------" << endl;
 
-	TString optcpy = opt;
+//	TString optcpy = opt;
+//   char *options = (char*)optcpy.Data();
 
-   char *options = (char*)optcpy.Data();
+   char *options = new char[strlen(opt) + 1];
+   char *doption = options;
+   options = strcpy(options, opt);
+
    if (NumSeparators(opt, ":") == 0) {
       fInput  = strtok(options, ":");
       fOption = ""; 
@@ -675,6 +679,8 @@ void XUserSelector::SetOptions(Option_t *opt)
       fInput  = strtok(options, ":");
       fOption = strtok(NULL, ":");
    }//if
+
+   delete [] doption;
 }//SetOptions
 
 //______________________________________________________________________________

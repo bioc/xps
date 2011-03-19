@@ -26,7 +26,7 @@
 \begin{document}
 
 \title{Introduction to the xps Package: Overview}
-\date{September, 2010}
+\date{April, 2011}
 \author{Christian Stratowa}
 \maketitle
 
@@ -265,7 +265,7 @@ It is also possible to create an image for e.g. sample TestA1:
 
 \begin{center}
 <<image, fig=TRUE>>=
-image(data.test3, names="TestA1.cel_MEAN")
+image(data.test3, names="TestA1.cel")
 @
 \end{center}
 

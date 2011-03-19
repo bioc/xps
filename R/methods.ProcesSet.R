@@ -15,6 +15,7 @@
 # boxplot:
 # mboxplot:
 # hist:
+# image:
 #==============================================================================#
 
 
@@ -303,22 +304,69 @@ setMethod("boxplot", signature(x="ProcesSet"),
             transfo = log2,
             range   = 0,
             names   = "namepart",
+            bmar    = NULL,
+            las     = 2,
             ...) 
    {
       if (debug.xps()) print("------boxplot.ProcesSet------")
 
-      ds <- validData(x, which=which);
-      if (size > 1)             ds <- ds[seq(1,nrow(ds),len=size),];
+      has.userinfo <- (unlist(strsplit(which, ":"))[1] == "userinfo");
+      has.userinfo <- ifelse(is.na(has.userinfo), FALSE, has.userinfo);
+
+      if (has.userinfo) {
+         ds <- treeInfo(x,
+                        treetype = extenPart(treeNames(x)),
+                        varlist  = sub("userinfo:", "", which),
+                        verbose  = FALSE
+                       );
+      } else {
+         ds <- validData(x, which=which);
+         if (size > 1) ds <- ds[seq(1,nrow(ds),len=size),];
+      }#if
+
       if (is.function(transfo)) ds <- transfo(ds);
 
-      if (is.null(names))              names <- colnames(ds)
-      else if (names[1] == "namepart") names <- namePart(colnames(ds))
-      else                             ds    <- ds[, names, drop=F];
+      if (is.null(names)) {
+         names <- colnames(ds);
+      } else if (validQualityOption(names, as.logical = TRUE)) {
+         ds <- ds[, grep(names, colnames(ds))];
+         names <- colnames(ds);
+      } else if (unlist(strsplit(names,":"))[1] == "namepart") {
+         qualopt <- unlist(strsplit(names,":"))[2];
+         if (validQualityOption(qualopt, as.logical = TRUE)) {
+            ds <- ds[, grep(qualopt, colnames(ds))];
+         }#if
+         names <- namePart(colnames(ds));
+      } else {
+         ds    <- ds[, names, drop=FALSE];
+      }#if
 
-      boxplot(ds,
-              range = range,
-              names = names,
-              ...);
+      if (is.null(bmar)) bmar <- adjustXLabMargins(names, bottom=6, cex=1.0);
+
+      oldpar <- par(mar=c(bmar$b,5,2,1), pty="m", cex.axis=bmar$cex);
+
+      if (has.userinfo & range == 0) {
+         bx.p <- list(stats = as.matrix(ds[c(1,3:5,7),]),
+                      names = names,
+                      out   = numeric(0),
+                      group = numeric(0)
+                     );
+      } else if (has.userinfo & range > 0) {
+         bx.p <- list(stats = as.matrix(ds[2:6,]),
+                      names = names,
+                      out   = as.vector(as.matrix(ds[c(1,7),])),
+                      group = rep(1:ncol(ds), each = 2)
+                     );
+      } else {
+         bx.p <- boxplot(ds, plot = FALSE, range = range);
+      }#if
+
+      bxp(bx.p,
+          names = names,
+          las    = las,
+          ...);
+
+      par(oldpar);
    }
 )#boxplot
 
@@ -393,3 +441,102 @@ setMethod("hist", signature(x="ProcesSet"),
 )#hist
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("image", signature(x="ProcesSet"),
+   function(x,
+            bg         = FALSE,
+            transfo    = log,
+            col        = gray((0:64)/64),
+            names      = "namepart",
+            xlab       = "",
+            ylab       = "",
+            add.legend = FALSE,
+            ...) 
+   {
+      if (debug.xps()) print("------image.ProcesSet------")
+
+      treenames <- getTreeNames(rootFile(x));
+      treetype  <- extenPart(treenames);
+
+      if (bg == FALSE) {
+         varlist <- "fInten";
+         colname <- "MEAN";
+         treetype <- treetype[!is.na(sapply(treetype, function(x) match(x, c(RAWTYPE, ADJTYPE))))];
+         treenames <- treenames[grep(unique(treetype), treenames)];
+      } else {
+         varlist  <- "fBg";
+         colname  <- "BGRD";
+         treetype <- treetype[!is.na(sapply(treetype, function(x) match(x, BGDTYPE)))];
+         treenames <- treenames[grep(unique(treetype), treenames)];
+      }#if
+
+      if (is.null(names)) {
+         names <- treenames;
+      } else if (names[1] == "namepart") {
+         names <- namePart(treenames);
+      } else {
+         ok <- match(names, treenames);
+         ok <- ok[!is.na(ok)];
+
+         if (length(ok) == 0) {
+            stop(paste(sQuote("names"), "is not a valid residual tree name"));
+         }#if
+
+         names <- unlist(treenames[ok]);
+      }#if
+
+      ntrees <- length(names);
+      nrows  <- nrows(schemeSet(x));
+      ncols  <- ncols(schemeSet(x));
+
+      ## plot images
+      if (ntrees > 1 && interactive()) par(ask=TRUE) else par(ask=FALSE);
+
+      for (i in 1:ntrees) {
+         ds <- export(x,
+                      treenames    = names[i],
+                      treetype     = unique(treetype),
+                      varlist      = varlist,
+                      as.dataframe = TRUE,
+                      verbose      = FALSE);
+         m  <- matrix(ds[,colname], nrow=ncols, ncol=nrows, byrow=FALSE);
+         m  <- m[,nrows:1];
+         if (is.function(transfo)) m <- transfo(m);
+
+         if (add.legend) {
+            layout(matrix(c(1, 2), 1, 2, byrow=TRUE), widths=c(7,1), heights=8, TRUE);
+            par(mar = c(4, 4, 5, 0));
+         }#if
+
+         graphics::image(as.matrix(m),
+                         col  = col,
+                         main = names[i],
+                         xlab = xlab,
+                         ylab = ylab,
+                         xaxt = 'n',
+                         yaxt = 'n',
+                         ...);
+         box();
+
+         if (add.legend) {
+            if (is.function(transfo)) {
+               lo <- 0.1;
+               hi <- transfo(max(ds[,colname], na.rm=TRUE));
+            } else {
+               lo <- 0.0;
+               hi <- max(ds[,colname], na.rm=TRUE);
+            }#if
+            y <- pretty(c(lo, hi), 10);
+            m <- matrix(y, nrow=1, ncol=length(y));
+
+            par(mar = c(4, 1, 5, 3));
+            graphics::image(m, xaxt="n", yaxt="n", col=col);
+            axis(4, label=y, at=seq(0, 1, by=(1/(length(y)-1))), las=2, cex.axis=0.8);
+         }#if
+      }#for
+
+      par(ask=FALSE);
+   }
+)#image
+
+#------------------------------------------------------------------------------#

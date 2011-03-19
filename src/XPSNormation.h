@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 06/20/2010
+// File created: 08/05/2002                          last modified: 02/06/2011
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2010 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2011 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -126,14 +126,20 @@ class XNormedSet: public XProcesSet {
    protected:
       virtual void  AddMaskTreeInfo(TTree *tree, const char *name, Option_t *option,
                        Int_t nunits, Int_t nflags);
-      virtual Int_t ExportExprTrees(Int_t /*n*/, TString * /*names*/, const char * /*varlist*/,
-                       ofstream &/*output*/, const char * /*sep*/) {return 0;}
-      virtual Int_t ExportMaskTrees(Int_t /*n*/, TString * /*names*/, const char * /*varlist*/,
-                       ofstream &/*output*/, const char * /*sep*/) {return 0;}
+
+      virtual Int_t ExportTreeInfo(const char *exten, Int_t n, TString *names,  
+                       const char *varlist, ofstream &output, const char *sep);
       virtual Int_t ExportTreeType(const char *exten, Int_t n, TString *names,  
                        const char *varlist, ofstream &output, const char *sep);
       virtual Int_t ExportTreeXML(const char *exten, Int_t n, TString *names,  
                        const char *varlist, ofstream &output, const char *sep);
+
+      virtual Int_t ExportExprTrees(Int_t /*n*/, TString * /*names*/, const char * /*varlist*/,
+                       ofstream &/*output*/, const char * /*sep*/) {return 0;}
+      virtual Int_t ExportMaskTrees(Int_t /*n*/, TString * /*names*/, const char * /*varlist*/,
+                       ofstream &/*output*/, const char * /*sep*/) {return 0;}
+      virtual Int_t ExportMaskTreeInfo(Int_t /*n*/, TString * /*names*/, const char * /*varlist*/,
+                       ofstream &/*output*/, const char * /*sep*/) {return 0;}
 
       Int_t FillExprArray(TTree *tree, Int_t n, Int_t *idx, Double_t *arr);
       Int_t FillExprTree(const char *name, Int_t n, Int_t *idx, Double_t *arr);

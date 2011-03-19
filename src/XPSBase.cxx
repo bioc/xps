@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 01/16/2010
+// File created: 05/18/2002                          last modified: 01/24/2011
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2010 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2011 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -63,6 +63,7 @@
 * Jul 2009 - Add methods Set/GetBufSize() to change bufsize of tree branches
 * Jan 2010 - Add further methods GetOption() to XAlgorithm.
 *          - Move methods from XHybridizer to XAlgorithm.
+* Jan 2011 - Add method ExportTreeUserInfo() to export tree user info.
 *
 ******************************************************************************/
 
@@ -945,12 +946,18 @@ Int_t XTreeSet::ExportTree(const char *exten, Int_t n, TString *names,
 {
    // Export selected variables given in varlist which are stored in trees
    // with treenames names in output
+   // If varlist begins with "userinfo" then export tree user info variables
+   // listed in varlist after "userinfo", e.g. varlist="userinfo:fMin:fMax"
    if(kCS) cout << "------XTreeSet::ExportTree------" << endl;
 
    Int_t err = errNoErr;
 
-   if (fAsXML) err = this->ExportTreeXML(exten, n, names, varlist, output, sep);
-   else        err = this->ExportTreeType(exten, n, names, varlist, output, sep);
+   if(strcmp(SubString(varlist,":",0).Data(), "userinfo") == 0) {
+      err = this->ExportTreeInfo(exten, n, names, varlist, output, sep);
+   } else {
+      if (fAsXML) err = this->ExportTreeXML(exten, n, names, varlist, output, sep);
+      else        err = this->ExportTreeType(exten, n, names, varlist, output, sep);
+   }//if
 
    return err;
 }//ExportTree

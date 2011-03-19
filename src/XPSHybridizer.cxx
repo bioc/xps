@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 11/27/2010
+// File created: 08/05/2002                          last modified: 12/30/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2010 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2011 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -42,6 +42,7 @@
 * Oct 2008 - Add I/NI-call algorithm class XINICall
 * Jan 2010 - Move methods from XHybridizer to XAlgorithm.
 * Feb 2010 - Add exon splice/summarization algorithms, class XSpliceExpressor
+* Dec 2010 - Add quality control algorithms, classes XQualifier and derived
 *
 ******************************************************************************/
 
@@ -73,6 +74,7 @@ ClassImp(XCallDetector);
 ClassImp(XExpressor);
 ClassImp(XMultichipExpressor);
 ClassImp(XSpliceExpressor);
+ClassImp(XQualifier);
 ClassImp(XSectorBackground);
 ClassImp(XWeightedBackground);
 ClassImp(XRMABackground);
@@ -93,6 +95,8 @@ ClassImp(XMedianPolish);
 ClassImp(XFARMS);
 ClassImp(XDFW);
 ClassImp(XFIRMA);
+ClassImp(XRMAQualifier);
+ClassImp(XPLMQualifier);
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -352,9 +356,13 @@ void XCallDetector::SetOptions(Option_t *opt)
    // Set options, e.g. "raw", "transcript:raw", "transcript:raw:correctbg"
    if(kCS) cout << "------XCallDetector::SetOptions------" << endl;
 
-	TString optcpy = opt;
+//	TString optcpy = opt;
+//   char *options = (char*)optcpy.Data();
 
-   char *options = (char*)optcpy.Data();
+   char *options = new char[strlen(opt) + 1];
+   char *doption = options;
+   options = strcpy(options, opt);
+
    if (NumSeparators(opt, ":") == 0) {
       fOption  = "transcript"; 
       fDataOpt = strtok(options, ":");
@@ -366,6 +374,8 @@ void XCallDetector::SetOptions(Option_t *opt)
       fDataOpt = strtok(NULL, ":");
       fBgrdOpt = strtok(NULL, ":");
    }//if
+
+   delete [] doption;
 }//SetOptions
 
 
@@ -437,9 +447,13 @@ void XExpressor::SetOptions(Option_t *opt)
    // Set options, e.g. "transcript" or "transcript:log2" or "transcript:correctbg:log2"
    if(kCS) cout << "------XExpressor::SetOptions------" << endl;
 
-	TString optcpy = opt;
+//	  TString optcpy = opt;
+//   char *options = (char*)optcpy.Data();
 
-   char *options = (char*)optcpy.Data();
+   char *options = new char[strlen(opt) + 1];
+   char *doption = options;
+   options = strcpy(options,opt);
+
    if (NumSeparators(opt, ":") == 0) {
       fOption    = "transcript"; 
       fLogBase   = strtok(options, ":");
@@ -456,6 +470,8 @@ void XExpressor::SetOptions(Option_t *opt)
       fBgrdOpt   = strtok(NULL, ":");
       fLogBase   = strtok(NULL, ":");
    }//if
+
+   delete [] doption;
 }//SetOptions
 
 
@@ -501,7 +517,7 @@ XMultichipExpressor::~XMultichipExpressor()
 //______________________________________________________________________________
 Int_t XMultichipExpressor::DoMedianPolish(Int_t nrow, Int_t ncol, Double_t *inten, 
                            Double_t *level, Double_t *rowmed, Double_t *colmed,
-                           Double_t *residu)
+                           Double_t *residu, Double_t *weight)
 {
    // Calculate median polish
    if(kCSa) cout << "------XMultichipExpressor::DoMedianPolish------" << endl;
@@ -536,10 +552,17 @@ Int_t XMultichipExpressor::DoMedianPolish(Int_t nrow, Int_t ncol, Double_t *inte
    for (Int_t j=0; j<ncol; j++) level[j] = totmed + colmed[j];
    level = Array2Pow(ncol, level, fLogBase);
 
-// Standard error
+// Pseudo error and weight
    if (fEstimator) {
-      colmed = this->PseudoError(nrow, ncol, residu, colmed);
-      if (colmed == 0) return errInitMemory;
+      if (colmed) {
+         colmed = this->PseudoError(nrow, ncol, residu, colmed);
+         if (colmed == 0) return errInitMemory;
+      }//if
+
+      if (weight) {
+         weight = this->PseudoWeight(nrow, ncol, residu, weight);
+         if (weight == 0) return errInitMemory;
+      }//if
    }//if
 
 // Convert standard deviation/error
@@ -552,7 +575,7 @@ Int_t XMultichipExpressor::DoMedianPolish(Int_t nrow, Int_t ncol, Double_t *inte
 Double_t *XMultichipExpressor::PseudoError(Int_t nrow, Int_t ncol,  
                                Double_t *residu, Double_t *se)
 {
-   // Calculate standard error
+   // Calculate pseudo standard error using a specified M-estimator
    // adapted from Bioconductor package "affyPLM" function "compute_pseudoSE()"
    // created by: B. M. Bolstad <bolstad@stat.berkeley.edu>
    if(kCSa) cout << "------XMultichipExpressor::PseudoError------" << endl;
@@ -596,6 +619,49 @@ Double_t *XMultichipExpressor::PseudoError(Int_t nrow, Int_t ncol,
    return se;
 }//PseudoError
 
+//______________________________________________________________________________
+Double_t *XMultichipExpressor::PseudoWeight(Int_t nrow, Int_t ncol,  
+                               Double_t *residu, Double_t *weight)
+{
+   // Calculate pseudo weights using a specified M-estimator
+   // adapted from Bioconductor package "affyPLM" function "compute_pseudoweights()"
+   // created by: B. M. Bolstad <bolstad@stat.berkeley.edu>
+   if(kCSa) cout << "------XMultichipExpressor::PseudoWeight------" << endl;
+
+   Int_t n = nrow*ncol;
+
+   Double_t *arr = 0;
+   if (!(arr = new (nothrow) Double_t[n])) return 0;
+
+   for (Int_t i=0; i<n; i++) arr[i] = TMath::Abs(residu[i]);
+
+   // median of absolute residuals (why 1/0.6745?)
+   Double_t md = TStat::Median(n, arr)/0.6745;
+
+   // protect against residuals = 0
+   if (md == 0) {
+      for (Int_t j=0; j<ncol; j++) {
+         for (Int_t i=0; i<nrow; i++) {
+            weight[j + i*ncol] = 0.0;
+         }//for_i
+      }//for_j
+
+      delete [] arr;
+
+      return weight;
+   }//if
+
+   for (Int_t j=0; j<ncol; j++) {
+      for (Int_t i=0; i<nrow; i++) {
+         weight[j + i*ncol] = fEstimator->Weight(residu[j + i*ncol]/md);
+      }//for_i
+   }//for_j
+
+   delete [] arr;
+
+   return weight;
+}//PseudoWeight
+
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
@@ -632,6 +698,134 @@ XSpliceExpressor::~XSpliceExpressor()
    if(kCS) cout << "---XSpliceExpressor::~XSpliceExpressor------" << endl;
 
 }//Destructor
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XQualifier                                                           //
+//                                                                      //
+// Base class for microarray quality control algorithms                 //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+XQualifier::XQualifier()
+           :XAlgorithm()
+{
+   // Default Qualifier constructor
+   if(kCS) cout << "---XQualifier::XQualifier(default)------" << endl;
+
+   fCoefHi    = 1.2;
+   fCoefLo    = 0.8;
+   fQualOpt   = "";
+   fExpressor = 0;
+}//Constructor
+
+//______________________________________________________________________________
+XQualifier::XQualifier(const char *name, const char *type)
+           :XAlgorithm(name, type)
+{
+   // Normal Qualifier constructor
+   if(kCS) cout << "---XQualifier::XQualifier------" << endl;
+
+   fCoefHi    = 1.2;
+   fCoefLo    = 0.8;
+   fQualOpt   = "raw";
+   fExpressor = new XMultichipExpressor(name, type);
+}//Constructor
+
+//______________________________________________________________________________
+XQualifier::~XQualifier()
+{
+   // Qualifier destructor
+   if(kCS) cout << "---XQualifier::~XQualifier------" << endl;
+
+   SafeDelete(fExpressor);
+}//Destructor
+
+//______________________________________________________________________________
+Int_t XQualifier::Calculate(Int_t n, Double_t *x, Double_t *y, Double_t *z,
+                  Double_t *w, Int_t *msk)
+{
+   // Calculate median polish
+   if(kCSa) cout << "------XQualifier::Calculate------" << endl;
+
+   Int_t err  = errNoErr;
+   Int_t nrow = (Int_t)(fExpressor->GetLength() / n);
+   Int_t ncol = n;
+
+//   if (fResiduals) {delete [] fResiduals; fResiduals = 0;}
+//   if (!(fResiduals = new (nothrow) Double_t[fLength])) return errInitMemory;
+
+   Double_t *rowmed = 0;
+   if (!(rowmed = new (nothrow) Double_t[nrow])) return errInitMemory;
+
+   err = fExpressor->DoMedianPolish(nrow, ncol, fExpressor->GetArray(),
+                                    x, rowmed, y, z, w);
+
+   if (rowmed) {delete [] rowmed; rowmed = 0;}
+ 
+   return err;
+}//Calculate
+
+//______________________________________________________________________________
+Double_t XQualifier::MeanBorder(Int_t begin, Int_t end, Double_t *arr)
+{
+   // Compute mean for border arr
+   if(kCS) cout << "------XQualifier::MeanBorder------" << endl;
+
+   if (begin == end) return arr[begin];
+
+   Double_t mean = 0.0;
+   for (Int_t i=begin; i<end; i++) mean += arr[i];
+
+   return mean/(end - begin);
+}//MeanBorder
+
+//______________________________________________________________________________
+void XQualifier::HiLoBorder(Int_t begin, Int_t end, Double_t *arr, Short_t *msk,
+                            Double_t mean, Double_t &meanhi, Double_t &meanlo)
+{
+   // Compute high and low mean for border arr
+   if(kCS) cout << "------XQualifier::HiLoBorder------" << endl;
+
+   Int_t idxhi = 0;
+   Int_t idxlo = 0;
+   for (Int_t i=begin; i<end; i++) {
+      if (arr[i] > fCoefHi * mean) {msk[i] =  1; meanhi += arr[i]; idxhi++;} else
+      if (arr[i] < fCoefLo * mean) {msk[i] = -1; meanlo += arr[i]; idxlo++;}
+   }//for_i
+
+   if (idxhi > 0) meanhi = meanhi/idxhi;
+   if (idxlo > 0) meanlo = meanlo/idxlo;
+}//HiLoBorder
+
+//______________________________________________________________________________
+Int_t XQualifier::SetArray(Int_t length, Double_t *array)
+{
+   // Set size of array for calculation to length doubles and set contents
+   // and optionally convert array to logarithm of base fLogBase
+   if(kCSa) cout << "------XQualifier::SetArray------" << endl;
+
+   return fExpressor->SetArray(length, array);
+}//SetArray
+
+//______________________________________________________________________________
+void XQualifier::SetOptions(Option_t *opt)
+{
+   // Set fDataOpt then pass other options to fExpressor
+   if(kCS) cout << "------XQualifier::SetOptions------" << endl;
+
+   fQualOpt = SubString(opt, ":", 0);
+
+   char *options = new char[strlen(opt) + 1];
+   char *doption = options;
+   options = (char*)(strchr(opt,':') + 1);
+
+   fExpressor->SetOptions(options);
+
+   delete [] doption;
+}//SetOptions
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -1222,15 +1416,21 @@ void XRMABackground::SetOptions(Option_t *opt)
    // Set options, e.g. "myoption" or "myoption:kernel"
    if(kCS) cout << "------XRMABackground::SetOptions------" << endl;
 
-	TString optcpy = opt;
+//   TString optcpy = opt;
+//   char *options = (char*)optcpy.Data();
 
-   char *options = (char*)optcpy.Data();
+   char *options = new char[strlen(opt) + 1];
+   char *doption = options;
+   options = strcpy(options, opt);
+
    if (NumSeparators(opt, ":") == 0) {
       fOption = strtok(options, ":");
    } else {
       fOption = strtok(options, ":");
       fKernel = strtok(NULL, ":");
    }//if
+
+   delete [] doption;
 }//SetOptions
 
 //______________________________________________________________________________
@@ -3643,7 +3843,7 @@ Int_t XMedianPolish::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk)
    Double_t *rowmed = 0;
    if (!(rowmed = new (nothrow) Double_t[nrow])) return errInitMemory;
 
-   err = DoMedianPolish(nrow, ncol, fArray, x, rowmed, y, fResiduals);
+   err = DoMedianPolish(nrow, ncol, fArray, x, rowmed, y, fResiduals, 0);
 
    if (rowmed) {delete [] rowmed; rowmed = 0;}
    
@@ -4479,7 +4679,7 @@ Int_t XFIRMA::Calculate(Int_t n, Double_t *x, Double_t *y, Double_t *z,
    if (!(psScore = new (nothrow) Double_t[ncol]))    {err = errInitMemory; goto cleanup;}
 
 // Calculate summarization for transcript intensities
-   err = DoMedianPolish(nrow, ncol, fArray, trLevel, rowmed, trStdev, score);
+   err = DoMedianPolish(nrow, ncol, fArray, trLevel, rowmed, trStdev, score, 0);
    if (err != errNoErr) goto cleanup;
 
    // affinities sum to zero (on log scale)
@@ -4541,7 +4741,7 @@ Int_t XFIRMA::Calculate(Int_t n, Double_t *x, Double_t *y, Double_t *z,
       }//for_k
       cnt += idx[i];
 
-      err = DoMedianPolish(idx[i], ncol, inten, psLevel, rowmed, psStdev, score);
+      err = DoMedianPolish(idx[i], ncol, inten, psLevel, rowmed, psStdev, score, 0);
       if (err != errNoErr) goto cleanup;
 
       for (Int_t k=0; k<ncol; k++) {
@@ -4565,4 +4765,74 @@ cleanup:
 
    return err;
 }//Calculate
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XRMAQualifier                                                        //
+//                                                                      //
+// Class for GeneChip RMA quality control algorithms                    //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+XRMAQualifier::XRMAQualifier()
+              :XQualifier()
+{
+   // Default RMAQualifier constructor
+   if(kCS) cout << "---XRMAQualifier::XRMAQualifier(default)------" << endl;
+
+}//Constructor
+
+//______________________________________________________________________________
+XRMAQualifier::XRMAQualifier(const char *name, const char *type)
+              :XQualifier(name, type)
+{
+   // Normal RMAQualifier constructor
+   if(kCS) cout << "---XRMAQualifier::XRMAQualifier------" << endl;
+
+}//Constructor
+
+//______________________________________________________________________________
+XRMAQualifier::~XRMAQualifier()
+{
+   // RMAQualifier destructor
+   if(kCS) cout << "---XRMAQualifier::~XRMAQualifier------" << endl;
+
+}//Destructor
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XPLMQualifier                                                        //
+//                                                                      //
+// Class for GeneChip PLM quality control algorithms                    //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+XPLMQualifier::XPLMQualifier()
+              :XQualifier()
+{
+   // Default PLMQualifier constructor
+   if(kCS) cout << "---XPLMQualifier::XPLMQualifier(default)------" << endl;
+
+}//Constructor
+
+//______________________________________________________________________________
+XPLMQualifier::XPLMQualifier(const char *name, const char *type)
+              :XQualifier(name, type)
+{
+   // Normal PLMQualifier constructor
+   if(kCS) cout << "---XPLMQualifier::XPLMQualifier------" << endl;
+
+}//Constructor
+
+//______________________________________________________________________________
+XPLMQualifier::~XPLMQualifier()
+{
+   // PLMQualifier destructor
+   if(kCS) cout << "---XPLMQualifier::~XPLMQualifier------" << endl;
+
+}//Destructor
 

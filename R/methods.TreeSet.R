@@ -12,6 +12,7 @@
 # setType:
 # setType<-:
 # treeNames:
+# treeInfo:
 # export:
 # root.browser: 
 #==============================================================================#
@@ -150,6 +151,42 @@ setMethod("treeNames", signature(object="TreeSet"),
 # TreeSet methods:
 #------------------------------------------------------------------------------#
 
+"exportUserInfo" <-
+function(object,
+         treename = "*",
+         treetype = character(0),
+         varlist  = "*",
+         qualopt  = NULL,
+         verbose  = FALSE,
+         ...)
+{
+   if (debug.xps()) print("------exportUserInfo.TreeSet------")
+
+   ds <- export(object,
+                treename     = treename,
+                treetype     = treetype,
+                varlist      = paste("userinfo", varlist, sep=":"), 
+                as.dataframe = TRUE,
+                verbose      = verbose);
+
+   if (nrow(ds) == 0) {
+      stop(paste(sQuote("varlist"), "is not available in userinfo of current tree(s)"));
+   }#if
+
+   rownames(ds) <- ds[,"Parameter"]; ds <- ds[,-1];
+
+   if (!is.null(qualopt)) {
+      qualopt <-validQualityOption(qualopt);
+      ds <- ds[, grep(qualopt, colnames(ds))];
+   }#if
+
+   return(ds);
+}#exportUserInfo
+
+setMethod("treeInfo", "TreeSet", exportUserInfo);
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 "exportTreeSet" <-
 function(object, ...) 
 {
@@ -200,13 +237,4 @@ function(object)
 setMethod("root.browser", "TreeSet", rootBrowser);
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# other potential methods:
-#setMethod("root.canvas", "TreeSet", rootCanvas);
-#setMethod("root.image", "TreeSet", rootImage);
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
-
-
+#------------------------------------------------------------------------------#

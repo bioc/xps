@@ -8,10 +8,12 @@
 # existsROOTFile:
 # rootDirFile:
 # rootDrawName:
+# validEstimatorOption: 
 # validLogbase:
 # validMsg:
 # validOption:
 # validOutfile:
+# validQualityOption: 
 # validROOTFile:
 # validSchemeTreeSet:
 # validSeparator:
@@ -28,7 +30,10 @@
 # namePart:
 # type2Exten:
 # listTreeNames:
+# circle:
 # plotDensity:
+# pseudoPalette: 
+# adjustXLabMargins:
 # getNameType:
 # getChipName:
 # getChipType:
@@ -40,6 +45,12 @@
 
 
 #------------------------------------------------------------------------------#
+# global constants: 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   eINITWEIGHT <- -16384;  # see XPSProcessing.h
+
+
+#------------------------------------------------------------------------------#
 # treetype: parameter used to get tree with corresponding tree extension
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    ## scheme tree extensions are defined in src/XPSSchemes.cxx
@@ -48,16 +59,21 @@
 
    ## data tree extensions are defined in src/XPSProcessing.cxx
    RAWTYPE <- c("cel");
-   PRETYPE <- c("int",
-                "sbg", "wbg", "rbg", "gbg",
-                "cmn", "cmd", "clw", "css", "cqu",
-                "dc5", "dab", "ini",
-                "amn", "gmn", "wmn", "wdf", "adf", "tbw", "mdp", "frm", "dfw", "fir");
-   CALTYPE <- c("dc5", "dab");
+   ADJTYPE <- c("int");
+   BGDTYPE <- c("sbg", "wbg", "rbg", "gbg");
+   CNRTYPE <- c("cmn", "cmd", "clw", "css", "cqu");
+   CALTYPE <- c("dc5", "dab", "ini");
+   EXPTYPE <- c("amn", "gmn", "wmn", "wdf", "adf", "tbw", "mdp", "frm", "dfw", "fir");
+   QUATYPE <- c("plm", "rlm", "brd", "res");
+   PRETYPE <- c(ADJTYPE, BGDTYPE, CNRTYPE, CALTYPE, EXPTYPE, QUATYPE);
    NRMTYPE <- c("tmn", "med", "ksm", "low", "sup", "qua", "mdp");
    FLRTYPE <- c("pfr", "ufr", "mfr");
    UNITYPE <- c("uvt", "stt", "wil", "var");
 
+
+################################################################################
+# general utility functions
+################################################################################
 
 #------------------------------------------------------------------------------#
 # xpsOptions: set options for xps
@@ -197,6 +213,20 @@ rootDrawName <- function(canvasname, graphtype) {
 }#rootDrawName
 
 #------------------------------------------------------------------------------#
+# validEstimatorOption: check for presence of valid M-estimator option
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+validEstimatorOption <- function(estimator) {
+   if (debug.xps()) print("------validEstimatorOption------")
+
+   TYPE <- c("huber", "fair", "cauchy", "gemanmcclure", "welsch", "tukey", "andrew");
+   if (is.na(match(estimator, TYPE))) {
+      stop(paste(sQuote(estimator), "is not a valid M-estimator type"));
+   }#if
+
+   return(as.character(estimator));
+}#validEstimatorOption
+
+#------------------------------------------------------------------------------#
 # validLogbase: check for presence of valid logbase
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 validLogbase <- function(logbase) {
@@ -280,6 +310,22 @@ validOutfile <- function(outname, outfile=character(0)) {
 
    return(outfile);
 }#validOutfile
+
+#------------------------------------------------------------------------------#
+# validQualityOption: check for presence of valid quality option
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+validQualityOption <- function(option, as.logical=FALSE) {
+   if (debug.xps()) print("------validQualityOption------")
+
+   TYPE <- c("raw", "adjusted", "normalized", "all");
+   if (is.na(match(option, TYPE))) {
+      if (as.logical) return(FALSE);
+      stop(paste(sQuote("option"), "is not a valid quality option"));
+   }#if
+
+   if (as.logical) return(TRUE);
+   return(as.character(option));
+}#validQualityOption
 
 #------------------------------------------------------------------------------#
 # validROOTFile: check if rootfile is a valid ROOT TFile, i.e. "myfile.root"
@@ -652,9 +698,9 @@ type2Exten <- function(type, datatype) {
    if (datatype == "preprocess") {
       TYPE <- c("mean", "median", "lowess", "supsmu", "quantile",
                 "avgdiff", "tukeybiweight", "medianpolish",
-                "farms", "dfw", "firma");
+                "farms", "dfw", "firma", "plm", "rlm");
       XTEN <- c("cmn", "cmd", "clw", "css", "cqu", "adf", "tbw",
-                "mdp", "frm", "dfw", "fir");
+                "mdp", "frm", "dfw", "fir", "plm", "rlm");
    } else if (datatype == "normation") {
       TYPE <- c("mean", "median", "ksmooth", "lowess", "supsmu",
                 "quantile", "medianpolish");
@@ -689,6 +735,22 @@ type2Exten <- function(type, datatype) {
    return(list(treenames = treenames, fullnames = fullnames));
 }#listTreeNames
 
+
+################################################################################
+# utility functions for graphics
+################################################################################
+
+#------------------------------------------------------------------------------#
+# circle: plot circle
+# adapted from package calibrate: circle.R
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+"circle" <- function(radius = 1.0, col = "black", lty = 1, ...) {
+   x <- seq(-radius, radius, by=0.01);
+   y <- sqrt(radius^2 - x^2);
+   lines(x,  y, col=col, lty=lty, ...);
+   lines(x, -y, col=col, lty=lty, ...);
+}#circle
+
 #------------------------------------------------------------------------------#
 # plotDensity: function to plot density
 # taken from package affy: plot.density.R
@@ -706,6 +768,71 @@ plotDensity <- function(mat,
 
    invisible(list(all.x=all.x, all.y=all.y));
 }#plotDensity
+
+#------------------------------------------------------------------------------#
+# pseudoPalette: function for coloring pseudo chip images.
+# taken from package affyPLM: PLMset.R
+# Copyright (C) 2003-2008     Ben Bolstad
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+pseudoPalette <-function (low="white", high=c("green", "red"), mid=NULL, k=50) {
+   if (debug.xps()) print("------pseudoPalette------")
+
+   low  <- col2rgb(low)/255;
+   high <- col2rgb(high)/255;
+
+   if (is.null(mid)) {
+      r <- seq(low[1], high[1], len = k);
+      g <- seq(low[2], high[2], len = k);
+      b <- seq(low[3], high[3], len = k);
+   }#if
+
+   if (!is.null(mid)) {
+      k2  <- round(k/2);
+      mid <- col2rgb(mid)/255;
+
+      r <- c(seq(low[1], mid[1], len = k2), seq(mid[1], high[1], len = k2));
+      g <- c(seq(low[2], mid[2], len = k2), seq(mid[2], high[2], len = k2));
+      b <- c(seq(low[3], mid[3], len = k2), seq(mid[3], high[3], len = k2));
+   }#if
+
+   rgb(r, g, b);
+}#pseudoPalette
+
+#------------------------------------------------------------------------------#
+# adjustXLabMargins: adjust bottom margin, pointsize, plot width
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+adjustXLabMargins <- function(xlab, bottom=6, cex=1.0, width=800) {
+   if (debug.xps()) print("------adjustXLabMargins------")
+
+   b <- bottom;
+   x <- cex;
+   w <- width;
+
+   ## get bottom margin
+   maxchar <- max(nchar(xlab));
+   if (maxchar > 8)  {
+      bottom <- max(as.integer(maxchar/2.0), b);
+      cex    <- x;
+   }#if
+   if (maxchar > 16) {
+      bottom <- max(as.integer(maxchar/1.8), b);
+      cex    <- x - 0.2;
+   }#if
+
+   ## get plot width
+   numlab <- length(xlab);
+   if (numlab > 60)  {
+      width <- numlab * 16 + 120;
+      cex   <- x - 0.2;
+   }#if
+   if (numlab > 120) {
+      width <- numlab * 14 + 120;
+      cex   <- x - 0.3;
+   }#if
+   if (width < w) width <- w;
+
+   return(list(b=bottom, cex=cex, w=width));
+}#adjustXLabMargins
 
 
 ################################################################################

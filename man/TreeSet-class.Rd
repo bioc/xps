@@ -20,6 +20,8 @@
 \alias{setType}
 \alias{setType<-,TreeSet,character-method}
 \alias{setType<-}
+\alias{treeInfo,TreeSet-method}
+\alias{treeInfo}
 \alias{treeNames,TreeSet-method}
 \alias{treeNames}
 
@@ -59,6 +61,7 @@ a \code{\link{ROOT}} file and the \code{\link{ROOT}} trees contained therein.
     \item{setName<-}{\code{signature(object = "TreeSet", value = "character")}: replaces slot \code{setname}.}
     \item{setType}{\code{signature(object = "TreeSet")}: extracts slot \code{settype}.}
     \item{setType<-}{\code{signature(object = "TreeSet", value = "character")}: replaces slot \code{settype}.}
+    \item{treeInfo}{\code{signature(object = "TreeSet")}: extracts UserInfo from \code{\link{ROOT}} trees.}
     \item{treeNames}{\code{signature(object = "TreeSet")}: extracts slot \code{treenames}.}
 	 }
 }

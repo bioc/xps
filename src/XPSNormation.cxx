@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 06/20/2010
+// File created: 08/05/2002                          last modified: 02/06/2011
 
 // Author: Christian Stratowa 06/18/2000
 
@@ -7,7 +7,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2010 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2011 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -571,6 +571,32 @@ void XNormedSet::AddMaskTreeInfo(TTree *tree, const char *name, Option_t *option
 }//AddMaskTreeInfo
 
 //______________________________________________________________________________
+Int_t XNormedSet::ExportTreeInfo(const char *exten, Int_t n, TString *names,  
+                  const char *varlist, ofstream &output, const char *sep)
+{
+   // Export variables from varlist for trees of type exten
+   if(kCS) cout << "------XNormedSet::ExportTreeInfo------" << endl;
+
+// Set scheme file to be able to access scheme data for exporting
+   if (fSetting) {
+      fSchemeFile = ((XNormationSetting*)fSetting)->GetSchemeFile();
+   }//if
+
+   // remove "userinfo" from varlist
+   TString infolist = RemoveSubString(varlist, "userinfo:", kFALSE);
+
+   if (HasExtension(exten, kExtenNorm)) {
+      return ExportExprTreeInfo(n, names, infolist, output, sep);
+   } else if (HasExtension(exten, kExtenSlct)) {
+      return this->ExportMaskTreeInfo(n, names, infolist, output, sep);
+   } else {
+      return fManager->HandleError(errExtension, exten);
+   }//if
+
+   return errNoErr;
+}//ExportTreeInfo
+
+//______________________________________________________________________________
 Int_t XNormedSet::ExportTreeType(const char *exten, Int_t n, TString *names,  
                   const char *varlist, ofstream &output, const char *sep)
 {
@@ -638,6 +664,11 @@ Int_t XNormedSet::FillExprTree(const char *name, Int_t n, Int_t *idx, Double_t *
 
    Int_t err = errNoErr;
 
+   Int_t     nquant = 7;
+   Double_t  q[]    = {0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0};
+   Double_t *quantL = 0; 
+   if (!(quantL = new (nothrow) Double_t[nquant])) return errInitMemory;
+
    TTree *tree = new TTree(name, fSchemeName.Data());
    if (tree == 0) return errCreateTree;
 
@@ -650,22 +681,19 @@ Int_t XNormedSet::FillExprTree(const char *name, Int_t n, Int_t *idx, Double_t *
    expr = new XExpression();
    tree->Branch("ExprBranch", "XExpression", &expr, 64000, split);
 
-// Init min/max expression levels
-   Double_t min = DBL_MAX;  //defined in float.h
-   Double_t max = 0;
-
    for (Int_t i=0; i<n; i++) {
-      // get minimal/maximal expression levels
-      if (arr[i] < min) min = arr[i];
-      if (arr[i] > max) max = arr[i];
-
       expr->SetUnitID(idx[i]);
       expr->SetLevel(arr[i]);
       tree->Fill();
    }//for_i
 
+// Quantiles for expression trees
+   err = ExpressionQuantiles(tree, expr, nquant, q, quantL);
+   if (err != errNoErr) goto cleanup;
+
 // Add tree info to tree
-   AddExprTreeInfo(tree, name, fNormalizer->GetOption(), n, min, max);
+   AddExprTreeInfo(tree, name, fNormalizer->GetOption(),
+                   n, quantL[0], quantL[nquant-1], nquant, q, quantL);
 
 // Write expression tree to file 
    if ((err = WriteTree(tree, TObject::kOverwrite)) == errNoErr) {
@@ -679,9 +707,12 @@ Int_t XNormedSet::FillExprTree(const char *name, Int_t n, Int_t *idx, Double_t *
    }//if
 
 // Cleanup
+cleanup:
    SafeDelete(expr);
    tree->ResetBranchAddress(tree->GetBranch("ExprBranch"));
    SafeDelete(tree);
+
+   if (quantL) {delete [] quantL; quantL = 0;}
 
    return err;
 }//FillExprTree
@@ -1461,7 +1492,8 @@ Int_t XNormedGCSet::ExportExprTrees(Int_t n, TString *names, const char *varlist
       if (hasUnit == j) output << sep << "UnitName";
 
       if (hasAnnot > 0) {
-         if (hasTrans  == j) output << sep << "ProbesetID";
+//         if (hasTrans  == j) output << sep << "ProbesetID";
+         if (hasTrans  == j) output << sep << "TranscriptID";
          if (hasName   == j) output << sep << "GeneName";
          if (hasSymbol == j) output << sep << "GeneSymbol";
          if (hasAccess == j) output << sep << "GeneAccession";

@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 06/20/2010
+// File created: 08/05/2002                          last modified: 02/20/2011
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2010 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2011 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -64,7 +64,9 @@
 * Jul 2009 - Add tree->DrobBasket() to avoid memory increase for >2000 trees
 *          - Allow to change bufsize of tree branches
 * Feb 2010 - Add support for alternative splicing, method DoSpliceExpress()
-*          - Add exon splice/summarization algorithms, classes XSpliceExpressor, XExonExpression
+*          - Add exon splice/summarization algorithms, classes XSpliceExpressor, XSpliceExpression
+* Dec 2010 - Add support for quality control, method QualityControl.
+*          - Add quality control algorithms, classes XQualifier, XResidual
 *
 ******************************************************************************/
 
@@ -99,7 +101,10 @@ const Bool_t  kCS  = 0;
 const Bool_t  kCSa = 0; //debug: print function names in loops
 
 ClassImp(XPreProcessManager);
+ClassImp(XBorderTreeInfo);
 ClassImp(XCallTreeInfo);
+ClassImp(XQualityTreeInfo);
+ClassImp(XResidualTreeInfo);
 ClassImp(XPreProcesSetting);
 ClassImp(XPreProcesSet);
 ClassImp(XGCProcesSet);
@@ -162,6 +167,7 @@ Int_t XPreProcessManager::Preprocess(const char *setname, const char *method)
    // method = "rma":        use the rma method of Irizarry et al. for preprocessing
    // method = "mas5":       preprocess data according to Affymetrix MAS5
    // method = "mas4":       preprocess data according to Affymetrix MAS4
+   // method = "qualify":    quality control
    // Note: Methods "rma", "mas5", "mas4" will automatically initialize the correct
    //       algorithms by calling the corresponding InitAlgorithm() methods
    if(kCS) cout << "------XPreProcessManager::Preprocess------" << endl;
@@ -228,7 +234,7 @@ Int_t XPreProcessManager::Preprocess(const char *setname, const char *method)
       if (!err) err = set->Initialize(fFile, fSetting);
       if (!err) err = set->Preprocess(smethod.Data());
 
-      HandleError(err, "in XPreProcessManager::Preprocess", "???");
+      HandleError(err, "???", "???");
    } else {
 //better in XGCProcesSet::Preprocess()!!
       cerr << "Error: At least two trees need to be selected." << endl;
@@ -337,6 +343,105 @@ cout << "Note: to be done in the future: GenePix analysis" << endl;
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
+// XBorderTreeInfo                                                      //
+//                                                                      //
+// Class containing info about border tree stored in fUserInfo          //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+XBorderTreeInfo::XBorderTreeInfo() 
+                :XTreeInfo()
+{
+   // Default BordTreeInfo constructor
+   if(kCS) cout << "---XBorderTreeInfo::XBorderTreeInfo(default)------" << endl;
+
+   fMeanLeft   = 0.0;
+   fMeanRight  = 0.0;
+   fMeanTop    = 0.0;
+   fMeanBottom = 0.0;
+   fCOIXhi     = 0.0;
+   fCOIYhi     = 0.0;
+   fCOIXlo     = 0.0;
+   fCOIYlo     = 0.0;
+}//Constructor
+
+//______________________________________________________________________________
+XBorderTreeInfo::XBorderTreeInfo(const char *name, const char *title) 
+                :XTreeInfo(name, title)
+{
+   // Normal BordTreeInfo constructor
+   if(kCS) cout << "---XBorderTreeInfo::XBorderTreeInfo------" << endl;
+
+   fMean       = 0.0;
+   fMeanLeft   = 0.0;
+   fMeanRight  = 0.0;
+   fMeanTop    = 0.0;
+   fMeanBottom = 0.0;
+   fCOIXhi     = 0.0;
+   fCOIYhi     = 0.0;
+   fCOIXlo     = 0.0;
+   fCOIYlo     = 0.0;
+}//Constructor
+
+//______________________________________________________________________________
+XBorderTreeInfo::~XBorderTreeInfo()
+{
+   // BordTreeInfo destructor
+   if(kCS) cout << "---XBorderTreeInfo::~XBorderTreeInfo------" << endl;
+
+}//Destructor
+
+//______________________________________________________________________________
+void XBorderTreeInfo::AddUserInfo(Double_t mean, Double_t lmean, Double_t rmean,
+                      Double_t tmean, Double_t bmean, Double_t xcoihi, Double_t ycoihi,
+                      Double_t xcoilo, Double_t ycoilo)
+{
+   // Add user info from tree set
+   if(kCS) cout << "------XBorderTreeInfo::AddUserInfo------" << endl;
+
+   fMean       = mean;
+   fMeanLeft   = lmean;
+   fMeanRight  = rmean;
+   fMeanTop    = tmean;
+   fMeanBottom = bmean;
+   fCOIXhi     = xcoihi;
+   fCOIYhi     = ycoihi;
+   fCOIXlo     = xcoilo;
+   fCOIYlo     = ycoilo;
+}//AddUserInfo
+
+//______________________________________________________________________________
+Double_t XBorderTreeInfo::GetValue(const char *name)
+{
+   // Return value for class member field name
+   if(kCS) cout << "------XBorderTreeInfo::GetValue------" << endl;
+
+   if (strcmp(name, "fMean")              == 0) {
+      return fMean;
+   } else if (strcmp(name, "fMeanLeft")   == 0) {
+      return fMeanLeft;
+   } else if (strcmp(name, "fMeanRight")  == 0) {
+      return fMeanRight;
+   } else if (strcmp(name, "fMeanTop")    == 0) {
+      return fMeanTop;
+   } else if (strcmp(name, "fMeanBottom") == 0) {
+      return fMeanBottom;
+   } else if (strcmp(name, "fCOIXhi")     == 0) {
+      return fCOIXhi;
+   } else if (strcmp(name, "fCOIYhi")     == 0) {
+      return fCOIYhi;
+   } else if (strcmp(name, "fCOIXlo")     == 0) {
+      return fCOIXlo;
+   } else if (strcmp(name, "fCOIYlo")     == 0) {
+      return fCOIYlo;
+   }//if
+   return 0;
+}//GetValue
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
 // XCallTreeInfo                                                        //
 //                                                                      //
 // Class containing info about present call tree stored in fUserInfo    //
@@ -436,6 +541,226 @@ Double_t XCallTreeInfo::GetValue(const char *name)
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
+// XQualityTreeInfo                                                     //
+//                                                                      //
+// Class containing info about quality tree stored in fUserInfo         //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+XQualityTreeInfo::XQualityTreeInfo() 
+                 :XExpressionTreeInfo()
+{
+   // Default QualityTreeInfo constructor
+   if(kCS) cout << "---XQualityTreeInfo::XQualityTreeInfo(default)------" << endl;
+
+   fNUSEQuant = 0;
+   fRLEQuant  = 0;
+//??   //since default constructor called for permanent obj
+//   fNUSEQuant = new Double_t[fNQuantiles];
+//   fRLEQuant  = new Double_t[fNQuantiles];
+   fQualOption  = "";
+}//Constructor
+
+//______________________________________________________________________________
+XQualityTreeInfo::XQualityTreeInfo(const char *name, const char *title) 
+                 :XExpressionTreeInfo(name, title)
+{
+   // Normal QualityTreeInfo constructor
+   if(kCS) cout << "---XQualityTreeInfo::XQualityTreeInfo------" << endl;
+
+   fNUSEQuant = new Double_t[fNQuantiles];
+   fRLEQuant  = new Double_t[fNQuantiles];
+   fQualOption  = kQualOption[0];  //raw
+}//Constructor
+
+//______________________________________________________________________________
+XQualityTreeInfo::~XQualityTreeInfo()
+{
+   // QualityTreeInfo destructor
+   if(kCS) cout << "---XQualityTreeInfo::~XQualityTreeInfo------" << endl;
+
+   if (fRLEQuant)  {delete [] fRLEQuant;  fRLEQuant  = 0;}
+   if (fNUSEQuant) {delete [] fNUSEQuant; fNUSEQuant = 0;}
+}//Destructor
+
+//______________________________________________________________________________
+void XQualityTreeInfo::AddQualInfo(Int_t nquant, Double_t *quantSE, Double_t *quantLE)
+{
+   // Add user info from tree set
+   if(kCS) cout << "------XQualityTreeInfo::AddQualInfo------" << endl;
+
+   if (nquant > fNQuantiles) {
+      if (fRLEQuant)  {delete [] fRLEQuant;  fRLEQuant  = 0;}
+      if (fNUSEQuant) {delete [] fNUSEQuant; fNUSEQuant = 0;}
+
+      fNUSEQuant = new Double_t[nquant];
+      fRLEQuant  = new Double_t[nquant];
+   }//if
+
+   fNQuantiles = nquant;
+
+   memcpy(fNUSEQuant, quantSE, nquant*sizeof(Double_t));
+   memcpy(fRLEQuant , quantLE, nquant*sizeof(Double_t));
+}//AddQualInfo
+
+//______________________________________________________________________________
+Double_t *XQualityTreeInfo::GetNUSEQuantiles()
+{
+   // Return quantiles array for NUSE
+   if(kCS) cout << "------XQualityTreeInfo::GetNUSEQuantiles------" << endl;
+
+   if (fNUSEQuant == 0) return 0;
+
+   return fNUSEQuant;
+}//GetNUSEQuantiles
+
+//______________________________________________________________________________
+Double_t *XQualityTreeInfo::GetRLEQuantiles()
+{
+   // Return quantiles array for RLE
+   if(kCS) cout << "------XQualityTreeInfo::GetRLEQuantiles------" << endl;
+
+   if (fRLEQuant == 0) return 0;
+
+   return fRLEQuant;
+}//GetRLEQuantiles
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XResidualTreeInfo                                                    //
+//                                                                      //
+// Class containing info about residual tree stored in fUserInfo        //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+XResidualTreeInfo::XResidualTreeInfo() 
+                  :XTreeInfo()
+{
+   // Default ResidualTreeInfo constructor
+   if(kCS) cout << "---XResidualTreeInfo::XResidualTreeInfo(default)------" << endl;
+
+   fNRows       = 0; 
+   fNCols       = 0;
+   fNQuantiles  = 0;
+   fQuantiles   = 0;
+   fResiduQuant = 0;
+   fWeightQuant = 0;
+//??   //since default constructor called for permanent obj
+//   fQuantiles   = new Double_t[fNQuantiles];
+//   fResiduQuant = new Double_t[fNQuantiles];
+//   fWeightQuant = new Double_t[fNQuantiles];
+   fQualOption  = "";
+}//Constructor
+
+//______________________________________________________________________________
+XResidualTreeInfo::XResidualTreeInfo(const char *name, const char *title) 
+                  :XTreeInfo(name, title)
+{
+   // Normal ResidualTreeInfo constructor
+   if(kCS) cout << "---XResidualTreeInfo::XResidualTreeInfo------" << endl;
+
+   fNRows       = 0; 
+   fNCols       = 0;
+   fNQuantiles  = 7;
+   fQuantiles   = new Double_t[fNQuantiles];
+   fResiduQuant = new Double_t[fNQuantiles];
+   fWeightQuant = new Double_t[fNQuantiles];
+   fQualOption  = kQualOption[0];  //raw
+}//Constructor
+
+//______________________________________________________________________________
+XResidualTreeInfo::~XResidualTreeInfo()
+{
+   // ResidualTreeInfo destructor
+   if(kCS) cout << "---XResidualTreeInfo::~XResidualTreeInfo------" << endl;
+
+   if (fWeightQuant) {delete [] fWeightQuant; fWeightQuant = 0;}
+   if (fResiduQuant) {delete [] fResiduQuant; fResiduQuant = 0;}
+   if (fQuantiles)   {delete [] fQuantiles;   fQuantiles   = 0;}
+}//Destructor
+
+//______________________________________________________________________________
+void XResidualTreeInfo::AddUserInfo(Int_t nrows, Int_t ncols, Int_t nquant, 
+                        Double_t *q, Double_t *quantR, Double_t *quantW)
+{
+   // Add user info from tree set
+   if(kCS) cout << "------XResidualTreeInfo::AddUserInfo------" << endl;
+
+   fNRows = nrows;
+   fNCols = ncols;
+
+   if (nquant > fNQuantiles) {
+      if (fWeightQuant) {delete [] fWeightQuant; fWeightQuant = 0;}
+      if (fResiduQuant) {delete [] fResiduQuant; fResiduQuant = 0;}
+      if (fQuantiles)   {delete [] fQuantiles;   fQuantiles   = 0;}
+
+      fQuantiles   = new Double_t[nquant];
+      fResiduQuant = new Double_t[nquant];
+      fWeightQuant = new Double_t[nquant];
+   }//if
+
+   fNQuantiles = nquant;
+
+   memcpy(fQuantiles,   q,      nquant*sizeof(Double_t));
+   memcpy(fResiduQuant, quantR, nquant*sizeof(Double_t));
+   memcpy(fWeightQuant, quantW, nquant*sizeof(Double_t));
+}//AddUserInfo
+
+//______________________________________________________________________________
+Double_t XResidualTreeInfo::GetValue(const char *name)
+{
+   // Return value for class member field name
+   if(kCS) cout << "------XResidualTreeInfo::GetValue------" << endl;
+
+   if (strcmp(name, "fNRows") == 0) {
+      return fNRows;
+   } else if (strcmp(name, "fNCols")      == 0) {
+      return fNCols;
+   } else if (strcmp(name, "fNQuantiles") == 0) {
+      return fNQuantiles;
+   }//if
+   return 0;
+}//GetValue
+
+//______________________________________________________________________________
+Double_t *XResidualTreeInfo::GetQuantiles()
+{
+   // Return quantiles array
+   if(kCS) cout << "------XResidualTreeInfo::GetQuantiles------" << endl;
+
+   if (fQuantiles == 0) return 0;
+
+   return fQuantiles;
+}//GetQuantiles
+
+//______________________________________________________________________________
+Double_t *XResidualTreeInfo::GetResiduQuantiles()
+{
+   // Return quantiles array for residuals
+   if(kCS) cout << "------XResidualTreeInfo::GetResiduQuantiles------" << endl;
+
+   if (fResiduQuant == 0) return 0;
+
+   return fResiduQuant;
+}//GetResiduQuantiles
+
+//______________________________________________________________________________
+Double_t *XResidualTreeInfo::GetWeightQuantiles()
+{
+   // Return quantiles array for weights
+   if(kCS) cout << "------XResidualTreeInfo::GetWeightQuantiles------" << endl;
+
+   if (fWeightQuant == 0) return 0;
+
+   return fWeightQuant;
+}//GetWeightQuantiles
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
 // XPreProcesSetting                                                    //
 //                                                                      //
 // Class for initialization of pre-processing parameter settings        //
@@ -458,6 +783,8 @@ XPreProcesSetting::XPreProcesSetting()
    fExpressor    = 0;
    fCallSelector = 0;
    fCaller       = 0;
+   fQualSelector = 0;
+   fQualifier    = 0;
 }//Constructor
 
 //______________________________________________________________________________
@@ -476,6 +803,8 @@ XPreProcesSetting::XPreProcesSetting(const char *arraytype, const char *infile)
    fExpressor    = 0;
    fCallSelector = 0;
    fCaller       = 0;
+   fQualSelector = 0;
+   fQualifier    = 0;
 }//Constructor
 
 //______________________________________________________________________________
@@ -484,6 +813,8 @@ XPreProcesSetting::~XPreProcesSetting()
    // PreProcesSetting destructor
    if(kCS) cout << "---XPreProcesSetting::~XPreProcesSetting------" << endl;
 
+   SafeDelete(fQualifier);
+   SafeDelete(fQualSelector);
    SafeDelete(fCaller);
    SafeDelete(fCallSelector);
    SafeDelete(fExpressor);
@@ -517,6 +848,8 @@ Int_t XPreProcesSetting::InitAlgorithm(const char *name, const char *type,
       return this->InitExpressor(type, options, filename, npars, pars);
    } else if (strcmp(name, "calldetector") == 0) {
       return this->InitCallDetector(type, options, npars, pars);
+   } else if (strcmp(name, "qualifier") == 0) {
+      return this->InitQualifier(type, options, filename, npars, pars);
    } else {
       cerr << "Error: Algorithm <" << name << "> is not known." << endl;
    }//if
@@ -1099,6 +1432,75 @@ Int_t XPreProcesSetting::InitCallDetector(const char *type, Option_t *options,
    return fCaller->InitParameters(npars, pars);
 }//InitCallDetector
 
+//______________________________________________________________________________
+Int_t XPreProcesSetting::InitQualifier(const char *type, Option_t *options,
+                         const char *filename, Int_t npars, Double_t *pars)
+{
+   // Initialize quality control algorithm and parameters
+//????????
+   // All quality control algorithms have the following option settings:
+   //    "logbase" or "option:logbase" or "option:bgrdoption:logbase" with:
+   //    option;
+   //    - "transcript": use unit tree for transcripts (default)
+   //    - "exon":       use unit tree for exons (exon array only)
+   //    - "probeset":   use unit tree for probesets
+   //    bgrdoption;
+   //    - "none":        no background subtraction
+   //    - "subtractbg":  subtract bgrd from intensity - result can be negative
+   //    - "correctbg":   correct bgrd with noise fraction to avoid negative results
+   //    - "attenuatebg": use generalized log-transform to avoid negative results
+   //    logbase:
+   //    - "0" - linear,
+   //    - "log", "log2", "log10" - log with base e, 2, 10
+   //
+//TO DO!!!!!!!!!!!!
+   // type = "RLM": RMA median polish (multichip algorithm), with parameters:
+   //    parameters are: numpars, maxiter, eps, neglog, (nfrac, l, h)
+   //    - numpars: number of other parameters as integer, i.e. numpars = 3-6:
+   //    - maxiter: maximal number of iterations, default is 10
+   //    - eps:     epsilon of test for convergence, default is 0.01
+   //    - medpol:  =1:  MedianPolish(); =2: MedianPolishTranspose()
+   //    - neglog:  substitution for logarithm of negative values
+   //    - nfrac:   noise fraction for bgrd option "correctbg", or
+   //    - l:       optional tunable parameter, 0<=l<=1 (default is 0.005), and     
+   //    - h:       optional parameter (default is -1) for "attenuatebg"
+   //
+   //    filename = "": data for "multichip" algorithms will be stored as table in RAM  
+   //             = "tmp": optional filename to create temporary file "tmp_exten",
+   //               where data will be stored temporarily
+   if(kCS) cout << "------XPreProcesSetting::InitQualifier------" << endl;
+
+// Init (default) quality control selector
+   Int_t err = errNoErr;
+   if (!fSelector) err = this->InitSelector("probe","none", 0, 0);
+   if (err != errNoErr) return err;
+   fQualSelector = fSelector;
+   fSelector = 0; //free temporary selector
+//   fQualSelector = new XProbeSelector(*(XProbeSelector*)fSelector); //need to if(exten==)
+//   SafeDelete(fSelector);
+
+// Delete default expression setting
+   SafeDelete(fQualifier);
+
+   TString exten = Type2Extension(type, kTypeQual, kExtenQual);
+   TString stype = Extension2Type(type, kTypeQual, kExtenQual);
+
+   if (strcmp(exten.Data(), kExtenQual[0]) == 0) {
+      fQualifier = new XRMAQualifier(stype.Data(), exten.Data());
+   } else if (strcmp(exten.Data(), kExtenQual[1]) == 0) {
+      fQualifier = new XPLMQualifier(stype.Data(), exten.Data());
+   } else {
+      cerr << "Error: Qualifier <" << type << "> is not known." << endl;
+      return errInitSetting;
+   }//if
+   if (fQualifier == 0) return errInitMemory;
+
+   fQualifier->SetOptions(options);
+   fQualifier->NewFile(filename, exten.Data());
+
+   return fQualifier->InitParameters(npars, pars);
+}//InitQualifier
+
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
@@ -1123,6 +1525,8 @@ XPreProcesSet::XPreProcesSet()
    fExpressor    = 0;
    fCallSelector = 0;
    fCaller       = 0;
+   fQualSelector = 0;
+   fQualifier    = 0;
 }//Constructor
 
 //______________________________________________________________________________
@@ -1140,6 +1544,8 @@ XPreProcesSet::XPreProcesSet(const char *name, const char *type)
    fExpressor    = 0;
    fCallSelector = 0;
    fCaller       = 0;
+   fQualSelector = 0;
+   fQualifier    = 0;
 }//Constructor
 
 //______________________________________________________________________________
@@ -1157,6 +1563,8 @@ XPreProcesSet::~XPreProcesSet()
    fExpressor    = 0;
    fCallSelector = 0;
    fCaller       = 0;
+   fQualSelector = 0;
+   fQualifier    = 0;
 }//Destructor
 
 //______________________________________________________________________________
@@ -1187,6 +1595,8 @@ Int_t XPreProcesSet::Initialize(TFile *file, XSetting *setting,
    fExpressor    = ((XPreProcesSetting*)fSetting)->GetExpressor();
    fCallSelector = ((XPreProcesSetting*)fSetting)->GetCallSelector();
    fCaller       = ((XPreProcesSetting*)fSetting)->GetCallDetector();
+   fQualSelector = ((XPreProcesSetting*)fSetting)->GetQualSelector();
+   fQualifier    = ((XPreProcesSetting*)fSetting)->GetQualifier();
 
    return errNoErr;
 }//Initialize
@@ -1194,7 +1604,8 @@ Int_t XPreProcesSet::Initialize(TFile *file, XSetting *setting,
 //______________________________________________________________________________
 void XPreProcesSet::AddDataTreeInfo(TTree *tree, const char *name, Option_t *option,
                     Int_t nrows, Int_t ncols, Int_t nmin, Double_t min, Int_t nmax,
-                    Double_t max, Int_t maxnpix)
+                    Double_t max, Int_t maxnpix, Int_t nquant, Double_t *q,
+                    Double_t *quant)
 {
    // Add background/intensity tree info to list fUserInfo of tree
    if(kCS) cout << "------XPreProcesSet::AddDataTreeInfo------" << endl;
@@ -1209,6 +1620,8 @@ void XPreProcesSet::AddDataTreeInfo(TTree *tree, const char *name, Option_t *opt
 
    // add user info
    info->AddUserInfo(nrows, ncols, nmin, min, nmax, max, maxnpix);
+
+   if (nquant > 0) info->AddUserInfo(nquant, q, quant);
 
    tree->GetUserInfo()->Add(info);
 }//AddDataTreeInfo
@@ -1236,6 +1649,30 @@ void XPreProcesSet::AddMaskTreeInfo(TTree *tree, const char *name, Option_t *opt
 }//AddMaskTreeInfo
 
 //______________________________________________________________________________
+void XPreProcesSet::AddBordTreeInfo(TTree *tree, const char *name, Option_t *option,
+                    Double_t mean, Double_t lmean, Double_t rmean, Double_t tmean,
+                    Double_t bmean, Double_t xcoihi, Double_t ycoihi,
+                    Double_t xcoilo, Double_t ycoilo)
+{
+   // Add border tree info to list fUserInfo of tree
+   if(kCS) cout << "------XPreProcesSet::AddBordTreeInfo------" << endl;
+
+// store name of tree set as title
+   XBorderTreeInfo *info = new XBorderTreeInfo(name, "");
+
+   // store class, and name and class of treeset
+   info->SetTitle(info->ClassName());
+   info->SetOption(option);
+   info->SetTreeSetName(GetName());
+   info->SetTreeSetClass(ClassName());
+
+   // add user info
+   info->AddUserInfo(mean, lmean, rmean, tmean, bmean, xcoihi, ycoihi, xcoilo, ycoilo);
+
+   tree->GetUserInfo()->Add(info);
+}//AddBordTreeInfo
+
+//______________________________________________________________________________
 void XPreProcesSet::AddCallTreeInfo(TTree *tree, const char *name, Option_t *option,
                     Int_t nunits, Int_t nabsent, Int_t nmarginal, Int_t npresent,
                     Double_t minpval, Double_t maxpval)
@@ -1257,6 +1694,57 @@ void XPreProcesSet::AddCallTreeInfo(TTree *tree, const char *name, Option_t *opt
 
    tree->GetUserInfo()->Add(info);
 }//AddCallTreeInfo
+
+//______________________________________________________________________________
+void XPreProcesSet::AddQualTreeInfo(TTree *tree, const char *name, Option_t *option,
+                    Option_t *qualopt, Int_t nunits, Double_t min, Double_t max,
+                    Int_t nquant, Double_t *q, Double_t *quantL, Double_t *quantSE,
+                    Double_t *quantLE)
+{
+   // Add quality tree info to list fUserInfo of tree
+   if(kCS) cout << "------XPreProcesSet::AddQualTreeInfo------" << endl;
+
+// store name of tree set as title
+   XQualityTreeInfo *info = new XQualityTreeInfo(name, "");
+
+   // store class, and name and class of treeset
+   info->SetTitle(info->ClassName());
+   info->SetOption(option);
+   info->SetQualOption(qualopt);
+   info->SetTreeSetName(GetName());
+   info->SetTreeSetClass(ClassName());
+
+   // add user info
+   if (nunits > 0) info->AddUserInfo(nunits, min, max);
+   if (nquant > 0) info->AddUserInfo(nquant, q, quantL);
+   if (nquant > 0) info->AddQualInfo(nquant, quantSE, quantLE);
+
+   tree->GetUserInfo()->Add(info);
+}//AddQualTreeInfo
+
+//______________________________________________________________________________
+void XPreProcesSet::AddResdTreeInfo(TTree *tree, const char *name, Option_t *option,
+                    Option_t *qualopt, Int_t nrows, Int_t ncols, Int_t nquant,
+                    Double_t *q, Double_t *quantR, Double_t *quantW)
+{
+   // Add residual tree info to list fUserInfo of tree
+   if(kCS) cout << "------XPreProcesSet::AddResdTreeInfo------" << endl;
+
+// store name of tree set as title
+   XResidualTreeInfo *info = new XResidualTreeInfo(name, "");
+
+   // store class, and name and class of treeset
+   info->SetTitle(info->ClassName());
+   info->SetOption(option);
+   info->SetQualOption(qualopt);
+   info->SetTreeSetName(GetName());
+   info->SetTreeSetClass(ClassName());
+
+   // add user info
+   if (nquant > 0) info->AddUserInfo(nrows, ncols, nquant, q, quantR, quantW);
+
+   tree->GetUserInfo()->Add(info);
+}//AddResdTreeInfo
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -1313,7 +1801,7 @@ Int_t XGCProcesSet::Preprocess(const char *method)
    Int_t err = errNoErr;
 
 // Test if algorithms are initialized
-   if (!(fBackgrounder || fNormalizer || fExpressor || fCaller)) {
+   if (!(fBackgrounder || fNormalizer || fExpressor || fCaller || fQualifier)) {
       cerr << "Error: At least one algorithm must be initialized!" << endl;
       return errAbort;
    }//if
@@ -1327,7 +1815,7 @@ Int_t XGCProcesSet::Preprocess(const char *method)
    Bool_t doNorm = (strcmp(method, kProcessMethod[5]) == 0) || doRMA;
    Bool_t doExpr = (strcmp(method, kProcessMethod[6]) == 0) || doRMA || doMAS4 || doMAS5;
    Bool_t doCall = (strcmp(method, kProcessMethod[7]) == 0) ||          doMAS4 || doMAS5;
-//??   Bool_t doCall = (strcmp(method, kProcessMethod[7]) == 0) || doRMA || doMAS4 || doMAS5;
+   Bool_t doQC   = (strcmp(method, kProcessMethod[8]) == 0);
 
 // Flags to determine kind of datatree to be used for detection call
    Bool_t atRaw  = kTRUE;
@@ -1340,6 +1828,25 @@ Int_t XGCProcesSet::Preprocess(const char *method)
 
       // set default to raw data
       if (!(atRaw || atBgrd || atNorm)) atRaw = kTRUE;
+   }//if
+
+// Flags to determine kind of datatree to be used for quality control
+   Bool_t qcRaw  = kFALSE;
+   Bool_t qcBgrd = kFALSE;
+   Bool_t qcNorm = kFALSE;
+   Bool_t qcAll  = kFALSE;
+   if (fQualifier) {
+//??      doQC   = kTRUE;
+      qcRaw  = (strcmp(fQualifier->GetQualOption(), kQualOption[0]) == 0);
+      qcBgrd = (strcmp(fQualifier->GetQualOption(), kQualOption[1]) == 0);
+      qcNorm = (strcmp(fQualifier->GetQualOption(), kQualOption[2]) == 0);
+      qcAll  = (strcmp(fQualifier->GetQualOption(), kQualOption[3]) == 0);
+
+      // enforce correct QC for method = "preprocess"
+      if (doBgrd && !doNorm && !doQC) {qcBgrd = kTRUE; qcNorm = qcAll = kFALSE;}
+      if (doNorm && !doBgrd && !doQC) {qcNorm = kTRUE; qcBgrd = qcAll = kFALSE;}
+
+      doQC = kTRUE;
    }//if
 
 // Get schemes from scheme file
@@ -1359,6 +1866,7 @@ Int_t XGCProcesSet::Preprocess(const char *method)
 // Get number of data trees and background trees
    Int_t numdata  = 0;
    Int_t numbgrd  = 0;
+   Int_t maxnum   = 0;  // needed to initialize e.g. bgrdtree = 0
    Int_t numtrees = fTrees->GetSize();
 //or?   Int_t numtrees = fSelections->GetSize();
 
@@ -1370,20 +1878,34 @@ Int_t XGCProcesSet::Preprocess(const char *method)
    }//for_k
 
 // Need to add equal number of bgrd and data trees
-   if ((numbgrd > 0) && (numbgrd != numdata)) {
+//x   if ((numbgrd > 0) && (numbgrd != numdata)) {
+   if ((numbgrd > 0) && (numdata > 0) && (numbgrd != numdata)) {
       cerr << "Error: Number of background trees <" << numbgrd
            << "> is not equal to number of data trees <" << numdata
            << ">!" << endl;
+      SafeDelete(fData);
+      SafeDelete(fSchemes);
       return errAbort;
    }//if
+   maxnum = TMath::Max(numdata, numbgrd);
 
 // Initialize data trees and background trees
-   TTree **datatree = new TTree*[numdata+1]; //for possible Reference tree for normalization
-   TTree **bgrdtree = new TTree*[numdata];
-   for (Int_t k=0; k<numdata; k++) datatree[k] = bgrdtree[k] = 0;
+   TTree **datatree = new TTree*[maxnum+1]; //for possible Reference tree for normalization
+   TTree **bgrdtree = new TTree*[maxnum];
+   for (Int_t k=0; k<maxnum+1; k++) datatree[k] = 0;
+   for (Int_t k=0; k<maxnum;   k++) bgrdtree[k] = 0;
 
    err = this->InitTrees(numdata, datatree, numbgrd, bgrdtree);
    if (err != errNoErr) goto cleanup;
+
+// Quality control based on raw datatree
+   if (fQualifier && fQualSelector && doQC && (qcRaw || qcAll)) {
+      err = this->QualityControl(numdata, datatree, numbgrd, bgrdtree, kQualOption[0]);
+      if (err != errNoErr) goto cleanup;
+   } else if (doQC && !fQualifier) {
+      cerr << "Error: Quality control algorithm is not initialized!" << endl;
+      err = errAbort; goto cleanup;
+   }//if
 
 // Detect present call based on raw datatree
    if (fCaller && fCallSelector && atRaw && (doCall || doAll)) {
@@ -1400,6 +1922,15 @@ Int_t XGCProcesSet::Preprocess(const char *method)
       if (err != errNoErr) goto cleanup;
    } else if (doBgrd && !fBackgrounder) {
       cerr << "Error: Backgrounder algorithm is not initialized!" << endl;
+      err = errAbort; goto cleanup;
+   }//if
+
+// Quality control based on background adjusted datatree
+   if (fQualifier && fQualSelector && doQC && (qcBgrd || qcAll)) {
+      err = this->QualityControl(numdata, datatree, numbgrd, bgrdtree, kQualOption[1]);
+      if (err != errNoErr) goto cleanup;
+   } else if (doQC && !fQualifier) {
+      cerr << "Error: Quality control algorithm is not initialized!" << endl;
       err = errAbort; goto cleanup;
    }//if
 
@@ -1422,6 +1953,15 @@ Int_t XGCProcesSet::Preprocess(const char *method)
       err = errAbort; goto cleanup;
    }//if
 
+// Quality control based on normalized datatree
+   if (fQualifier && fQualSelector && doQC && (qcNorm || qcAll)) {
+      err = this->QualityControl(numdata, datatree, numbgrd, bgrdtree, kQualOption[2]);
+      if (err != errNoErr) goto cleanup;
+   } else if (doQC && !fQualifier) {
+      cerr << "Error: Quality control algorithm is not initialized!" << endl;
+      err = errAbort; goto cleanup;
+   }//if
+
 // Detect present call based on normalized datatree
    if (fCaller && fCallSelector && atNorm && (doCall || doAll)) {
       err = this->DetectCall(numdata, datatree, numbgrd, bgrdtree);
@@ -1430,8 +1970,6 @@ Int_t XGCProcesSet::Preprocess(const char *method)
       cerr << "Error: CallDetector algorithm is not initialized!" << endl;
       err = errAbort; goto cleanup;
    }//if
-
-// Qualify
 
 // Condense
    if (fExpressor && fExprSelector && (doExpr || doAll)) {
@@ -1450,8 +1988,14 @@ Int_t XGCProcesSet::Preprocess(const char *method)
 
 // Cleanup
 cleanup:
-   delete [] bgrdtree;
-   delete [] datatree;
+   for (Int_t k=0; k<numbgrd; k++) {
+      SafeDelete(bgrdtree[k]);
+   }//for_k
+   for (Int_t k=0; k<numdata; k++) {
+      SafeDelete(datatree[k]);
+   }//for_k
+   if (bgrdtree) delete [] bgrdtree;
+   if (datatree) delete [] datatree;
 
    SafeDelete(fData);
    SafeDelete(fSchemes);
@@ -1474,8 +2018,12 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
       cout << "   Background correcting raw data..." << endl;
    }//if
 
-   Int_t err   = errNoErr;
-   Int_t split = 99;
+   Int_t err    = errNoErr;
+   Int_t split  = 99;
+
+   Int_t    nquant = 7;
+   Double_t q[]    = {0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0};
+
    Int_t i, j, ij, x, y;
 
    TDirectory *savedir = gDirectory;
@@ -1498,6 +2046,7 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
    Double_t *arrStdev = 0;  //standard deviation of probe intensities
    Double_t *arrBgrd  = 0;  //background signal of probes
    Double_t *arrNoise = 0;  //standard deviation of probe background signal
+   Double_t *quantB   = 0;  //quantiles for background trees
    Double_t *dummy    = 0;  //to prevent compilation error
 
 // Get chip parameters from scheme file (also for alternative CDFs)
@@ -1545,10 +2094,11 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
    else if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
 
 // Initialize memory for data arrays
-   if (!(arrInten = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-   if (!(arrStdev = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-   if (!(arrBgrd  = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
-   if (!(arrNoise = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
+   if (!(arrInten = new (nothrow) Double_t[size]))   {err = errInitMemory; goto cleanup;}
+   if (!(arrStdev = new (nothrow) Double_t[size]))   {err = errInitMemory; goto cleanup;}
+   if (!(arrBgrd  = new (nothrow) Double_t[size]))   {err = errInitMemory; goto cleanup;}
+   if (!(arrNoise = new (nothrow) Double_t[size]))   {err = errInitMemory; goto cleanup;}
+   if (!(quantB   = new (nothrow) Double_t[nquant])) {err = errInitMemory; goto cleanup;}
    for (i=0; i<size; i++) {
       arrInten[i] = arrStdev[i] = arrBgrd[i] = arrNoise[i] = 0.0;
    }//for_i
@@ -1627,9 +2177,13 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
          cout << "         " << nummax << " cells with maximal intensity " << max << endl;
       }//if
 
+   // Quantiles for background trees
+      err = this->BgrdQuantiles(bgrdtree[k], bgcell, nquant, q, quantB);
+      if (err != errNoErr) goto cleanup;
+
    // Add tree info to tree
       AddDataTreeInfo(bgrdtree[k], bgrdtree[k]->GetName(), fBackgrounder->GetOption(),
-                      numrows, numcols, nummin, min, nummax, max, -1);
+                      numrows, numcols, nummin, min, nummax, max, -1, nquant, q, quantB);
 
    // Write background tree to file 
       if ((err = WriteTree(bgrdtree[k], TObject::kOverwrite)) != errNoErr) goto cleanup;
@@ -1668,6 +2222,7 @@ Int_t XGCProcesSet::AdjustBackground(Int_t numdata, TTree **datatree,
 
 cleanup:
    // delete arrays
+   if (quantB)   {delete [] quantB;   quantB   = 0;}
    if (arrNoise) {delete [] arrNoise; arrNoise = 0;}
    if (arrBgrd)  {delete [] arrBgrd;  arrBgrd  = 0;}
    if (arrStdev) {delete [] arrStdev; arrStdev = 0;}
@@ -2073,6 +2628,857 @@ cleanup:
 
    return err;
 }//Normalize
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::QualityControl(Int_t numdata, TTree **datatree,
+                    Int_t numbgrd, TTree **bgrdtree, const char *option)
+{
+   // Quality control
+   if(kCS) cout << "------XGCProcesSet::QualityControl------" << endl;
+
+   Int_t err = errNoErr;
+
+   TDirectory *savedir = gDirectory;
+
+// Get chip parameters from scheme file (also alternative CDFs)
+   TTree *tree = numdata ? datatree[0] : (numbgrd ? bgrdtree[0] : 0);
+   if (tree == 0) return errGetTree;
+   if (strcmp(fSchemeName.Data(), "") == 0) {
+      fSchemeName = tree->GetTitle();
+   } else if (!fSchemeName.Contains(tree->GetTitle())) {
+      return fManager->HandleError(errSchemeDerived, fSchemeName, tree->GetTitle());
+   }//if
+
+// Change directory to scheme file
+   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
+
+   XGeneChip *chip = (XGeneChip*)fSchemes->FindObject(fSchemeName, kTRUE);
+   if (!chip) return fManager->HandleError(errGetScheme, fSchemeName);
+   Int_t numrows = chip->GetNumRows();
+   Int_t numcols = chip->GetNumColumns();
+   Int_t size    = numrows*numcols;
+
+// Change directory to current directory for treeset in main file
+   if (!fFile->cd(fName)) return errGetDir;
+
+// Check for equal number and correct extension of data tree entries
+   if (numdata > 0) {
+      // create new trees
+      TTree **resdtree = new TTree*[numdata];
+      TTree **exprtree = new TTree*[numdata];
+      TTree **bordtree = new TTree*[numdata];
+
+      for (Int_t k=0; k<numdata; k++) {
+         if (datatree[k] == 0) return errGetTree;
+
+         TString exten = Path2Name(datatree[k]->GetName(), ".", "");
+         if ((strcmp(option, kQualOption[0]) == 0) && HasExtension(exten.Data(), kExtenData)) {
+//ev not necessary??
+            fQualifier->SetQualOption(option);  //raw
+         } else if ((strcmp(option, kQualOption[1]) == 0) && HasExtension(exten.Data(), kExtenIntn)) {
+//ev not necessary??
+            fQualifier->SetQualOption(option);  //adjusted
+         } else if ((strcmp(option,kQualOption[2]) == 0) && HasExtension(exten.Data(), kExtenCNrm)) {
+//ev not necessary??
+            fQualifier->SetQualOption(option);  //normalized
+         } else {
+            return fManager->HandleError(errExtension, exten);
+         }//if
+
+         // check for equal number of data tree entries
+         if ((Int_t)(datatree[k]->GetEntries()) != size) {
+               TString str = ""; str += size;
+               return fManager->HandleError(errNumTreeEntries, datatree[k]->GetName(), str);
+         }//if
+
+         resdtree[k] = 0;
+         exprtree[k] = 0;
+         bordtree[k] = 0;
+      }//for_k
+
+      // informing user
+      if (XManager::fgVerbose) {
+         cout << "   Calculating quality control for <" << option << "> data trees  ..." << endl;
+      }//if
+
+      err = this->DoDataQualityControl(numdata, datatree, resdtree, exprtree, chip, fQualifier->GetFile());
+      if (err != errNoErr) goto cleanup;
+
+      err = this->DoBorderElements(numdata, datatree, bordtree, chip, fQualifier->GetFile());
+      if (err != errNoErr) goto cleanup;
+
+   // Cleanup
+   cleanup:
+      if(bordtree) {
+         for (Int_t k=0; k<numdata; k++) SafeDelete(bordtree[k]);
+         delete [] bordtree;
+      }//if
+
+      if(exprtree) {
+         for (Int_t k=0; k<numdata; k++) SafeDelete(exprtree[k]);
+         delete [] exprtree;
+      }//if
+
+      if(resdtree) {
+         for (Int_t k=0; k<numdata; k++) SafeDelete(resdtree[k]);
+         delete [] resdtree;
+      }//if
+   }//if
+
+// Check for equal number and correct extension of background tree entries
+   if (numbgrd > 0) {
+      for (Int_t k=0; k<numbgrd; k++) {
+         if (bgrdtree[k] == 0) return errGetTree;
+
+         TString exten = Path2Name(bgrdtree[k]->GetName(),".","");
+         if ((strcmp(option, kQualOption[1]) == 0) && HasExtension(exten.Data(), kExtenBgrd)) {
+//ev not necessary??
+            fQualifier->SetQualOption(option);  //adjusted
+         } else {
+            return fManager->HandleError(errExtension, exten);
+         }//if
+
+         if ((Int_t)(bgrdtree[k]->GetEntries()) != size) {
+            TString str = ""; str += size;
+            return fManager->HandleError(errNumTreeEntries, bgrdtree[k]->GetName(), str);
+         }//if
+      }//for_k
+
+      // Informing user
+      if (XManager::fgVerbose) {
+         cout << "   Calculating quality control for background trees  ..." << endl;
+      }//if
+
+      err = this->DoBgrdQualityControl(numbgrd, bgrdtree, chip, fQualifier->GetFile());
+   }//if
+
+   savedir->cd();
+
+   return err;
+}//QualityControl
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::DoDataQualityControl(Int_t numdata, TTree **datatree,
+                    TTree **resdtree, TTree **exprtree, XDNAChip *chip, TFile *file)
+{
+   // Compute quality controls
+   if(kCS) cout << "------XGCProcesSet::DoDataQualityControl------" << endl;
+
+   Int_t err = errNoErr;
+   Int_t idx = 0;
+   Int_t x   = 0;
+   Int_t y   = 0;
+   Int_t ij, start, end, id, entry;
+
+   Int_t numsels = 0;  //number of selected entries
+   Int_t exlevel = 0;
+   Int_t stepout = (Int_t)((100000.0 + 10.0*numdata)/(Float_t)numdata); //step size for verbose output
+
+// Init 
+   Int_t     *arrMask = 0;
+   Int_t     *arrIndx = 0;
+   Int_t     *arrUnit = 0;
+   Int_t     *mskUnit = 0;
+   Int_t     *arrXY   = 0;
+   Double_t  *level   = 0;
+   Double_t  *sterr   = 0;  // stderr used in <stdio.h>
+   Double_t  *residu  = 0;
+   Double_t  *weight  = 0;
+   Double_t  *quantL  = 0; 
+   Double_t  *quantLE = 0; 
+   Double_t  *quantSE = 0; 
+   Double_t  *quantR  = 0; 
+   Double_t  *quantW  = 0; 
+
+   Double_t **table   = 0;
+   Double_t  *arrData = 0;
+   Double_t  *arrPM   = 0; 
+   Double_t  *dummy   = 0;  //to prevent compilation error
+
+   TTree     *idxtree = 0; 
+   XGCUnit   *unit    = 0;
+
+   TTree     *scmtree = 0; 
+   TLeaf     *scmleaf = 0;
+   XScheme   *scheme  = 0;
+
+   TTree   **tmptree  = 0;
+
+   XGCCell       **cell = 0;
+   XResidual     **resd = 0;
+   XQCExpression **expr = 0;  //quality control expression
+
+   Int_t    bufsize = XManager::GetBufSize(numdata, 10000);
+   Int_t    split   = 99;
+   Double_t sort    = 0;
+
+   Double_t medlevel  = 0;
+   Double_t medstderr = 0;
+
+   Int_t numrows  = chip->GetNumRows();
+   Int_t numcols  = chip->GetNumColumns();
+   Int_t numunits = chip->GetNumUnits();
+   Int_t size     = numrows*numcols;
+
+   Int_t    nquant = 7;
+   Double_t q[]    = {0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0};
+//Double_t *q = new Double_t[nquant];
+//q[0] = 0.0; q[1] = 0.1; q[2] = 0.25; q[3] = 0.5; q[4] = 0.75; q[5] = 0.9; q[6] = 1.0; 
+
+
+   TString exten = fQualifier->GetTitle();
+   TString quopt = fQualifier->GetQualOption();
+
+   TDirectory *savedir = gDirectory;
+
+// Change directory to scheme file
+   if (!fSchemeFile->cd(fSchemeName)) return errGetDir;
+
+// Get scheme tree  and unit tree for scheme
+   idxtree = this->UnitTree(fQualifier, &unit, numunits); 
+   if (idxtree == 0) return errGetTree;
+
+   scmtree = this->SchemeTree(fQualifier, &scheme, &scmleaf); 
+   if (scmtree == 0) return errGetTree;
+
+// Get maximum number of pairs/cells
+   Int_t maxnumcells = this->MaxNumberCells(idxtree);
+   if (maxnumcells <= 0) return errGeneral;
+   Int_t maxlen = (maxnumcells + 1)*numdata;
+
+// Init unit selector
+   XUnitSelector *unitSelector = new XUnitSelector(kTypeSlct[3], kExtenSlct[3]);
+   unitSelector->SetOption((this->ChipType(fTitle)).Data());
+   err = unitSelector->InitParameters(fQualSelector->GetNumParameters(),
+                                      fQualSelector->GetParameters());
+   if (err != errNoErr) goto cleanup;
+
+// Initialize memory for unit arrays
+   if (!(arrUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
+   if (!(mskUnit = new (nothrow) Int_t[numunits])) {err = errInitMemory; goto cleanup;}
+
+   for (Int_t i=0; i<numunits; i++) arrUnit[i] = mskUnit[i] = 0; 
+
+// Get mask from scheme tree and store in array 
+   arrUnit = this->FillUnitArray(idxtree, unit, numunits, arrUnit, mskUnit);
+   if (arrUnit == 0) {err = errInitMemory; goto cleanup;}
+
+// Calculate units satisfying mask
+   err = unitSelector->Calculate(numunits, arrUnit, mskUnit); //arrUnit to prevent compile error
+   if (err != errNoErr) goto cleanup;
+
+// Create local arrays
+   if (!(arrMask = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
+   if (!(arrIndx = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
+   if (!(arrXY   = new (nothrow) Int_t[maxnumcells])) {err = errInitMemory; goto cleanup;}
+   if (!(level   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
+   if (!(sterr   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
+   if (!(residu  = new (nothrow) Double_t[maxlen]))  {err = errInitMemory; goto cleanup;}
+   if (!(weight  = new (nothrow) Double_t[maxlen]))  {err = errInitMemory; goto cleanup;}
+   if (!(arrPM   = new (nothrow) Double_t[maxlen]))  {err = errInitMemory; goto cleanup;}
+   if (!(quantL  = new (nothrow) Double_t[nquant]))  {err = errInitMemory; goto cleanup;}
+   if (!(quantLE = new (nothrow) Double_t[nquant]))  {err = errInitMemory; goto cleanup;}
+   if (!(quantSE = new (nothrow) Double_t[nquant]))  {err = errInitMemory; goto cleanup;}
+   if (!(quantR  = new (nothrow) Double_t[nquant]))  {err = errInitMemory; goto cleanup;}
+   if (!(quantW  = new (nothrow) Double_t[nquant]))  {err = errInitMemory; goto cleanup;}
+
+   for (Int_t i=0; i<size; i++) {
+      arrMask[i] = eINITMASK; 
+      arrIndx[i] = 0;
+   }//for_i
+   for (Int_t i=0; i<maxnumcells; i++) arrXY[i] = 0; 
+   for (Int_t i=0; i<numdata; i++) level[i]  = sterr[i] = 0.0; 
+   for (Int_t i=0; i<maxlen;  i++) {
+      residu[i] = arrPM[i] = 0.0;
+      weight[i] = eINITWEIGHT;
+   }//for_i
+
+// Get exon level of annotation
+   if (fQualSelector->GetNumParameters() > 0) {
+      exlevel = (Int_t)(fQualSelector->GetParameters())[0];
+   }//if
+
+// Get mask for PM from scheme tree and store in array 
+   arrMask = this->FillMaskArray(chip, scmtree, scheme, exlevel, size, arrMask);
+   if (arrMask == 0) {err = errInitMemory; goto cleanup;}
+
+// Calculate mask for expression
+   err = fQualSelector->Calculate(size, dummy, dummy, arrMask);
+   if (err != errNoErr) goto cleanup;
+
+// Init branch addresses
+   cell = new XGCCell*[numdata];
+   for (Int_t k=0; k<numdata; k++) {
+      cell[k] = 0;
+      datatree[k]->SetBranchAddress("DataBranch", &cell[k]);
+   }//for_k
+
+// Get entry index from datatree
+   idx = 0;
+   for (Int_t i=0; i<size; i++) {
+      datatree[0]->GetEntry(i);
+
+      x  = cell[0]->GetX();
+      y  = cell[0]->GetY();
+      ij = XY2Index(x, y, numcols);
+
+      if (arrMask[ij] == 1) {
+         arrIndx[ij] = idx++;
+      }//if
+   }//for_i
+//DB   datatree[0]->DropBaskets();  //to remove baskets from memory
+
+// Get number of selected entries
+   for (Int_t i=0; i<size; i++) {
+      numsels = (arrMask[i] == 1) ? ++numsels : numsels;
+   }//for_i
+
+// Get data from datatrees (and bgrdtrees) and store in table or array
+   if (file == 0) {
+      // create table
+      if (!(table = CreateTable(numdata, numsels))) {err = errInitMemory; goto cleanup;}
+
+      // fill table with selected intensities of all datatrees
+      for (Int_t k=0; k<numdata; k++) {
+         idx = 0;
+         for (Int_t i=0; i<size; i++) {
+            datatree[k]->GetEntry(i);
+            if (arrMask[i] == 1) table[k][idx++] = cell[k]->GetIntensity();
+         }//for_i
+      }//for_k
+   } else {
+      // create array to store selected intensities
+      if (!(arrData = new (nothrow) Double_t[numsels])) {err = errInitMemory; goto cleanup;}
+      for (Int_t i=0; i<numsels;  i++) arrData[i] = 0.0;
+
+      // change directory to temporary file
+      if (!file->cd()) {err = errGetDir; goto cleanup;}
+
+      // get data from datatrees (and bgrdtrees) and store in temporary file
+      tmptree  = new TTree*[numdata];
+      for (Int_t k=0; k<numdata; k++) {
+         // create temporary tree
+         tmptree[k] = new TTree(datatree[k]->GetName(), "temporary tree");
+         if (tmptree[k] == 0) {err = errCreateTree; goto cleanup;}
+         tmptree[k]->Branch("sort", &sort, "sort/D", bufsize);
+
+         // informing user
+         if (XManager::fgVerbose) {
+            cout << "         filling temporary tree <" << tmptree[k]->GetName()
+                 << ">...              \r" << flush;
+         }//if
+
+         // fill array with (background corrected) intensities
+         idx = 0;
+         for (Int_t i=0; i<size; i++) {
+            datatree[k]->GetEntry(i);
+            if (arrMask[i] == 1) arrData[idx++] = cell[k]->GetIntensity();
+         }//for_i
+         datatree[k]->DropBaskets();  //to remove baskets from memory
+
+         // fill tmptree with array in the order of scheme tree entries for (x,y)
+         start = 0;
+         end   = 0;
+         for (id=0; id<numunits; id++) { 
+            idxtree->GetEntry(id);
+
+            Int_t unitID   = unit->GetUnitID();
+            Int_t numcells = unit->GetNumCells();
+            // skip masked unit entries
+            if (mskUnit[id] <= 0) {
+               start += numcells;
+               end = start;
+               continue;
+            }//if
+
+            end += numcells;
+            for (Int_t j=start; j<end; j++) {
+               scmtree->GetEntry(j);
+
+               if ((Int_t)(scmleaf->GetValue()) != unitID) {
+                  cerr << "Error: unitID is not equal to: " << unitID << endl;
+                  err = errAbort;
+                  goto cleanup;
+               }//if
+
+               x  = scheme->GetX();
+               y  = scheme->GetY();
+               ij = XY2Index(x, y, numcols);
+
+               if (arrMask[ij] == 1) {
+                  sort = arrData[arrIndx[ij]];
+                  tmptree[k]->Fill();
+               }//if
+            }//for_j
+            start += numcells;
+         }//for_id
+
+         // write tmptree to temporary file
+         tmptree[k]->Write();
+//??         tmptree[k]->Write(TObject::kOverwrite);
+         tmptree[k]->DropBaskets();  //to remove baskets from memory
+      }//for_k
+
+      if (XManager::fgVerbose) {
+         cout << "         finished filling <" << numdata << "> temporary trees.          " << endl;
+      }//if
+   }//if
+
+// Change directory to current directory for treeset in main file
+   if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
+
+// Init trees
+   resd = new XResidual*[numdata];
+   expr = new XQCExpression*[numdata];
+   for (Int_t k=0; k<numdata; k++) {
+      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
+      TString resdname = dataname + "_" + quopt.Data() + "." + kExtenResd[0];
+      TString exprname = dataname + "_" + quopt.Data() + "." + exten.Data();
+//not possible      TString resdname = dataname + "." + quopt.Data() + "." + kExtenResd[0];
+//not possible      TString exprname = dataname + "." + quopt.Data() + "." + exten.Data();
+
+      resdtree[k] = new TTree(resdname, fSchemeName);
+      if (resdtree[k] == 0) {err = errCreateTree; goto cleanup;}
+      resd[k] = new XResidual();
+      resdtree[k]->Branch("ResdBranch", "XResidual", &resd[k], bufsize, split);
+
+      exprtree[k] = new TTree(exprname, fSchemeName);
+      if (exprtree[k] == 0) {err = errCreateTree; goto cleanup;}
+      expr[k] = new XQCExpression();
+      exprtree[k]->Branch("ExprBranch", "XQCExpression", &expr[k], bufsize, split);
+
+      // to reduce number of baskets in memory when reading trees
+      if (file) tmptree[k]->SetMaxVirtualSize(bufsize);
+   }//for_k
+
+// Calculate residuals
+   start = 0;
+   end   = 0;
+   idx   = 0;
+   entry = 0;
+   for (id=0; id<numunits; id++) { 
+      idxtree->GetEntry(id);
+
+      Int_t unitID   = unit->GetUnitID();
+      Int_t numcells = unit->GetNumCells();
+      // skip masked unit entries
+      if (mskUnit[id] <= 0) {
+         end += numcells;
+         for (Int_t j=start; j<end; j++) {
+            scmtree->GetEntry(j);
+            x  = scheme->GetX();
+            y  = scheme->GetY();
+
+            // fill resd trees
+            for (Int_t k=0; k<numdata; k++) {
+               resd[k]->SetX(x);
+               resd[k]->SetY(y);
+               resd[k]->SetResidual(0.0);
+               resd[k]->SetWeight(eINITWEIGHT);
+               resdtree[k]->Fill();
+            }//for_k
+         }//for_j
+         start += numcells;
+
+         continue;
+      }//if
+
+      // create array to store PM values for all probes with current unitID
+      Int_t  numatoms = unit->GetNumAtoms();
+
+      // fill arrPM with PM values of current unitID
+      Int_t p = 0;
+      end += numcells;
+      for (Int_t j=start; j<end; j++) {
+         scmtree->GetEntry(j);
+
+         if ((Int_t)(scmleaf->GetValue()) != unitID) {
+            cerr << "Error: unitID is not equal to: " << unitID << endl;
+            err = errAbort;
+            goto cleanup;
+         }//if
+
+         x  = scheme->GetX();
+         y  = scheme->GetY();
+         ij = XY2Index(x, y, numcols);
+
+         if (arrMask[ij] == 1) {
+            if (p == 0) idx++;  //count number of units to be summarized
+
+            arrXY[p/numdata] = ij;
+
+            if (file == 0) {
+               for (Int_t k=0; k<numdata; k++) {
+                  arrPM[p] = table[k][arrIndx[ij]];
+                  p++;
+               }//for_k
+            } else {
+               for (Int_t k=0; k<numdata; k++) {
+                  tmptree[k]->GetEntry(entry);
+                  arrPM[p] = sort;
+                  p++;
+               }//for_k
+            }//if
+
+            entry++;
+         } else {
+
+//Test for exon arrays???
+            // fill resd trees
+            if (exlevel > 0) {
+               for (Int_t k=0; k<numdata; k++) {
+                  resd[k]->SetX(x);
+                  resd[k]->SetY(y);
+                  resd[k]->SetResidual(0.0);
+                  resd[k]->SetWeight(eINITWEIGHT);
+                  resdtree[k]->Fill();
+               }//for_k
+            }//if
+         }//if
+      }//for_j
+      start += numcells;
+
+      // fill arrPM or continue if it is not filled
+      if ((err = fQualifier->SetArray(p, arrPM)) != errNoErr) {
+         continue;
+      }//if
+
+      // calculate residuals for PMs of current unitID
+      if ((err = fQualifier->Calculate(numdata, level, sterr, residu, weight, 0))) break;
+
+//Test for exon arrays???
+      // fill resd trees
+      if (exlevel > 0) {
+         // fill resd trees for exon arrays
+         for (Int_t i=0; i<p/numdata; i++) { 
+            for (Int_t k=0; k<numdata; k++) {
+               resd[k]->SetX(Index2X(arrXY[i], numcols));
+               resd[k]->SetY(Index2Y(arrXY[i], numcols));
+               resd[k]->SetResidual(residu[i*numdata + k]);
+               resd[k]->SetWeight(weight[i*numdata + k]);
+               resdtree[k]->Fill();
+            }//for_k
+         }//for_i
+      } else {
+         // fill resd trees for expression arrays
+         for (Int_t i=0; i<p/numdata; i++) { 
+            for (Int_t k=0; k<numdata; k++) {
+               resd[k]->SetX(Index2X(arrXY[i], numcols));
+               resd[k]->SetY(Index2Y(arrXY[i], numcols));
+               resd[k]->SetResidual(residu[i*numdata + k]);
+               resd[k]->SetWeight(weight[i*numdata + k]);
+               resdtree[k]->Fill();
+            }//for_k
+
+            // fill MM positions with residuals for PMs
+            for (Int_t k=0; k<numdata; k++) {
+               resd[k]->SetX(Index2X(arrXY[i], numcols));
+               resd[k]->SetY(Index2Y(arrXY[i], numcols) + 1);
+               resd[k]->SetResidual(residu[i*numdata + k]);
+               resd[k]->SetWeight(weight[i*numdata + k]);
+               resdtree[k]->Fill();
+            }//for_k
+         }//for_i
+      }//if
+
+      // median level and stderr for RLE and NUSE (need to convert to log2)
+      medlevel  = TStat::Median(numdata, level, 2);
+      medstderr = TStat::Median(numdata, sterr, 2);
+      if (medstderr == 0.0) medstderr = 1.0; 
+
+      // fill expression trees
+      for (Int_t k=0; k<numdata; k++) {
+         expr[k]->SetUnitID(unitID);
+         expr[k]->SetLevel(level[k]);
+//??         expr[k]->SetStdErr(sterr[k]);
+//TEST: Abs() not correct for NUSE???
+         expr[k]->SetStdErr(TMath::Abs(sterr[k]));
+         expr[k]->SetRLE(TMath::Log2(level[k]) - medlevel);
+         expr[k]->SetNUSE(TMath::Log2(sterr[k])/medstderr);
+
+         exprtree[k]->Fill();
+      }//for_k
+
+      if (XManager::fgVerbose && (idx == 1 || id%stepout == 0)) {
+         cout << "      calculating quality controls for <" << idx << "> of <"
+              << numunits << "> units...\r" << flush;
+      }//if
+   }//for_id
+
+   if (XManager::fgVerbose) {
+      cout << "      calculating quality controls for <" << idx << "> of <"
+           << numunits << "> units...Finished." << endl;
+   }//if
+
+// Write trees to file 
+   for (Int_t k=0; k<numdata; k++) {
+      // quantiles for residual trees
+      err = this->ResiduQuantiles(resdtree[k], resd[k], nquant, q, quantR, quantW);
+      if (err != errNoErr) goto cleanup;
+
+      // residual trees
+      AddResdTreeInfo(resdtree[k], resdtree[k]->GetName(), fQualifier->GetOption(),
+                      fQualifier->GetQualOption(), numrows, numcols, nquant, q, quantR, quantW);
+      if ((err = WriteTree(resdtree[k], TObject::kOverwrite)) == errNoErr) {
+         AddTreeHeader(resdtree[k]->GetName(), "Resd", 0, fQualifier->GetNumParameters(),
+                       fQualifier->GetParameters());
+      } else {
+         break;
+      }//if
+
+      // quantiles for expression trees
+      err = this->QualityQuantiles(exprtree[k], expr[k], nquant, q, quantL, quantSE, quantLE);
+      if (err != errNoErr) goto cleanup;
+
+      // quality expression trees
+      AddQualTreeInfo(exprtree[k], exprtree[k]->GetName(), fQualifier->GetOption(),
+                      fQualifier->GetQualOption(), idx, quantL[0], quantL[nquant-1],
+                      nquant, q, quantL, quantSE, quantLE);
+
+      if ((err = WriteTree(exprtree[k], TObject::kOverwrite)) == errNoErr) {
+//TO DO??  (ev "Qual" instead of "Expr"??)
+         AddTreeHeader(exprtree[k]->GetName(), "Expr", 0, fQualifier->GetNumParameters(),
+                       fQualifier->GetParameters());
+      } else {
+         break;
+      }//if
+   }//for_k
+
+// Cleanup
+cleanup:
+   // delete table
+   DeleteTable(table, numdata);
+
+   // delete temporary trees
+   if (tmptree) {
+      for (Int_t k=0; k<numdata; k++) {
+         tmptree[k]->Delete(""); tmptree[k] = 0;
+      }//for_k
+      delete [] tmptree;
+   }//if
+
+   // delete arrays
+   if (arrData) {delete [] arrData; arrData = 0;}
+   if (quantW)  {delete [] quantW;  quantW  = 0;}
+   if (quantR)  {delete [] quantR;  quantR  = 0;}
+   if (quantSE) {delete [] quantSE; quantSE = 0;}
+   if (quantLE) {delete [] quantLE; quantLE = 0;}
+   if (quantL)  {delete [] quantL;  quantL  = 0;}
+   if (arrPM)   {delete [] arrPM;   arrPM   = 0;}
+   if (weight)  {delete [] weight;  weight  = 0;}
+   if (residu)  {delete [] residu;  residu  = 0;}
+   if (sterr)   {delete [] sterr;   sterr   = 0;}
+   if (level)   {delete [] level;   level   = 0;}
+   if (arrXY)   {delete [] arrXY;   arrXY   = 0;}
+   if (arrIndx) {delete [] arrIndx; arrIndx = 0;}
+   if (arrMask) {delete [] arrMask; arrMask = 0;}
+   if (mskUnit) {delete [] mskUnit; mskUnit = 0;}
+   if (arrUnit) {delete [] arrUnit; arrUnit = 0;}
+
+   for (Int_t k=0; k<numdata; k++) {
+      SafeDelete(expr[k]);
+      exprtree[k]->DropBaskets();  //to remove baskets from memory
+      exprtree[k]->ResetBranchAddress(exprtree[k]->GetBranch("ExprBranch"));
+
+      SafeDelete(resd[k]);
+      resdtree[k]->DropBaskets();  //to remove baskets from memory
+      resdtree[k]->ResetBranchAddress(resdtree[k]->GetBranch("ResdBranch"));
+
+      SafeDelete(cell[k]);
+      datatree[k]->DropBaskets();  //to remove baskets from memory
+      datatree[k]->ResetBranchAddress(datatree[k]->GetBranch("DataBranch"));
+   }//for_k
+
+   delete [] expr;
+   delete [] resd;
+   delete [] cell;
+
+   SafeDelete(unitSelector);
+   SafeDelete(unit);
+   idxtree->ResetBranchAddress(idxtree->GetBranch("IdxBranch"));
+   SafeDelete(scheme);
+   scmtree->ResetBranchAddress(scmtree->GetBranch("ScmBranch"));
+
+   savedir->cd();
+
+   return err;
+}//DoDataQualityControl
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::DoBorderElements(Int_t numdata, TTree **datatree,
+                    TTree **bordtree, XDNAChip *chip, TFile *file)
+{
+   // Compute border elements
+   if(kCS) cout << "------XGCProcesSet::DoBorderElements------" << endl;
+
+   Int_t err = errNoErr;
+
+   Int_t numrows  = chip->GetNumRows();
+   Int_t numcols  = chip->GetNumColumns();
+   Int_t size     = numrows*numcols;
+   Int_t noutline = 2*numrows + 2*numcols;
+
+   Int_t numl, numr, numt, numb;
+   Int_t idxhi, idxlo;
+   Int_t x, y, ij;
+
+   Double_t z;
+   Double_t mean, lmean, rmean, tmean, bmean;
+   Double_t mnhi, lmnhi, rmnhi, tmnhi, bmnhi;
+   Double_t mnlo, lmnlo, rmnlo, tmnlo, bmnlo;
+   Double_t xcoihi, ycoihi, xcoilo, ycoilo;
+
+   mnhi = lmnhi = rmnhi = tmnhi = bmnhi = 0.0;
+   mnlo = lmnlo = rmnlo = tmnlo = bmnlo = 0.0;
+
+   Int_t bufsize = XManager::GetBufSize(numdata, 10000);
+   Int_t split   = 99;
+
+   TString quopt = fQualifier->GetQualOption();
+
+// Init local arrays to store data from trees
+   Int_t    *arrXY = 0;  //coordinates
+   Double_t *inten = 0;  //intensities
+   Short_t  *mask  = 0;  //mask for intensities
+   if (!(arrXY = new (nothrow) Int_t[noutline]))    {err = errInitMemory; goto cleanup;}
+   if (!(inten = new (nothrow) Double_t[noutline])) {err = errInitMemory; goto cleanup;}
+   if (!(mask  = new (nothrow) Short_t[noutline]))  {err = errInitMemory; goto cleanup;}
+   for (Int_t i=0; i<noutline; i++) {
+      arrXY[i] = 0;
+      inten[i] = 0.0;
+      mask[i]  = 0;
+   }//for_i
+
+//TO DO: need to check numrows and numcols with HuGene_1.1 arrays to make sure if left/top/right/bottom correct!!!
+// ev bottom = new (nothrow) Double_t[numrows] etc????
+
+// Calculate border elements
+   for (Int_t k=0; k<numdata; k++) {
+      if (datatree[k] == 0) {err = errGetTree; break;}
+
+   // Init data tree
+      XGCCell *cell = 0;
+      datatree[k]->SetBranchAddress("DataBranch", &cell);
+
+   // Init border tree
+      TString dataname = Path2Name(datatree[k]->GetName(), dSEP, ".");
+      TString bordname = dataname + "_" + quopt.Data() + "." + kExtenBord[0];
+
+      XBorder *bord = 0;
+      bordtree[k] = new TTree(bordname, fSchemeName);
+      if (bordtree[k] == 0) {err = errCreateTree; goto cleantree;}
+      bord = new XBorder();
+      bordtree[k]->Branch("BordBranch", "XBorder", &bord, bufsize, split);
+
+   // Informing user
+      if (XManager::fgVerbose) {
+         cout << "      calculating border elements for <" << bordtree[k]->GetName() << ">..."
+              << endl;
+      }//if
+
+   // Get border intensities from data tree and store in array
+      numl = 0;
+      numr = numrows;
+      numt = numrows + numrows;
+      numb = numrows + numrows + numcols;
+      for (Int_t i=0; i<size; i++) {
+         datatree[k]->GetEntry(i);
+
+         x  = cell->GetX();
+         y  = cell->GetY();
+         z  = cell->GetIntensity();
+         ij = XY2Index(x, y, numcols);
+
+         if (x == 0)             {inten[numl] = z; arrXY[numl] = ij; numl++;}  //left
+         if (x == (numrows - 1)) {inten[numr] = z; arrXY[numr] = ij; numr++;}  //right
+         if (y == (numcols - 1)) {inten[numt] = z; arrXY[numt] = ij; numt++;}  //top
+         if (y == 0)             {inten[numb] = z; arrXY[numb] = ij; numb++;}  //bottom
+      }//for_i
+
+   // Border means
+      lmean = fQualifier->MeanBorder(0,    numl, inten); //mean left
+      rmean = fQualifier->MeanBorder(numl, numr, inten); //mean right
+      tmean = fQualifier->MeanBorder(numr, numt, inten); //mean top
+      bmean = fQualifier->MeanBorder(numt, numb, inten); //mean bottom
+      mean  = fQualifier->MeanBorder(0,    numb, inten); //mean total
+
+   // Border means for high and low intensities
+      fQualifier->HiLoBorder(0,    numl, inten, mask, lmean, lmnhi, lmnlo);  //mean left border
+      fQualifier->HiLoBorder(numl, numr, inten, mask, rmean, rmnhi, rmnlo);  //mean right border
+      fQualifier->HiLoBorder(numr, numt, inten, mask, tmean, tmnhi, tmnlo);  //mean top border
+      fQualifier->HiLoBorder(numt, numb, inten, mask, bmean, bmnhi, bmnlo);  //mean bottom border
+
+   // Center of intensity: for means is 0 set to -1
+      xcoihi = (rmnhi + lmnhi > 0) ? (rmnhi - lmnhi)/(rmnhi + lmnhi) : -1.0;
+      ycoihi = (tmnhi + bmnhi > 0) ? (tmnhi - bmnhi)/(tmnhi + bmnhi) : -1.0;
+      xcoilo = (rmnlo + lmnlo > 0) ? (rmnlo - lmnlo)/(rmnlo + lmnlo) : -1.0;
+      ycoilo = (tmnlo + bmnlo > 0) ? (tmnlo - bmnlo)/(tmnlo + bmnlo) : -1.0;
+
+      if (XManager::fgVerbose) {
+         cout << "      center of intensity: " << endl;
+         cout << "         positive border elements (x,y) = <" << xcoihi << ", " << ycoihi << ">." << endl;
+         cout << "         negative border elements (x,y) = <" << xcoilo << ", " << ycoilo << ">." << endl;
+      }//if
+
+   // Fill border tree
+      for (Int_t i=0; i<noutline; i++) { 
+         bord->SetX(Index2X(arrXY[i], numcols));
+         bord->SetY(Index2Y(arrXY[i], numcols));
+         bord->SetIntensity(inten[i]);
+         bord->SetFlag(mask[i]);
+
+         bordtree[k]->Fill();
+      }//for_i
+
+   // Add tree info to tree
+      AddBordTreeInfo(bordtree[k], bordtree[k]->GetName(), quopt.Data(),
+                      mean, lmean, rmean, tmean, bmean, xcoihi, ycoihi, xcoilo, ycoilo);
+
+   // Write expression tree to file 
+      if ((err = WriteTree(bordtree[k], TObject::kOverwrite)) == errNoErr) {
+         // add tree header to list
+         AddTreeHeader(bordtree[k]->GetName(), "Bord", 0, fQualifier->GetNumParameters(),
+                       fQualifier->GetParameters());
+      }//if
+
+   cleantree:
+      SafeDelete(bord);
+      bordtree[k]->DropBaskets();  //to remove baskets from memory
+      bordtree[k]->ResetBranchAddress(bordtree[k]->GetBranch("BordBranch"));
+//ev here?      SafeDelete(bord);
+
+      SafeDelete(cell);
+      datatree[k]->DropBaskets();  //to remove baskets from memory
+      datatree[k]->ResetBranchAddress(datatree[k]->GetBranch("DataBranch"));
+//ev here??? also in Bgrd, Norm etc
+//??      SafeDelete(cell);
+   }//for_k
+
+cleanup:
+   // delete arrays
+   if (mask)  {delete [] mask;  mask  = 0;}
+   if (inten) {delete [] inten; inten = 0;}
+   if (arrXY) {delete [] arrXY; arrXY = 0;}
+
+   return err;
+}//DoBorderElements
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::DoBgrdQualityControl(Int_t numbgrd, TTree **bgrdtree,
+                    XDNAChip *chip, TFile *file)
+{
+   // Compute quality controls
+   if(kCS) cout << "------XGCProcesSet::DoBgrdQualityControl------" << endl;
+
+   Int_t err = errNoErr;
+
+   Int_t numrows  = chip->GetNumRows();
+   Int_t numcols  = chip->GetNumColumns();
+   Int_t numunits = chip->GetNumUnits();
+   Int_t size     = numrows*numcols;
+
+   return err;
+}//DoBgrdQualityControl
 
 //______________________________________________________________________________
 Int_t XGCProcesSet::DetectCall(Int_t numdata, TTree **datatree,
@@ -2874,15 +4280,6 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
 
       // fill call trees
       for (Int_t k=0; k<numdata; k++) {
-         // number of present/absent calls
-         if      (prescall[k] == 2.0) numpresent++;
-         else if (prescall[k] == 1.0) numarginal++;
-         else if (prescall[k] == 0.0) numabsent++;
-
-         // minimal/maximal detection call p-value
-         if      (pvalue[k] < minpval) minpval = pvalue[k];
-         else if (pvalue[k] > maxpval) maxpval = pvalue[k];
-
          call[k]->SetUnitID(unitID);
          call[k]->SetCall((Short_t)prescall[k]);
          call[k]->SetPValue(pvalue[k]);
@@ -2900,22 +4297,25 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
            << numunits << "> units...Finished." << endl;
    }//if
 
-   if (XManager::fgVerbose) {
-      cout << "      detection call statistics: " << endl;
-      cout << "         minimum detection p-value = " << minpval << endl;
-      cout << "         maximum detection p-value = " << maxpval << endl;
-      cout << "         P: <" << numpresent*100.0/idx << "> percent units present."  << endl;
-      cout << "         M: <" << numarginal*100.0/idx << "> percent units marginal." << endl;
-      cout << "         A: <" << numabsent*100.0/idx  << "> percent units absent."   << endl;
-   }//if
-
 // Write call trees to file 
    for (Int_t k=0; k<numdata; k++) {
-   // Add tree info to tree
+      // statistics for call trees
+      err = this->CallStatistics(calltree[k], call[k],
+                                 numabsent, numarginal, numpresent, minpval, maxpval);
+      if (err != errNoErr) goto cleanup;
+
+      if (XManager::fgVerbose) {
+         cout << "      detection call statistics for " << calltree[k]->GetName() << ":" << endl;
+         cout << "         minimum detection p-value = " << minpval << endl;
+         cout << "         maximum detection p-value = " << maxpval << endl;
+         cout << "         P: <" << numpresent*100.0/idx << "> percent units present."  << endl;
+         cout << "         M: <" << numarginal*100.0/idx << "> percent units marginal." << endl;
+         cout << "         A: <" << numabsent*100.0/idx  << "> percent units absent."   << endl;
+      }//if
+
+      // add tree info to tree
       AddCallTreeInfo(calltree[k], calltree[k]->GetName(), fCaller->GetOption(),
                       idx, numabsent, numarginal, numpresent, minpval, maxpval);
-//need to do:
-//                      idx, numabsent[k], numarginal[k], numpresent[k], minpval[k], maxpval[k]);
 
       if ((err = WriteTree(calltree[k], TObject::kOverwrite)) == errNoErr) {
          // add tree header to list
@@ -3032,6 +4432,7 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
    Double_t *arrSM    = 0;
    Int_t    *arrXP    = 0;
    Int_t    *arrXM    = 0;
+   Double_t *quantL   = 0; 
    Double_t *dummy    = 0;  //to prevent compilation error
 
    TTree   *scmtree = 0; 
@@ -3043,8 +4444,12 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
 
    TTree  *exprtree    = 0;
    XGCExpression *expr = 0;
-   Int_t   bufsize     = XManager::GetBufSize(numdata, 10000);
-   Int_t   split       = 99;
+
+   Int_t   bufsize = XManager::GetBufSize(numdata, 10000);
+   Int_t   split   = 99;
+
+   Int_t    nquant = 7;
+   Double_t q[]    = {0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0};
 
    fFile->cd();
 
@@ -3149,6 +4554,9 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
    if (!(arrXP = new (nothrow) Int_t[maxnumcells+1]))    {err = errInitMemory; goto cleanup;}
    if (!(arrXM = new (nothrow) Int_t[maxnumcells+1]))    {err = errInitMemory; goto cleanup;}
 
+// Initialize quantile array
+   if (!(quantL = new (nothrow) Double_t[nquant])) {err = errInitMemory; goto cleanup;}
+
 // Change directory to data file
    if (!fFile->cd(fName)) {err = errGetDir; goto cleanup;}
 
@@ -3170,10 +4578,6 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
          err = errGeneral;
          break;
       }//if
-
-   // Init min/max expression levels
-      Double_t min = DBL_MAX;  //defined in float.h
-      Double_t max = 0;
 
    // Get data from datatree and bgrdtree and store in arrays
       err = this->FillDataArrays(datatree[k], bgrdtree[k], doBg, numrows, numcols,
@@ -3263,10 +4667,6 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
          if ((err = fExpressor->Calculate(mean, var, arrlen))) goto cleanup;
          fExpressor->DeleteArray();
 
-         // get minimal/maximal expression levels
-         if (mean < min) min = mean;
-         if (mean > max) max = mean;
-
          // fill expression tree
          expr->SetUnitID(unitID);
          expr->SetLevel(mean);
@@ -3283,14 +4683,19 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
          cout << "      <" << idx << "> of <" << numunits << "> calls processed...Finished" << endl;
       }//if
 
+   // Quantiles for expression trees
+      err = ExpressionQuantiles(exprtree, expr, nquant, q, quantL);
+      if (err != errNoErr) goto cleanup;
+
       if (XManager::fgVerbose) {
          cout << "      expression statistics: " << endl;
-         cout << "         minimal expression level is <" << min << ">." << endl;
-         cout << "         maximal expression level is <" << max << ">." << endl;
+         cout << "         minimal expression level is <" << quantL[0]        << ">." << endl;
+         cout << "         maximal expression level is <" << quantL[nquant-1] << ">." << endl;
       }//if
 
    // Add tree info to tree
-      AddExprTreeInfo(exprtree, exprtree->GetName(), fExpressor->GetOption(), idx, min, max);
+      AddExprTreeInfo(exprtree, exprtree->GetName(), fExpressor->GetOption(),
+                      idx, quantL[0], quantL[nquant-1], nquant, q, quantL);
 
    // Write expression tree to file 
       if ((err = WriteTree(exprtree, TObject::kOverwrite)) == errNoErr) {
@@ -3309,6 +4714,7 @@ Int_t XGCProcesSet::DoExpress(Int_t numdata, TTree **datatree,
 
 cleanup:
    // delete arrays
+   if (quantL)   {delete [] quantL;   quantL   = 0;}
    if (arrXM)    {delete [] arrXM;    arrXM    = 0;}
    if (arrXP)    {delete [] arrXP;    arrXP    = 0;}
    if (arrSM)    {delete [] arrSM;    arrSM    = 0;}
@@ -3358,10 +4764,6 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
    Int_t exlevel = 0;
    Int_t stepout = (Int_t)((100000.0 + 10.0*numdata)/(Float_t)numdata); //step size for verbose output
 
-// Init min/max expression levels
-   Double_t min = DBL_MAX;  //defined in float.h
-   Double_t max = 0;
-
 // Init 
    Int_t     *arrMask = 0;
    Int_t     *arrIndx = 0;
@@ -3369,6 +4771,7 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
    Int_t     *mskUnit = 0;
    Double_t  *level   = 0;
    Double_t  *stdev   = 0;
+   Double_t  *quantL  = 0; 
 
    Double_t **table   = 0;
    Double_t  *arrData = 0;
@@ -3392,6 +4795,9 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
    Int_t    bufsize = XManager::GetBufSize(numdata, 10000);
    Int_t    split   = 99;
    Double_t sort    = 0;
+
+   Int_t    nquant = 7;
+   Double_t q[]    = {0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0};
 
    fFile->cd();
 
@@ -3485,6 +4891,7 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
    if (!(arrIndx = new (nothrow) Int_t[size]))       {err = errInitMemory; goto cleanup;}
    if (!(level   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
    if (!(stdev   = new (nothrow) Double_t[numdata])) {err = errInitMemory; goto cleanup;}
+   if (!(quantL  = new (nothrow) Double_t[nquant]))  {err = errInitMemory; goto cleanup;}
 
    for (Int_t i=0; i<size; i++) {
       arrMask[i] = eINITMASK; 
@@ -3768,18 +5175,8 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
       // calculate expression level for PMs of current unitID
       if ((err = fExpressor->Calculate(numdata, level, stdev, 0))) break;
 
-//////////////////
-// TO DO: return fResiduals for residual-plot!!!! (like affyPLM)
-//      residuals = fExpressor->GetResiduals();
-// store as residuals tree??
-//////////////////
-
       // fill expression trees
       for (Int_t k=0; k<numdata; k++) {
-         // get minimal/maximal expression levels
-         if (level[k] < min) min = level[k];
-         if (level[k] > max) max = level[k];
-
          expr[k]->SetUnitID(unitID);
          expr[k]->SetLevel(level[k]);
 //??         expr[k]->SetStdev(stdev[k]);
@@ -3799,21 +5196,32 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
            << numunits << "> units...Finished." << endl;
    }//if
 
-   if (XManager::fgVerbose) {
-      cout << "      expression statistics: " << endl;
-      cout << "         minimal expression level is <" << min << ">" << endl;
-      cout << "         maximal expression level is <" << max << ">" << endl;
+   if (idx == 0) {
+      cerr << "Error: Expression trees were not filled."
+           << endl;
+// ev better: errFillTree
+      err = errAbort;
+      goto cleanup;
    }//if
+
 //TEST
 //gBenchmark->Show("Bench_Loop");
 
 // Write expression trees to file 
    for (Int_t k=0; k<numdata; k++) {
-   // Add tree info to tree
+      // quantiles for expression trees
+      err = ExpressionQuantiles(exprtree[k], expr[k], nquant, q, quantL);
+      if (err != errNoErr) goto cleanup;
+
+      if (XManager::fgVerbose) {
+         cout << "      expression statistics for " << exprtree[k]->GetName() << ":" << endl;
+         cout << "         minimal expression level is <" << quantL[0] << ">" << endl;
+         cout << "         maximal expression level is <" << quantL[nquant-1] << ">" << endl;
+      }//if
+
+      // add tree info to tree
       AddExprTreeInfo(exprtree[k], exprtree[k]->GetName(), fExpressor->GetOption(),
-                      idx, min, max);
-//need to do:
-//                      idx, min[k], max[k]);
+                      idx, quantL[0], quantL[nquant-1], nquant, q, quantL);
 
       if ((err = WriteTree(exprtree[k], TObject::kOverwrite)) == errNoErr) {
          // add tree header to list
@@ -3837,6 +5245,7 @@ cleanup:
       delete [] tmptree;
    }//if
    // delete arrays
+   if (quantL)  {delete [] quantL;  quantL  = 0;}
    if (arrPM)   {delete [] arrPM;   arrPM   = 0;}
    if (arrData) {delete [] arrData; arrData = 0;}
    if (stdev)   {delete [] stdev;   stdev   = 0;}
@@ -3877,6 +5286,44 @@ cleanup:
 }//DoMultichipExpress
 
 //______________________________________________________________________________
+Int_t XGCProcesSet::ExportTreeInfo(const char *exten, Int_t n, TString *names, 
+                    const char *varlist, ofstream &output, const char *sep)
+{
+   // Export data stored in tree treename to file output
+   if(kCS) cout << "------XGCProcesSet::ExportTreeInfo------" << endl;
+
+// Set scheme file to be able to access scheme data for exporting
+   if (fSetting) {
+      fSchemeFile = ((XPreProcesSetting*)fSetting)->GetSchemeFile();
+   }//if
+
+   // remove "userinfo" from varlist
+   TString infolist = RemoveSubString(varlist, "userinfo:", kFALSE);
+
+   if (HasExtension(exten, kExtenBgrd)) {
+      return this->ExportBgrdTreeInfo(n, names, infolist, output, sep);
+   } else if (HasExtension(exten, kExtenIntn)) {
+      return this->ExportIntnTreeInfo(n, names, infolist, output, sep);
+   } else if (HasExtension(exten, kExtenResd)) {
+      return this->ExportResdTreeInfo(n, names, infolist, output, sep);
+   } else if (HasExtension(exten, kExtenBord)) {
+      return this->ExportBordTreeInfo(n, names, infolist, output, sep);
+   } else if (HasExtension(exten, kExtenCNrm)) {
+      return this->ExportNormTreeInfo(n, names, infolist, output, sep);
+   } else if (HasExtension(exten, kExtenCall)) {
+      return this->ExportCallTreeInfo(n, names, infolist, output, sep);
+   } else if (HasExtension(exten, kExtenQual)) {
+      return this->ExportQualTreeInfo(n, names, infolist, output, sep);
+   } else if (HasExtension(exten, kExtenExpr)) {
+      return ExportExprTreeInfo(n, names, infolist, output, sep);
+   } else {
+      return fManager->HandleError(errExtension, exten);
+   }//if
+
+   return errNoErr;
+}//ExportTreeInfo
+
+//______________________________________________________________________________
 Int_t XGCProcesSet::ExportTreeType(const char *exten, Int_t n, TString *names, 
                     const char *varlist, ofstream &output, const char *sep)
 {
@@ -3892,12 +5339,18 @@ Int_t XGCProcesSet::ExportTreeType(const char *exten, Int_t n, TString *names,
       return this->ExportBgrdTrees(n, names, varlist, output, sep);
    } else if (HasExtension(exten, kExtenIntn)) {
       return this->ExportIntnTrees(n, names, varlist, output, sep);
+   } else if (HasExtension(exten, kExtenResd)) {
+      return this->ExportResdTrees(n, names, varlist, output, sep);
+   } else if (HasExtension(exten, kExtenBord)) {
+      return this->ExportBordTrees(n, names, varlist, output, sep);
    } else if (HasExtension(exten, kExtenCNrm)) {
       return this->ExportNormTrees(n, names, varlist, output, sep);
    } else if (HasExtension(exten, kExtenExpr)) {
       return this->ExportExprTrees(n, names, varlist, output, sep);
    } else if (HasExtension(exten, kExtenCall)) {
       return this->ExportCallTrees(n, names, varlist, output, sep);
+   } else if (HasExtension(exten, kExtenQual)) {
+      return this->ExportQualTrees(n, names, varlist, output, sep);
    } else {
       return fManager->HandleError(errExtension, exten);
    }//if
@@ -4116,6 +5569,247 @@ Int_t XGCProcesSet::ExportIntnTrees(Int_t n, TString *names, const char *varlist
 
    return errNoErr;
 }//ExportIntnTrees
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::ExportResdTrees(Int_t n, TString *names, const char *varlist,
+                    ofstream &output, const char *sep)
+{
+   // Export data stored in residual tree to file output
+   if(kCS) cout << "------XGCProcesSet::ExportResdTrees------" << endl;
+
+   Int_t err = errNoErr;
+
+// Decompose varlist
+   Bool_t hasResidu = kFALSE;
+   Bool_t hasWeight = kFALSE;
+
+   if (strcmp(varlist,"*")  == 0) {
+      hasResidu = kTRUE;
+      hasWeight = kTRUE;
+   } else {
+      char *name  = new char[strlen(varlist) + 1];
+      char *dname = name;
+      name = strtok(strcpy(name,varlist),":");
+      while(name) {
+         if (strcmp(name,"fResidual") == 0) {hasResidu = kTRUE;}
+         if (strcmp(name,"fWeight")   == 0) {hasWeight = kTRUE;}
+         name = strtok(NULL, ":");
+         if (name == 0) break;
+      }//while
+      delete [] dname;
+   }//if
+
+// Get trees
+   TTree     **tree = new TTree*[n];
+   XResidual **resd = new XResidual*[n];
+   if (fTrees->GetSize() == 0) {
+   // Get trees from names
+      for (Int_t k=0; k<n; k++) {
+         resd[k] = 0;
+         tree[k] = (TTree*)gDirectory->Get((names[k]).Data());
+         if (!tree[k]) return errGetTree;
+
+         tree[k]->SetBranchAddress("ResdBranch", &resd[k]);
+      }//for_k
+   } else {
+   // Get trees from list fTrees
+      for (Int_t k=0; k<n; k++) {
+         resd[k] = 0;
+         tree[k] = (TTree*)fTrees->At(k);
+         if (!tree[k]) return errGetTree;
+
+         tree[k]->SetBranchAddress("ResdBranch", &resd[k]);
+      }//for_k
+   }//if
+
+// Get number of rows, columns and tree entries
+   XResidualTreeInfo *info = (XResidualTreeInfo*)tree[0]->GetUserInfo()->At(0);
+   Int_t numrows  = (Int_t)(info->GetValue("fNRows"));
+   Int_t numcols  = (Int_t)(info->GetValue("fNCols"));
+   Int_t size     = numrows * numcols;
+   Int_t nentries = (Int_t)(tree[0]->GetEntries());
+   Int_t idx      = 0;
+
+// Init mask for (x,y)-coordinates
+   Int_t *mask = 0;
+   if (!(mask  = new (nothrow) Int_t[size]))  {err = errInitMemory; goto cleanup;}
+   for (Int_t i=0; i<size; i++) mask[i] = -1;
+
+// Output header
+   output << "X" << sep << "Y";
+   if (n > 1) {
+      for (Int_t i=0; i<n; i++) {
+         if (hasResidu) output << sep << (names[i] + "_RESIDUAL").Data();
+         if (hasWeight) output << sep << (names[i] + "_WEIGHT").Data();
+      }//for_i
+   } else {
+      if (hasResidu) output << sep << "RESIDUAL";
+      if (hasWeight) output << sep << "WEIGHT";
+   }//if
+   output << endl;
+
+// Loop over tree entries and tree branches
+   for (Int_t i=0; i<nentries; i++) {
+      for (Int_t k=0; k<n; k++) {
+         tree[k]->GetEntry(i);
+
+         if (k == 0) {
+            Int_t x = resd[k]->GetX();
+            Int_t y = resd[k]->GetY();
+            Int_t ij = XY2Index(x, y, numcols);
+
+         // necessary for exon arrays which use (x,y) for same probe in different probesets
+            if (ij == mask[ij]) goto next;
+
+            output << x << sep << y;
+
+            mask[ij] = ij;
+            idx++;
+         }//if
+
+         if (hasResidu) output << sep << resd[k]->GetResidual();
+         if (hasWeight) output << sep << resd[k]->GetWeight();
+      }//for_k
+      output << endl;
+   next:
+
+      if (XManager::fgVerbose && i%10000 == 0) {
+         cout << "<" << idx << "> records exported...\r" << flush;
+      }//if
+   }//for_i
+
+// Fill missing (x,y)-coordinates with 0.0
+   for (Int_t i=0; i<size; i++) {
+      if (mask[i] == -1) {
+         for (Int_t k=0; k<n; k++) {
+            if (k == 0)    output << Index2X(i, numcols) << sep << Index2Y(i, numcols);
+            if (hasResidu) output << sep << 0.0;
+            if (hasWeight) output << sep << eINITWEIGHT;
+         }//for_k
+         output << endl;
+
+         idx++;
+      }//if
+   }//for_i
+
+   if (XManager::fgVerbose) {
+      cout << "<" << idx << "> records exported." << endl;
+   }//if
+
+// Cleanup
+cleanup:
+   if (mask) {delete [] mask; mask = 0;}
+
+   for (Int_t k=0; k<n; k++) {
+      SafeDelete(resd[k]);
+      tree[k]->ResetBranchAddress(tree[k]->GetBranch("ResdBranch"));
+//?? keep tree for later???
+      SafeDelete(tree[k]);
+   }//for_k
+
+   delete [] resd;
+   delete [] tree;
+
+   return errNoErr;
+}//ExportResdTrees
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::ExportBordTrees(Int_t n, TString *names, const char *varlist,
+                    ofstream &output, const char *sep)
+{
+   // Export data stored in broder tree to file output
+   if(kCS) cout << "------XGCProcesSet::ExportBordTrees------" << endl;
+
+// Decompose varlist
+   Bool_t hasMean = kFALSE;
+   Bool_t hasFlag = kFALSE;
+
+   if (strcmp(varlist,"*")  == 0) {
+      hasMean = kTRUE;
+      hasFlag = kTRUE;
+   } else {
+      char *name  = new char[strlen(varlist) + 1];
+      char *dname = name;
+      name = strtok(strcpy(name,varlist),":");
+      while(name) {
+         if (strcmp(name,"fInten") == 0) {hasMean = kTRUE;}
+         if (strcmp(name,"fFlag")  == 0) {hasFlag = kTRUE;}
+         name = strtok(NULL, ":");
+         if (name == 0) break;
+      }//while
+      delete [] dname;
+   }//if
+
+// Get trees
+   TTree   **tree = new TTree*[n];
+   XBorder **bord = new XBorder*[n];
+   if (fTrees->GetSize() == 0) {
+   // Get trees from names
+      for (Int_t k=0; k<n; k++) {
+         bord[k] = 0;
+         tree[k] = (TTree*)gDirectory->Get((names[k]).Data());
+         if (!tree[k]) return errGetTree;
+
+         tree[k]->SetBranchAddress("BordBranch", &bord[k]);
+      }//for_k
+   } else {
+   // Get trees from list fTrees
+      for (Int_t k=0; k<n; k++) {
+         bord[k] = 0;
+         tree[k] = (TTree*)fTrees->At(k);
+         if (!tree[k]) return errGetTree;
+
+         tree[k]->SetBranchAddress("BordBranch", &bord[k]);
+      }//for_k
+   }//if
+
+// Output header
+   output << "X" << sep << "Y";
+   if (n > 1) {
+      if (hasFlag) output << sep << "FLAG";
+      for (Int_t i=0; i<n; i++) {
+         if (hasMean) output << sep << (names[i] + "_MEAN").Data();
+      }//for_i
+   } else {
+      if (hasFlag) output << sep << "FLAG";
+      if (hasMean) output << sep << "MEAN";
+   }//if
+   output << endl;
+
+// Loop over tree entries and tree branches
+   Int_t nentries = (Int_t)(tree[0]->GetEntries());
+   for (Int_t i=0; i<nentries; i++) {
+      for (Int_t k=0; k<n; k++) {
+         tree[k]->GetEntry(i);
+         if (k == 0)  {
+            output << bord[k]->GetX() << sep << bord[k]->GetY();
+            if (hasFlag) output << sep << bord[k]->GetFlag();
+         }//if
+         if (hasMean) output << sep << bord[k]->GetIntensity();
+      }//for_k
+      output << endl;
+
+      if (XManager::fgVerbose && i%10000 == 0) {
+         cout << "<" << i+1 << "> records exported...\r" << flush;
+      }//if
+   }//for_i
+   if (XManager::fgVerbose) {
+      cout << "<" << nentries << "> records exported." << endl;
+   }//if
+
+// Cleanup
+   for (Int_t k=0; k<n; k++) {
+      SafeDelete(bord[k]);
+      tree[k]->ResetBranchAddress(tree[k]->GetBranch("BordBranch"));
+//?? keep tree for later???
+      SafeDelete(tree[k]);
+   }//for_k
+
+   delete [] bord;
+   delete [] tree;
+
+   return errNoErr;
+}//ExportBordTrees
 
 //______________________________________________________________________________
 Int_t XGCProcesSet::ExportNormTrees(Int_t n, TString *names, const char *varlist,
@@ -4737,6 +6431,1171 @@ cleanup:
 }//ExportCallTrees
 
 //______________________________________________________________________________
+Int_t XGCProcesSet::ExportQualTrees(Int_t n, TString *names, const char *varlist,
+                    ofstream &output, const char *sep)
+{
+   // Export data stored in quality expression tree to file output
+   if(kCS) cout << "------XGCProcesSet::ExportQualTrees------" << endl;
+
+   Int_t err = errNoErr;
+
+// Decompose varlist
+   Short_t hasUnit   = 0;  //unit name
+   Short_t hasLevel  = 0;  //expression level
+   Short_t hasStderr = 0;  //standard error
+   Short_t hasNUSE   = 0;  //NUSE
+   Short_t hasRLE    = 0;  //RLE
+
+   Short_t hasData   = 0;  //data
+
+   Short_t idx = 0;
+   if (strcmp(varlist,"*")  == 0) {
+      hasUnit   = ++idx;
+      hasLevel  = ++idx;
+      hasStderr = ++idx;
+      hasNUSE   = ++idx;
+      hasRLE    = ++idx;
+   } else {
+      char *name  = new char[strlen(varlist) + 1];
+      char *dname = name;
+      name = strtok(strcpy(name,varlist),":");
+      while(name) {
+         if (strcmp(name,"fUnitName") == 0) {hasUnit   = ++idx;}
+         if (strcmp(name,"fLevel")    == 0) {hasLevel  = ++idx;}
+         if (strcmp(name,"fStderr")   == 0) {hasStderr = ++idx;}
+         if (strcmp(name,"fNUSE")     == 0) {hasNUSE   = ++idx;}
+         if (strcmp(name,"fRLE")      == 0) {hasRLE    = ++idx;}
+         name = strtok(NULL, ":");
+         if (name == 0) break;
+      }//while
+      delete [] dname;
+   }//if
+
+   // check for presence of at least one of fLevel, fStdev, fNPairs
+   hasData = (hasNUSE > 0 
+           ? (hasNUSE <= hasRLE ? hasNUSE : (hasRLE > 0 ? hasRLE : hasNUSE))
+           : hasRLE);
+   hasData = (hasStderr > 0 
+           ? (hasStderr <= hasData ? hasStderr : (hasData > 0 ? hasData : hasStderr))
+           : hasData);
+   hasData = (hasLevel > 0 
+           ? (hasLevel <= hasData ? hasLevel : (hasData > 0 ? hasData : hasLevel))
+           : hasData);
+
+// Get trees
+   TTree         **tree = new TTree*[n];
+   XQCExpression **expr = new XQCExpression*[n];
+   if (fTrees->GetSize() == 0) {
+   // Get trees from names
+      for (Int_t k=0; k<n; k++) {
+         expr[k] = 0;
+         tree[k] = (TTree*)gDirectory->Get((names[k]).Data());
+         if (!tree[k]) return errGetTree;
+
+         tree[k]->SetBranchAddress("ExprBranch", &expr[k]);
+      }//for_k
+   } else {
+   // Get trees from list fTrees
+      for (Int_t k=0; k<n; k++) {
+         expr[k] = 0;
+         tree[k] = (TTree*)fTrees->At(k);
+         if (!tree[k]) return errGetTree;
+
+         tree[k]->SetBranchAddress("ExprBranch", &expr[k]);
+      }//for_k
+   }//if
+
+// Get treeinfo and its option for selection of unittree
+   XTreeInfo *info   = (XTreeInfo*)tree[0]->GetUserInfo()->At(0);
+   Option_t  *option = info->GetOption();
+
+   Int_t type = eTRANSCRIPT;
+   if      (strcmp(option, "exon")     == 0) type = eEXONTYPE; 
+   else if (strcmp(option, "probeset") == 0) type = ePROBESET; 
+
+// Get scheme name (also for alternative CDFs)
+   if (strcmp(fSchemeName.Data(), "") == 0) {
+      fSchemeName = tree[0]->GetTitle();
+   } else if (!fSchemeName.Contains(tree[0]->GetTitle())) {
+      cerr << "Error: Scheme <" << fSchemeName.Data() << "> is not derived from <"
+           << tree[0]->GetTitle() << ">." << endl;
+      return errAbort;
+   }//if
+
+// Get chip from scheme file
+   if (fSchemeFile == 0) return errGetScheme;
+   fSchemeFile->cd();
+   XFolder *schemes = (XFolder*)(fSchemeFile->Get(kContent));
+   if (!schemes) {
+      return fManager->HandleError(errMissingContent, "Scheme", kContent);
+   }//if
+
+   XGeneChip *chip = (XGeneChip*)schemes->FindObject(fSchemeName, kTRUE);
+   if (chip == 0) return errAbort;
+
+// Get unit tree for scheme (needed for annotation)
+   XGCUnit *unit   = 0;
+//?   XExonUnit *unit = 0;
+   TTree *unittree = GetUnitTree(chip, type);
+   if (unittree == 0) return errGetTree;
+   unittree->SetBranchAddress("IdxBranch", &unit);
+
+   Int_t numunits = (Int_t)(unittree->GetEntries());
+
+// Output header
+   output << "UNIT_ID";
+   for (Short_t j=1; j<=idx; j++) {
+      if (hasUnit == j) output << sep << "UnitName";
+
+      if (hasData == j) {
+         if (n == 1) {
+            if (hasLevel)  output << sep << "LEVEL";
+            if (hasStderr) output << sep << "STDERR";
+            if (hasNUSE)   output << sep << "NUSE";
+            if (hasRLE)    output << sep << "RLE";
+         } else {
+            for (Int_t k=0; k<n; k++) {
+               if (hasLevel)  output << sep << (names[k] + "_LEVEL").Data();
+               if (hasStderr) output << sep << (names[k] + "_STDERR").Data();
+               if (hasNUSE)   output << sep << (names[k] + "_NUSE").Data();
+               if (hasRLE)    output << sep << (names[k] + "_RLE").Data();
+            }//for_k
+         }//if
+      }//if
+   }//for_j
+   output << endl;
+
+// Loop over tree entries and trees
+   XIdxString *idxstr = 0;
+   Int_t index = 0;
+   Int_t cnt   = 0;
+   Int_t nentries = (Int_t)(tree[0]->GetEntries());
+   for (Int_t i=0; i<nentries; i++) {
+      tree[0]->GetEntry(i);
+
+      Int_t unitID = expr[0]->GetUnitID();
+      output << unitID;
+
+      unittree->GetEntry(index++);
+      while (unitID != unit->GetUnitID()) {
+         if (index == numunits) {
+           cerr << "Error: UnitID <" << unitID << "> not found." << endl;
+           err = errAbort; goto cleanup;
+         }//if
+
+         unittree->GetEntry(index++);
+      }//while
+
+      for (Short_t j=1; j<=idx; j++) {
+         // export unitname
+         if (hasUnit == j) {
+            output << sep << unit->GetUnitName();
+         }//if
+
+         // export data
+         if (hasData == j) {
+            for (Int_t k=0; k<n; k++) {
+               tree[k]->GetEntry(i);
+               if (hasLevel)  output << sep << expr[k]->GetLevel();
+               if (hasStderr) output << sep << expr[k]->GetStdErr();
+               if (hasNUSE)   output << sep << expr[k]->GetNUSE();
+               if (hasRLE)    output << sep << expr[k]->GetRLE();
+            }//for_k
+         }//if
+      }//for_j
+      output << endl;
+
+      cnt++;
+      if (XManager::fgVerbose && cnt%1000 == 0) {
+         cout << "<" << cnt << "> records exported...\r" << flush;
+      }//if
+   }//for_i
+   if (XManager::fgVerbose) {
+      cout << "<" << cnt << "> of " << "<" << nentries << "> records exported." << endl;
+   }//if
+
+//Cleanup
+cleanup:
+   SafeDelete(schemes);
+
+   // remove trees from RAM
+   for (Int_t k=0; k<n; k++) {
+      SafeDelete(expr[k]);
+      tree[k]->ResetBranchAddress(tree[k]->GetBranch("ExprBranch"));
+      SafeDelete(tree[k]);
+   }//for_k
+
+   delete [] expr;
+   delete [] tree;
+
+   SafeDelete(unit);
+   SafeDelete(unittree);
+
+   return err;
+}//ExportQualTrees
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::ExportBgrdTreeInfo(Int_t n, TString *names, const char *varlist,
+                    ofstream &output, const char *sep)
+{
+   // Export data stored in userinfo of background tree to file output
+   if(kCS) cout << "------XGCProcesSet::ExportBgrdTreeInfo------" << endl;
+
+   return this->ExportIntnTreeInfo(n, names, varlist, output, sep);
+}//ExportBgrdTreeInfo
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::ExportIntnTreeInfo(Int_t n, TString *names, const char *varlist,
+                    ofstream &output, const char *sep)
+{
+   // Export data stored in userinfo of intensity tree to file output
+   if(kCS) cout << "------XGCProcesSet::ExportIntnTreeInfo------" << endl;
+
+// Decompose varlist
+   Bool_t hasTreeName  = kFALSE;
+   Bool_t hasSetName   = kFALSE;
+   Bool_t hasOption    = kFALSE;
+   Bool_t hasNRows     = kFALSE;
+   Bool_t hasNCols     = kFALSE;
+   Bool_t hasNMinInten = kFALSE;
+   Bool_t hasNMaxInten = kFALSE;
+   Bool_t hasMinInten  = kFALSE;
+   Bool_t hasMaxInten  = kFALSE;
+   Bool_t hasNQuant    = kFALSE;
+   Bool_t hasQuant     = kFALSE;
+   Bool_t hasInten     = kFALSE;
+
+   if (strcmp(varlist,"*")  == 0) {
+      hasTreeName  = kTRUE;
+      hasSetName   = kTRUE;
+      hasOption    = kTRUE;
+      hasNRows     = kTRUE;
+      hasNCols     = kTRUE;
+      hasNMinInten = kTRUE;
+      hasNMaxInten = kTRUE;
+      hasMinInten  = kTRUE;
+      hasMaxInten  = kTRUE;
+      hasNQuant    = kTRUE;
+      hasQuant     = kTRUE;
+      hasInten     = kTRUE;
+   } else {
+      char *name  = new char[strlen(varlist) + 1];
+      char *dname = name;
+      name = strtok(strcpy(name,varlist),":");
+      while(name) {
+         if (strcmp(name,"fName")       == 0) {hasTreeName  = kTRUE;}
+         if (strcmp(name,"fSetName")    == 0) {hasSetName   = kTRUE;}
+         if (strcmp(name,"fOption")     == 0) {hasOption    = kTRUE;}
+         if (strcmp(name,"fNRows")      == 0) {hasNRows     = kTRUE;}
+         if (strcmp(name,"fNCols")      == 0) {hasNCols     = kTRUE;}
+         if (strcmp(name,"fNMinInten")  == 0) {hasNMinInten = kTRUE;}
+         if (strcmp(name,"fNMaxInten")  == 0) {hasNMaxInten = kTRUE;}
+         if (strcmp(name,"fMinInten")   == 0) {hasMinInten  = kTRUE;}
+         if (strcmp(name,"fMaxInten")   == 0) {hasMaxInten  = kTRUE;}
+         if (strcmp(name,"fNQuantiles") == 0) {hasNQuant    = kTRUE;}
+         if (strcmp(name,"fQuantiles")  == 0) {hasQuant     = kTRUE;}
+         if (strcmp(name,"fIntenQuant") == 0) {hasInten     = kTRUE;}
+         name = strtok(NULL, ":");
+         if (name == 0) break;
+      }//while
+      delete [] dname;
+   }//if
+
+// Get trees
+   TTree         **tree = new TTree*[n];
+   XDataTreeInfo **info = new XDataTreeInfo*[n];
+   if (fTrees->GetSize() == 0) {
+   // Get trees from names
+      for (Int_t k=0; k<n; k++) {
+         tree[k] = (TTree*)gDirectory->Get((names[k]).Data());
+         if (!tree[k]) return errGetTree;
+
+         info[k] = (XDataTreeInfo*)tree[k]->GetUserInfo()->At(0);
+      }//for_k
+   } else {
+   // Get trees from list fTrees
+      for (Int_t k=0; k<n; k++) {
+         tree[k] = (TTree*)fTrees->At(k);
+         if (!tree[k]) return errGetTree;
+
+         info[k] = (XDataTreeInfo*)tree[k]->GetUserInfo()->At(0);
+      }//for_k
+   }//if
+
+// Output header
+   output << "Parameter";
+   for (Int_t k=0; k<n; k++) output << sep << names[k].Data();
+   output << endl;
+
+// Output parameters
+   if (hasTreeName) {
+      output << "TreeName";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetName();
+      output << endl;
+   }//if
+
+   if (hasSetName) {
+      output << "SetName";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetTreeSetName();
+      output << endl;
+   }//if
+
+   if (hasOption) {
+      output << "Option";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetOption();
+      output << endl;
+   }//if
+
+   if (hasNRows) {
+      output << "NumRows";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNRows"));
+      output << endl;
+   }//if
+
+   if (hasNCols) {
+      output << "NumCols";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNCols"));
+      output << endl;
+   }//if
+
+   if (hasNMinInten) {
+      output << "NumMinIntensity";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNMinInten"));
+      output << endl;
+   }//if
+
+   if (hasNMaxInten) {
+      output << "NumMaxIntensity";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNMaxInten"));
+      output << endl;
+   }//if
+
+   if (hasMinInten) {
+      output << "MinIntensity";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fMinInten");
+      output << endl;
+   }//if
+
+   if (hasMaxInten) {
+      output << "MaxIntensity";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fMaxInten");
+      output << endl;
+   }//if
+
+   if (hasNQuant) {
+      output << "NumQuantiles";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNQuantiles"));
+      output << endl;
+   }//if
+
+   if (hasQuant) {
+      Double_t **quant = new Double_t*[n];
+      for (Int_t k=0; k<n; k++) {
+         quant[k] = info[k]->GetQuantiles();
+      }//for_k
+
+      Int_t nq  = (Int_t)(info[0]->GetValue("fNQuantiles"));
+      for (Int_t i=0; i<nq; i++) {
+         TString str = "Quantile";
+
+         output << (str+=i).Data();
+         for (Int_t k=0; k<n; k++) output << sep << quant[k][i];
+         output << endl;
+      }//for_i
+
+      delete [] quant;
+   }//if
+
+   if (hasInten) {
+      Double_t **quant = new Double_t*[n];
+      Double_t **inten = new Double_t*[n];
+      for (Int_t k=0; k<n; k++) {
+         quant[k] = info[k]->GetQuantiles();
+         inten[k] = info[k]->GetIntenQuantiles();
+      }//for_k
+
+      Int_t nq  = (Int_t)(info[0]->GetValue("fNQuantiles"));
+      for (Int_t i=0; i<nq; i++) {
+         TString str; str.Form("Intensity_Q%4.2f", quant[0][i]);
+
+         output << str.Data();
+         for (Int_t k=0; k<n; k++) output << sep << inten[k][i];
+         output << endl;
+      }//for_i
+
+      delete [] inten;
+      delete [] quant;
+   }//if
+
+// Cleanup
+   for (Int_t k=0; k<n; k++) {
+//no!      SafeDelete(info[k]);
+      SafeDelete(tree[k]);
+   }//for_k
+
+   delete [] info;
+   delete [] tree;
+
+   return errNoErr;
+}//ExportIntnTreeInfo
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::ExportResdTreeInfo(Int_t n, TString *names, const char *varlist,
+                    ofstream &output, const char *sep)
+{
+   // Export data stored in userinfo of residual tree to file output
+   if(kCS) cout << "------XGCProcesSet::ExportResdTreeInfo------" << endl;
+
+// Decompose varlist
+   Bool_t hasTreeName = kFALSE;
+   Bool_t hasSetName  = kFALSE;
+   Bool_t hasOption   = kFALSE;
+   Bool_t hasQualOpt  = kFALSE;
+   Bool_t hasNRows    = kFALSE;
+   Bool_t hasNCols    = kFALSE;
+   Bool_t hasNQuant   = kFALSE;
+   Bool_t hasQuant    = kFALSE;
+   Bool_t hasResidu   = kFALSE;
+   Bool_t hasWeight   = kFALSE;
+
+   if (strcmp(varlist,"*")  == 0) {
+      hasTreeName = kTRUE;
+      hasSetName  = kTRUE;
+      hasOption   = kTRUE;
+      hasQualOpt  = kTRUE;
+      hasNRows    = kTRUE;
+      hasNCols    = kTRUE;
+      hasNQuant   = kTRUE;
+      hasQuant    = kTRUE;
+      hasResidu   = kTRUE;
+      hasWeight   = kTRUE;
+   } else {
+      char *name  = new char[strlen(varlist) + 1];
+      char *dname = name;
+      name = strtok(strcpy(name,varlist),":");
+      while(name) {
+         if (strcmp(name,"fName")        == 0) {hasTreeName = kTRUE;}
+         if (strcmp(name,"fSetName")     == 0) {hasSetName  = kTRUE;}
+         if (strcmp(name,"fOption")      == 0) {hasOption   = kTRUE;}
+         if (strcmp(name,"fQualOption")  == 0) {hasQualOpt  = kTRUE;}
+         if (strcmp(name,"fNRows")       == 0) {hasNRows    = kTRUE;}
+         if (strcmp(name,"fNCols")       == 0) {hasNCols    = kTRUE;}
+         if (strcmp(name,"fNQuantiles")  == 0) {hasNQuant   = kTRUE;}
+         if (strcmp(name,"fQuantiles")   == 0) {hasQuant    = kTRUE;}
+         if (strcmp(name,"fResiduQuant") == 0) {hasResidu   = kTRUE;}
+         if (strcmp(name,"fWeightQuant") == 0) {hasWeight   = kTRUE;}
+         name = strtok(NULL, ":");
+         if (name == 0) break;
+      }//while
+      delete [] dname;
+   }//if
+
+// Get trees
+   TTree             **tree = new TTree*[n];
+   XResidualTreeInfo **info = new XResidualTreeInfo*[n];
+   if (fTrees->GetSize() == 0) {
+   // Get trees from names
+      for (Int_t k=0; k<n; k++) {
+         tree[k] = (TTree*)gDirectory->Get((names[k]).Data());
+         if (!tree[k]) return errGetTree;
+
+         info[k] = (XResidualTreeInfo*)tree[k]->GetUserInfo()->At(0);
+      }//for_k
+   } else {
+   // Get trees from list fTrees
+      for (Int_t k=0; k<n; k++) {
+         tree[k] = (TTree*)fTrees->At(k);
+         if (!tree[k]) return errGetTree;
+
+         info[k] = (XResidualTreeInfo*)tree[k]->GetUserInfo()->At(0);
+      }//for_k
+   }//if
+
+// Output header
+   output << "Parameter";
+   for (Int_t k=0; k<n; k++) output << sep << names[k].Data();
+   output << endl;
+
+// Output parameters
+   if (hasTreeName) {
+      output << "TreeName";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetName();
+      output << endl;
+   }//if
+
+   if (hasSetName) {
+      output << "SetName";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetTreeSetName();
+      output << endl;
+   }//if
+
+   if (hasOption) {
+      output << "Option";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetOption();
+      output << endl;
+   }//if
+
+   if (hasQualOpt) {
+      output << "QualOption";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetQualOption();
+      output << endl;
+   }//if
+
+   if (hasNRows) {
+      output << "Rows";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNRows"));
+      output << endl;
+   }//if
+
+   if (hasNCols) {
+      output << "Cols";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNCols"));
+      output << endl;
+   }//if
+
+   if (hasNQuant) {
+      output << "NumQuantiles";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNQuantiles"));
+      output << endl;
+   }//if
+
+   Int_t      nq    = 0;
+   Double_t **quant = 0;
+   if (hasQuant || hasResidu || hasWeight) {
+      nq = (Int_t)(info[0]->GetValue("fNQuantiles"));
+
+      quant = new Double_t*[n];
+      for (Int_t k=0; k<n; k++) {
+         quant[k] = info[k]->GetQuantiles();
+      }//for_k
+   }//if
+
+   if (hasQuant) {
+      for (Int_t i=0; i<nq; i++) {
+         TString str; str = "Quantile"; str += i;
+
+         output << str.Data();
+         for (Int_t k=0; k<n; k++) output << sep << quant[k][i];
+         output << endl;
+      }//for_i
+   }//if
+
+   if (hasResidu) {
+      Double_t **residu = new Double_t*[n];
+      for (Int_t k=0; k<n; k++) {
+         residu[k] = info[k]->GetResiduQuantiles();
+      }//for_k
+
+      for (Int_t i=0; i<nq; i++) {
+         TString str; str.Form("Residual_Q%4.2f", quant[0][i]);
+
+         output << str.Data();
+         for (Int_t k=0; k<n; k++) output << sep << residu[k][i];
+         output << endl;
+      }//for_i
+
+      delete [] residu;
+   }//if
+
+   if (hasWeight) {
+      Double_t **weight = new Double_t*[n];
+      for (Int_t k=0; k<n; k++) {
+         weight[k] = info[k]->GetWeightQuantiles();
+      }//for_k
+
+      Int_t nq  = (Int_t)(info[0]->GetValue("fNQuantiles"));
+      for (Int_t i=0; i<nq; i++) {
+         TString str; str.Form("Weight_Q%4.2f", quant[0][i]);
+
+         output << str.Data();
+         for (Int_t k=0; k<n; k++) output << sep << weight[k][i];
+         output << endl;
+      }//for_i
+
+      delete [] weight;
+    }//if
+
+// Cleanup
+   if(quant) delete [] quant;
+
+   for (Int_t k=0; k<n; k++) {
+//no!      SafeDelete(info[k]);
+      SafeDelete(tree[k]);
+   }//for_k
+
+   delete [] info;
+   delete [] tree;
+
+   return errNoErr;
+}//ExportResdTreeInfo
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::ExportBordTreeInfo(Int_t n, TString *names, const char *varlist,
+                    ofstream &output, const char *sep)
+{
+   // Export data stored in userinfo of border tree to file output
+   if(kCS) cout << "------XGCProcesSet::ExportBordTreeInfo------" << endl;
+
+
+// Decompose varlist
+   Bool_t hasTreeName   = kFALSE;
+   Bool_t hasSetName    = kFALSE;
+   Bool_t hasOption     = kFALSE;
+   Bool_t hasMean       = kFALSE;
+   Bool_t hasMeanLeft   = kFALSE;
+   Bool_t hasMeanRight  = kFALSE;
+   Bool_t hasMeanTop    = kFALSE;
+   Bool_t hasMeanBottom = kFALSE;
+   Bool_t hasCOIXhi     = kFALSE;
+   Bool_t hasCOIYhi     = kFALSE;
+   Bool_t hasCOIXlo     = kFALSE;
+   Bool_t hasCOIYlo     = kFALSE;
+
+   if (strcmp(varlist,"*")  == 0) {
+      hasTreeName   = kTRUE;
+      hasSetName    = kTRUE;
+      hasOption     = kTRUE;
+      hasMean       = kTRUE;
+      hasMeanLeft   = kTRUE;
+      hasMeanRight  = kTRUE;
+      hasMeanTop    = kTRUE;
+      hasMeanBottom = kTRUE;
+      hasCOIXhi     = kTRUE;
+      hasCOIYhi     = kTRUE;
+      hasCOIXlo     = kTRUE;
+      hasCOIYlo     = kTRUE;
+   } else {
+      char *name  = new char[strlen(varlist) + 1];
+      char *dname = name;
+      name = strtok(strcpy(name,varlist),":");
+      while(name) {
+         if (strcmp(name,"fName")       == 0) {hasTreeName   = kTRUE;}
+         if (strcmp(name,"fSetName")    == 0) {hasSetName    = kTRUE;}
+         if (strcmp(name,"fOption")     == 0) {hasOption     = kTRUE;}
+         if (strcmp(name,"fMean")       == 0) {hasMean       = kTRUE;}
+         if (strcmp(name,"fMeanLeft")   == 0) {hasMeanLeft   = kTRUE;}
+         if (strcmp(name,"fMeanRight")  == 0) {hasMeanRight  = kTRUE;}
+         if (strcmp(name,"fMeanTop")    == 0) {hasMeanTop    = kTRUE;}
+         if (strcmp(name,"fMeanBottom") == 0) {hasMeanBottom = kTRUE;}
+         if (strcmp(name,"fCOIXhi")     == 0) {hasCOIXhi     = kTRUE;}
+         if (strcmp(name,"fCOIYhi")     == 0) {hasCOIYhi     = kTRUE;}
+         if (strcmp(name,"fCOIXlo")     == 0) {hasCOIXlo     = kTRUE;}
+         if (strcmp(name,"fCOIYlo")     == 0) {hasCOIYlo     = kTRUE;}
+         name = strtok(NULL, ":");
+         if (name == 0) break;
+      }//while
+      delete [] dname;
+   }//if
+
+// Get trees
+   TTree           **tree = new TTree*[n];
+   XBorderTreeInfo **info = new XBorderTreeInfo*[n];
+   if (fTrees->GetSize() == 0) {
+   // Get trees from names
+      for (Int_t k=0; k<n; k++) {
+         tree[k] = (TTree*)gDirectory->Get((names[k]).Data());
+         if (!tree[k]) return errGetTree;
+
+         info[k] = (XBorderTreeInfo*)tree[k]->GetUserInfo()->At(0);
+      }//for_k
+   } else {
+   // Get trees from list fTrees
+      for (Int_t k=0; k<n; k++) {
+         tree[k] = (TTree*)fTrees->At(k);
+         if (!tree[k]) return errGetTree;
+
+         info[k] = (XBorderTreeInfo*)tree[k]->GetUserInfo()->At(0);
+      }//for_k
+   }//if
+
+// Output header
+   output << "Parameter";
+   for (Int_t k=0; k<n; k++) output << sep << names[k].Data();
+   output << endl;
+
+// Output parameters
+   if (hasTreeName) {
+      output << "TreeName";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetName();
+      output << endl;
+   }//if
+
+   if (hasSetName) {
+      output << "SetName";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetTreeSetName();
+      output << endl;
+   }//if
+
+   if (hasOption) {
+      output << "Option";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetOption();
+      output << endl;
+   }//if
+
+   if (hasMean) {
+      output << "Mean";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fMean");
+      output << endl;
+   }//if
+
+   if (hasMeanLeft) {
+      output << "MeanLeft";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fMeanLeft");
+      output << endl;
+   }//if
+
+   if (hasMeanRight) {
+      output << "MeanRight";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fMeanRight");
+      output << endl;
+   }//if
+
+   if (hasMeanTop) {
+      output << "MeanTop";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fMeanTop");
+      output << endl;
+   }//if
+
+   if (hasMeanBottom) {
+      output << "MeanBottom";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fMeanBottom");
+      output << endl;
+   }//if
+
+   if (hasCOIXhi) {
+      output << "COIPosElementsX";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fCOIXhi");
+      output << endl;
+   }//if
+
+   if (hasCOIYhi) {
+      output << "COIPosElementsY";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fCOIYhi");
+      output << endl;
+   }//if
+
+   if (hasCOIXlo) {
+      output << "COINegElementsX";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fCOIXlo");
+      output << endl;
+   }//if
+
+   if (hasCOIYlo) {
+      output << "COINegElementsY";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fCOIYlo");
+      output << endl;
+   }//if
+
+// Cleanup
+   for (Int_t k=0; k<n; k++) {
+//no!      SafeDelete(info[k]);
+      SafeDelete(tree[k]);
+   }//for_k
+
+   delete [] info;
+   delete [] tree;
+
+   return errNoErr;
+}//ExportBordTreeInfo
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::ExportNormTreeInfo(Int_t n, TString *names, const char *varlist,
+                    ofstream &output, const char *sep)
+{
+   // Export data stored in userinfo of normation tree to file output
+   if(kCS) cout << "------XGCProcesSet::ExportNormTreeInfo------" << endl;
+
+   return this->ExportIntnTreeInfo(n, names, varlist, output, sep);
+}//ExportNormTreeInfo
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::ExportCallTreeInfo(Int_t n, TString *names, const char *varlist,
+                    ofstream &output, const char *sep)
+{
+   // Export data stored in userinfo of call tree to file output
+   if(kCS) cout << "------XGCProcesSet::ExportCallTreeInfo------" << endl;
+
+// Decompose varlist
+   Bool_t hasTreeName   = kFALSE;
+   Bool_t hasSetName    = kFALSE;
+   Bool_t hasOption     = kFALSE;
+   Bool_t hasNUnits     = kFALSE;
+   Bool_t hasNAbsent    = kFALSE;
+   Bool_t hasNMarginal  = kFALSE;
+   Bool_t hasNPresent   = kFALSE;
+   Bool_t hasPcAbsent   = kFALSE;
+   Bool_t hasPcMarginal = kFALSE;
+   Bool_t hasPcPresent  = kFALSE;
+   Bool_t hasMinPValue  = kFALSE;
+   Bool_t hasMaxPValue  = kFALSE;
+
+   if (strcmp(varlist,"*")  == 0) {
+      hasTreeName   = kTRUE;
+      hasSetName    = kTRUE;
+      hasOption     = kTRUE;
+      hasNUnits     = kTRUE;
+      hasNAbsent    = kTRUE;
+      hasNMarginal  = kTRUE;
+      hasNPresent   = kTRUE;
+      hasPcAbsent   = kTRUE;
+      hasPcMarginal = kTRUE;
+      hasPcPresent  = kTRUE;
+      hasMinPValue  = kTRUE;
+      hasMaxPValue  = kTRUE;
+   } else {
+      char *name  = new char[strlen(varlist) + 1];
+      char *dname = name;
+      name = strtok(strcpy(name,varlist),":");
+      while(name) {
+         if (strcmp(name,"fName")       == 0) {hasTreeName   = kTRUE;}
+         if (strcmp(name,"fSetName")    == 0) {hasSetName    = kTRUE;}
+         if (strcmp(name,"fOption")     == 0) {hasOption     = kTRUE;}
+         if (strcmp(name,"fNUnits")     == 0) {hasNUnits     = kTRUE;}
+         if (strcmp(name,"fNAbsent")    == 0) {hasNAbsent    = kTRUE;}
+         if (strcmp(name,"fNMarginal")  == 0) {hasNMarginal  = kTRUE;}
+         if (strcmp(name,"fNPresent")   == 0) {hasNPresent   = kTRUE;}
+         if (strcmp(name,"fPcAbsent")   == 0) {hasPcAbsent   = kTRUE;}
+         if (strcmp(name,"fPcMarginal") == 0) {hasPcMarginal = kTRUE;}
+         if (strcmp(name,"fPcPresent")  == 0) {hasPcPresent  = kTRUE;}
+         if (strcmp(name,"fMinPValue")  == 0) {hasMinPValue  = kTRUE;}
+         if (strcmp(name,"fMaxPValue")  == 0) {hasMaxPValue  = kTRUE;}
+         name = strtok(NULL, ":");
+         if (name == 0) break;
+      }//while
+      delete [] dname;
+   }//if
+
+// Get trees
+   TTree         **tree = new TTree*[n];
+   XCallTreeInfo **info = new XCallTreeInfo*[n];
+   if (fTrees->GetSize() == 0) {
+   // Get trees from names
+      for (Int_t k=0; k<n; k++) {
+         tree[k] = (TTree*)gDirectory->Get((names[k]).Data());
+         if (!tree[k]) return errGetTree;
+
+         info[k] = (XCallTreeInfo*)tree[k]->GetUserInfo()->At(0);
+      }//for_k
+   } else {
+   // Get trees from list fTrees
+      for (Int_t k=0; k<n; k++) {
+         tree[k] = (TTree*)fTrees->At(k);
+         if (!tree[k]) return errGetTree;
+
+         info[k] = (XCallTreeInfo*)tree[k]->GetUserInfo()->At(0);
+      }//for_k
+   }//if
+
+// Output header
+   output << "Parameter";
+   for (Int_t k=0; k<n; k++) output << sep << names[k].Data();
+   output << endl;
+
+// Output parameters
+   if (hasTreeName) {
+      output << "TreeName";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetName();
+      output << endl;
+   }//if
+
+   if (hasSetName) {
+      output << "SetName";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetTreeSetName();
+      output << endl;
+   }//if
+
+   if (hasOption) {
+      output << "Option";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetOption();
+      output << endl;
+   }//if
+
+   if (hasNUnits) {
+      output << "NumUnits";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNUnits"));
+      output << endl;
+   }//if
+
+   if (hasNAbsent) {
+      output << "NumAbsent";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNAbsent"));
+      output << endl;
+   }//if
+
+   if (hasNMarginal) {
+      output << "NumMarginal";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNMarginal"));
+      output << endl;
+   }//if
+
+   if (hasNPresent) {
+      output << "NumPresent";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNPresent"));
+      output << endl;
+   }//if
+
+   if (hasPcAbsent) {
+      output << "PercentAbsent";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fPcAbsent");
+      output << endl;
+   }//if
+
+   if (hasPcMarginal) {
+      output << "PercentMarginal";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fPcMarginal");
+      output << endl;
+   }//if
+
+   if (hasPcPresent) {
+      output << "PercentPresent";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fPcPresent");
+      output << endl;
+   }//if
+
+   if (hasMinPValue) {
+      output << "MinPValue";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fMinPValue");
+      output << endl;
+   }//if
+
+   if (hasMaxPValue) {
+      output << "MaxPValue";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fMaxPValue");
+      output << endl;
+   }//if
+
+// Cleanup
+   for (Int_t k=0; k<n; k++) {
+//no!      SafeDelete(info[k]);
+      SafeDelete(tree[k]);
+   }//for_k
+
+   delete [] info;
+   delete [] tree;
+
+   return errNoErr;
+}//ExportCallTreeInfo
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::ExportQualTreeInfo(Int_t n, TString *names, const char *varlist,
+                    ofstream &output, const char *sep)
+{
+   // Export data stored in userinfo of quality tree to file output
+   if(kCS) cout << "------XGCProcesSet::ExportQualTreeInfo------" << endl;
+
+// Decompose varlist
+   Bool_t hasTreeName = kFALSE;
+   Bool_t hasSetName  = kFALSE;
+   Bool_t hasOption   = kFALSE;
+   Bool_t hasQualOpt  = kFALSE;
+   Bool_t hasNUnits   = kFALSE;
+   Bool_t hasMinLevel = kFALSE;
+   Bool_t hasMaxLevel = kFALSE;
+   Bool_t hasNQuant   = kFALSE;
+   Bool_t hasQuant    = kFALSE;
+   Bool_t hasLevel    = kFALSE;
+   Bool_t hasNUSE     = kFALSE;
+   Bool_t hasRLE      = kFALSE;
+
+   if (strcmp(varlist,"*")  == 0) {
+      hasTreeName = kTRUE;
+      hasSetName  = kTRUE;
+      hasOption   = kTRUE;
+      hasQualOpt  = kTRUE;
+      hasNUnits   = kTRUE;
+      hasMinLevel = kTRUE;
+      hasMaxLevel = kTRUE;
+      hasNQuant   = kTRUE;
+      hasQuant    = kTRUE;
+      hasLevel    = kTRUE;
+      hasNUSE     = kTRUE;
+      hasRLE      = kTRUE;
+   } else {
+      char *name  = new char[strlen(varlist) + 1];
+      char *dname = name;
+      name = strtok(strcpy(name,varlist),":");
+      while(name) {
+         if (strcmp(name,"fName")       == 0) {hasTreeName = kTRUE;}
+         if (strcmp(name,"fSetName")    == 0) {hasSetName  = kTRUE;}
+         if (strcmp(name,"fOption")     == 0) {hasOption   = kTRUE;}
+         if (strcmp(name,"fQualOption") == 0) {hasQualOpt  = kTRUE;}
+         if (strcmp(name,"fNUnits")     == 0) {hasNUnits   = kTRUE;}
+         if (strcmp(name,"fMinLevel")   == 0) {hasMinLevel = kTRUE;}
+         if (strcmp(name,"fMaxLevel")   == 0) {hasMaxLevel = kTRUE;}
+         if (strcmp(name,"fNQuantiles") == 0) {hasNQuant   = kTRUE;}
+         if (strcmp(name,"fQuantiles")  == 0) {hasQuant    = kTRUE;}
+         if (strcmp(name,"fLevelQuant") == 0) {hasLevel    = kTRUE;}
+         if (strcmp(name,"fNUSEQuant")  == 0) {hasNUSE     = kTRUE;}
+         if (strcmp(name,"fRLEQuant")   == 0) {hasRLE      = kTRUE;}
+         name = strtok(NULL, ":");
+         if (name == 0) break;
+      }//while
+      delete [] dname;
+   }//if
+
+// Get trees
+   TTree            **tree = new TTree*[n];
+   XQualityTreeInfo **info = new XQualityTreeInfo*[n];
+   if (fTrees->GetSize() == 0) {
+   // Get trees from names
+      for (Int_t k=0; k<n; k++) {
+         tree[k] = (TTree*)gDirectory->Get((names[k]).Data());
+         if (!tree[k]) return errGetTree;
+
+         info[k] = (XQualityTreeInfo*)tree[k]->GetUserInfo()->At(0);
+      }//for_k
+   } else {
+   // Get trees from list fTrees
+      for (Int_t k=0; k<n; k++) {
+         tree[k] = (TTree*)fTrees->At(k);
+         if (!tree[k]) return errGetTree;
+
+         info[k] = (XQualityTreeInfo*)tree[k]->GetUserInfo()->At(0);
+      }//for_k
+   }//if
+
+// Output header
+   output << "Parameter";
+   for (Int_t k=0; k<n; k++) output << sep << names[k].Data();
+   output << endl;
+
+// Output parameters
+   if (hasTreeName) {
+      output << "TreeName";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetName();
+      output << endl;
+   }//if
+
+   if (hasSetName) {
+      output << "SetName";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetTreeSetName();
+      output << endl;
+   }//if
+
+   if (hasOption) {
+      output << "Option";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetOption();
+      output << endl;
+   }//if
+
+   if (hasQualOpt) {
+      output << "QualOption";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetQualOption();
+      output << endl;
+   }//if
+
+   if (hasNUnits) {
+      output << "NumUnits";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNUnits"));
+      output << endl;
+   }//if
+
+   if (hasMinLevel) {
+      output << "MinLevel";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fMinLevel");
+      output << endl;
+   }//if
+
+   if (hasMaxLevel) {
+      output << "MaxLevel";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fMaxLevel");
+      output << endl;
+   }//if
+
+   if (hasNQuant) {
+      output << "NumQuantiles";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNQuantiles"));
+      output << endl;
+   }//if
+
+   Int_t      nq    = 0;
+   Double_t **quant = 0;
+   if (hasQuant || hasLevel || hasNUSE || hasRLE) {
+      nq = (Int_t)(info[0]->GetValue("fNQuantiles"));
+
+      quant = new Double_t*[n];
+      for (Int_t k=0; k<n; k++) {
+         quant[k] = info[k]->GetQuantiles();
+      }//for_k
+   }//if
+
+   if (hasQuant) {
+      for (Int_t i=0; i<nq; i++) {
+         TString str; str = "Quantile"; str += i;
+
+         output << str.Data();
+         for (Int_t k=0; k<n; k++) output << sep << quant[k][i];
+         output << endl;
+      }//for_i
+   }//if
+
+   if (hasLevel) {
+      Double_t **level = new Double_t*[n];
+      for (Int_t k=0; k<n; k++) {
+         level[k] = info[k]->GetLevelQuantiles();
+      }//for_k
+
+      for (Int_t i=0; i<nq; i++) {
+         TString str; str.Form("Level_Q%4.2f", quant[0][i]);
+
+         output << str.Data();
+         for (Int_t k=0; k<n; k++) output << sep << level[k][i];
+         output << endl;
+      }//for_i
+
+      delete [] level;
+   }//if
+
+   if (hasNUSE) {
+      Double_t **suse = new Double_t*[n];
+      for (Int_t k=0; k<n; k++) {
+         suse[k] = info[k]->GetNUSEQuantiles();
+      }//for_k
+
+      for (Int_t i=0; i<nq; i++) {
+         TString str; str.Form("NUSE_Q%4.2f", quant[0][i]);
+
+         output << str.Data();
+         for (Int_t k=0; k<n; k++) output << sep << suse[k][i];
+         output << endl;
+      }//for_i
+
+      delete [] suse;
+    }//if
+
+   if (hasRLE) {
+      Double_t **rle = new Double_t*[n];
+      for (Int_t k=0; k<n; k++) {
+         rle[k] = info[k]->GetRLEQuantiles();
+      }//for_k
+
+      Int_t nq  = (Int_t)(info[0]->GetValue("fNQuantiles"));
+      for (Int_t i=0; i<nq; i++) {
+         TString str; str.Form("RLE_Q%4.2f", quant[0][i]);
+
+         output << str.Data();
+         for (Int_t k=0; k<n; k++) output << sep << rle[k][i];
+         output << endl;
+      }//for_i
+
+      delete [] rle;
+    }//if
+
+// Cleanup
+   if(quant) delete [] quant;
+
+   for (Int_t k=0; k<n; k++) {
+//no!      SafeDelete(info[k]);
+      SafeDelete(tree[k]);
+   }//for_k
+
+   delete [] info;
+   delete [] tree;
+
+   return errNoErr;
+}//ExportQualTreeInfo
+
+//______________________________________________________________________________
 Int_t XGCProcesSet::ProbeMask(XDNAChip *chip, Int_t n, Int_t *msk)
 {
    // Get name of probe tree from "chip"
@@ -4986,12 +7845,14 @@ Int_t XGCProcesSet::InitTrees(Int_t &numdata, TTree **datatree,
          htable->Add(idxstr);
          numdata++;
       } else if ((tree->GetBranch("BgrdBranch")) != 0) {
-         temptree[numbgrd++] = tree;
+         bgrdtree[numbgrd] = tree;
+         temptree[numbgrd] = tree;
+         numbgrd++;
       }//if
    }//for_k
 
 // Sort bgrdtrees in order of datatrees
-   if (numbgrd > 0) {
+   if ((numbgrd > 0) && (numdata > 0)) {
       numbgrd = 0;
       for (Int_t k=0; k<numdata; k++) {
          tmpstr = Path2Name(temptree[k]->GetName(), "", ".");
@@ -5009,7 +7870,7 @@ Int_t XGCProcesSet::InitTrees(Int_t &numdata, TTree **datatree,
    if (htable) {htable->Delete(); delete htable; htable = 0;}
 
 // Check again for equal number of bgrd trees and corresponding data trees
-   if ((numbgrd > 0) && (numbgrd != numdata)) {
+   if ((numbgrd > 0) && (numdata > 0) && (numbgrd != numdata)) {
       cerr << "Error: <" << (numdata - numbgrd) 
            << "> data trees have no corresponding background tree!" << endl;
       return errAbort;
@@ -5134,6 +7995,118 @@ TString XGCProcesSet::ChipType(const char *type)
 
    return chiptype;
 }//ChipType
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::BgrdQuantiles(TTree *tree, XBgCell *cell,
+                    Int_t nquant, Double_t *q, Double_t *quant)
+{
+   // Get nquant quantiles for intensities from background tree
+   if(kCS) cout << "------XGeneChipHyb::BgrdQuantiles------" << endl;
+
+   Int_t err      = errNoErr;
+   Int_t nentries = (Int_t)(tree->GetEntries());
+
+   tree->SetBranchAddress("BgrdBranch", &cell);
+
+// Init arrays
+   Double_t *bgrd  = 0; 
+   Int_t    *index = 0;
+   if (!(bgrd  = new (nothrow) Double_t[nentries])) {err = errInitMemory; goto cleanup;}
+   if (!(index = new (nothrow) Int_t[nentries]))    {err = errInitMemory; goto cleanup;}
+
+// Fill arrays
+   for (Int_t i=0; i<nentries; i++) {
+      tree->GetEntry(i);
+      bgrd[i] = cell->GetBackground();
+   }//for_i
+
+// Fill quantiles
+   quant = TStat::Quantiles(nentries, bgrd, index, nquant, q, quant);
+
+// Cleanup
+cleanup:
+   tree->DropBaskets();
+   tree->ResetBranchAddress(tree->GetBranch("BgrdBranch"));
+
+   if (index) {delete [] index; index = 0;}
+   if (bgrd)  {delete [] bgrd;  bgrd  = 0;}
+
+   return err;
+}//BgrdQuantiles
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::DataQuantiles(TTree *tree, XGCCell *cell,
+                    Int_t nquant, Double_t *q, Double_t *quant)
+{
+   // Get nquant quantiles for intensities from data tree
+   if(kCS) cout << "------XGeneChipHyb::DataQuantiles------" << endl;
+
+   Int_t err      = errNoErr;
+   Int_t nentries = (Int_t)(tree->GetEntries());
+
+   tree->SetBranchAddress("DataBranch", &cell);
+
+// Init arrays
+   Double_t *inten = 0; 
+   Int_t    *index = 0;
+   if (!(inten = new (nothrow) Double_t[nentries])) {err = errInitMemory; goto cleanup;}
+   if (!(index = new (nothrow) Int_t[nentries]))    {err = errInitMemory; goto cleanup;}
+
+// Fill arrays
+   for (Int_t i=0; i<nentries; i++) {
+      tree->GetEntry(i);
+      inten[i] = cell->GetIntensity();
+   }//for_i
+
+// Fill quantiles
+   quant = TStat::Quantiles(nentries, inten, index, nquant, q, quant);
+
+// Cleanup
+cleanup:
+   tree->DropBaskets();
+   tree->ResetBranchAddress(tree->GetBranch("DataBranch"));
+
+   if (index) {delete [] index; index = 0;}
+   if (inten) {delete [] inten; inten = 0;}
+
+   return err;
+}//DataQuantiles
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::CallStatistics(TTree *tree, XPCall *call, Int_t &nabsent,
+                    Int_t &nmarginal, Int_t &npresent, Double_t &minpval,
+                    Double_t &maxpval)
+{
+   // Get number of A/M/P calls
+   if(kCS) cout << "------XGeneChipHyb::CallStatistics------" << endl;
+
+   Int_t    nentries = (Int_t)(tree->GetEntries());
+   Short_t  prescall = 0;
+   Double_t pvalue   = 1.0;
+
+   tree->SetBranchAddress("CallBranch", &call);
+
+   for (Int_t i=0; i<nentries; i++) {
+      tree->GetEntry(i);
+
+      prescall = call->GetCall();
+      pvalue   = call->GetPValue();
+
+      // number of present/absent calls
+      if      (prescall == 2) npresent++;
+      else if (prescall == 1) nmarginal++;
+      else if (prescall == 0) nabsent++;
+
+      // minimal/maximal detection call p-value
+      if      (pvalue < minpval) minpval = pvalue;
+      else if (pvalue > maxpval) maxpval = pvalue;
+   }//for_i
+
+   tree->DropBaskets();
+   tree->ResetBranchAddress(tree->GetBranch("DataBranch"));
+
+   return errNoErr;
+}//CallStatistics
 
 //______________________________________________________________________________
 Int_t XGCProcesSet::FillDataArrays(TTree *datatree, TTree *bgrdtree, Bool_t doBg,
@@ -5394,6 +8367,11 @@ TTree *XGCProcesSet::FillDataTree(TTree *oldtree, const char *exten,
    Int_t    numpix = 0;
    Int_t    maxpix = 0;
 
+   Int_t     nquant = 7;
+   Double_t  q[]    = {0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0};
+   Double_t *quantI = 0; 
+   if (!(quantI = new (nothrow) Double_t[nquant])) return 0;
+
    Int_t x, y, ij;
    for (Int_t i=0; i<size; i++) {
       oldtree->GetEntry(i);
@@ -5423,9 +8401,16 @@ TTree *XGCProcesSet::FillDataTree(TTree *oldtree, const char *exten,
       newtree->Fill();
    }//for_i
 
+// Quantiles for data trees
+   Int_t err = this->DataQuantiles(newtree, newcell, nquant, q, quantI);
+   if (err != errNoErr) {
+      if (quantI) {delete [] quantI; quantI = 0;}
+      return 0;
+   }//if
+
 // Add tree info to tree
    AddDataTreeInfo(newtree, newtree->GetName(), algorithm->GetOption(),
-                   nrow, ncol, nummin, min, nummax, max, maxpix);
+                   nrow, ncol, nummin, min, nummax, max, maxpix, nquant, q, quantI);
 
 //////////////////
 // to do: check if exten is kExtenBgrd or kExtenIntn or kExtenCNrm and save 
@@ -5453,6 +8438,8 @@ TTree *XGCProcesSet::FillDataTree(TTree *oldtree, const char *exten,
                     algorithm->GetNumParameters(), algorithm->GetParameters());
    }//if
 
+// Celanup
+cleanup:
    SafeDelete(newcell);
    newtree->DropBaskets();  //to remove baskets from memory
    newtree->ResetBranchAddress(newtree->GetBranch("DataBranch"));
@@ -5461,6 +8448,8 @@ TTree *XGCProcesSet::FillDataTree(TTree *oldtree, const char *exten,
    oldtree->ResetBranchAddress(oldtree->GetBranch("DataBranch"));
 //?? delete old tree??
    SafeDelete(oldtree);
+
+   if (quantI) {delete [] quantI; quantI = 0;}
 
    return newtree;
 }//FillDataTree
@@ -5484,6 +8473,11 @@ TTree *XGCProcesSet::FillDataTree(const char *name, XAlgorithm *algorithm,
    Double_t max    = 0;
    Int_t    nummin = 0;
    Int_t    nummax = 0;
+
+   Int_t     nquant = 7;
+   Double_t  q[]    = {0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0};
+   Double_t *quantI = 0; 
+   if (!(quantI = new (nothrow) Double_t[nquant])) return 0;
 
 // Fill data tree
    Int_t i, j, ij;
@@ -5509,9 +8503,16 @@ TTree *XGCProcesSet::FillDataTree(const char *name, XAlgorithm *algorithm,
       }//for_i
    }//for_j
 
+// Quantiles for data trees
+   Int_t err = this->DataQuantiles(tree, cell, nquant, q, quantI);
+   if (err != errNoErr) {
+      if (quantI) {delete [] quantI; quantI = 0;}
+      return 0;
+   }//if
+
 // Add tree info to tree
    AddDataTreeInfo(tree, name, algorithm->GetOption(), nrow, ncol,
-                   nummin, min, nummax, max, 0);
+                   nummin, min, nummax, max, 0, nquant, q, quantI);
 
 //////////////////
 // to do: check if exten(from name) is kExtenBgrd or kExtenIntn or kExtenCNrm and save 
@@ -5538,6 +8539,8 @@ TTree *XGCProcesSet::FillDataTree(const char *name, XAlgorithm *algorithm,
 
    SafeDelete(cell);
    tree->ResetBranchAddress(tree->GetBranch("DataBranch"));
+
+   if (quantI) {delete [] quantI; quantI = 0;}
 
    return tree;
 }//FillDataTree
@@ -5756,6 +8759,108 @@ Int_t XGCProcesSet::MedianReference(Int_t numdata, TTree **datatree, Int_t numbg
    fRefTrim = 0.5;
    return this->MeanReference(numdata, datatree, numbgrd, bgrdtree,  nrow, ncol, arr, doBg);
 }//MedianReference
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::QualityQuantiles(TTree *exprtree, XQCExpression *expr,
+                    Int_t nquant, Double_t *q, Double_t *quantL, Double_t *quantSE,
+                    Double_t *quantLE)
+{
+   // Get nquant quantiles for expression levels, NUSE and RLE from expression tree
+   if(kCS) cout << "------XGCProcesSet::QualityQuantiles------" << endl;
+
+   Int_t err      = errNoErr;
+   Int_t nentries = (Int_t)(exprtree->GetEntries());
+
+   exprtree->SetBranchAddress("ExprBranch", &expr);
+
+// Init arrays
+   Double_t *level = 0; 
+   Double_t *nuse  = 0; 
+   Double_t *rle   = 0; 
+   Int_t    *index = 0;
+   if (!(level = new (nothrow) Double_t[nentries])) {err = errInitMemory; goto cleanup;}
+   if (!(nuse  = new (nothrow) Double_t[nentries])) {err = errInitMemory; goto cleanup;}
+   if (!(rle   = new (nothrow) Double_t[nentries])) {err = errInitMemory; goto cleanup;}
+   if (!(index = new (nothrow) Int_t[nentries]))    {err = errInitMemory; goto cleanup;}
+
+// Fill arrays
+   for (Int_t i=0; i<nentries; i++) {
+      exprtree->GetEntry(i);
+
+      level[i] = expr->GetLevel();
+      nuse[i]  = expr->GetNUSE();
+      rle[i]   = expr->GetRLE();
+   }//for_i
+
+// Fill quantiles
+   quantL  = TStat::Quantiles(nentries, level, index, nquant, q, quantL);
+   quantSE = TStat::Quantiles(nentries, nuse,  index, nquant, q, quantSE);
+   quantLE = TStat::Quantiles(nentries, rle ,  index, nquant, q, quantLE);
+
+// Cleanup
+cleanup:
+   exprtree->DropBaskets();
+   exprtree->ResetBranchAddress(exprtree->GetBranch("ExprBranch"));
+
+   if (index) {delete [] index; index = 0;}
+   if (rle)   {delete [] rle;   rle   = 0;}
+   if (nuse)  {delete [] nuse;  nuse  = 0;}
+   if (level) {delete [] level; level = 0;}
+
+   return err;
+}//QualityQuantiles
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::ResiduQuantiles(TTree *resdtree, XResidual *resd,
+                    Int_t nquant, Double_t *q, Double_t *quantR, Double_t *quantW)
+{
+   // Get nquant quantiles for residuals and weights from residual tree
+   if(kCS) cout << "------XGCProcesSet::ResiduQuantiles------" << endl;
+
+   Int_t err      = errNoErr;
+   Int_t nentries = (Int_t)(resdtree->GetEntries());
+   Int_t idxr     = 0;
+   Int_t idxw     = 0;
+
+   Double_t r, w;
+
+   resdtree->SetBranchAddress("ResdBranch", &resd);
+
+// Init arrays
+   Double_t *residu = 0; 
+   Double_t *weight = 0; 
+   Int_t    *index  = 0;
+   if (!(residu = new (nothrow) Double_t[nentries])) {err = errInitMemory; goto cleanup;}
+   if (!(weight = new (nothrow) Double_t[nentries])) {err = errInitMemory; goto cleanup;}
+   if (!(index  = new (nothrow) Int_t[nentries]))    {err = errInitMemory; goto cleanup;}
+
+// Fill arrays
+   for (Int_t i=0; i<nentries; i++) {
+      resdtree->GetEntry(i);
+
+      r = resd->GetResidual();
+      w = resd->GetWeight();
+
+      // exclude initialization values
+      if (r != 0.0)        residu[idxr++] = r;
+      if (w > eINITWEIGHT) weight[idxw++] = w;
+   }//for_i
+
+// Fill quantiles
+   quantR = TStat::Quantiles(idxr, residu, index, nquant, q, quantR);
+   quantW = TStat::Quantiles(idxw, weight, index, nquant, q, quantW);
+
+// Cleanup
+cleanup:
+   resdtree->DropBaskets();
+   resdtree->ResetBranchAddress(resdtree->GetBranch("ResdBranch"));
+
+   if (index)  {delete [] index;  index  = 0;}
+   if (weight) {delete [] weight; weight = 0;}
+   if (residu) {delete [] residu; residu = 0;}
+
+   return err;
+}//ResiduQuantiles
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -6008,6 +9113,7 @@ Int_t XExonProcesSet::DoSpliceExpress(Int_t numdata, TTree **datatree,
    Double_t  *psLevel = 0;
    Double_t  *psStdev = 0;
    Double_t  *psScore = 0;
+   Double_t  *quantL  = 0; 
 
    Double_t **table   = 0;
    Double_t  *arrData = 0;
@@ -6036,6 +9142,9 @@ Int_t XExonProcesSet::DoSpliceExpress(Int_t numdata, TTree **datatree,
    Int_t    bufsize = XManager::GetBufSize(numdata, 10000);
    Int_t    split   = 99;
    Double_t sort    = 0;
+
+   Int_t    nquant = 7;
+   Double_t q[]    = {0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0};
 
    fFile->cd();
 
@@ -6136,6 +9245,7 @@ Int_t XExonProcesSet::DoSpliceExpress(Int_t numdata, TTree **datatree,
    if (!(psLevel = new (nothrow) Double_t[maxdata])) {err = errInitMemory; goto cleanup;}
    if (!(psStdev = new (nothrow) Double_t[maxdata])) {err = errInitMemory; goto cleanup;}
    if (!(psScore = new (nothrow) Double_t[maxdata])) {err = errInitMemory; goto cleanup;}
+   if (!(quantL  = new (nothrow) Double_t[nquant]))  {err = errInitMemory; goto cleanup;}
 
    for (Int_t i=0; i<size; i++) {
       arrMask[i] = eINITMASK; 
@@ -6492,21 +9602,24 @@ Int_t XExonProcesSet::DoSpliceExpress(Int_t numdata, TTree **datatree,
            << numunits << "> units...Finished." << endl;
    }//if
 
-   if (XManager::fgVerbose) {
-      cout << "      expression statistics: " << endl;
-      cout << "         minimal expression level is <" << min << ">" << endl;
-      cout << "         maximal expression level is <" << max << ">" << endl;
-   }//if
 //TEST
 //gBenchmark->Show("Bench_Loop");
 
 // Write expression trees to file 
    for (Int_t k=0; k<numdata; k++) {
-   // Add tree info to tree
+      // quantiles for expression trees
+      err = ExpressionQuantiles(exprtree[k], expr[k], nquant, q, quantL);
+      if (err != errNoErr) goto cleanup;
+
+      if (XManager::fgVerbose) {
+         cout << "      expression statistics for " << exprtree[k]->GetName() << ":" << endl;
+         cout << "         minimal expression level is <" << quantL[0] << ">" << endl;
+         cout << "         maximal expression level is <" << quantL[nquant-1] << ">" << endl;
+      }//if
+
+      // add tree info to tree
       AddExprTreeInfo(exprtree[k], exprtree[k]->GetName(), fExpressor->GetOption(),
-                      idx, min, max);
-//need to do:
-//                      idx, min[k], max[k]);
+                      idx, quantL[0], quantL[nquant-1], nquant, q, quantL);
 
       if ((err = WriteTree(exprtree[k], TObject::kOverwrite)) == errNoErr) {
          // add tree header to list
@@ -6535,6 +9648,7 @@ cleanup:
    if (mskID)   {delete [] mskID;   mskID   = 0;}
    if (arrPM)   {delete [] arrPM;   arrPM   = 0;}
    if (arrData) {delete [] arrData; arrData = 0;}
+   if (quantL)  {delete [] quantL;  quantL  = 0;}
    if (psScore) {delete [] psScore; psScore = 0;}
    if (psStdev) {delete [] psStdev; psStdev = 0;}
    if (psLevel) {delete [] psLevel; psLevel = 0;}
@@ -6965,7 +10079,6 @@ TTree *XExonProcesSet::UnitTree(XAlgorithm *algorithm, void *unit, Int_t &numuni
    XExonChip *chip = (XExonChip*)fSchemes->FindObject(fSchemeName, kTRUE);
    if (!chip) return 0;
 
-//   Option_t *option = algorithm->GetOption();
    Option_t *option = algorithm->GetOptions(".");
 
    TTree *idxtree = 0; 

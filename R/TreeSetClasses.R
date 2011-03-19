@@ -8,6 +8,7 @@
 # methods.DataTreeSet.R:     contains methods for DataTreeSet
 # methods.ExprTreeSet.R:     contains methods for ExprTreeSet
 # methods.CallTreeSet.R:     contains methods for CallTreeSet
+# methods.QualTreeSet.R:     contains methods for QualTreeSet
 # methods.Filter.R:          contains methods for Filter
 # methods.PreFilter.R:       contains methods for PreFilter
 # methods.UniFilter.R:       contains methods for UniFilter
@@ -116,6 +117,7 @@ setGeneric("setName<-",    function(object, value) standardGeneric("setName<-"))
 setGeneric("setType",      function(object)        standardGeneric("setType"));
 setGeneric("setType<-",    function(object, value) standardGeneric("setType<-"));
 setGeneric("treeNames",    function(object)        standardGeneric("treeNames"));
+setGeneric("treeInfo",     function(object,...)    standardGeneric("treeInfo"));
 setGeneric("export",       function(object,...)    standardGeneric("export"));
 setGeneric("root.browser", function(object)        standardGeneric("root.browser"));
 
@@ -177,6 +179,7 @@ setGeneric("validData",   function(object, ...)   standardGeneric("validData"));
 setGeneric("boxplot",     function(x, ...)        standardGeneric("boxplot"));
 setGeneric("mboxplot",    function(x, ...)        standardGeneric("mboxplot"));
 setGeneric("hist",        function(x, ...)        standardGeneric("hist"));
+setGeneric("image",       function(x, ...)        standardGeneric("image"));
 
 
 #------------------------------------------------------------------------------#
@@ -196,33 +199,34 @@ setClass("DataTreeSet",
 )#DataTreeSet
 
 # generic methods for class DataTreeSet
-setGeneric("intensity",     function(object)             standardGeneric("intensity"));
-setGeneric("intensity<-",   function(object, ..., value) standardGeneric("intensity<-"));
-setGeneric("background",    function(object)             standardGeneric("background"));
-setGeneric("background<-",  function(object, value)      standardGeneric("background<-"));
-setGeneric("bgtreeNames",   function(object)             standardGeneric("bgtreeNames"));
-setGeneric("attachInten",   function(object, ...)        standardGeneric("attachInten"));
-setGeneric("removeInten",   function(object)             standardGeneric("removeInten"));
-setGeneric("attachBgrd",    function(object, ...)        standardGeneric("attachBgrd"));
-setGeneric("removeBgrd",    function(object)             standardGeneric("removeBgrd"));
-setGeneric("validBgrd",     function(object, ...)        standardGeneric("validBgrd"));
-setGeneric("addData",       function(object, ...)        standardGeneric("addData"));
-setGeneric("pm",            function(object, ...)        standardGeneric("pm"));
-setGeneric("mm",            function(object, ...)        standardGeneric("mm"));
-setGeneric("rawCELName",    function(object, ...)        standardGeneric("rawCELName"));
-setGeneric("xpsRMA",        function(object, ...)        standardGeneric("xpsRMA"));
-setGeneric("xpsFIRMA",      function(object, ...)        standardGeneric("xpsFIRMA"));
-setGeneric("xpsMAS4",       function(object, ...)        standardGeneric("xpsMAS4"));
-setGeneric("xpsMAS5",       function(object, ...)        standardGeneric("xpsMAS5"));
-setGeneric("xpsMAS5Call",   function(object, ...)        standardGeneric("xpsMAS5Call"));
-setGeneric("xpsDABGCall",   function(object, ...)        standardGeneric("xpsDABGCall"));
-setGeneric("xpsINICall",    function(object, ...)        standardGeneric("xpsINICall"));
-setGeneric("xpsPreprocess", function(object, ...)        standardGeneric("xpsPreprocess"));
-setGeneric("xpsBgCorrect",  function(object, ...)        standardGeneric("xpsBgCorrect"));
-setGeneric("xpsNormalize",  function(object, ...)        standardGeneric("xpsNormalize"));
-setGeneric("xpsSummarize",  function(object, ...)        standardGeneric("xpsSummarize"));
-setGeneric("pmplot",        function(x, ...)             standardGeneric("pmplot"));
-setGeneric("image",         function(x, ...)             standardGeneric("image"));
+setGeneric("intensity",         function(object)             standardGeneric("intensity"));
+setGeneric("intensity<-",       function(object, ..., value) standardGeneric("intensity<-"));
+setGeneric("background",        function(object)             standardGeneric("background"));
+setGeneric("background<-",      function(object, value)      standardGeneric("background<-"));
+setGeneric("bgtreeNames",       function(object)             standardGeneric("bgtreeNames"));
+setGeneric("attachInten",       function(object, ...)        standardGeneric("attachInten"));
+setGeneric("removeInten",       function(object)             standardGeneric("removeInten"));
+setGeneric("attachBgrd",        function(object, ...)        standardGeneric("attachBgrd"));
+setGeneric("removeBgrd",        function(object)             standardGeneric("removeBgrd"));
+setGeneric("validBgrd",         function(object, ...)        standardGeneric("validBgrd"));
+setGeneric("addData",           function(object, ...)        standardGeneric("addData"));
+setGeneric("pm",                function(object, ...)        standardGeneric("pm"));
+setGeneric("mm",                function(object, ...)        standardGeneric("mm"));
+setGeneric("rawCELName",        function(object, ...)        standardGeneric("rawCELName"));
+setGeneric("xpsRMA",            function(object, ...)        standardGeneric("xpsRMA"));
+setGeneric("xpsFIRMA",          function(object, ...)        standardGeneric("xpsFIRMA"));
+setGeneric("xpsMAS4",           function(object, ...)        standardGeneric("xpsMAS4"));
+setGeneric("xpsMAS5",           function(object, ...)        standardGeneric("xpsMAS5"));
+setGeneric("xpsMAS5Call",       function(object, ...)        standardGeneric("xpsMAS5Call"));
+setGeneric("xpsDABGCall",       function(object, ...)        standardGeneric("xpsDABGCall"));
+setGeneric("xpsINICall",        function(object, ...)        standardGeneric("xpsINICall"));
+setGeneric("xpsPreprocess",     function(object, ...)        standardGeneric("xpsPreprocess"));
+setGeneric("xpsQualityControl", function(object, ...)        standardGeneric("xpsQualityControl"));
+setGeneric("xpsBgCorrect",      function(object, ...)        standardGeneric("xpsBgCorrect"));
+setGeneric("xpsNormalize",      function(object, ...)        standardGeneric("xpsNormalize"));
+setGeneric("xpsSummarize",      function(object, ...)        standardGeneric("xpsSummarize"));
+setGeneric("xpsQualify",        function(object, ...)        standardGeneric("xpsQualify"));
+setGeneric("pmplot",            function(x, ...)             standardGeneric("pmplot"));
 
 
 #------------------------------------------------------------------------------#
@@ -284,6 +288,32 @@ setGeneric("removePVal", function(object)             standardGeneric("removePVa
 setGeneric("attachCall", function(object, ...)        standardGeneric("attachCall"));
 setGeneric("removeCall", function(object)             standardGeneric("removeCall"));
 setGeneric("callplot",   function(x, ...)             standardGeneric("callplot"));
+
+
+#------------------------------------------------------------------------------#
+# QualTreeSet: 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setClass("QualTreeSet",
+   representation(qualtype = "character",
+                  qualopt  = "character"
+   ),
+   contains=c("ProcesSet"),
+   prototype(qualtype = "rlm",
+             qualopt  = "raw"
+   )
+)#QualTreeSet
+
+# generic methods for class QualTreeSet
+setGeneric("qualType",     function(object)        standardGeneric("qualType"));
+setGeneric("qualType<-",   function(object, value) standardGeneric("qualType<-"));
+setGeneric("qualOption",   function(object)        standardGeneric("qualOption"));
+setGeneric("qualOption<-", function(object, value) standardGeneric("qualOption<-"));
+setGeneric("borders",      function(object, ...)   standardGeneric("borders"));
+setGeneric("residuals",    function(object, ...)   standardGeneric("residuals"));
+setGeneric("weights",      function(object, ...)   standardGeneric("weights"));
+setGeneric("borderplot",   function(x, ...)        standardGeneric("borderplot"));
+setGeneric("coiplot",      function(x, ...)        standardGeneric("coiplot"));
 
 
 #------------------------------------------------------------------------------#

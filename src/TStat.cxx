@@ -1,11 +1,11 @@
-// Author: Christian Stratowa 11/25/2002             last modified: 11/27/2010
+// Author: Christian Stratowa 11/25/2002             last modified: 01/14/2011
 
 /*
  *******************************************************************************
  ***********************  Statistics Package for ROOT  *************************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2010 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2011 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -239,9 +239,9 @@ Double_t TStat::GeoMean(Int_t n, const Double_t *arr)
    if (n <= 0) return NA_REAL;
    if (n == 1) return arr[0];
 
-   Double_t mean = 1;
-   for (Int_t i=0; i<n; i++) mean *= arr[i];
-   mean = TMath::Power(mean, 1.0/(Double_t)n);
+   Double_t mean = 0;
+   for (Int_t i=0; i<n; i++) mean += TMath::Log10(arr[i]);
+   mean = TMath::Power(10, mean/(Double_t)n);
 
    return mean;
 }//GeoMean
@@ -255,12 +255,12 @@ Double_t TStat::GeoMean(Int_t n, const Double_t *arr, Int_t &len, const Double_t
    if (n <= 0) return NA_REAL;
    if (n == 1) return ((arr[0] != na) ? arr[0] : NA_REAL);
 
-   Double_t mean  = 1;
+   Double_t mean  = 0;
    Int_t    count = n;
    for (Int_t i=0; i<n; i++) {
-      (!(arr[i] == na || TMLMath::IsNaN(arr[i]))) ? (mean *= arr[i]) : count--;
+      (!(arr[i] == na || TMLMath::IsNaN(arr[i]))) ? (mean += TMath::Log10(arr[i])) : count--;
    }//for
-   mean = (count > 0) ? TMath::Power(mean, 1.0/(Double_t)count) : NA_REAL;
+   mean = (count > 0) ? TMath::Power(10, mean/(Double_t)n) : NA_REAL;
 
    len = count;
    return mean;
@@ -275,15 +275,15 @@ Double_t TStat::GeoMean(Int_t n, const Double_t *arr, const Double_t *w)
    if (n <= 0) return NA_REAL;
    if (n == 1) return arr[0];
 
-   Double_t mean = 1.0;
+   Double_t mean = 0.0;
    Double_t sumw = 0.0;
    for (Int_t i=0; i<n; i++) {;
       sumw += w[i];
-      mean *= TMath::Power(arr[i], w[i]);
+      mean += TMath::Log10(arr[i] * w[i]);
    }//for_i
 
    if (sumw > 0.0) {
-      mean = TMath::Power(mean, 1.0/sumw);
+      mean = TMath::Power(10, mean/sumw);
    } else {
       cout << "Error: Sum of weights is null!" << endl;
       mean = 0.0;   //??
@@ -330,11 +330,11 @@ Double_t TStat::GeoMean(Int_t n, const Double_t *arr, const Double_t trim,
 
 // Calculate trimmed mean
    Int_t    trimlen = end - start;
-   Double_t mean    = 1;
+   Double_t mean    = 0.0;
    for (Int_t i=start; i<end; i++) {
-      mean *= arr[index[i]];
+      mean += TMath::Log10(arr[index[i]]);
    }//for_i
-   mean = pow(mean, 1.0/(Double_t)trimlen);
+   mean = TMath::Power(10, mean/(Double_t)trimlen);
 
 // Calculate variance
    Double_t var1 = 0;
@@ -350,6 +350,21 @@ Double_t TStat::GeoMean(Int_t n, const Double_t *arr, const Double_t trim,
    len = trimlen;
    return mean;
 }//GeoMean
+
+//______________________________________________________________________________
+Double_t TStat::Mean(Int_t begin, Int_t end, const Double_t *arr)
+{
+   // Calculate arithmetic mean for array[begin, end-1]
+   if(kCSa) cout << "------TStat::Mean------" << endl;
+
+   if (begin < 0)    return NA_REAL;
+   if (begin == end) return arr[begin];
+
+   Double_t mean = 0.0;
+   for (Int_t i=begin; i<end; i++) mean += arr[i];
+
+   return mean/(end - begin);
+}//Mean
 
 //______________________________________________________________________________
 Double_t TStat::Mean(Int_t n, const Double_t *arr)
@@ -670,6 +685,51 @@ Double_t TStat::Median(Int_t n, const Double_t *arr, Bool_t low, Bool_t high)
    } else {
       k = (Int_t)floor(n / 2.0);
       median = arr[index[k]];
+   }//if
+
+   delete [] index;
+
+   return median;
+}//Median
+
+//______________________________________________________________________________
+Double_t TStat::Median(Int_t n, const Double_t *arr, UShort_t logbase)
+{
+   // Calculate median
+   // Convert first to logbase: 0 - linear, 1 - log, 2 - log2, 10 - log10
+   if(kCSa) cout << "------TStat::Median(logbase)------" << endl;
+
+   if (n <= 0) return NA_REAL;
+   if (n == 1) {
+      if (logbase == 0)  {return arr[0];              } else
+      if (logbase == 1)  {return TMath::Log(arr[0]);  } else
+      if (logbase == 2)  {return TMath::Log2(arr[0]); } else
+      if (logbase == 10) {return TMath::Log10(arr[0]);} 
+   }//if
+
+// Create index and sort array
+   Int_t *index = 0;
+   if (!(index = new (nothrow) Int_t[n])) {
+      cout << "Error: Could not initialize memory!" << endl;
+      return NA_REAL;
+   }//if
+   TMath::Sort(n, arr, index);
+
+// Find median
+   Int_t k;
+   Double_t median = 0.0;
+   if ((n % 2) == 0){
+      k = (Int_t)floor(n / 2.0) - 1;
+      if (logbase == 0)  {median =  (arr[index[k]]               + arr[index[k+1]])/2.0;              } else
+      if (logbase == 1)  {median =  (TMath::Log(arr[index[k]])   + TMath::Log(arr[index[k+1]]))/2.0;  } else
+      if (logbase == 2)  {median =  (TMath::Log2(arr[index[k]])  + TMath::Log2(arr[index[k+1]]))/2.0; } else
+      if (logbase == 10) {median =  (TMath::Log10(arr[index[k]]) + TMath::Log10(arr[index[k+1]]))/2.0;} 
+   } else {
+      k = (Int_t)floor(n / 2.0);
+      if (logbase == 0)  {median =  arr[index[k]];              } else
+      if (logbase == 1)  {median =  TMath::Log(arr[index[k]]);  } else
+      if (logbase == 2)  {median =  TMath::Log2(arr[index[k]]); } else
+      if (logbase == 10) {median =  TMath::Log10(arr[index[k]]);} 
    }//if
 
    delete [] index;
@@ -1211,6 +1271,22 @@ Double_t TStat::IQR(Int_t n, const Double_t *arr, const Int_t *index,
 
    return qs;
 }//IQR
+
+//______________________________________________________________________________
+Double_t *TStat::Quantiles(Int_t n, Double_t *arr, Int_t *index,
+                           Int_t nquant, Double_t *q, Double_t *quant)
+{
+   // Return array quant of nquant quantiles q for array arr of size n
+   if(kCSa) cout << "------TStat::Quantiles------" << endl;
+
+   TMath::Sort(n, arr, index, kFALSE);
+
+   for (Int_t i=0; i<nquant; i++) {
+      quant[i] = TStat::Quantile(n, arr, index, q[i]);
+   }//for_i
+
+   return quant;
+}//Quantiles
 
 //______________________________________________________________________________
 void TStat::NextPerm(Int_t n, Int_t k, Int_t *grp) 

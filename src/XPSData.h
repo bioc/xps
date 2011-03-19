@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 02/27/2010
+// File created: 08/05/2002                          last modified: 02/06/2011
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2010 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2011 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -70,6 +70,7 @@ enum EErrorData {
 };
 
 class XHybridization;
+class XGCCell;
 class XPosition;
 class XPlot;
 
@@ -152,6 +153,9 @@ class XDataTreeInfo: public XTreeInfo {
       Int_t      fNMinInten;    //number of cells with minimal intensity
       Int_t      fNMaxInten;    //number of cells with minimal intensity
       Short_t    fMaxNPixels;   //maximal pixel number
+      Int_t      fNQuantiles;   //number of quantiles
+      Double_t  *fQuantiles;    //[fNQuantiles] Array of quantile values
+      Double_t  *fIntenQuant;   //[fNQuantiles] Array of intensity quantiles
 
    public :
       XDataTreeInfo();
@@ -161,9 +165,13 @@ class XDataTreeInfo: public XTreeInfo {
       virtual void     AddUserInfo(XTreeSet *set);
       virtual void     AddUserInfo(Int_t nrows, Int_t ncols, Int_t nmin,
                           Double_t min, Int_t nmax, Double_t max, Short_t maxnpix);
+      virtual void     AddUserInfo(Int_t nquant, Double_t *q, Double_t *quant);
       virtual Double_t GetValue(const char *name);
 
-      ClassDef(XDataTreeInfo,1) //DataTreeInfo
+      Double_t *GetQuantiles();
+      Double_t *GetIntenQuantiles();
+
+      ClassDef(XDataTreeInfo,2) //DataTreeInfo
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -270,13 +278,13 @@ class XHybridization: public XTreeSet {
       void SetSchemeName(TString name)   {fSchemeName = name;}
       void SetDataTreeName(TString name) {fDataTreeName = name;}
       void SetMaskTreeName(TString name) {fMaskTreeName = name;}
-      TString GetDataName()     const {return fDataName;}
-      TString GetSchemeName()   const {return fSchemeName;}
-      TString GetDataTreeName() const {return fDataTreeName;}
-      TString GetMaskTreeName() const {return fMaskTreeName;}
-      Int_t   GetNumRows()      const {return fNRows;}
-      Int_t   GetNumColumns()   const {return fNCols;}
-      Int_t   GetNumCells()     const {return fNCells;}
+      TString GetDataName()        const {return fDataName;}
+      TString GetSchemeName()      const {return fSchemeName;}
+      TString GetDataTreeName()    const {return fDataTreeName;}
+      TString GetMaskTreeName()    const {return fMaskTreeName;}
+      Int_t   GetNumRows()         const {return fNRows;}
+      Int_t   GetNumColumns()      const {return fNCols;}
+      Int_t   GetNumCells()        const {return fNCells;}
 
       ClassDef(XHybridization,1) //Hybridization
 };
@@ -298,17 +306,26 @@ class XGeneChipHyb: public XHybridization {
       Short_t    fMaxNPixels;   //! maximal pixel number
 
    protected:
-      virtual void    AddDataTreeInfo(TTree *tree, const char *name, Option_t *option = "");
+      virtual void    AddDataTreeInfo(TTree *tree, const char *name, Option_t *option,
+                         Int_t nquant, Double_t *q, Double_t *quant);
+
       virtual Int_t   ExportDataTrees(Int_t n, TString *names, const char *varlist,
                          ofstream &output, const char *sep);
       virtual Int_t   ExportDataTree(TString *name, ofstream &output, const char *sep);
       virtual Int_t   ExportMaskTrees(Int_t n, TString *names, const char *varlist,
                          ofstream &output, const char *sep);
       virtual Int_t   ExportMaskTree(TString *name, ofstream &output, const char *sep);
+
+      virtual Int_t   ExportDataTreeInfo(Int_t n, TString *names, const char *varlist,
+                         ofstream &output, const char *sep);
+      virtual Int_t   ExportMaskTreeInfo(Int_t n, TString *names, const char *varlist,
+                         ofstream &output, const char *sep);
+
       virtual Int_t   IsXDAFile(ifstream &input);
       virtual Int_t   IsCalvinFile(ifstream &input);
       virtual TString ChipType(const char *header, Int_t toUpper = 0);
       virtual Int_t   CheckChipType(const char *header, const char *name);
+
       virtual Int_t   ReadHeader(ifstream &input, const char *sep, char delim);
       virtual Int_t   ReadData(ifstream &input, Option_t *option, const char *sep,
                          char delim, Int_t split);
@@ -324,11 +341,15 @@ class XGeneChipHyb: public XHybridization {
       virtual Int_t   ReadXMLData(ifstream &input, Option_t *option,
                          const char *sep, char delim, Int_t split);
 
+      Int_t  DataQuantiles(TTree *tree, XGCCell *cell, Int_t nquant, Double_t *q, Double_t *quant);
+
    public:
       XGeneChipHyb();
       XGeneChipHyb(const char *name, const char *title);
       virtual ~XGeneChipHyb();
 
+      virtual Int_t ExportTreeInfo(const char *exten, Int_t n, TString *names,  
+                       const char *varlist, ofstream &output, const char *sep);
       virtual Int_t ExportTreeType(const char *exten, Int_t n, TString *names,  
                        const char *varlist, ofstream &output, const char *sep);
       virtual Int_t ExportTreeXML(const char *exten, Int_t n, TString *names,  
@@ -611,7 +632,8 @@ class XGenePixHyb: public XHybridization {
       Int_t      fNMaxInten;    //number of cells with minimal intensity
 
    protected:
-      virtual void  AddDataTreeInfo(TTree *tree, const char *name, Option_t *option = "");
+      virtual void  AddDataTreeInfo(TTree *tree, const char *name, Option_t *option,
+                       Int_t nquant, Double_t *q, Double_t *quant);
       virtual Int_t ExportDataTrees(Int_t n, TString *names, const char *varlist,
                        ofstream &output, const char *sep);
       virtual Int_t ExportDataTree(ofstream &output, const char *sep);
@@ -952,6 +974,58 @@ class XRankCell: public XPosition {
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
+// XResidual                                                            //
+//                                                                      //
+// Class describing microarray residuals an weights                     //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+class XResidual: public XPosition {
+
+   protected:
+      Double32_t fResidual;      //residual
+      Double32_t fWeight;        //weight
+
+   public:
+      XResidual();
+      virtual ~XResidual();
+
+      void     SetResidual(Double_t res) {fResidual = res;}
+      void     SetWeight(Double_t w)     {fWeight   = w;}
+
+      Double_t GetResidual()       const {return fResidual;}
+      Double_t GetWeight()         const {return fWeight;}
+
+      ClassDef(XResidual,1) //Residual
+};
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XBorder                                                              //
+//                                                                      //
+// Class describing microarrayborder elements                           //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+class XBorder: public XPosition {
+
+   protected:
+      Double32_t fInten;        //cell intensity
+      Short_t    fFlag;         //type of flag
+
+   public:
+      XBorder();
+      virtual ~XBorder();
+
+      void    SetIntensity(Double_t inten) {fInten = inten;}
+      void    SetFlag(Short_t flag)        {fFlag = flag;}
+
+      Double_t GetIntensity()   const {return fInten;}
+      Short_t GetFlag()         const {return fFlag;}
+
+      ClassDef(XBorder,1) //Border
+};
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
 // XExpression                                                          //
 //                                                                      //
 // Class containing microarray expression data                          //
@@ -1009,6 +1083,38 @@ class XGCExpression: public XExpression {
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
+// XQCExpression                                                        //
+//                                                                      //
+// Class containing quality control expression data                     //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+class XQCExpression: public XExpression {
+
+   private:
+      Double32_t fStderr;      //standard error
+      Double32_t fNUSE;        //normalized unscaled standard error
+      Double32_t fRLE;         //relative log expression
+
+   public:
+      XQCExpression() {}
+      virtual ~XQCExpression() {}
+
+      void SetStdErr(Double_t se) {fStderr = se;}
+      void SetNUSE(Double_t nuse) {fNUSE   = nuse;}
+      void SetRLE(Double_t rle)   {fRLE    = rle;}
+
+      Double_t GetStdErr()  const {return fStderr;}
+      Double_t GetNUSE()    const {return fNUSE;}
+      Double_t GetRLE()     const {return fRLE;}
+
+      virtual Double_t GetValue(Int_t id = 1) 
+         {return (id == 2) ? fStderr : ((id == 3) ?  fNUSE : (id == 4) ? fRLE : fLevel);}
+
+      ClassDef(XQCExpression,1) //QCExpression
+};
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
 // XSpliceExpression                                                    //
 //                                                                      //
 // Class containing exon GeneChip expression and splice data            //
@@ -1032,36 +1138,7 @@ class XSpliceExpression: public XExpression {
 
       ClassDef(XSpliceExpression,1) //SpliceExpression
 };
-/*
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// XExonExpression                                                      //
-//                                                                      //
-// Class containing exon GeneChip expression and splice data            //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
-class XExonExpression: public XGCExpression {
 
-   private:
-      Double32_t fExonLevel;   //expression level of single exon
-      Double32_t fExonStdev;   //standard deviation of single exon
-      Double32_t fExonScore;   //exon score
-
-   public:
-      XExonExpression() {}
-      virtual ~XExonExpression() {}
-
-      void SetExonLevel(Double_t level)  {fExonLevel = level;}
-      void SetExonStdev(Double_t stdev)  {fExonStdev = stdev;}
-      void SetExonScore(Double_t score)  {fExonScore = score;}
-
-      Double_t GetExonLevel()      const {return fExonLevel;}
-      Double_t GetExonStdev()      const {return fExonStdev;}
-      Double_t GetExonScore()      const {return fExonScore;}
-
-      ClassDef(XExonExpression,1) //ExonExpression
-};
-*/
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
 // XCall                                                                //

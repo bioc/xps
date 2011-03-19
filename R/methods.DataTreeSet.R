@@ -33,8 +33,8 @@
 # xpsBgCorrect:
 # xpsNormalize:
 # xpsSummarize:
+# xpsQualify:
 # pmplot:
-# image:
 #==============================================================================#
 
 
@@ -146,7 +146,6 @@ setReplaceMethod("intensity", signature(object="DataTreeSet", value="data.frame"
             cel.header <- CELHeader(celnames[i], object@scheme);
 
             ## create CEL data: STDV=3*sqrt(MEAN), NPIXELS=20
-#x            cel.data <- value[,c(1,2,i+2)];
             cel.data <- cbind(value[,1:2], formatC(value[,i+2], digits=1, format="f"));
             cel.data <- cbind(cel.data, formatC(3*sqrt(as.numeric(cel.data[,3])), digits=1, format="f"), 20);
             colnames(cel.data) <- c("CellHeader=X", "Y", "MEAN", "STDV", "NPIXELS");
@@ -774,11 +773,9 @@ function(object,
 
    ## names only
    if (fullpath == FALSE) {
-#      raw <- unlist(strsplit(rawnames, "/"));
       rawnames <- sapply(strsplit(rawnames, "/"), function(x)x[length(x)]);
    }#if
 
-#   return(rawnames);
    return(as.vector(rawnames, mode="character"));
 }#mm.DataTreeSet
 
@@ -858,7 +855,6 @@ function(object,
    ## get treenames to normalize as fullnames=/datadir/treenames
    listnames <- listTreeNames(object);
    treenames <- listnames$treenames;
-#old   fullnames <- listnames$fullnames;
    fullnames <- paste(object@setname, treenames, sep="/");
    numtrees  <- length(treenames);
 
@@ -894,7 +890,7 @@ function(object,
    error    <- as.integer(r[2]);
 
    if (error != 0) {
-      stop(paste("error in function", sQuote("PreprocessRMA")));
+      stop(paste("error in rwrapper function", sQuote("PreprocessRMA")));
       return(NULL);
    }#if
 
@@ -923,7 +919,7 @@ function(object,
               PACKAGE="xps")$err;
 
       if (r != 0) {
-         stop(paste("error in function", sQuote("ExportData")));
+         stop(paste("error in rwrapper function", sQuote("ExportData")));
          return(NULL);
       }#if
 
@@ -1084,7 +1080,7 @@ if (method == "plm") stop(paste(sQuote("method"), "<plm> is not implemented yet.
    error    <- as.integer(r[2]);
 
    if (error != 0) {
-      stop(paste("error in function", sQuote("PreprocessFIRMA")));
+      stop(paste("error in rwrapper function", sQuote("PreprocessFIRMA")));
       return(NULL);
    }#if
 
@@ -1113,7 +1109,7 @@ if (method == "plm") stop(paste(sQuote("method"), "<plm> is not implemented yet.
               PACKAGE="xps")$err;
 
       if (r != 0) {
-         stop(paste("error in function", sQuote("ExportData")));
+         stop(paste("error in rwrapper function", sQuote("ExportData")));
          return(NULL);
       }#if
 
@@ -1229,7 +1225,7 @@ function(object,
    error    <- as.integer(r[2]);
 
    if (error != 0) {
-      stop(paste("error in function", sQuote("PreprocessMAS4")));
+      stop(paste("error in rwrapper function", sQuote("PreprocessMAS4")));
       return(NULL);
    }#if
 
@@ -1258,7 +1254,7 @@ function(object,
               PACKAGE="xps")$err;
 
       if (r != 0) {
-         stop(paste("error in function", sQuote("ExportData")));
+         stop(paste("error in rwrapper function", sQuote("ExportData")));
          return(NULL);
       }#if
 
@@ -1344,7 +1340,6 @@ function(object,
    ## get treenames to normalize as fullnames=/datadir/treenames
    listnames <- listTreeNames(object);
    treenames <- listnames$treenames;
-#old   fullnames <- listnames$fullnames;
    fullnames <- paste(object@setname, treenames, sep="/");
    numtrees  <- length(treenames);
 
@@ -1376,7 +1371,7 @@ function(object,
    error    <- as.integer(r[2]);
 
    if (error != 0) {
-      stop(paste("error in function", sQuote("PreprocessMAS5")));
+      stop(paste("error in rwrapper function", sQuote("PreprocessMAS5")));
       return(NULL);
    }#if
 
@@ -1405,7 +1400,7 @@ function(object,
               PACKAGE="xps")$err;
 
       if (r != 0) {
-         stop(paste("error in function", sQuote("ExportData")));
+         stop(paste("error in rwrapper function", sQuote("ExportData")));
          return(NULL);
       }#if
 
@@ -1516,7 +1511,6 @@ function(object,
    ## get treenames as fullnames=/datadir/treenames
    listnames <- listTreeNames(object);
    treenames <- listnames$treenames;
-#old   fullnames <- listnames$fullnames;
    fullnames <- paste(object@setname, treenames, sep="/");
    numtrees  <- length(treenames);
 
@@ -1553,7 +1547,7 @@ function(object,
    error    <- as.integer(r[2]);
 
    if (error != 0) {
-      stop(paste("error in function", sQuote("PreprocessMAS5Call")));
+      stop(paste("error in rwrapper function", sQuote("PreprocessMAS5Call")));
       return(NULL);
    }#if
 
@@ -1583,7 +1577,7 @@ function(object,
               PACKAGE="xps")$err;
 
       if (r != 0) {
-         stop(paste("error in function", sQuote("ExportData")));
+         stop(paste("error in rwrapper function", sQuote("ExportData")));
          return(NULL);
       }#if
 
@@ -1614,7 +1608,7 @@ function(object,
               PACKAGE="xps")$err;
 
       if (r != 0) {
-         stop(paste("error in function", sQuote("ExportData")));
+         stop(paste("error in rwrapper function", sQuote("ExportData")));
          return(NULL);
       }#if
 
@@ -1711,7 +1705,6 @@ function(object,
    ## get treenames as fullnames=/datadir/treenames
    listnames <- listTreeNames(object);
    treenames <- listnames$treenames;
-#old   fullnames <- listnames$fullnames;
    fullnames <- paste(object@setname, treenames, sep="/");
    numtrees  <- length(treenames);
 
@@ -1743,7 +1736,7 @@ function(object,
    error    <- as.integer(r[2]);
 
    if (error != 0) {
-      stop(paste("error in function", sQuote("PreprocessDABGCall")));
+      stop(paste("error in rwrapper function", sQuote("PreprocessDABGCall")));
       return(NULL);
    }#if
 
@@ -1773,7 +1766,7 @@ function(object,
               PACKAGE="xps")$err;
 
       if (r != 0) {
-         stop(paste("error in function", sQuote("ExportData")));
+         stop(paste("error in rwrapper function", sQuote("ExportData")));
          return(NULL);
       }#if
 
@@ -1804,7 +1797,7 @@ function(object,
               PACKAGE="xps")$err;
 
       if (r != 0) {
-         stop(paste("error in function", sQuote("ExportData")));
+         stop(paste("error in rwrapper function", sQuote("ExportData")));
          return(NULL);
       }#if
 
@@ -1924,7 +1917,6 @@ function(object,
    ## get treenames as fullnames=/datadir/treenames
    listnames <- listTreeNames(object);
    treenames <- listnames$treenames;
-#old   fullnames <- listnames$fullnames;
    fullnames <- paste(object@setname, treenames, sep="/");
    numtrees  <- length(treenames);
 
@@ -1964,7 +1956,7 @@ function(object,
    error    <- as.integer(r[2]);
 
    if (error != 0) {
-      stop(paste("error in function", sQuote("PreprocessINICall")));
+      stop(paste("error in rwrapper function", sQuote("PreprocessINICall")));
       return(NULL);
    }#if
 
@@ -1994,7 +1986,7 @@ function(object,
               PACKAGE="xps")$err;
 
       if (r != 0) {
-         stop(paste("error in function", sQuote("ExportData")));
+         stop(paste("error in rwrapper function", sQuote("ExportData")));
          return(NULL);
       }#if
 
@@ -2025,7 +2017,7 @@ function(object,
               PACKAGE="xps")$err;
 
       if (r != 0) {
-         stop(paste("error in function", sQuote("ExportData")));
+         stop(paste("error in rwrapper function", sQuote("ExportData")));
          return(NULL);
       }#if
 
@@ -2171,7 +2163,6 @@ function(object,
    } else {
       TYPE <- c("mean", "median", "quantile", "lowess", "supsmu");
       if (is.na(match(normalize.method, TYPE))) {
-#         cat("methods <lowess,supsmu> have not been tested yet for DataTreeSet\n");
          stop(paste(sQuote("normalize.method"), 
                     "must be one of <mean,median,quantile,lowess,supsmu>"));
       }#if
@@ -2195,21 +2186,27 @@ function(object,
    if (is.null(summarize.method)) {
       summarize.method <- "none";
    } else {
+      TYPE <- c("pmonly", "mmonly", "both", "all", "none");
+      if (is.na(match(summarize.select, TYPE))) {
+         stop(paste(sQuote(summarize.select), "is not a valid selector option"));
+      }#if
+
       TYPE <- c("avgdiff", "tukeybiweight", "medianpolish", "farms", "dfw", "firma");
       if (is.na(match(summarize.method, TYPE))) {
          stop(paste(sQuote("summarize.method"),
               "must be one of <avgdiff,tukeybiweight,medianpolish,farms,dfw,firma>"));
       }#if
 
-      TYPE <- c("pmonly", "mmonly", "both", "all", "none");
-      if (is.na(match(summarize.select, TYPE))) {
-         stop(paste(sQuote(summarize.select), "is not a valid selector option"));
-      }#if
-
       ## check for valid summarization "option:logbase"
-      summarize.option  <- validTranscriptOption(summarize.option);
+      summarize.option     <- unlist(strsplit(summarize.option,":"));
+      summarize.transcript <- validTranscriptOption(summarize.option[1]);
+      if ((length(summarize.option) == 2) & !is.na(match(summarize.method, TYPE[c(3,6)]))) {
+         summarize.estimator  <- validEstimatorOption(summarize.option[2]);
+         summarize.transcript <- paste(summarize.transcript, summarize.estimator, sep=":");
+      }#if
+      summarize.bgrdopt <- "none";
       summarize.logbase <- validLogbase(summarize.logbase);
-      summarize.option  <- paste(summarize.option, summarize.logbase, sep=":");
+      summarize.option  <- paste(summarize.transcript, summarize.bgrdopt, summarize.logbase, sep=":");
 
       if (length(summarize.params) == 0) {
          stop(paste("empty parameter list", sQuote("summarize.params")));
@@ -2222,7 +2219,6 @@ function(object,
    ## get treenames to normalize as fullnames=/datadir/treenames
    listnames <- listTreeNames(object);
    treenames <- listnames$treenames;
-#old   fullnames <- listnames$fullnames;
    fullnames <- paste(object@setname, treenames, sep="/");
    numtrees  <- length(treenames);
 
@@ -2279,6 +2275,7 @@ function(object,
            as.character(normalize.option),
            as.integer(length(normalize.params)),
            as.double(normalize.params),
+           as.character("expressor"),
            as.character(summarize.method),
            as.character(summarize.select),
            as.character(summarize.option),
@@ -2304,7 +2301,7 @@ function(object,
    error    <- as.integer(r[2]);
 
    if (error != 0) {
-      stop(paste("error in function", sQuote("Preprocess")));
+      stop(paste("error in rwrapper function", sQuote("Preprocess")));
       return(NULL);
    }#if
 
@@ -2335,7 +2332,7 @@ function(object,
                  PACKAGE="xps")$err;
 
          if (r != 0) {
-            stop(paste("error in function", sQuote("ExportData")));
+            stop(paste("error in rwrapper function", sQuote("ExportData")));
             return(NULL);
          }#if
 
@@ -2410,6 +2407,308 @@ function(object,
 }#preprocess.DataTreeSet
 
 setMethod("xpsPreprocess", "DataTreeSet", preprocess.DataTreeSet);
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+"qc.DataTreeSet" <-
+function(object,
+         filename          = character(),
+         filedir           = getwd(),
+         tmpdir            = "",
+         update            = FALSE,
+         bgcorrect.method  = NULL,
+         bgcorrect.select  = character(),
+         bgcorrect.option  = character(),
+         bgcorrect.params  = list(),
+         normalize.method  = NULL,
+         normalize.select  = character(),
+         normalize.option  = character(),
+         normalize.logbase = character(),
+         normalize.params  = list(),
+         qualify.method    = NULL,
+         qualify.select    = character(),
+         qualify.qualopt   = character(),
+         qualify.option    = character(),
+         qualify.estimator = character(),
+         qualify.logbase   = character(),
+         qualify.params    = list(),
+         reference.index   = 0,
+         reference.method  = "mean",
+         reference.params  = list(0.0),
+         exonlevel         = "",
+         xps.scheme        = NULL,
+         add.data          = TRUE,
+         bufsize           = 32000,
+         verbose           = TRUE)
+{
+   if (debug.xps()) print("------qc.DataTreeSet------")
+
+   if (is.null(qualify.method)) {
+      stop(paste(sQuote("qualify.method"), "must not be NULL"));
+   }#if
+
+   ## get schemefile and chiptype for object
+   scheme     <- object@scheme;
+   schemefile <- schemeFile(object);
+   chipname   <- chipName(object);
+   chiptype   <- chipType(object);
+
+   ## check for presence of alternative root scheme file
+   if ((!is.null(xps.scheme)) &&
+       is(xps.scheme, "SchemeTreeSet") &&
+       (chipType(xps.scheme) == chiptype) &&
+       (file.exists(rootFile(xps.scheme)))) {
+      scheme     <- xps.scheme;
+      schemefile <- rootFile(xps.scheme);
+      chipname   <- chipName(xps.scheme);
+      chiptype   <- chipType(xps.scheme);
+   }#if
+
+   ## root file /filedir/filename.root
+   rootfile <- rootDirFile(filename, filedir);
+
+   ## check for presence of temporary directory
+   tmpdir <- validTempDir(tmpdir);
+
+   ## update: need to set filename to rootfile
+   if (!is.logical(update)) {
+      stop(paste(sQuote("update"), "must be TRUE or FALSE"));
+   } else if (update == TRUE) {
+      filename <- rootfile;
+   } else if (update == FALSE && existsROOTFile(rootfile)) {
+      ## check if root file exists (necessary for WinXP to test already here)
+      stop(paste("ROOT file", sQuote(rootfile), "does already exist."));
+   }#if
+
+   ## bgcorrect method
+   if (is.null(bgcorrect.method)) {
+      bgcorrect.method <- "none";
+   } else {
+      TYPE <- c("sector", "weightedsector", "rma", "gccontent");
+      if (is.na(match(bgcorrect.method, TYPE))) {
+         stop(paste(sQuote("bgcorrect.method"),
+                   "must be one of <sector,weightedsector,rma,gccontent>"));
+      }#if
+
+      TYPE <- c("pmonly", "mmonly", "both", "genomic", "antigenomic", "all", "none");
+      if (is.na(match(bgcorrect.select, TYPE))) {
+         stop(paste(sQuote(bgcorrect.select), "is not a valid selector option"));
+      }#if
+
+      TYPE <- c("subtractbg", "correctbg", "attenuatebg", "pmonly:epanechnikov");
+      if (is.na(match(bgcorrect.option, TYPE))) {
+         print(paste("Note:", sQuote("bgcorrect.option"),
+                      "is different from <pmonly:epanechnikov> for rma"));
+      }#if
+      if (length(bgcorrect.params) == 0) {
+         stop(paste("empty parameter list", sQuote("bgcorrect.params")));
+      }#if
+   }#if
+
+   ## normalize method
+   if (is.null(normalize.method)) {
+      normalize.method <- "none";
+   } else {
+      TYPE <- c("mean", "median", "quantile", "lowess", "supsmu");
+      if (is.na(match(normalize.method, TYPE))) {
+         stop(paste(sQuote("normalize.method"), 
+                    "must be one of <mean,median,quantile,lowess,supsmu>"));
+      }#if
+
+      TYPE <- c("pmonly", "mmonly", "both", "all");
+      if (is.na(match(normalize.select, TYPE))) {
+         stop(paste(sQuote("normalize.select"), "is not a valid selector option"));
+      }#if
+
+      ## check for valid normalization "option:logbase"
+      normalize.option  <- validOption(normalize.option);
+      normalize.logbase <- validLogbase(normalize.logbase);
+      normalize.option  <- paste(normalize.option, normalize.logbase, sep=":");
+
+      if (length(normalize.params) == 0) {
+         stop(paste("empty parameter list", sQuote("normalize.params")));
+      }#if
+   }#if
+
+   ## qualify method
+   TYPE <- c("pmonly", "mmonly", "both", "all", "none");
+   if (is.na(match(qualify.select, TYPE))) {
+      stop(paste(sQuote(qualify.select), "is not a valid selector option"));
+   }#if
+
+   TYPE <- c("plm", "rlm");
+   if (is.na(match(qualify.method, TYPE))) {
+#to do      stop(paste(sQuote("qualify.method"), "must be one of <plm,rlm>"));
+      stop(paste(sQuote("qualify.method"), "must be one of <rlm>"));
+   }#if
+
+   ## check for valid qualify "qualopt:option:bgrdopt:logbase"
+   qualify.qualopt   <- validQualityOption(qualify.qualopt);
+   qualify.option    <- validTranscriptOption(qualify.option);
+   qualify.estimator <- validEstimatorOption(qualify.estimator);
+   qualify.bgrdopt   <- "none";
+   qualify.logbase   <- validLogbase(qualify.logbase);
+   qualify.option    <- paste(qualify.qualopt, qualify.option, qualify.estimator,
+                              qualify.bgrdopt, qualify.logbase, sep=":");
+
+   if (length(qualify.params) == 0) {
+      stop(paste("empty parameter list", sQuote("qualify.params")));
+   }#if
+
+   ## check for correct exonlevel
+   exlevel <- exonLevel(exonlevel, chiptype);
+
+   ## get treenames to normalize as fullnames=/datadir/treenames
+   listnames <- listTreeNames(object);
+   treenames <- listnames$treenames;
+   fullnames <- paste(object@setname, treenames, sep="/");
+   numtrees  <- length(treenames);
+
+   ## reference tree
+   reference.tree <- "";
+   if (!(reference.index >= 0 & reference.index <= numtrees)) {
+      stop(paste(sQuote("reference.index"),
+                        "must be 0 or less than number of trees"));
+   }#if
+
+   setname <- object@setname;
+   if (reference.index == 0) {
+      reference.tree <- paste(setname, "/*.", extenPart(treenames), sep="");
+   } else {
+      reference.tree <- paste(setname, treenames[[reference.index]], sep="/");
+   }#if
+
+   ## reference method
+   TYPE <- c("mean", "median");
+   if (is.na(match(reference.method, TYPE))) {
+      stop(paste(sQuote("reference.method"), "must be <mean, median>"));
+   }#if
+
+   ## check reference parameter list
+   if (length(reference.params) == 0) {
+      stop(paste("empty parameter list", sQuote("reference.params")));
+   }#if
+
+   ## check bufsize for tree branch baskets
+   if (bufsize < 100) {
+      stop(paste("parameter", sQuote("bufsize"), "must be at least <100>"));
+   }#if
+
+   ## define setname and settype for new treeset
+#??   setname <- "PreprocesSet";
+   setname <- "QualitySet";
+   settype <- "preprocess";
+
+   ## preprocess
+   r <- .C("Preprocess",
+           as.character(filename),
+           as.character(filedir),
+           as.character(chipname),
+           as.character(chiptype),
+           as.character(schemefile),
+           as.character(tmpdir),
+           as.integer(update),
+           as.character(bgcorrect.method),
+           as.character(bgcorrect.select),
+           as.character(bgcorrect.option),
+           as.integer(length(bgcorrect.params)),
+           as.double(bgcorrect.params),
+           as.character(normalize.method),
+           as.character(normalize.select),
+           as.character(normalize.option),
+           as.integer(length(normalize.params)),
+           as.double(normalize.params),
+           as.character("qualifier"),
+           as.character(qualify.method),
+           as.character(qualify.select),
+           as.character(qualify.option),
+           as.integer(length(qualify.params)),
+           as.double(qualify.params),
+           as.character(reference.tree),
+           as.character(reference.method),
+           as.double(reference.params),
+           as.character(setname),
+           as.character(object@rootfile),
+           as.character(fullnames),
+           as.integer(numtrees),
+           as.integer(exlevel[1]),
+           as.integer(exlevel[2]),
+           as.integer(exlevel[3]),
+           as.integer(bufsize),
+           as.integer(verbose),
+           result=character(2),
+           PACKAGE="xps")$result;
+
+   ## returned result: saved rootfile and error
+   rootfile <- r[1];
+   error    <- as.integer(r[2]);
+
+   if (error != 0) {
+      stop(paste("error in rwrapper function", sQuote("Preprocess")));
+      return(NULL);
+   }#if
+
+   ## get extension
+   exten <- type2Exten(qualify.method, settype);
+
+   ## export result to outfile and import as dataframe
+   ds <- data.frame(matrix(nr=0,nc=0));
+   if (add.data) {
+      outfile  <- sub("\\.root", ".txt", rootfile);
+      ## get treename "treeset.treename.treetype"
+      treename <- paste(setname, "*", exten, sep=".");
+      numtrees <- 1; # must be one for treename="*"
+
+      r <- .C("ExportData",
+              as.character(rootfile),
+              as.character(schemefile),
+              as.character(chiptype),
+              as.character(settype),
+              as.character(treename),
+              as.integer(numtrees),
+              as.character(exten),
+              as.character("fUnitName:fLevel"),
+#??              as.character("fUnitName:fLevel:fNUSE:fRLE"),
+              as.character(outfile),
+              as.character("\t"),
+              as.integer(verbose),
+              err=integer(1),
+              PACKAGE="xps")$err;
+
+      if (r != 0) {
+         stop(paste("error in rwrapper function", sQuote("ExportData")));
+         return(NULL);
+      }#if
+
+      if (file.exists(outfile)) {
+         ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
+      } else {
+         warning(paste("could not export results as", sQuote(outfile)));
+      }#if
+   }#if
+
+   ## expression treenames 
+   treenames <- getTreeNames(rootfile, exten);
+   numtrees  <- length(treenames);
+
+   ## create new class QualTreeSet
+   set <- new("QualTreeSet",
+              setname   = setname,
+              settype   = settype,
+              rootfile  = rootfile,
+              filedir   = filedir,
+              numtrees  = numtrees,
+              treenames = as.list(treenames),
+              scheme    = scheme,
+              data      = ds,
+              params    = list(qualify.params),
+              qualtype  = qualify.method,
+              qualopt   = qualify.qualopt);
+
+   return(set);
+}#qc.DataTreeSet
+
+setMethod("xpsQualityControl", "DataTreeSet", qc.DataTreeSet);
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -2513,7 +2812,7 @@ function(object,
    error    <- as.integer(r[2]);
 
    if (error != 0) {
-      stop(paste("error in function", sQuote("BgCorrect")));
+      stop(paste("error in rwrapper function", sQuote("BgCorrect")));
       return(NULL);
    }#if
 
@@ -2598,7 +2897,6 @@ function(object,
    ## check for valid normalization method
    TYPE <- c("mean", "median", "quantile", "lowess", "supsmu");
    if (is.na(match(method, TYPE))) {
-#      cat("methods <lowess,supsmu> have not been tested yet for DataTreeSet\n");
       stop(paste(sQuote("method"), "must be one of <mean,median,quantile,lowess,supsmu>"));
    }#if
 
@@ -2672,7 +2970,7 @@ function(object,
    error    <- as.integer(r[2]);
 
    if (error != 0) {
-      stop(paste("error in function", sQuote("Normalize")));
+      stop(paste("error in rwrapper function", sQuote("Normalize")));
       return(NULL);
    }#if
 
@@ -2765,9 +3063,15 @@ function(object,
    }#if
 
    ## check for valid option "transcript:logbase"
-   transcript <- validTranscriptOption(option);
+   option     <- unlist(strsplit(option,":"));
+   transcript <- validTranscriptOption(option[1]);
+   if ((length(option) == 2) & !is.na(match(method, TYPE[c(3,6)]))) {
+      estimator  <- validEstimatorOption(option[2]);
+      transcript <- paste(transcript, estimator, sep=":");
+   }#if
+   bgrdoption <- "none";
    logbase    <- validLogbase(logbase);
-   sumoption  <- paste(transcript, logbase, sep=":");
+   sumoption  <- paste(transcript, bgrdoption, logbase, sep=":");
 
    ## check parameter list
    if (length(params) == 0) {
@@ -2796,6 +3100,7 @@ function(object,
            as.character(schemefile),
            as.character(tmpdir),
            as.character(select),
+           as.character("expressor"),
            as.character(method),
            as.character(sumoption),
            as.integer(length(params)),
@@ -2814,7 +3119,7 @@ function(object,
    error    <- as.integer(r[2]);
 
    if (error != 0) {
-      stop(paste("error in function", sQuote("Summarize")));
+      stop(paste("error in method", sQuote("xpsSummarize")));
       return(NULL);
    }#if
 
@@ -2845,7 +3150,7 @@ function(object,
               PACKAGE="xps")$err;
 
       if (r != 0) {
-         stop(paste("error in function", sQuote("ExportData")));
+         stop(paste("error in rwrapper function", sQuote("ExportData")));
          return(NULL);
       }#if
 
@@ -2881,6 +3186,211 @@ setMethod("xpsSummarize", "DataTreeSet", summarize.DataTreeSet);
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+"qualify.DataTreeSet" <-
+function(object,
+         filename   = character(),
+         filedir    = getwd(),
+         tmpdir     = "",
+         update     = FALSE,
+         select     = "pmonly",
+         method     = character(),
+         option     = "transcript",
+         logbase    = "log2",
+         exonlevel  = "",
+         params     = list(),
+         xps.scheme = NULL,
+         add.data   = TRUE,
+         verbose    = TRUE)
+{
+   if (debug.xps()) print("------qualify.DataTreeSet------")
+
+   ## get schemefile and chipname
+   scheme     <- object@scheme;
+   schemefile <- schemeFile(object);
+   chipname   <- chipName(object);
+   chiptype   <- chipType(object);
+
+   ## check for presence of alternative root scheme file
+   if ((!is.null(xps.scheme)) &&
+       is(xps.scheme, "SchemeTreeSet") &&
+       (chipType(xps.scheme) == chiptype) &&
+       (file.exists(rootFile(xps.scheme)))) {
+      scheme     <- xps.scheme;
+      schemefile <- rootFile(xps.scheme);
+      chipname   <- chipName(xps.scheme);
+      chiptype   <- chipType(xps.scheme);
+   }#if
+
+   ## root file /filedir/filename.root
+   rootfile <- rootDirFile(filename, filedir);
+
+   ## check for presence of temporary directory
+   tmpdir <- validTempDir(tmpdir);
+
+   ## update: need to set filename to rootfile
+   if (!is.logical(update)) {
+      stop(paste(sQuote("update"), "must be TRUE or FALSE"));
+   } else if (update == TRUE) {
+      filename <- rootfile;
+   } else if (update == FALSE && existsROOTFile(rootfile)) {
+      ## check if root file exists (necessary for WinXP to test already here)
+      stop(paste("ROOT file", sQuote(rootfile), "does already exist."));
+   }#if
+
+   ## check for presence of valid selector option
+   TYPE <- c("pmonly", "mmonly", "both", "all", "none");
+   if (is.na(match(select, TYPE))) {
+      stop(paste(sQuote(select), "is not a valid selector option"));
+   }#if
+
+   ## check for valid summarization method
+   TYPE <- c("rlm", "plm");
+#??   TYPE <- c("rlm", "plm", "farms", "dfw");
+   if (is.na(match(method, TYPE))) {
+      stop(paste(sQuote("method"),
+           "must be one of <rlm,plm>"));
+   }#if
+
+   ## check for valid option "transcript(:huber):logbase"
+   option     <- unlist(strsplit(option,":"));
+   transcript <- validTranscriptOption(option[1]);
+   if (length(option) == 2) {
+      estimator  <- validEstimatorOption(option[2]);
+      transcript <- paste(transcript, estimator, sep=":");
+   }#if
+   bgrdoption <- "none";
+   logbase    <- validLogbase(logbase);
+   sumoption  <- paste(transcript, bgrdoption, logbase, sep=":");
+
+   ## check parameter list
+   if (length(params) == 0) {
+      stop(paste("empty parameter list", sQuote("params")));
+   }#if
+
+   ## get treenames to summarize as fullnames=/datadir/treenames
+   listnames <- listTreeNames(object);
+   treenames <- listnames$treenames;
+   fullnames <- listnames$fullnames;
+   numtrees  <- length(treenames);
+
+   ## check for valid quality control option "qualopt"
+   exten <- extenPart(treenames);
+   if (!is.na(match(exten, RAWTYPE))) {
+      qualopt <- "raw";
+   } else if (!is.na(match(exten, ADJTYPE))) {
+      qualopt <- "adjusted";
+   } else if (!is.na(match(exten, CNRTYPE))) {
+      qualopt <- "normalized";
+   } else {
+      stop(paste(sQuote("extension "),
+           "must be one of <", RAWTYPE, ADJTYPE, CNRTYPE, ">", sep=""));
+   }#if
+   sumoption <- paste(qualopt, sumoption, sep=":");
+
+   ## check exon level
+   exonlevel <- exonLevel(exonlevel, chiptype);
+
+   ## define setname and settype for new treeset
+#??   setname <- "SummarySet";
+   setname <- "QualitySet";
+   settype <- "preprocess";
+#no   settype <- "qualify";
+
+   ## summarize
+   r <- .C("Summarize",
+           as.character(filename),
+           as.character(filedir),
+           as.character(chipname),
+           as.character(chiptype),
+           as.character(schemefile),
+           as.character(tmpdir),
+           as.character(select),
+           as.character("qualifier"),
+           as.character(method),
+           as.character(sumoption),
+           as.integer(length(params)),
+           as.double(params),
+           as.integer(exonlevel[3]),
+           as.character(setname),
+           as.character(fullnames),
+           as.integer(numtrees),
+           as.integer(update),
+           as.integer(verbose),
+           result=character(2),
+           PACKAGE="xps")$result;
+
+   ## returned result: saved rootfile and error
+   rootfile <- r[1];
+   error    <- as.integer(r[2]);
+
+   if (error != 0) {
+      stop(paste("error in rwrapper function", sQuote("Summarize")));
+   }#if
+
+   ## get extension
+   exten <- type2Exten(method, settype);
+
+   ## export result to outfile and import as dataframe
+   ds <- data.frame(matrix(nr=0,nc=0));
+   if (add.data) {
+      outfile  <- sub("\\.root", ".txt", rootfile);
+      ## get treename "treeset.treename.treetype"
+      treename <- paste(setname, "*", exten, sep=".");
+      numtrees <- 1; # must be one for treename="*"
+
+      r <- .C("ExportData",
+              as.character(rootfile),
+              as.character(schemefile),
+              as.character(chiptype),
+              as.character(settype),
+              as.character(treename),
+              as.integer(numtrees),
+              as.character(exten),
+              as.character("fUnitName:fLevel"),
+#??              as.character("fUnitName:fLevel:fNUSE:fRLE"),
+              as.character(outfile),
+              as.character("\t"),
+              as.integer(verbose),
+              err=integer(1),
+              PACKAGE="xps")$err;
+
+      if (r != 0) {
+         stop(paste("error in rwrapper function", sQuote("ExportData")));
+         return(NULL);
+      }#if
+
+      if (file.exists(outfile)) {
+         ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
+      } else {
+         warning(paste("error: could not export results as", sQuote(outfile)));
+      }#if
+   }#if
+
+   ## expression treenames 
+   treenames <- getTreeNames(rootfile, exten, setname);
+   numtrees  <- length(treenames);
+
+   ## create new class QualTreeSet
+   set <- new("QualTreeSet",
+              setname   = setname,
+              settype   = settype,
+              rootfile  = rootfile,
+              filedir   = filedir,
+              numtrees  = numtrees,
+              treenames = as.list(treenames),
+              scheme    = scheme,
+              data      = ds,
+              params    = list(params),
+              qualtype  = method,
+              qualopt   = qualopt);
+
+   return(set);
+}#qualify.DataTreeSet
+
+setMethod("xpsQualify", "DataTreeSet", qualify.DataTreeSet);
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 setMethod("pmplot", signature(x="DataTreeSet"),
    function(x,
            which   = "",
@@ -2894,7 +3404,7 @@ setMethod("pmplot", signature(x="DataTreeSet"),
            las     = 2,
            ylab    = "mean intensities",
            ...) 
-{
+   {
       if (debug.xps()) print("------pmplot.DataTreeSet------")
 
       if (chipType(x) == "GeneChip") {
@@ -2943,48 +3453,5 @@ setMethod("pmplot", signature(x="DataTreeSet"),
    }
 )#pmplot
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-setMethod("image", signature(x="DataTreeSet"),
-   function(x,
-            bg      = FALSE,
-            transfo = log,
-            col     = gray((0:64)/64),
-            names   = "namepart",
-            xlab    = "",
-            ylab    = "",
-            ...) 
-{
-      if (debug.xps()) print("------image.DataTreeSet------")
-
-      ## get intensities from data or bgrd
-      if (bg == FALSE)          ds <- validData(x, which="")
-      else                      ds <- validBgrd(x, which="");
-      if (is.function(transfo)) ds <- transfo(ds);
-
-      if (is.null(names))              names <- colnames(ds)
-      else if (names[1] == "namepart") names <- namePart(colnames(ds))
-      else                             ds    <- ds[, names, drop=F];
-
-      ## plot images
-      if (ncol(ds) > 1 && interactive()) par(ask=TRUE) else par(ask=FALSE);
-      for (i in 1:ncol(ds)) {
-         m <- as.numeric(ds[,i]);
-         m <- matrix(m, ncol=ncols(x), nrow=nrows(x));
-         m <- m[,ncols(x):1];
-
-         image(m,
-               col  = col,
-               main = names[i],
-               xlab = xlab,
-               ylab = ylab,
-               xaxt = 'n',
-               yaxt = 'n',
-                ...);
-      }#for
-      par(ask=FALSE);
-   }
-)#image
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#------------------------------------------------------------------------------#
 

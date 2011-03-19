@@ -59,6 +59,7 @@ exportMethods("export",
               "setName<-",
               "setType",
               "setType<-",
+              "treeInfo",
               "treeNames")
 
 ## class SchemeTreeSet
@@ -77,6 +78,7 @@ exportMethods("attachMask",
 exportMethods("boxplot",
               "getTreeData",
               "hist",
+              "image",
               "mboxplot",
               "schemeFile",
               "schemeFile<-",
@@ -91,7 +93,6 @@ exportMethods("addData",
               "background",
               "background<-",
               "bgtreeNames",
-              "image",
               "intensity",
               "intensity<-",
               "mm",
@@ -110,6 +111,8 @@ exportMethods("addData",
               "xpsMAS5Call",
               "xpsNormalize",
               "xpsPreprocess",
+              "xpsQualify",
+              "xpsQualityControl",
               "xpsSummarize",
               "xpsRMA")
 
@@ -143,6 +146,17 @@ exportMethods("attachCall",
               "validCall",
               "validPVal",
               "callplot")
+
+## class QualTreeSet
+exportMethods("borderplot",
+              "borders",
+              "coiplot",
+              "qualOption",
+              "qualOption<-",
+              "qualType",
+              "qualType<-",
+              "residuals",
+              "weights")
 
 ## class Filter
 exportMethods("numberFilters")
@@ -193,10 +207,14 @@ export(rma, mas4, mas5, mas5.call, dabg.call)
 export(dfw, farms, ini.call)
 export(firma, firma.expr, firma.score)
 export(trma)
-export(bgcorrect, normalize, summarize, express)
+export(bgcorrect, normalize, summarize, express, qualify)
 export(bgcorrect.mas4, bgcorrect.mas5, bgcorrect.rma, bgcorrect.gc)
 export(normalize.constant, normalize.quantiles, normalize.lowess, normalize.supsmu)
 export(summarize.mas4, summarize.mas5, summarize.rma)
+export(qualify.rlm)
+#export(qualify.plm, qualify.rlm)
+export(fitQC, fitRLM, rmaPLM)
+#export(fitQC, fitPLM, fitRLM, rmaPLM)
 export(boxplot.dev, image.dev, mvaplot.dev)
 export(prefilter, unifilter)
 

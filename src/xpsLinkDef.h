@@ -108,10 +108,12 @@
 #pragma link C++ class XGCCell+;
 #pragma link C++ class XBgCell+;
 #pragma link C++ class XRankCell+;
+#pragma link C++ class XResidual+;
+#pragma link C++ class XBorder+;
 #pragma link C++ class XExpression+;
 #pragma link C++ class XGCExpression+;
+#pragma link C++ class XQCExpression+;
 #pragma link C++ class XSpliceExpression+;
-//#pragma link C++ class XExonExpression+;
 #pragma link C++ class XCall+;
 #pragma link C++ class XPCall+;
 #pragma link C++ class XGPCell+;
@@ -132,7 +134,10 @@
 
 //XPSPreProcessing.h
 #pragma link C++ class XPreProcessManager+;
+#pragma link C++ class XBorderTreeInfo+;
 #pragma link C++ class XCallTreeInfo+;
+#pragma link C++ class XQualityTreeInfo+;
+#pragma link C++ class XResidualTreeInfo+;
 #pragma link C++ class XPreProcesSetting+;
 #pragma link C++ class XPreProcesSet+;
 #pragma link C++ class XGCProcesSet+;
@@ -158,6 +163,7 @@
 #pragma link C++ class XExpressor+;
 #pragma link C++ class XMultichipExpressor+;
 #pragma link C++ class XSpliceExpressor+;
+#pragma link C++ class XQualifier+;
 #pragma link C++ class XSectorBackground+;
 #pragma link C++ class XWeightedBackground+;
 #pragma link C++ class XRMABackground+;
@@ -178,6 +184,8 @@
 #pragma link C++ class XFARMS+;
 #pragma link C++ class XDFW+;
 #pragma link C++ class XFIRMA+;
+#pragma link C++ class XRMAQualifier+;
+#pragma link C++ class XPLMQualifier+;
 
 //XPSNormation.h
 #pragma link C++ class XNormationManager+;

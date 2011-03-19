@@ -301,17 +301,17 @@ setMethod("callplot", signature(x="CallTreeSet"),
    {
       if (debug.xps()) print("------callplot.CallTreeSet------")
 
-      dc <- validCall(x);
+      dc <- treeInfo(x,
+                     treetype = extenPart(treeNames(x)),
+                     varlist  = "userinfo:fPcAbsent:fPcMarginal:fPcPresent",
+                     verbose  = FALSE
+                    );
 
       if (is.null(names))              names <- colnames(dc)
       else if (names[1] == "namepart") names <- namePart(colnames(dc))
       else                             dc    <- dc[, names, drop=F];
 
-      P  <- 100*apply(dc, 2, function(x)length(which(x=="P")))/nrow(dc);
-      M  <- 100*apply(dc, 2, function(x)length(which(x=="M")))/nrow(dc);
-      A  <- 100*apply(dc, 2, function(x)length(which(x=="A")))/nrow(dc);
-
-      barplot(t(cbind(P, M, A)),
+      barplot(as.matrix(dc[nrow(dc):1,]),
               beside    = beside,
               col       = col,
               names.arg = names,

@@ -1,4 +1,4 @@
-// File created: 11/02/2002                          last modified: 10/26/2010
+// File created: 11/02/2002                          last modified: 12/26/2010
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2010 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2011 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -1078,6 +1078,7 @@ Int_t XPlot::DrawImage(const char *canvasname, const char *treename,
    TString   title = "";
    Int_t     nrows = 0;
    Int_t     ncols = 0;
+   Int_t     size  = 0;
    Int_t     x, y, z;
    Double_t  v;
 
@@ -1096,7 +1097,6 @@ Int_t XPlot::DrawImage(const char *canvasname, const char *treename,
          goto cleanup;
       }//if
       if (!(brch1 = leaf1->GetBranch())) {perr = perrGetBrnch; goto cleanup;}
-      if (!(img   = new (nothrow) Double_t[entries])) {perr = perrInitMemory; goto cleanup;} 
       varX = TString(varname);
    } else {
       cerr << "Error: Variable names for tree are missing." << endl;
@@ -1147,19 +1147,27 @@ Int_t XPlot::DrawImage(const char *canvasname, const char *treename,
    }//for_i
    nrows = nrows + 1;
    ncols = ncols + 1;
+   size  = nrows * ncols;
 
-   if ((nrows * ncols) != entries) {
-      cerr << "Error: Number of rows times columns is not equal to <"
-           << entries << ">." << endl;
+   if (size > entries) {
+      cout << "Warning: Number of tree entries <" << entries << "> is less than "
+           << "number of rows x columns <" << nrows * ncols << ">." << endl;
+   } else if (size < entries) {
+      cerr << "Error: Number of rows x columns <" << nrows * ncols
+           << "> is less than number of tree entries <" << entries << ">." << endl;
       perr = perrNumEntries;
       goto cleanup;
    }//if
+
+// Initialize image array
+   if (!(img = new (nothrow) Double_t[size])) {perr = perrInitMemory; goto cleanup;} 
+   for (Int_t i=0; i<size; i++) img[i] = 0; 
+
+// Fill arrays: for logarithms, replace data <= 0 with fNegLog
    fMinX = 0;
    fMinY = 0;
    fMaxX = ncols;
    fMaxY = nrows;
-
-// Fill arrays: for logarithms, replace data <= 0 with fNegLog
    fMinZ  = DBL_MAX;
    fMaxZ  = -DBL_MAX;
    fNNegZ = 0;

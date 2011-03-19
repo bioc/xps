@@ -7,6 +7,7 @@
 \alias{initialize,DataTreeSet-method}
 \alias{initialize,ExprTreeSet-method}
 \alias{initialize,CallTreeSet-method}
+\alias{initialize,QualTreeSet-method}
 \alias{initialize,Filter-method}
 \alias{initialize,PreFilter-method}
 \alias{initialize,UniFilter-method}

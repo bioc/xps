@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 03/15/2010
+// File created: 08/05/2002                          last modified: 02/06/2011
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2010 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2011 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -52,6 +52,7 @@
 *          - XProcessManager now inherits from XManager and XProjectHandler
 *          - database methods ProjectInfo() etc are moved to XProjectHandler
 * Aug 2008 - Add summarization algorithms FARMS and DFW, classes XFARMS, XDFW
+* Dec 2010 - Add quality control algorithms 
 *
 ******************************************************************************/
 
@@ -67,6 +68,7 @@
 
 #include "XPSProcessing.h"
 #include "XPSDataTypes.h"
+#include "TStat.h"
 
 // Tree extensions and types for preprocessing:
 // background trees
@@ -80,6 +82,16 @@ const char *kTypeBgrd[]  = { "sector",
 // intensity trees after background correction
 const char *kExtenIntn[] = { "int", ""};
 const char *kTypeIntn[]  = { "intensity",
+                             ""};
+
+// residual trees
+const char *kExtenResd[] = { "res", ""};
+const char *kTypeResd[]  = { "residual",
+                             ""};
+
+// border trees
+const char *kExtenBord[] = { "brd", ""};
+const char *kTypeBord[]  = { "border",
                              ""};
 /////////////
 //EV BETTER: intensity for each bgrd algorithm
@@ -123,6 +135,25 @@ const char *kTypeCall[]  = { "meandifferencecall",
                              "dabgcall",
                              "inicall",
                              ""};
+
+// quality trees
+//const char *kExtenQual[] = { "mdp", "plm", ""};
+const char *kExtenQual[] = { "rlm", "plm", ""};
+const char *kTypeQual[]  = { "rlm",
+                             "plm",
+                             ""};
+/*???
+const char *kExtenQual[] = { "rma", "rmar", "rmaa", "rman", "plm", "plmr", "plma", "plmn", ""};
+const char *kTypeQual[]  = { "rma",    //all
+                             "rmaraw",
+                             "rmaadjusted",
+                             "rmanormalized",
+                             "plm",    //all
+                             "plmraw",
+                             "plmadjusted",
+                             "plmnormalized",
+                             ""};
+*/
 
 //////////////
 //?? Problem?? "mdp" in kExtenExpr AND in kExtenNorm
@@ -222,12 +253,20 @@ const char *kProcessMethod[] = { "preprocess",
                                  "normalize",
                                  "express",
                                  "detectcall",
+                                 "qualify",
                                  ""};
 
 // options for detection call
 const char *kCallOption[] = { "raw",
                               "adjusted",
                               "normalized",
+                              ""};
+
+// options for quality control
+const char *kQualOption[] = { "raw",
+                              "adjusted",
+                              "normalized",
+                              "all", //??
                               ""};
 
 // name of reference tree
@@ -371,7 +410,9 @@ Int_t XProcessManager::HandleError(Int_t err, const char *name1, const char *nam
          break;
 
       default:
-         err = XManager::HandleError(err, name1, name2);
+         XDataManager manager;
+         err = manager.HandleError(err, name1, name2);
+//         err = XManager::HandleError(err, name1, name2);
          break;
    }//switch
 
@@ -905,9 +946,15 @@ XExpressionTreeInfo::XExpressionTreeInfo()
    // Default ExpressionTreeInfo constructor
    if(kCS) cout << "---XExpressionTreeInfo::XExpressionTreeInfo(default)------" << endl;
 
-   fNUnits   = 0;
-   fMinLevel = 0;
-   fMaxLevel = 0;
+   fNUnits     = 0;
+   fMinLevel   = 0;
+   fMaxLevel   = 0;
+   fNQuantiles = 0;
+   fQuantiles  = 0;
+   fLevelQuant = 0;
+//   fNQuantiles = 7;
+//   fQuantiles  = new Double_t[fNQuantiles];  //since default constructor called for permanent obj??
+//   fLevelQuant = new Double_t[fNQuantiles];  //since default constructor called for permanent obj??
 }//Constructor
 
 //______________________________________________________________________________
@@ -917,9 +964,12 @@ XExpressionTreeInfo::XExpressionTreeInfo(const char *name, const char *title)
    // Normal ExpressionTreeInfo constructor
    if(kCS) cout << "---XExpressionTreeInfo::XExpressionTreeInfo------" << endl;
 
-   fNUnits   = 0;
-   fMinLevel = 0;
-   fMaxLevel = 0;
+   fNUnits     = 0;
+   fMinLevel   = 0;
+   fMaxLevel   = 0;
+   fNQuantiles = 7;
+   fQuantiles  = new Double_t[fNQuantiles];
+   fLevelQuant = new Double_t[fNQuantiles];
 }//Constructor
 
 //______________________________________________________________________________
@@ -928,6 +978,8 @@ XExpressionTreeInfo::~XExpressionTreeInfo()
    // ExpressionTreeInfo destructor
    if(kCS) cout << "---XExpressionTreeInfo::~XExpressionTreeInfo------" << endl;
 
+   if (fLevelQuant) {delete [] fLevelQuant; fLevelQuant = 0;}
+   if (fQuantiles)  {delete [] fQuantiles;  fQuantiles  = 0;}
 }//Destructor
 
 //______________________________________________________________________________
@@ -942,6 +994,26 @@ void XExpressionTreeInfo::AddUserInfo(Int_t nunits, Double_t min, Double_t max)
 }//AddUserInfo
 
 //______________________________________________________________________________
+void XExpressionTreeInfo::AddUserInfo(Int_t nquant, Double_t *q, Double_t *quant)
+{
+   // Add user info from tree set
+   if(kCS) cout << "------XExpressionTreeInfo::AddUserInfo------" << endl;
+
+   if (nquant > fNQuantiles) {
+      if (fLevelQuant) {delete [] fLevelQuant; fLevelQuant = 0;}
+      if (fQuantiles)  {delete [] fQuantiles;  fQuantiles  = 0;}
+
+      fQuantiles  = new Double_t[nquant];
+      fLevelQuant = new Double_t[nquant];
+   }//if
+
+   fNQuantiles = nquant;
+
+   memcpy(fQuantiles,  q,     nquant*sizeof(Double_t));
+   memcpy(fLevelQuant, quant, nquant*sizeof(Double_t));
+}//AddUserInfo
+
+//______________________________________________________________________________
 Double_t XExpressionTreeInfo::GetValue(const char *name)
 {
    // Return value for class member field name
@@ -953,9 +1025,33 @@ Double_t XExpressionTreeInfo::GetValue(const char *name)
       return fMinLevel;
    } else if (strcmp(name, "fMaxLevel") == 0) {
       return fMaxLevel;
+   } else if (strcmp(name, "fNQuantiles") == 0) {
+      return fNQuantiles;
    }//if
    return 0;
 }//GetValue
+
+//______________________________________________________________________________
+Double_t *XExpressionTreeInfo::GetQuantiles()
+{
+   // Return quantiles array
+   if(kCS) cout << "------XExpressionTreeInfo::GetQuantiles------" << endl;
+
+   if (fQuantiles == 0) return 0;
+
+   return fQuantiles;
+}//GetQuantiles
+
+//______________________________________________________________________________
+Double_t *XExpressionTreeInfo::GetLevelQuantiles()
+{
+   // Return quantiles array for levels
+   if(kCS) cout << "------XExpressionTreeInfo::GetLevelQuantiles------" << endl;
+
+   if (fLevelQuant == 0) return 0;
+
+   return fLevelQuant;
+}//GetLevelQuantiles
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -1202,7 +1298,8 @@ Int_t XProcesSet::SetReference(TTree *tree, Option_t *option, Double_t trim)
 
 //______________________________________________________________________________
 void XProcesSet::AddExprTreeInfo(TTree *tree, const char *name, Option_t *option,
-                 Int_t nunits, Double_t min, Double_t max)
+                 Int_t nunits, Double_t min, Double_t max,
+                 Int_t nquant, Double_t *q, Double_t *quant)
 {
    // Add expression tree info to list fUserInfo of tree
    if(kCS) cout << "------XProcesSet::AddExprTreeInfo------" << endl;
@@ -1217,7 +1314,8 @@ void XProcesSet::AddExprTreeInfo(TTree *tree, const char *name, Option_t *option
    info->SetTreeSetClass(ClassName());
 
    // add user info
-   info->AddUserInfo(nunits, min, max);
+   if (nunits > 0) info->AddUserInfo(nunits, min, max);
+   if (nquant > 0) info->AddUserInfo(nquant, q, quant);
 
    tree->GetUserInfo()->Add(info);
 }//AddExprTreeInfo
@@ -1256,6 +1354,186 @@ Int_t XProcesSet::InitGroups(Int_t &n, Int_t *gid, TTree **tree, const char **ex
 
    return errNoErr;
 }//InitGroups
+
+//______________________________________________________________________________
+Int_t XProcesSet::ExportExprTreeInfo(Int_t n, TString *names, const char *varlist,
+                  ofstream &output, const char *sep)
+{
+   // Export data stored in userinfo of expression tree to file output
+   if(kCS) cout << "------XProcesSet::ExportExprTreeInfo------" << endl;
+
+// Decompose varlist
+   Bool_t hasTreeName = kFALSE;
+   Bool_t hasSetName  = kFALSE;
+   Bool_t hasOption   = kFALSE;
+   Bool_t hasNUnits   = kFALSE;
+   Bool_t hasMinLevel = kFALSE;
+   Bool_t hasMaxLevel = kFALSE;
+   Bool_t hasNQuant   = kFALSE;
+   Bool_t hasQuant    = kFALSE;
+   Bool_t hasLevel    = kFALSE;
+
+   if (strcmp(varlist,"*")  == 0) {
+      hasTreeName = kTRUE;
+      hasSetName  = kTRUE;
+      hasOption   = kTRUE;
+      hasNUnits   = kTRUE;
+      hasMinLevel = kTRUE;
+      hasMaxLevel = kTRUE;
+      hasNQuant   = kTRUE;
+      hasQuant    = kTRUE;
+      hasLevel    = kTRUE;
+   } else {
+      char *name  = new char[strlen(varlist) + 1];
+      char *dname = name;
+      name = strtok(strcpy(name,varlist),":");
+      while(name) {
+         if (strcmp(name,"fName")       == 0) {hasTreeName = kTRUE;}
+         if (strcmp(name,"fSetName")    == 0) {hasSetName  = kTRUE;}
+         if (strcmp(name,"fOption")     == 0) {hasOption   = kTRUE;}
+         if (strcmp(name,"fNUnits")     == 0) {hasNUnits   = kTRUE;}
+         if (strcmp(name,"fMinLevel")   == 0) {hasMinLevel = kTRUE;}
+         if (strcmp(name,"fMaxLevel")   == 0) {hasMaxLevel = kTRUE;}
+         if (strcmp(name,"fNQuantiles") == 0) {hasNQuant   = kTRUE;}
+         if (strcmp(name,"fQuantiles")  == 0) {hasQuant    = kTRUE;}
+         if (strcmp(name,"fLevelQuant") == 0) {hasLevel    = kTRUE;}
+         name = strtok(NULL, ":");
+         if (name == 0) break;
+      }//while
+      delete [] dname;
+   }//if
+
+// Get trees
+   TTree               **tree = new TTree*[n];
+   XExpressionTreeInfo **info = new XExpressionTreeInfo*[n];
+   if (fTrees->GetSize() == 0) {
+   // Get trees from names
+      for (Int_t k=0; k<n; k++) {
+         tree[k] = (TTree*)gDirectory->Get((names[k]).Data());
+         if (!tree[k]) return errGetTree;
+
+         info[k] = (XExpressionTreeInfo*)tree[k]->GetUserInfo()->At(0);
+      }//for_k
+   } else {
+   // Get trees from list fTrees
+      for (Int_t k=0; k<n; k++) {
+         tree[k] = (TTree*)fTrees->At(k);
+         if (!tree[k]) return errGetTree;
+
+         info[k] = (XExpressionTreeInfo*)tree[k]->GetUserInfo()->At(0);
+      }//for_k
+   }//if
+
+// Output header
+   output << "Parameter";
+   for (Int_t k=0; k<n; k++) output << sep << names[k].Data();
+   output << endl;
+
+// Output parameters
+   if (hasTreeName) {
+      output << "TreeName";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetName();
+      output << endl;
+   }//if
+
+   if (hasSetName) {
+      output << "SetName";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetTreeSetName();
+      output << endl;
+   }//if
+
+   if (hasOption) {
+      output << "Option";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetOption();
+      output << endl;
+   }//if
+
+   if (hasNUnits) {
+      output << "NumUnits";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNUnits"));
+      output << endl;
+   }//if
+
+   if (hasMinLevel) {
+      output << "MinLevel";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fMinLevel");
+      output << endl;
+   }//if
+
+   if (hasMaxLevel) {
+      output << "MaxLevel";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fMaxLevel");
+      output << endl;
+   }//if
+
+   if (hasNQuant) {
+      output << "NumQuantiles";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNQuantiles"));
+      output << endl;
+   }//if
+
+   if (hasQuant) {
+      Double_t **quant = new Double_t*[n];
+      for (Int_t k=0; k<n; k++) {
+         quant[k] = info[k]->GetQuantiles();
+      }//for_k
+
+      Int_t nq  = (Int_t)(info[0]->GetValue("fNQuantiles"));
+      for (Int_t i=0; i<nq; i++) {
+         TString str; str = "Quantile"; str += i;
+
+         output << str.Data();
+         for (Int_t k=0; k<n; k++) output << sep << quant[k][i];
+         output << endl;
+      }//for_i
+
+      delete [] quant;
+   }//if
+
+   if (hasLevel) {
+      Double_t **quant = new Double_t*[n];
+      Double_t **level = new Double_t*[n];
+      for (Int_t k=0; k<n; k++) {
+         quant[k] = info[k]->GetQuantiles();
+         level[k] = info[k]->GetLevelQuantiles();
+      }//for_k
+
+      Int_t nq  = (Int_t)(info[0]->GetValue("fNQuantiles"));
+      for (Int_t i=0; i<nq; i++) {
+         TString str; str.Form("Level_Q%4.2f", quant[0][i]);
+
+         output << (str+=quant[0][i]).Data();
+         for (Int_t k=0; k<n; k++) output << sep << level[k][i];
+         output << endl;
+      }//for_i
+
+      delete [] level;
+      delete [] quant;
+   }//if
+
+// Cleanup
+   for (Int_t k=0; k<n; k++) {
+//no!      SafeDelete(info[k]);
+      SafeDelete(tree[k]);
+   }//for_k
+
+   delete [] info;
+   delete [] tree;
+
+   return errNoErr;
+}//ExportExprTreeInfo
+
+//______________________________________________________________________________
+Int_t XProcesSet::ExportMaskTreeInfo(Int_t n, TString *names, const char *varlist,
+                  ofstream &output, const char *sep)
+{
+   // Export data stored in userinfo of mask tree to file output
+   if(kCS) cout << "------XProcesSet::ExportMaskTreeInfo------" << endl;
+
+   Int_t err = errNoErr;
+
+   return errNoErr;
+}//ExportMaskTreeInfo
 
 //______________________________________________________________________________
 const char *XProcesSet::GetTranscriptID(XTransAnnotation *annot)
@@ -1353,6 +1631,44 @@ Int_t XProcesSet::CopyUnitBranch(TTree *fromtree, TTree *totree, Int_t writeopt)
 
    return errNoErr;
 }//CopyUnitBranch
+
+//______________________________________________________________________________
+Int_t XProcesSet::ExpressionQuantiles(TTree *exprtree, XExpression *expr,
+                  Int_t nquant, Double_t *q, Double_t *quantL)
+{
+   // Get nquant quantiles for expression levels from expression tree
+   if(kCS) cout << "------XProcesSet::ExpressionQuantiles------" << endl;
+
+   Int_t err      = errNoErr;
+   Int_t nentries = (Int_t)(exprtree->GetEntries());
+
+   exprtree->SetBranchAddress("ExprBranch", &expr);
+
+// Init arrays
+   Double_t *level = 0; 
+   Int_t    *index = 0;
+   if (!(level = new (nothrow) Double_t[nentries])) {err = errInitMemory; goto cleanup;}
+   if (!(index = new (nothrow) Int_t[nentries]))    {err = errInitMemory; goto cleanup;}
+
+// Fill arrays
+   for (Int_t i=0; i<nentries; i++) {
+      exprtree->GetEntry(i);
+      level[i] = expr->GetLevel();
+   }//for_i
+
+// Fill quantiles
+   quantL = TStat::Quantiles(nentries, level, index, nquant, q, quantL);
+
+// Cleanup
+cleanup:
+   exprtree->DropBaskets();
+   exprtree->ResetBranchAddress(exprtree->GetBranch("ExprBranch"));
+
+   if (index) {delete [] index; index = 0;}
+   if (level) {delete [] level; level = 0;}
+
+   return err;
+}//ExpressionQuantiles
 
 //______________________________________________________________________________
 TTree *XProcesSet::GetUnitTree(XGeneChip *chip, Int_t type)

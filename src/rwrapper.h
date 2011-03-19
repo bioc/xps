@@ -1,15 +1,31 @@
 /*
- ***************************************************************
+ *******************************************************************************
+ *  An R wrapper for the XPS libraries
  *
  * File: rwrapper.h
+ *******************************************************************************
  *
- * Implementation by: Christian Stratowa
+ *  Copyright (C) 2000-2011 Dr. Christian Stratowa
  *
- * Copyright (C) Christian Stratowa 2002-2008
+ *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
- * A wrapper for the XPS libraries
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
  *
- ******************************************************************
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, a copy of the GNU General Public
+ *  License is available at http://www.gnu.org/copyleft/gpl.html. You
+ *  can also obtain it by writing to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA.
+ *
+ *******************************************************************************
 */
 
 #ifndef R_WRAPPER
@@ -94,11 +110,11 @@ void Preprocess(char **filename, char **dirname, char **chipname, char **chiptyp
                 int *nbgrdpar, double *bgrdpars,
                 char **normtype, char **normselection, char **normoption,
                 int *nnormpar, double *normpars,
-                char **exprtype, char **exprselection, char **exproption,
-                int *nexprpar, double *exprpars,
+                char **algorithm, char **sumtype, char **sumselection, char **sumoption,
+                int *nsumpar, double *sumpars,
                 char **reftree, char **refmethod, double *refparam,
                 char **treeset, char **datafile, char **treenames, int *ntrees,
-                int *bgrdlevel, int *normlevel, int *exprlevel,
+                int *bgrdlevel, int *normlevel, int *sumlevel,
                 int *bufsize, int *verbose, char **result);
 void BgCorrect(char **filename, char **dirname, char **chiptype,
                char **schemefile, char **tmpdir, char **seloption,
@@ -112,8 +128,8 @@ void Normalize(char **filename, char **dirname, char **chiptype,
                char **reftree, char **refmethod, int *update,
                int *verbose, char **result);
 void Summarize(char **filename, char **dirname, char **chipname, char **chiptype,
-               char **schemefile, char **tmpdir, char **seloption, char **type,
-               char **option, int *npar, double *pars, int *level,
+               char **schemefile, char **tmpdir, char **seloption, char **algorithm,
+               char **type, char **option, int *npar, double *pars, int *level,
                char **treeset, char **treenames, int *ntrees,
                int *update, int *verbose, char **result);
 

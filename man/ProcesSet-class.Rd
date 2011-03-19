@@ -8,6 +8,7 @@
 \alias{export,ProcesSet-method}
 \alias{getTreeData,ProcesSet-method}
 \alias{hist,ProcesSet-method}
+\alias{image,ProcesSet-method}
 \alias{mboxplot,ProcesSet-method}
 \alias{schemeFile,ProcesSet-method}
 \alias{schemeFile}
@@ -65,6 +66,8 @@ Class \code{"\linkS4class{TreeSet}"}, directly.
      file \code{rootfile}, and saves as data.frame \code{data}.}
     \item{hist}{\code{signature(x = "ProcesSet")}: creates a plot showing the histograms 
      for data.frame \code{data}.}
+    \item{image}{\code{signature(x = "ProcesSet")}: creates an image for each column from
+     data.frame \code{data} or \code{bgrd}, respectively.}
     \item{mboxplot}{\code{signature(x = "ProcesSet")}: creates an M-boxplot of the
      data from data.frame \code{data}.}
     \item{schemeFile}{\code{signature(object = "ProcesSet")}: extracts the \code{\link{ROOT}}  
@@ -81,7 +84,7 @@ Class \code{"\linkS4class{TreeSet}"}, directly.
 \author{Christian Stratowa}
 \seealso{
 derived classes \code{\linkS4class{DataTreeSet}}, \code{\linkS4class{ExprTreeSet}}, 
-\code{\linkS4class{CallTreeSet}}.
+\code{\linkS4class{CallTreeSet}}, \code{\linkS4class{QualTreeSet}}.
 }
 \examples{
 showClass("ProcesSet")

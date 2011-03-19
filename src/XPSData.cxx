@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 03/28/2010
+// File created: 08/05/2002                          last modified: 02/06/2011
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2010 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2011 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -60,6 +60,7 @@
 *          - database methods ProjectInfo() etc are moved to XProjectHandler
 * Jan 2008 - Support to read Calvin (AGCC) *.CEL files.
 * Feb 2010 - Add support for alternative splicing, class XSpliceExpression.
+* Dec 2010 - Add support for quality control, classes XGCQuality, XQCExpression.
 *
 ******************************************************************************/
 
@@ -78,6 +79,7 @@
 
 #include "XPSData.h"
 #include "XPSDataTypes.h"
+#include "TStat.h"
 
 // Tree extensions and types:
 // data trees
@@ -154,10 +156,12 @@ ClassImp(XCell);
 ClassImp(XGCCell);
 ClassImp(XBgCell);
 ClassImp(XRankCell);
+ClassImp(XResidual);
+ClassImp(XBorder);
 ClassImp(XExpression);
 ClassImp(XGCExpression);
+ClassImp(XQCExpression);
 ClassImp(XSpliceExpression);
-//ClassImp(XExonExpression);
 ClassImp(XCall);
 ClassImp(XPCall);
 ClassImp(XGPCell);
@@ -430,11 +434,11 @@ Int_t XDataManager::HandleError(Int_t err, const char *name1, const char *name2)
    if(kCS) cout << "------XDataManager::HandleError------" << endl;
 
    switch (err) {
-      case errExtension:
+/*      case errExtension:
          cerr << "Error: Tree(s) with extension <" << name1 << "> not known" << endl;
          fInterrupt = kTRUE;
          break;
-
+*/
       case errChipType:
          cerr << "Error: Selected scheme <" << name1 
            << "> is not identical to imported scheme <" << name2 << ">." << endl;
@@ -460,7 +464,9 @@ Int_t XDataManager::HandleError(Int_t err, const char *name1, const char *name2)
          break;
 
       default:
-         err = XManager::HandleError(err, name1, name2);
+         XSchemeManager manager;
+         err = manager.HandleError(err, name1, name2);
+//         err = XManager::HandleError(err, name1, name2);
          break;
    }//switch
 
@@ -758,6 +764,11 @@ XDataTreeInfo::XDataTreeInfo()
    fNMinInten  = 0;
    fNMaxInten  = 0;
    fMaxNPixels = 0;
+   fNQuantiles = 0;
+   fQuantiles  = 0;
+   fIntenQuant = 0;
+   //   fQuantiles  = new Double_t[fNQuantiles];  //since default constructor called for permanent obj??
+   //   fIntenQuant = new Double_t[fNQuantiles];  //since default constructor called for permanent obj??
 }//Constructor
 
 //______________________________________________________________________________
@@ -774,6 +785,9 @@ XDataTreeInfo::XDataTreeInfo(const char *name, const char *title)
    fNMinInten  = 0;
    fNMaxInten  = 0;
    fMaxNPixels = 0;
+   fNQuantiles = 7;
+   fQuantiles  = new Double_t[fNQuantiles];
+   fIntenQuant = new Double_t[fNQuantiles];
 }//Constructor
 
 //______________________________________________________________________________
@@ -782,6 +796,8 @@ XDataTreeInfo::~XDataTreeInfo()
    // DataTreeInfo destructor
    if(kCS) cout << "---XDataTreeInfo::~XDataTreeInfo------" << endl;
 
+   if (fIntenQuant) {delete [] fIntenQuant; fIntenQuant = 0;}
+   if (fQuantiles)  {delete [] fQuantiles;  fQuantiles  = 0;}
 }//Destructor
 
 //______________________________________________________________________________
@@ -856,6 +872,26 @@ void XDataTreeInfo::AddUserInfo(Int_t nrows, Int_t ncols, Int_t nmin, Double_t m
 }//AddUserInfo
 
 //______________________________________________________________________________
+void XDataTreeInfo::AddUserInfo(Int_t nquant, Double_t *q, Double_t *quant)
+{
+   // Add user info from tree set
+   if(kCS) cout << "------XDataTreeInfo::AddUserInfo------" << endl;
+
+   if (nquant > fNQuantiles) {
+      if (fIntenQuant) {delete [] fIntenQuant; fIntenQuant = 0;}
+      if (fQuantiles)  {delete [] fQuantiles;  fQuantiles  = 0;}
+
+      fQuantiles  = new Double_t[nquant];
+      fIntenQuant = new Double_t[nquant];
+   }//if
+
+   fNQuantiles = nquant;
+
+   memcpy(fQuantiles,  q,     nquant*sizeof(Double_t));
+   memcpy(fIntenQuant, quant, nquant*sizeof(Double_t));
+}//AddUserInfo
+
+//______________________________________________________________________________
 Double_t XDataTreeInfo::GetValue(const char *name)
 {
    // Return value for class member field name
@@ -875,9 +911,33 @@ Double_t XDataTreeInfo::GetValue(const char *name)
       return fNMaxInten;
    } else if (strcmp(name, "fMaxNPixels") == 0) {
       return fMaxNPixels;
+   } else if (strcmp(name, "fNQuantiles") == 0) {
+      return fNQuantiles;
    }//if
    return 0;
 }//GetValue
+
+//______________________________________________________________________________
+Double_t *XDataTreeInfo::GetQuantiles()
+{
+   // Return quantiles array
+   if(kCS) cout << "------XDataTreeInfo::GetQuantiles------" << endl;
+
+   if (fQuantiles == 0) return 0;
+
+   return fQuantiles;
+}//GetQuantiles
+
+//______________________________________________________________________________
+Double_t *XDataTreeInfo::GetIntenQuantiles()
+{
+   // Return quantiles array for intensities
+   if(kCS) cout << "------XDataTreeInfo::GetIntenQuantiles------" << endl;
+
+   if (fIntenQuant == 0) return 0;
+
+   return fIntenQuant;
+}//GetIntenQuantiles
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -1151,7 +1211,8 @@ XGeneChipHyb::~XGeneChipHyb()
 }//Destructor
 
 //______________________________________________________________________________
-void XGeneChipHyb::AddDataTreeInfo(TTree *tree, const char *name, Option_t *option)
+void XGeneChipHyb::AddDataTreeInfo(TTree *tree, const char *name, Option_t *option,
+                   Int_t nquant, Double_t *q, Double_t *quant)
 {
    // Add tree info to list fUserInfo of tree
    if(kCS) cout << "------XGeneChipHyb::AddDataTreeInfo------" << endl;
@@ -1167,8 +1228,34 @@ void XGeneChipHyb::AddDataTreeInfo(TTree *tree, const char *name, Option_t *opti
    // add user info (using this->AddUserInfo())
    info->AddUserInfo(this);
 
+   if (nquant > 0) info->AddUserInfo(nquant, q, quant);
+
    tree->GetUserInfo()->Add(info);
 }//AddDataTreeInfo
+
+//______________________________________________________________________________
+Int_t XGeneChipHyb::ExportTreeInfo(const char *exten, Int_t n, TString *names, 
+                    const char *varlist, ofstream &output, const char *sep)
+{
+   // Export selected variables given in varlist which are stored in tree
+   // treename in output
+   if(kCS) cout << "------XGeneChipHyb::ExportTreeInfo------" << endl;
+
+   Int_t err = errNoErr;
+
+   // remove "userinfo" from varlist
+   TString infolist = RemoveSubString(varlist, "userinfo:", kFALSE);
+
+   if (strcmp(exten,"cel") == 0) {
+      err = this->ExportDataTreeInfo(n, names, infolist, output, sep);
+   } else if (strcmp(exten,"msk") == 0) {
+      err = this->ExportMaskTreeInfo(n, names, infolist, output, sep);
+   } else {
+      return fManager->HandleError(errExtension, exten);
+   }//if
+
+   return err;
+}//ExportTreeInfo
 
 //______________________________________________________________________________
 Int_t XGeneChipHyb::ExportTreeType(const char *exten, Int_t n, TString *names, 
@@ -1499,6 +1586,222 @@ Int_t XGeneChipHyb::ExportMaskTree(TString *name, ofstream &output, const char *
 }//ExportMaskTree
 
 //______________________________________________________________________________
+Int_t XGeneChipHyb::ExportDataTreeInfo(Int_t n, TString *names, const char *varlist,
+                    ofstream &output, const char *sep)
+{
+   // Export data stored in userinfo of data tree to file output
+   if(kCS) cout << "------XGeneChipHyb::ExportDataTreeInfo------" << endl;
+
+// Decompose varlist
+   Bool_t hasTreeName  = kFALSE;
+   Bool_t hasSetName   = kFALSE;
+   Bool_t hasOption    = kFALSE;
+   Bool_t hasNRows     = kFALSE;
+   Bool_t hasNCols     = kFALSE;
+   Bool_t hasMinInten  = kFALSE;
+   Bool_t hasMaxInten  = kFALSE;
+   Bool_t hasNMinInten = kFALSE;
+   Bool_t hasNMaxInten = kFALSE;
+   Bool_t hasMaxNPix   = kFALSE;
+   Bool_t hasNQuant    = kFALSE;
+   Bool_t hasQuant     = kFALSE;
+   Bool_t hasInten     = kFALSE;
+
+   if (strcmp(varlist,"*")  == 0) {
+      hasTreeName  = kTRUE;
+      hasSetName   = kTRUE;
+      hasOption    = kTRUE;
+      hasNRows     = kTRUE;
+      hasNCols     = kTRUE;
+      hasMinInten  = kTRUE;
+      hasMaxInten  = kTRUE;
+      hasNMinInten = kTRUE;
+      hasNMaxInten = kTRUE;
+      hasMaxNPix   = kTRUE;
+      hasNQuant    = kTRUE;
+      hasQuant     = kTRUE;
+      hasInten     = kTRUE;
+   } else {
+      char *name  = new char[strlen(varlist) + 1];
+      char *dname = name;
+      name = strtok(strcpy(name,varlist),":");
+      while(name) {
+         if (strcmp(name,"fName")       == 0) {hasTreeName  = kTRUE;}
+         if (strcmp(name,"fSetName")    == 0) {hasSetName   = kTRUE;}
+         if (strcmp(name,"fOption")     == 0) {hasOption    = kTRUE;}
+         if (strcmp(name,"fNRows")      == 0) {hasNRows     = kTRUE;}
+         if (strcmp(name,"fNCols")      == 0) {hasNCols     = kTRUE;}
+         if (strcmp(name,"fMinInten")   == 0) {hasMinInten  = kTRUE;}
+         if (strcmp(name,"fMaxInten")   == 0) {hasMaxInten  = kTRUE;}
+         if (strcmp(name,"fNMinInten")  == 0) {hasNMinInten = kTRUE;}
+         if (strcmp(name,"fNMaxInten")  == 0) {hasNMaxInten = kTRUE;}
+         if (strcmp(name,"fMaxNPixels") == 0) {hasMaxNPix   = kTRUE;}
+         if (strcmp(name,"fNQuantiles") == 0) {hasNQuant    = kTRUE;}
+         if (strcmp(name,"fQuantiles")  == 0) {hasQuant     = kTRUE;}
+         if (strcmp(name,"fIntenQuant") == 0) {hasInten     = kTRUE;}
+         name = strtok(NULL, ":");
+         if (name == 0) break;
+      }//while
+      delete [] dname;
+   }//if
+
+// Get trees
+   TTree         **tree = new TTree*[n];
+   XDataTreeInfo **info = new XDataTreeInfo*[n];
+   if (fTrees->GetSize() == 0) {
+   // Get trees from names
+      for (Int_t k=0; k<n; k++) {
+         tree[k] = (TTree*)gDirectory->Get((names[k]).Data());
+         if (!tree[k]) return errGetTree;
+
+         info[k] = (XDataTreeInfo*)tree[k]->GetUserInfo()->At(0);
+      }//for_k
+   } else {
+   // Get trees from list fTrees
+      for (Int_t k=0; k<n; k++) {
+         tree[k] = (TTree*)fTrees->At(k);
+         if (!tree[k]) return errGetTree;
+
+         info[k] = (XDataTreeInfo*)tree[k]->GetUserInfo()->At(0);
+      }//for_k
+   }//if
+
+// Output header
+   output << "Parameter";
+   for (Int_t k=0; k<n; k++) output << sep << names[k].Data();
+   output << endl;
+
+// Output parameters
+   if (hasTreeName) {
+      output << "TreeName";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetName();
+      output << endl;
+   }//if
+
+   if (hasSetName) {
+      output << "SetName";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetTreeSetName();
+      output << endl;
+   }//if
+
+   if (hasOption) {
+      output << "Option";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetOption();
+      output << endl;
+   }//if
+
+   if (hasNRows) {
+      output << "Rows";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNRows"));
+      output << endl;
+   }//if
+
+   if (hasNCols) {
+      output << "Cols";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNCols"));
+      output << endl;
+   }//if
+
+   if (hasMinInten) {
+      output << "MinIntensity";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fMinInten");
+      output << endl;
+   }//if
+
+   if (hasMaxInten) {
+      output << "MaxIntensity";
+      for (Int_t k=0; k<n; k++) output << sep << info[k]->GetValue("fMaxInten");
+      output << endl;
+   }//if
+
+   if (hasNMinInten) {
+      output << "NumMinIntensity";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNMinInten"));
+      output << endl;
+   }//if
+
+   if (hasNMaxInten) {
+      output << "NumMaxIntensity";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNMaxInten"));
+      output << endl;
+   }//if
+
+   if (fMaxNPixels) {
+      output << "MaxNumPixels";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("hasMaxNPix"));
+      output << endl;
+   }//if
+
+   if (hasNQuant) {
+      output << "NQuantiles";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNQuantiles"));
+      output << endl;
+   }//if
+
+   if (hasQuant) {
+      Double_t **quant = new Double_t*[n];
+      for (Int_t k=0; k<n; k++) {
+         quant[k] = info[k]->GetQuantiles();
+      }//for_k
+
+      Int_t nq  = (Int_t)(info[0]->GetValue("fNQuantiles"));
+      for (Int_t i=0; i<nq; i++) {
+         TString str = "Quantile";
+
+         output << (str+=i).Data();
+         for (Int_t k=0; k<n; k++) output << sep << quant[k][i];
+         output << endl;
+      }//for_i
+
+      delete [] quant;
+   }//if
+
+   if (hasInten) {
+      Double_t **quant = new Double_t*[n];
+      Double_t **inten = new Double_t*[n];
+      for (Int_t k=0; k<n; k++) {
+         quant[k] = info[k]->GetQuantiles();
+         inten[k] = info[k]->GetIntenQuantiles();
+      }//for_k
+
+      Int_t nq  = (Int_t)(info[0]->GetValue("fNQuantiles"));
+      for (Int_t i=0; i<nq; i++) {
+         TString str; str.Form("Intensity_Q%4.2f", quant[0][i]);
+
+         output << str.Data();
+         for (Int_t k=0; k<n; k++) output << sep << inten[k][i];
+         output << endl;
+      }//for_i
+
+      delete [] inten;
+      delete [] quant;
+   }//if
+
+// Cleanup
+   for (Int_t k=0; k<n; k++) {
+//no!      SafeDelete(info[k]);
+      SafeDelete(tree[k]);
+   }//for_k
+
+   delete [] info;
+   delete [] tree;
+
+   return errNoErr;
+}//ExportDataTreeInfo
+
+//______________________________________________________________________________
+Int_t XGeneChipHyb::ExportMaskTreeInfo(Int_t n, TString *names, const char *varlist,
+                    ofstream &output, const char *sep)
+{
+   // Export data stored in userinfo of mask tree to file output
+   if(kCS) cout << "------XGeneChipHyb::ExportMaskTreeInfo------" << endl;
+
+   Int_t err = errNoErr;
+
+   return errNoErr;
+}//ExportMaskTreeInfo
+
+//______________________________________________________________________________
 Int_t XGeneChipHyb::IsXDAFile(ifstream &input)
 {
    if(kCS) cout << "------XGeneChipHyb::IsXDAFile------" << endl;
@@ -1672,6 +1975,11 @@ Int_t XGeneChipHyb::ReadData(ifstream &input, Option_t *option, const char * /*s
    Int_t    nummax = 0;
    Short_t  maxpix = 0;
 
+   Int_t     nquant = 7;
+   Double_t  q[]    = {0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0};
+   Double_t *quantI = 0; 
+   if (!(quantI = new (nothrow) Double_t[nquant])) return errInitMemory;
+
 // Create data tree
    TString exten = Path2Name(option, ".", "");
    fDataTreeName = fTreeName + "." + exten;
@@ -1742,11 +2050,15 @@ Int_t XGeneChipHyb::ReadData(ifstream &input, Option_t *option, const char * /*s
 
 // Write data tree to file if all data are read
    if (numcel == fNCells) {
-   // Add tree info to tree
-      AddDataTreeInfo(datatree, fDataTreeName);
-//??      AddDataTreeInfo(datatree, datatree->GetName(), "", nummin,min,nummax,max,maxpix);
+      // quantiles for residual trees
+      err = this->DataQuantiles(datatree, cell, nquant, q, quantI);
+      if (err != errNoErr) goto cleanup;
 
-   // Write data tree to file 
+      // add tree info to tree
+//      AddDataTreeInfo(datatree, fDataTreeName);
+      AddDataTreeInfo(datatree, datatree->GetName(), "txt", nquant, q, quantI);
+
+      // write data tree to file 
       if ((err = WriteTree(datatree, TObject::kOverwrite)) == errNoErr) {
          // add tree header to list
          AddTreeHeader(datatree->GetName(), 0);
@@ -1764,6 +2076,8 @@ cleanup:
    datatree->Delete("");
    datatree = 0;
    delete cell;
+
+   if (quantI) {delete [] quantI; quantI = 0;}
 
    return err;
 }//ReadData
@@ -1859,6 +2173,11 @@ Int_t XGeneChipHyb::ReadXDAData(ifstream &input, Option_t *option, const char * 
    Int_t    nummax = 0;
    Short_t  maxpix = 0;
 
+   Int_t     nquant = 7;
+   Double_t  q[]    = {0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0};
+   Double_t *quantI = 0; 
+   if (!(quantI = new (nothrow) Double_t[nquant])) return errInitMemory;
+
 // Create data tree
    TString exten = Path2Name(option, ".", "");
    fDataTreeName = fTreeName + "." + exten;
@@ -1935,10 +2254,15 @@ Int_t XGeneChipHyb::ReadXDAData(ifstream &input, Option_t *option, const char * 
 
 // Write data tree to file if all data are read
    if (numcel == fNCells) {
-   // Add tree info to tree
-      AddDataTreeInfo(datatree, fDataTreeName);
+      // quantiles for residual trees
+      err = this->DataQuantiles(datatree, cell, nquant, q, quantI);
+      if (err != errNoErr) goto cleanup;
 
-   // Write data tree to file 
+      // add tree info to tree
+//      AddDataTreeInfo(datatree, fDataTreeName);
+      AddDataTreeInfo(datatree, datatree->GetName(), "xda", nquant, q, quantI);
+
+      // write data tree to file 
       if ((err = WriteTree(datatree, TObject::kOverwrite)) == errNoErr) {
          // add tree header to list
          AddTreeHeader(datatree->GetName(), 0);
@@ -1955,6 +2279,8 @@ cleanup:
    datatree->Delete("");
    datatree = 0;
    delete cell;
+
+   if (quantI) {delete [] quantI; quantI = 0;}
 
    return err;
 }//ReadXDAData
@@ -2118,6 +2444,9 @@ Int_t XGeneChipHyb::ReadDataGroup(ifstream &input, UInt_t &filepos,
    Short_t  maxpix = 0;
    char    *str;
 
+   Int_t     nquant = 7;
+   Double_t  q[]    = {0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0};
+
 // Create data tree
    TString exten = Path2Name(option, ".", "");
    fDataTreeName = fTreeName + "." + exten;
@@ -2185,14 +2514,16 @@ Int_t XGeneChipHyb::ReadDataGroup(ifstream &input, UInt_t &filepos,
    fNCells = (Int_t)numrows;
 
 // Create local arrays to store data from input
-   Float_t *inten  = 0;
-   Float_t *stdev  = 0;
-   Short_t *numpix = 0;
+   Float_t  *inten  = 0;
+   Float_t  *stdev  = 0;
+   Short_t  *numpix = 0;
+   Double_t *quantI = 0; 
 
    // initialize memory for local arrays
    if (!(inten  = new (nothrow) Float_t[fNCells])) {err = errInitMemory; goto cleanup;}
    if (!(stdev  = new (nothrow) Float_t[fNCells])) {err = errInitMemory; goto cleanup;}
    if (!(numpix = new (nothrow) Short_t[fNCells])) {err = errInitMemory; goto cleanup;}
+   if (!(quantI = new (nothrow) Double_t[nquant])) {err = errInitMemory; goto cleanup;}
 
    // read intensities
    for (UInt_t i=0; i<numrows; i++) {
@@ -2337,9 +2668,13 @@ Int_t XGeneChipHyb::ReadDataGroup(ifstream &input, UInt_t &filepos,
    }//if
 
 // Write data tree to file
+   // quantiles for residual trees
+   err = this->DataQuantiles(datatree, cell, nquant, q, quantI);
+   if (err != errNoErr) goto cleanup;
+
    // add tree info to tree
-   AddDataTreeInfo(datatree, fDataTreeName);
-//??   AddDataTreeInfo(datatree, datatree->GetName(), "", nummin,min,nummax,max,maxpix);
+//   AddDataTreeInfo(datatree, fDataTreeName);
+   AddDataTreeInfo(datatree, datatree->GetName(), "generic", nquant, q, quantI);
 
    // write data tree to file 
    if ((err = WriteTree(datatree, TObject::kOverwrite)) == errNoErr) {
@@ -2348,6 +2683,7 @@ Int_t XGeneChipHyb::ReadDataGroup(ifstream &input, UInt_t &filepos,
    }//if
 
 cleanup:
+   if (quantI) {delete [] quantI; quantI = 0;}
    if (numpix) {delete [] numpix; numpix = 0;}
    if (stdev)  {delete [] stdev;  stdev  = 0;}
    if (inten)  {delete [] inten;  inten  = 0;}
@@ -2578,6 +2914,11 @@ Int_t XGeneChipHyb::ReadXMLData(ifstream &input, Option_t *option, const char * 
    Int_t    nummax = 0;
    Short_t  maxpix = 0;
 
+   Int_t     nquant = 7;
+   Double_t  q[]    = {0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0};
+   Double_t *quantI = 0; 
+   if (!(quantI = new (nothrow) Double_t[nquant])) return errInitMemory;
+
 // Create data tree
    TString exten = Path2Name(option,".","");
    fDataTreeName = fTreeName + "." + exten;
@@ -2662,8 +3003,13 @@ Int_t XGeneChipHyb::ReadXMLData(ifstream &input, Option_t *option, const char * 
 
 // Write data tree to file if all data are read
    if (numcel == fNCells) {
-   // Add tree info to tree
-      AddDataTreeInfo(datatree, fDataTreeName);
+      // quantiles for residual trees
+      err = this->DataQuantiles(datatree, cell, nquant, q, quantI);
+      if (err != errNoErr) goto cleanup;
+
+      // add tree info to tree
+//      AddDataTreeInfo(datatree, fDataTreeName);
+      AddDataTreeInfo(datatree, datatree->GetName(), "xml", nquant, q, quantI);
 
    // Write data tree to file 
       if ((err = WriteTree(datatree, TObject::kOverwrite)) == errNoErr) {
@@ -2677,15 +3023,57 @@ Int_t XGeneChipHyb::ReadXMLData(ifstream &input, Option_t *option, const char * 
       err = fManager->HandleError(errNumCells, str1, str2);
    }//if
 
-// Delete data tree from RAM
+// Cleanup
+cleanup:
+   // delete data tree from RAM
    datatree->Delete("");
    datatree = 0;
    delete cell;
    delete omsk;
 
+   if (quantI) {delete [] quantI; quantI = 0;}
+
    data.close();
    return err;
 }//ReadXMLData
+
+//______________________________________________________________________________
+Int_t XGeneChipHyb::DataQuantiles(TTree *tree, XGCCell *cell,
+                    Int_t nquant, Double_t *q, Double_t *quant)
+{
+   // Get nquant quantiles for intensities from data tree
+   if(kCS) cout << "------XGeneChipHyb::DataQuantiles------" << endl;
+
+   Int_t err      = errNoErr;
+   Int_t nentries = (Int_t)(tree->GetEntries());
+
+   tree->SetBranchAddress("DataBranch", &cell);
+
+// Init arrays
+   Double_t *inten = 0; 
+   Int_t    *index = 0;
+   if (!(inten = new (nothrow) Double_t[nentries])) {err = errInitMemory; goto cleanup;}
+   if (!(index = new (nothrow) Int_t[nentries]))    {err = errInitMemory; goto cleanup;}
+
+// Fill arrays
+   for (Int_t i=0; i<nentries; i++) {
+      tree->GetEntry(i);
+      inten[i] = cell->GetIntensity();
+   }//for_i
+
+// Fill quantiles
+   quant = TStat::Quantiles(nentries, inten, index, nquant, q, quant);
+
+// Cleanup
+cleanup:
+   tree->DropBaskets();
+   tree->ResetBranchAddress(tree->GetBranch("DataBranch"));
+
+   if (index) {delete [] index; index = 0;}
+   if (inten) {delete [] inten; inten = 0;}
+
+   return err;
+}//DataQuantiles
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -4065,7 +4453,8 @@ XGenePixHyb::~XGenePixHyb()
 }//Destructor
 
 //______________________________________________________________________________
-void XGenePixHyb::AddDataTreeInfo(TTree *tree, const char *name, Option_t *option)
+void XGenePixHyb::AddDataTreeInfo(TTree *tree, const char *name, Option_t *option,
+                  Int_t nquant, Double_t *q, Double_t *quant)
 {
    // Add tree info to list fUserInfo of tree
    if(kCS) cout << "------XGenePixHyb::AddDataTreeInfo------" << endl;
@@ -4081,6 +4470,8 @@ void XGenePixHyb::AddDataTreeInfo(TTree *tree, const char *name, Option_t *optio
 
    // add user info (using this->AddUserInfo())
    info->AddUserInfo(this);
+
+   if (nquant > 0) info->AddUserInfo(nquant, q, quant);
 
    tree->GetUserInfo()->Add(info);
 }//AddDataTreeInfo
@@ -5229,6 +5620,54 @@ XRankCell::XRankCell()
 XRankCell::~XRankCell()
 {
    // BgCell destructor 
+}//Destructor
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XResidual                                                            //
+//                                                                      //
+// Class describing microarray residuals an weights                     //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+XResidual::XResidual()
+          :XPosition()
+{
+   // Default Residual constructor
+   fResidual = 0.0;
+   fWeight   = 0.0;
+}//Constructor
+
+//______________________________________________________________________________
+XResidual::~XResidual()
+{
+   // Residual destructor 
+}//Destructor
+
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// XBorder                                                              //
+//                                                                      //
+// Class describing microarrayborder elements                           //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
+XBorder::XBorder()
+        :XPosition()
+{
+   // Default Border constructor
+   fInten = 0.0;
+   fFlag  = 0.0;
+}//Constructor
+
+//______________________________________________________________________________
+XBorder::~XBorder()
+{
+   // Border destructor 
 }//Destructor
 
 

@@ -12,7 +12,6 @@
 \alias{background<-}
 \alias{bgtreeNames,DataTreeSet-method}
 \alias{bgtreeNames}
-\alias{image,DataTreeSet-method}
 \alias{intensity,DataTreeSet-method}
 \alias{intensity<-,DataTreeSet,data.frame-method}
 \alias{mm,DataTreeSet-method}
@@ -38,6 +37,8 @@
 \alias{xpsMAS5Call,DataTreeSet-method}
 \alias{xpsNormalize,DataTreeSet-method}
 \alias{xpsPreprocess,DataTreeSet-method}
+\alias{xpsQualify,DataTreeSet-method}
+\alias{xpsQualityControl,DataTreeSet-method}
 \alias{xpsRMA,DataTreeSet-method}
 \alias{xpsSummarize,DataTreeSet-method}
 
@@ -92,8 +93,6 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
     \item{background}{\code{signature(object = "DataTreeSet")}: extracts slot \code{bgrd}.}
     \item{background<-}{\code{signature(object = "DataTreeSet", value = "data.frame")}: replaces slot \code{bgrd}.}
     \item{bgtreeNames}{\code{signature(object = "DataTreeSet")}: extracts slot \code{bgtreenames}.}
-    \item{image}{\code{signature(x = "DataTreeSet")}: creates an image for each column from
-     data.frame \code{data} or  \code{bgrd}, respectively.}
     \item{intensity}{\code{signature(object = "DataTreeSet")}: extracts slot \code{data}.}
     \item{intensity<-}{\code{signature(object = "DataTreeSet", value = "data.frame")}: replaces slot \code{data}.}
     \item{mm}{\code{signature(object = "DataTreeSet")}: extracts the mismatch intensities.}
@@ -128,6 +127,8 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
     \item{xpsMAS5Call}{\code{signature(object = "DataTreeSet")}: computes MAS5 detection call.}
     \item{xpsNormalize}{\code{signature(object = "DataTreeSet")}: applies normalization methods.}
     \item{xpsPreprocess}{\code{signature(object = "DataTreeSet")}: applies normalization methods.}
+    \item{xpsQualify}{\code{signature(object = "DataTreeSet")}: applies quality control methods.}
+    \item{xpsQualityControl}{\code{signature(object = "DataTreeSet")}: applies quality control methods.}
     \item{xpsRMA}{\code{signature(object = "DataTreeSet")}: computes RMA expression levels.}
     \item{xpsSummarize}{\code{signature(object = "DataTreeSet")}: applies summarization methods.}
 	 }

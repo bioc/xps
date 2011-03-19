@@ -1,11 +1,11 @@
-// Author: Christian Stratowa 11/25/2002             last modified: 11/27/2010
+// Author: Christian Stratowa 11/25/2002             last modified: 01/14/2011
 
 /*
  *******************************************************************************
  ***********************  Statistics Package for ROOT  *************************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2010 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2011 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -101,6 +101,7 @@ class TStat {
       static Double_t GeoMean(Int_t n, const Double_t *arr, const Double_t trim,
                          Double_t &var, Int_t &len);
       static Double_t Mean(Int_t n, const Double_t *arr);
+      static Double_t Mean(Int_t begin, Int_t end, const Double_t *arr);
       static Double_t Mean(Int_t n, const Double_t *arr, Int_t &len,
                          const Double_t na);
       static Double_t Mean(Int_t n, const Double_t *arr, const Double_t *w);
@@ -112,6 +113,7 @@ class TStat {
       static Double_t Median(Int_t n, const Double_t *arr);
       static Double_t Median(Int_t n, const Double_t *arr, const Int_t *index);
       static Double_t Median(Int_t n, const Double_t *arr, Bool_t low, Bool_t high);
+      static Double_t Median(Int_t n, const Double_t *arr, UShort_t logbase);
       static Double_t MAD(Int_t n, const Double_t *arr, Float_t constant = 1.4826);
       static Double_t MAD(Int_t n, const Double_t *arr, const Double_t trim,
                          Float_t constant = 1.4826);
@@ -140,6 +142,9 @@ class TStat {
                          const Double_t qhi = 0.75);
       static Double_t IQR(Int_t n, const Double_t *arr, const Int_t *index,
                          const Double_t qlo = 0.25, const Double_t qhi = 0.75);
+
+      static Double_t *Quantiles(Int_t n, Double_t *arr, Int_t *index,
+                          Int_t nquant, Double_t *q, Double_t *quant);
 
       static void     NextPerm(Int_t n, Int_t k, Int_t *grp);
       static void     NextPerm(Int_t n, Int_t k, Int_t *grp1, Int_t nk, Int_t *grp2);

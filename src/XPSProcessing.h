@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 02/26/2010
+// File created: 08/05/2002                          last modified: 02/06/2011
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2010 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2011 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -55,12 +55,18 @@ extern const char *kExtenBgrd[];
 extern const char *kTypeBgrd[];
 extern const char *kExtenIntn[];
 extern const char *kTypeIntn[];
+extern const char *kExtenResd[];
+extern const char *kTypeResd[];
+extern const char *kExtenBord[];
+extern const char *kTypeBord[];
 extern const char *kExtenCNrm[];
 extern const char *kTypeCNrm[];
 extern const char *kExtenExpr[];
 extern const char *kTypeExpr[];
 extern const char *kExtenCall[];
 extern const char *kTypeCall[];
+extern const char *kExtenQual[];
+extern const char *kTypeQual[];
 
 // tree normation extensions and types
 extern const char *kExtenNorm[];
@@ -86,8 +92,9 @@ extern const char *kTypeRgrs[];
 // processing methods
 extern const char *kProcessMethod[];
 
-// options for detection call
+// options
 extern const char *kCallOption[];
+extern const char *kQualOption[];
 
 // name of reference tree
 extern const char *kReference;
@@ -97,6 +104,11 @@ enum EProbesetOption {
    ePROBESET   = 2,
    eEXONTYPE   = 1,
    eTRANSCRIPT = 0, 
+};
+
+// Weight
+enum EWeight {
+   eINITWEIGHT = -16384, 
 };
 
 // Error messages for XPSProcessing
@@ -179,6 +191,9 @@ class XExpressionTreeInfo: public XTreeInfo {
       Int_t      fNUnits;       //number of units
       Double_t   fMinLevel;     //minimal expression level
       Double_t   fMaxLevel;     //maximal expression level
+      Int_t      fNQuantiles;   //number of quantiles
+      Double_t  *fQuantiles;    //[fNQuantiles] Array of quantile values
+      Double_t  *fLevelQuant;   //[fNQuantiles] Array of level quantiles
 
    public :
       XExpressionTreeInfo();
@@ -187,9 +202,13 @@ class XExpressionTreeInfo: public XTreeInfo {
 
       using XTreeInfo::AddUserInfo;
       virtual void     AddUserInfo(Int_t nunits, Double_t min, Double_t max);
+      virtual void     AddUserInfo(Int_t nquant, Double_t *q, Double_t *quant);
       virtual Double_t GetValue(const char *name);
 
-      ClassDef(XExpressionTreeInfo,1) //ExpressionTreeInfo
+      Double_t *GetQuantiles();
+      Double_t *GetLevelQuantiles();
+
+      ClassDef(XExpressionTreeInfo,2) //ExpressionTreeInfo
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -277,13 +296,21 @@ class XProcesSet: public XTreeSet {
 
    protected:
       virtual void  AddExprTreeInfo(TTree *tree, const char *name, Option_t *option,
-                       Int_t nunits, Double_t min, Double_t max);
+                       Int_t nunits, Double_t min, Double_t max, 
+                       Int_t nquant, Double_t *q, Double_t *quant);
       virtual Int_t InitGroups(Int_t &n, Int_t *gid, TTree **tree, const char **extens);
+
+      virtual Int_t ExportExprTreeInfo(Int_t n, TString *names, const char *varlist,
+                       ofstream &output, const char *sep);
+      virtual Int_t ExportMaskTreeInfo(Int_t n, TString *names, const char *varlist,
+                       ofstream &output, const char *sep);
 
       virtual const char *GetTranscriptID(XTransAnnotation *anno);
       virtual const char *GetTranscriptID(XUnit *unit, XTransAnnotation *annot, Int_t type);
 
       Int_t  CopyUnitBranch(TTree *fromtree, TTree *totree, Int_t writeopt = -1);
+      Int_t  ExpressionQuantiles(TTree *exprtree, XExpression *expr,
+                Int_t nquant, Double_t *q, Double_t *quantL);
       TTree *GetUnitTree(XGeneChip *chip, Int_t type);
       TTree *GetAnnotationTree(XGeneChip *chip, Int_t type);
 

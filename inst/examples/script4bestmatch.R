@@ -4,6 +4,10 @@
 # Copyright (c) 2008-2009 Dr. Christian Stratowa, Vienna, Austria.
 # All rights reserved.
 #
+# Note: this script is only a trial, it may have mistakes and there
+#       may be better solutions, thus use it at your own risk.
+#       Bug reports and refined solutions are welcome
+#
 #------------------------------------------------------------------------------#
 
 
@@ -26,6 +30,8 @@ uniqueframe <- function(ma) {
    for (i in uni) {ds <- rbind(ds, maxunique(i,ma))}
 
    tmp <- ma[dup==F,]
+   tmp <- tmp[!tmp[,1] %in% uni,]
+
    ds <- rbind(ds, tmp)
    ds <- ds[order(rownames(ds)),]
    return(ds)

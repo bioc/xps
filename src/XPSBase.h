@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 01/16/2010
+// File created: 05/18/2002                          last modified: 01/24/2011
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2010 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2011 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -205,10 +205,10 @@ class XTreeInfo: public TNamed {
       XTreeInfo(const char *name, const char *title);
       virtual ~XTreeInfo();
 
-      virtual Option_t *GetOption()               const {return fOption;}
-      virtual void     AddUserInfo(XTreeSet * /*set*/)  {}
-      virtual Double_t GetValue(const char * /*name*/)  {return 0;}
-      virtual TString  GetString(const char * /*name*/) {return "";}
+      virtual Option_t *GetOption()                      {return fOption.Data();}
+      virtual void      AddUserInfo(XTreeSet * /*set*/)  {}
+      virtual Double_t  GetValue(const char * /*name*/)  {return 0;}
+      virtual TString   GetString(const char * /*name*/) {return "";}
 
       void    SetTreeSetName(const char *name)  {fSetName  = name;}
       void    SetTreeSetClass(const char *name) {fSetClass = name;}
@@ -346,6 +346,9 @@ class XTreeSet: public TNamed {
                        ofstream &output, const char *sep);
       virtual Int_t ExportTree(const char *exten, Int_t n, TString *names,  
                        const char *varlist, ofstream &output, const char *sep);
+      virtual Int_t ExportTreeInfo(const char * /*exten*/, Int_t /*n*/, TString * /*names*/,  
+                       const char * /*varlist*/, ofstream &/*output*/, const char * /*sep*/)
+                                                                            {return 0;}
       virtual Int_t ExportTreeType(const char * /*exten*/, Int_t /*n*/, TString * /*names*/,  
                        const char * /*varlist*/, ofstream &/*output*/, const char * /*sep*/)
                                                                             {return 0;}
