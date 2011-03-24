@@ -28,6 +28,9 @@ function(xps.scheme,
          is.character(filedir))) {
       stop("arguments <filename,filedir> must be of type character");
    }#if
+   if (!file.exists(filedir)) {
+      stop(paste("directory", sQuote(filedir), "does not exist."));
+   }#if
 
    ## root data file
    rootdata <- paste(filename, "_cel.root", sep="");

@@ -952,9 +952,6 @@ XExpressionTreeInfo::XExpressionTreeInfo()
    fNQuantiles = 0;
    fQuantiles  = 0;
    fLevelQuant = 0;
-//   fNQuantiles = 7;
-//   fQuantiles  = new Double_t[fNQuantiles];  //since default constructor called for permanent obj??
-//   fLevelQuant = new Double_t[fNQuantiles];  //since default constructor called for permanent obj??
 }//Constructor
 
 //______________________________________________________________________________
@@ -1502,7 +1499,7 @@ Int_t XProcesSet::ExportExprTreeInfo(Int_t n, TString *names, const char *varlis
       for (Int_t i=0; i<nq; i++) {
          TString str; str.Form("Level_Q%4.2f", quant[0][i]);
 
-         output << (str+=quant[0][i]).Data();
+         output << str.Data();
          for (Int_t k=0; k<n; k++) output << sep << level[k][i];
          output << endl;
       }//for_i

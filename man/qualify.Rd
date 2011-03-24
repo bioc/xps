@@ -8,9 +8,31 @@
  Converts Affymetrix probe level data to expression levels by fitting a multichip model.
 }
 \usage{
-qualify(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, select = "none", method = character(), option = "transcript", logbase = "log2", exonlevel = "", params = list(), xps.scheme = NULL, add.data = TRUE, verbose = TRUE)
+qualify(xps.data,
+        filename   = character(0),
+        filedir    = getwd(),
+        tmpdir     = "",
+        update     = FALSE,
+        select     = "none",
+        method     = character(),
+        option     = "transcript",
+        logbase    = "log2",
+        exonlevel  = "",
+        params     = list(),
+        xps.scheme = NULL,
+        add.data   = TRUE,
+        verbose    = TRUE)
 
-qualify.rlm(xps.data, filename = character(0), filedir = getwd(), tmpdir = "", update = FALSE, option = "transcript", exonlevel = "", xps.scheme = NULL, add.data = TRUE, verbose = TRUE)
+qualify.rlm(xps.data,
+            filename   = character(0),
+            filedir    = getwd(),
+            tmpdir     = "",
+            update     = FALSE,
+            option     = "transcript",
+            exonlevel  = "",
+            xps.scheme = NULL,
+            add.data   = TRUE,
+            verbose    = TRUE)
 
 xpsQualify(object, ...)
 }

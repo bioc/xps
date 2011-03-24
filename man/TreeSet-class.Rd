@@ -21,7 +21,6 @@
 \alias{setType<-,TreeSet,character-method}
 \alias{setType<-}
 \alias{treeInfo,TreeSet-method}
-\alias{treeInfo}
 \alias{treeNames,TreeSet-method}
 \alias{treeNames}
 

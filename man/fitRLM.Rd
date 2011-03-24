@@ -17,7 +17,7 @@ fitRLM(xps.data,
        exonlevel  = "",
        params     = list(16384, 0.0, 1.0, 10, 0.01, 1),
        xps.scheme = NULL,
-       add.data   = TRUE,
+       add.data   = FALSE,
        bufsize    = 32000,
        verbose    = TRUE)
 
@@ -32,7 +32,7 @@ rmaPLM(xps.data,
        exonlevel  = "",
        params     = list(16384, 0.0, 1.0, 10, 0.01, 1),
        xps.scheme = NULL,
-       add.data   = TRUE,
+       add.data   = FALSE,
        bufsize    = 32000,
        verbose    = TRUE)
 }
@@ -71,9 +71,6 @@ data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataT
 
 ## qualification - rlm
 rlm.all <- rmaPLM(data.test3, "tmp_Test3RLMall", filedir=getwd(), tmpdir="", qualopt="all", option="transcript", add.data=FALSE)
-
-## get expression data.frame
-expr.rlm.all <- validData(rlm.all)
 
 ## get borders
 brd.rlm.all <- borders(rlm.all)

@@ -556,9 +556,6 @@ XQualityTreeInfo::XQualityTreeInfo()
 
    fNUSEQuant = 0;
    fRLEQuant  = 0;
-//??   //since default constructor called for permanent obj
-//   fNUSEQuant = new Double_t[fNQuantiles];
-//   fRLEQuant  = new Double_t[fNQuantiles];
    fQualOption  = "";
 }//Constructor
 
@@ -648,10 +645,6 @@ XResidualTreeInfo::XResidualTreeInfo()
    fQuantiles   = 0;
    fResiduQuant = 0;
    fWeightQuant = 0;
-//??   //since default constructor called for permanent obj
-//   fQuantiles   = new Double_t[fNQuantiles];
-//   fResiduQuant = new Double_t[fNQuantiles];
-//   fWeightQuant = new Double_t[fNQuantiles];
    fQualOption  = "";
 }//Constructor
 

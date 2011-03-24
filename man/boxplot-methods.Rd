@@ -13,7 +13,7 @@ boxplot(x, which = "", size = 0, transfo = log2, range = 0, names = "namepart", 
 }
 }
 \arguments{
-  \item{x}{object of class \code{\link{DataTreeSet}} or \code{\link{ExprTreeSet}}.}
+  \item{x}{object of class \code{\link{DataTreeSet}}, \code{\link{ExprTreeSet}} or \code{\link{QualTreeSet}}.}
   \item{which}{type of probes to be used, for details see \code{\link{validData}}.}
   \item{size}{length of sequence to be generated as subset.}
   \item{transfo}{a valid function to transform the data, usually \dQuote{log2}, or \dQuote{0}.}
@@ -23,8 +23,8 @@ boxplot(x, which = "", size = 0, transfo = log2, range = 0, names = "namepart", 
   \item{\dots}{optional arguments to be passed to \code{boxplot}.}
 }
 \details{
- Creates a boxplot for slot \code{data} for an object of class \code{\link{DataTreeSet}}
- or \code{\link{ExprTreeSet}}.
+ Creates a boxplot for slot \code{data} for an object of class \code{\link{DataTreeSet}},
+ \code{\link{ExprTreeSet}} or \code{\link{QualTreeSet}}.
 
  For \code{names=NULL} full column names of slot \code{data} will be displayed while for 
  \code{names="namepart"} column names will be displayed without name extension. If \code{names}
@@ -36,8 +36,11 @@ boxplot(x, which = "", size = 0, transfo = log2, range = 0, names = "namepart", 
 }
 \author{Christian Stratowa}
 \note{
- For a \code{\link{DataTreeSet}} object, data must first be attached using method 
- \code{\link{attachInten}}.
+ For a \code{\link{DataTreeSet}} object, data must first be attached using method \code{\link{attachInten}}.
+
+ Alternatively it is possible to use the pre-calculated quantiles stored in the \code{userinfo}
+ of the data trees by calling \code{which="userinfo:varlist"}, where the \code{varlist} to call
+ is described in method \code{\link{treeInfo}}.
 }
 \seealso{\code{\link{boxplot.dev}}, \code{\link[graphics]{boxplot}}}
 \examples{
@@ -51,12 +54,16 @@ data.test3 <- attachInten(data.test3)
 
 if (interactive()) {
 boxplot(data.test3)
-boxplot(data.test3, which="userinfo:fIntenQuant")
 }
 
 ## optionally remove mask and data to free memory
 data.test3 <- removeInten(data.test3)
 data.test3 <- removeMask(data.test3)
+
+## alternatively use the quantiles stored in userinfo of trees
+if (interactive()) {
+boxplot(data.test3, which="userinfo:fIntenQuant")
+}
 
 rm(scheme.test3, data.test3)
 gc()

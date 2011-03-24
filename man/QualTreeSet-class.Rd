@@ -5,9 +5,7 @@
 \alias{borders,QualTreeSet-method}
 \alias{borders}
 \alias{borderplot,QualTreeSet-method}
-\alias{borderplot}
 \alias{coiplot,QualTreeSet-method}
-\alias{coiplot}
 \alias{image,QualTreeSet-method}
 \alias{nuseplot,QualTreeSet-method}
 \alias{qualOption,QualTreeSet-method}

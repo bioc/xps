@@ -40,7 +40,7 @@ function(xps.data,
          ## --
          exonlevel  = "",
          xps.scheme = NULL,
-         add.data   = TRUE,
+         add.data   = FALSE,
          bufsize    = 32000,
          verbose    = TRUE)
 {
@@ -92,7 +92,7 @@ function(xps.data,
 #         option     = "transcript",
 #         exonlevel  = "",
 #         xps.scheme = NULL,
-#         add.data   = TRUE,
+#         add.data   = FALSE,
 #         bufsize    = 32000,
 #         verbose    = TRUE)
 #{
@@ -146,7 +146,7 @@ function(xps.data,
          exonlevel  = "",
          params     = list(16384, 0.0, 1.0, 10, 0.01, 1),
          xps.scheme = NULL,
-         add.data   = TRUE,
+         add.data   = FALSE,
          bufsize    = 32000,
          verbose    = TRUE)
 {
@@ -206,7 +206,7 @@ function(xps.data,
          exonlevel  = "",
          params     = list(16384, 0.0, 1.0, 10, 0.01, 1),
          xps.scheme = NULL,
-         add.data   = TRUE,
+         add.data   = FALSE,
          bufsize    = 32000,
          verbose    = TRUE)
 {

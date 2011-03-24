@@ -767,8 +767,6 @@ XDataTreeInfo::XDataTreeInfo()
    fNQuantiles = 0;
    fQuantiles  = 0;
    fIntenQuant = 0;
-   //   fQuantiles  = new Double_t[fNQuantiles];  //since default constructor called for permanent obj??
-   //   fIntenQuant = new Double_t[fNQuantiles];  //since default constructor called for permanent obj??
 }//Constructor
 
 //______________________________________________________________________________

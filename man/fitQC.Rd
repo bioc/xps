@@ -39,7 +39,7 @@ fitQC(xps.data,
     # misc.
       exonlevel  = "",
       xps.scheme = NULL,
-      add.data   = TRUE,
+      add.data   = FALSE,
       bufsize    = 32000,
       verbose    = TRUE)
 
