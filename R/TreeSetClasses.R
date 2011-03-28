@@ -312,6 +312,7 @@ setGeneric("qualOption<-", function(object, value) standardGeneric("qualOption<-
 setGeneric("borders",      function(object, ...)   standardGeneric("borders"));
 setGeneric("residuals",    function(object, ...)   standardGeneric("residuals"));
 setGeneric("weights",      function(object, ...)   standardGeneric("weights"));
+setGeneric("xpsRNAdeg",    function(object, ...)   standardGeneric("xpsRNAdeg"));
 setGeneric("borderplot",   function(x, ...)        standardGeneric("borderplot"));
 setGeneric("coiplot",      function(x, ...)        standardGeneric("coiplot"));
 

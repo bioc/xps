@@ -2,6 +2,11 @@
 		CHANGES IN R VERSION 2.13.0
 
 
+VERSION xps-1.11.6
+
+    o add methods for RNA degradation plots: xpsRNAdeg(), plotAffyRNAdeg()
+    o add man pages
+
 VERSION xps-1.11.5
 
     o correct minor bug in XPSProcessing.cxx: ExportExprTreeInfo()

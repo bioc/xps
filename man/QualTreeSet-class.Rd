@@ -21,6 +21,7 @@
 \alias{rleplot,QualTreeSet-method}
 \alias{weights,QualTreeSet-method}
 \alias{weights}
+\alias{xpsRNAdeg,QualTreeSet-method}
 
 \title{Class QualTreeSet}
 \description{This class provides the link to the \code{\link{ROOT}} quality control file and 
@@ -79,6 +80,7 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
     \item{rleplot}{\code{signature(x = "QualTreeSet")}: creates a RLE-plot.}
     \item{weights}{\code{signature(object = "QualTreeSet")}: exports weights from the
      residuals trees of the \code{\link{ROOT}} quality control file as data.frame \code{data}.}
+    \item{xpsRNAdeg}{\code{signature(x = "QualTreeSet")}: list with parameters for RNA degradation.}
 	 }
 }
 \author{Christian Stratowa}

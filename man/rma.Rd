@@ -21,7 +21,6 @@ rma(xps.data,
     add.data   = TRUE,
     verbose    = TRUE)
 
-
 xpsRMA(object, ...)
 }
 \arguments{

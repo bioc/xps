@@ -156,7 +156,8 @@ exportMethods("borderplot",
               "qualType",
               "qualType<-",
               "residuals",
-              "weights")
+              "weights",
+              "xpsRNAdeg")
 
 ## class Filter
 exportMethods("numberFilters")
@@ -215,6 +216,7 @@ export(qualify.rlm)
 #export(qualify.plm, qualify.rlm)
 export(fitQC, fitRLM, rmaPLM)
 #export(fitQC, fitPLM, fitRLM, rmaPLM)
+export(AffyRNAdeg, summaryAffyRNAdeg, plotAffyRNAdeg)
 export(boxplot.dev, image.dev, mvaplot.dev)
 export(prefilter, unifilter)
 

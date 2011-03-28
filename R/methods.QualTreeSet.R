@@ -10,6 +10,7 @@
 # borders:
 # residuals:
 # weights:
+# xpsRNAdeg:
 # borderplot:
 # coiplot:
 # nuseplot:
@@ -161,6 +162,36 @@ setMethod("weights", signature(object="QualTreeSet"),
 #------------------------------------------------------------------------------#
 # QualTreeSet methods:
 #------------------------------------------------------------------------------#
+
+"RNAdeg.QualTreeSet" <-
+function(object,
+         treename = "*",
+         qualopt  = NULL)
+{
+   if (debug.xps()) print("------RNAdeg.QualTreeSet------")
+
+   ds <- treeInfo(object,
+                  treename = treename,
+                  treetype = QUATYPE[2],  #rlm
+                  varlist  = "userinfo:fNDegUnits:fNCells:fMNS:fSES",
+                  qualopt  = qualopt
+                 );
+
+   nunits <- as.integer(ds[1,1]);
+   ncells <- as.integer(ds[2,1]);
+
+   res <- list(N            = nunits,
+               sample.names = colnames(ds),
+               mns          = t(as.matrix(ds[3:(ncells+2),])),
+               ses          = t(as.matrix(ds[(ncells+3):nrow(ds),]))
+              );
+
+   return(res);
+}
+
+setMethod("xpsRNAdeg", "QualTreeSet", RNAdeg.QualTreeSet);
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 setMethod("borderplot", signature(x="QualTreeSet"),
    function(x,

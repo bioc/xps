@@ -173,11 +173,11 @@ function(object,
       stop(paste(sQuote("varlist"), "is not available in userinfo of current tree(s)"));
    }#if
 
-   rownames(ds) <- ds[,"Parameter"]; ds <- ds[,-1];
+   rownames(ds) <- ds[,"Parameter"]; ds <- ds[,-1, drop=FALSE];
 
    if (!is.null(qualopt)) {
       qualopt <-validQualityOption(qualopt);
-      ds <- ds[, grep(qualopt, colnames(ds))];
+      ds <- ds[, grep(qualopt, colnames(ds)), drop=FALSE];
    }#if
 
    return(ds);

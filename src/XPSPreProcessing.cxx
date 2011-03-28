@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 02/20/2011
+// File created: 08/05/2002                          last modified: 03/27/2011
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -67,6 +67,7 @@
 *          - Add exon splice/summarization algorithms, classes XSpliceExpressor, XSpliceExpression
 * Dec 2010 - Add support for quality control, method QualityControl.
 *          - Add quality control algorithms, classes XQualifier, XResidual
+* Mar 2011 - Add support for RNA degradation.
 *
 ******************************************************************************/
 
@@ -554,9 +555,13 @@ XQualityTreeInfo::XQualityTreeInfo()
    // Default QualityTreeInfo constructor
    if(kCS) cout << "---XQualityTreeInfo::XQualityTreeInfo(default)------" << endl;
 
-   fNUSEQuant = 0;
-   fRLEQuant  = 0;
-   fQualOption  = "";
+   fNUSEQuant  = 0;
+   fRLEQuant   = 0;
+   fNDegUnits  = 0;
+   fNCells     = 0;
+   fMNS        = 0;
+   fSES        = 0;
+   fQualOption = "";
 }//Constructor
 
 //______________________________________________________________________________
@@ -566,9 +571,13 @@ XQualityTreeInfo::XQualityTreeInfo(const char *name, const char *title)
    // Normal QualityTreeInfo constructor
    if(kCS) cout << "---XQualityTreeInfo::XQualityTreeInfo------" << endl;
 
-   fNUSEQuant = new Double_t[fNQuantiles];
-   fRLEQuant  = new Double_t[fNQuantiles];
-   fQualOption  = kQualOption[0];  //raw
+   fNUSEQuant  = new Double_t[fNQuantiles];
+   fRLEQuant   = new Double_t[fNQuantiles];
+   fNDegUnits  = 0;
+   fNCells     = 20;
+   fMNS        = new Double_t[fNCells];
+   fSES        = new Double_t[fNCells];
+   fQualOption = kQualOption[0];  //raw
 }//Constructor
 
 //______________________________________________________________________________
@@ -577,6 +586,8 @@ XQualityTreeInfo::~XQualityTreeInfo()
    // QualityTreeInfo destructor
    if(kCS) cout << "---XQualityTreeInfo::~XQualityTreeInfo------" << endl;
 
+   if (fSES)       {delete [] fSES;       fSES       = 0;}
+   if (fMNS)       {delete [] fMNS;       fMNS       = 0;}
    if (fRLEQuant)  {delete [] fRLEQuant;  fRLEQuant  = 0;}
    if (fNUSEQuant) {delete [] fNUSEQuant; fNUSEQuant = 0;}
 }//Destructor
@@ -584,7 +595,7 @@ XQualityTreeInfo::~XQualityTreeInfo()
 //______________________________________________________________________________
 void XQualityTreeInfo::AddQualInfo(Int_t nquant, Double_t *quantSE, Double_t *quantLE)
 {
-   // Add user info from tree set
+   // Add user info for NUSE and RLE from tree set
    if(kCS) cout << "------XQualityTreeInfo::AddQualInfo------" << endl;
 
    if (nquant > fNQuantiles) {
@@ -600,6 +611,44 @@ void XQualityTreeInfo::AddQualInfo(Int_t nquant, Double_t *quantSE, Double_t *qu
    memcpy(fNUSEQuant, quantSE, nquant*sizeof(Double_t));
    memcpy(fRLEQuant , quantLE, nquant*sizeof(Double_t));
 }//AddQualInfo
+
+//______________________________________________________________________________
+void XQualityTreeInfo::AddRNADegInfo(Int_t ndegunits, Int_t ncells, Double_t *mns,
+                       Double_t *ses)
+{
+   // Add user info for RNA degradation from tree set
+   if(kCS) cout << "------XQualityTreeInfo::AddRNADegInfo------" << endl;
+
+   if (ncells > fNCells) {
+      if (fMNS) {delete [] fMNS; fMNS = 0;}
+      if (fSES) {delete [] fSES; fSES = 0;}
+
+      fMNS = new Double_t[ncells];
+      fSES = new Double_t[ncells];
+   }//if
+
+   fNDegUnits = ndegunits;
+   fNCells    = ncells;
+
+   memcpy(fMNS, mns, ncells*sizeof(Double_t));
+   memcpy(fSES, ses, ncells*sizeof(Double_t));
+}//AddRNADegInfo
+
+//______________________________________________________________________________
+Double_t XQualityTreeInfo::GetValue(const char *name)
+{
+   // Return value for class member field name
+   if(kCS) cout << "------XQualityTreeInfo::GetValue------" << endl;
+
+   if (strcmp(name, "fNDegUnits")     == 0) {
+      return fNDegUnits;
+   } else if (strcmp(name, "fNCells") == 0) {
+      return fNCells;
+   }//if
+
+   return XExpressionTreeInfo::GetValue(name);
+//   return 0;
+}//GetValue
 
 //______________________________________________________________________________
 Double_t *XQualityTreeInfo::GetNUSEQuantiles()
@@ -622,6 +671,28 @@ Double_t *XQualityTreeInfo::GetRLEQuantiles()
 
    return fRLEQuant;
 }//GetRLEQuantiles
+
+//______________________________________________________________________________
+Double_t *XQualityTreeInfo::GetMNS()
+{
+   // Return array for MNS
+   if(kCS) cout << "------XQualityTreeInfo::GetMNS------" << endl;
+
+   if (fMNS == 0) return 0;
+
+   return fMNS;
+}//GetMNS
+
+//______________________________________________________________________________
+Double_t *XQualityTreeInfo::GetSES()
+{
+   // Return array for SES
+   if(kCS) cout << "------XQualityTreeInfo::GetSES------" << endl;
+
+   if (fSES == 0) return 0;
+
+   return fSES;
+}//GetSES
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -1692,7 +1763,8 @@ void XPreProcesSet::AddCallTreeInfo(TTree *tree, const char *name, Option_t *opt
 void XPreProcesSet::AddQualTreeInfo(TTree *tree, const char *name, Option_t *option,
                     Option_t *qualopt, Int_t nunits, Double_t min, Double_t max,
                     Int_t nquant, Double_t *q, Double_t *quantL, Double_t *quantSE,
-                    Double_t *quantLE)
+                    Double_t *quantLE, Int_t ndegunits, Int_t ncells, Double_t *mns,
+                    Double_t *ses)
 {
    // Add quality tree info to list fUserInfo of tree
    if(kCS) cout << "------XPreProcesSet::AddQualTreeInfo------" << endl;
@@ -1711,6 +1783,7 @@ void XPreProcesSet::AddQualTreeInfo(TTree *tree, const char *name, Option_t *opt
    if (nunits > 0) info->AddUserInfo(nunits, min, max);
    if (nquant > 0) info->AddUserInfo(nquant, q, quantL);
    if (nquant > 0) info->AddQualInfo(nquant, quantSE, quantLE);
+   if (ncells > 0) info->AddRNADegInfo(ndegunits, ncells, mns, ses);
 
    tree->GetUserInfo()->Add(info);
 }//AddQualTreeInfo
@@ -2786,6 +2859,10 @@ Int_t XGCProcesSet::DoDataQualityControl(Int_t numdata, TTree **datatree,
    Double_t **table   = 0;
    Double_t  *arrData = 0;
    Double_t  *arrPM   = 0; 
+   Double_t  *arrInt  = 0; 
+   Double_t  *arrVar  = 0; 
+   Double_t  *arrMNS  = 0; 
+   Double_t  *arrSES  = 0; 
    Double_t  *dummy   = 0;  //to prevent compilation error
 
    TTree     *idxtree = 0; 
@@ -2813,6 +2890,10 @@ Int_t XGCProcesSet::DoDataQualityControl(Int_t numdata, TTree **datatree,
    Int_t numunits = chip->GetNumUnits();
    Int_t size     = numrows*numcols;
 
+   Int_t maxnumcells = 0;  //maximum number of pairs/cells
+   Int_t numdegunits = 0;  //number of units used for RNA degradation
+   Int_t numdegcells = 0;  //number of cells in units used for RNA degradation
+
    Int_t    nquant = 7;
    Double_t q[]    = {0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0};
 //Double_t *q = new Double_t[nquant];
@@ -2835,7 +2916,7 @@ Int_t XGCProcesSet::DoDataQualityControl(Int_t numdata, TTree **datatree,
    if (scmtree == 0) return errGetTree;
 
 // Get maximum number of pairs/cells
-   Int_t maxnumcells = this->MaxNumberCells(idxtree);
+   maxnumcells = this->MaxNumberCells(idxtree);
    if (maxnumcells <= 0) return errGeneral;
    Int_t maxlen = (maxnumcells + 1)*numdata;
 
@@ -2869,6 +2950,8 @@ Int_t XGCProcesSet::DoDataQualityControl(Int_t numdata, TTree **datatree,
    if (!(residu  = new (nothrow) Double_t[maxlen]))  {err = errInitMemory; goto cleanup;}
    if (!(weight  = new (nothrow) Double_t[maxlen]))  {err = errInitMemory; goto cleanup;}
    if (!(arrPM   = new (nothrow) Double_t[maxlen]))  {err = errInitMemory; goto cleanup;}
+   if (!(arrInt  = new (nothrow) Double_t[maxlen]))  {err = errInitMemory; goto cleanup;}
+   if (!(arrVar  = new (nothrow) Double_t[maxlen]))  {err = errInitMemory; goto cleanup;}
    if (!(quantL  = new (nothrow) Double_t[nquant]))  {err = errInitMemory; goto cleanup;}
    if (!(quantLE = new (nothrow) Double_t[nquant]))  {err = errInitMemory; goto cleanup;}
    if (!(quantSE = new (nothrow) Double_t[nquant]))  {err = errInitMemory; goto cleanup;}
@@ -2882,7 +2965,7 @@ Int_t XGCProcesSet::DoDataQualityControl(Int_t numdata, TTree **datatree,
    for (Int_t i=0; i<maxnumcells; i++) arrXY[i] = 0; 
    for (Int_t i=0; i<numdata; i++) level[i]  = sterr[i] = 0.0; 
    for (Int_t i=0; i<maxlen;  i++) {
-      residu[i] = arrPM[i] = 0.0;
+      residu[i] = arrPM[i] = arrInt[i] = arrVar[i] = 0.0;
       weight[i] = eINITWEIGHT;
    }//for_i
 
@@ -2898,6 +2981,23 @@ Int_t XGCProcesSet::DoDataQualityControl(Int_t numdata, TTree **datatree,
 // Calculate mask for expression
    err = fQualSelector->Calculate(size, dummy, dummy, arrMask);
    if (err != errNoErr) goto cleanup;
+
+// Get number of cells and number of units used for RNADegradation
+   err = this->MaxNumberUnitsCells(idxtree, unit, numunits, mskUnit, arrIndx, numdegunits, numdegcells);
+   if (err != errNoErr) goto cleanup;
+   // need to reset arrIndx
+   for (Int_t i=0; i<size; i++) arrIndx[i] = 0;
+
+//cout << "N: numdegunits = " << numdegunits << endl;
+//cout << "K: numdegcells = " << numdegcells << endl;
+
+   if (!(arrMNS = new (nothrow) Double_t[numdegcells])) {err = errInitMemory; goto cleanup;}
+   if (!(arrSES = new (nothrow) Double_t[numdegcells])) {err = errInitMemory; goto cleanup;}
+
+// here or above???? important for exon arrays???
+// Calculate mask for expression
+//??   err = fQualSelector->Calculate(size, dummy, dummy, arrMask);
+//??   if (err != errNoErr) goto cleanup;
 
 // Init branch addresses
    cell = new XGCCell*[numdata];
@@ -3044,7 +3144,7 @@ Int_t XGCProcesSet::DoDataQualityControl(Int_t numdata, TTree **datatree,
       if (file) tmptree[k]->SetMaxVirtualSize(bufsize);
    }//for_k
 
-// Calculate residuals
+// Calculate residuals, mean intensities and expression levels
    start = 0;
    end   = 0;
    idx   = 0;
@@ -3136,6 +3236,13 @@ Int_t XGCProcesSet::DoDataQualityControl(Int_t numdata, TTree **datatree,
          continue;
       }//if
 
+      // summarize mean intensity for RNA degradation
+      if (numatoms == numdegcells) {
+         for (Int_t i=0; i<p; i++) { 
+            arrInt[i] += TMath::Log2(arrPM[i]);
+         }//for_i
+      }//if
+
       // calculate residuals for PMs of current unitID
       if ((err = fQualifier->Calculate(numdata, level, sterr, residu, weight, 0))) break;
 
@@ -3203,6 +3310,88 @@ Int_t XGCProcesSet::DoDataQualityControl(Int_t numdata, TTree **datatree,
            << numunits << "> units...Finished." << endl;
    }//if
 
+// Calculate mean intensity for RNA degradation
+   for (Int_t k=0; k<numdata; k++) {
+      for (Int_t i=0; i<numdegcells; i++) { 
+         arrInt[i*numdata + k] = arrInt[i*numdata + k]/numdegunits;
+      }//for_i
+   }//for_k
+
+// Calculate standard deviation for RNA degradation
+   start = 0;
+   end   = 0;
+   idx   = 0;
+   entry = 0;
+   for (id=0; id<numunits; id++) { 
+      idxtree->GetEntry(id);
+
+      Int_t unitID   = unit->GetUnitID();
+      Int_t numcells = unit->GetNumCells();
+      // skip masked unit entries
+      if (mskUnit[id] <= 0) {
+         end += numcells;
+         start += numcells;
+         continue;
+      }//if
+
+      // create array to store PM values for all probes with current unitID
+      Int_t  numatoms = unit->GetNumAtoms();
+
+      // fill arrPM with PM values of current unitID
+      Int_t p = 0;
+      end += numcells;
+      for (Int_t j=start; j<end; j++) {
+         scmtree->GetEntry(j);
+
+         if ((Int_t)(scmleaf->GetValue()) != unitID) {
+            cerr << "Error: unitID is not equal to: " << unitID << endl;
+            err = errAbort;
+            goto cleanup;
+         }//if
+
+         x  = scheme->GetX();
+         y  = scheme->GetY();
+         ij = XY2Index(x, y, numcols);
+
+         if (arrMask[ij] == 1) {
+            if (p == 0) idx++;  //count number of units to be summarized
+
+            if (file == 0) {
+               for (Int_t k=0; k<numdata; k++) {
+                  arrPM[p] = table[k][arrIndx[ij]];
+                  p++;
+               }//for_k
+            } else {
+               for (Int_t k=0; k<numdata; k++) {
+                  tmptree[k]->GetEntry(entry);
+                  arrPM[p] = sort;
+                  p++;
+               }//for_k
+            }//if
+
+            entry++;
+         }//if
+      }//for_j
+      start += numcells;
+
+      // fill arrPM or continue if it is not filled
+      if ((err = fQualifier->SetArray(p, arrPM)) != errNoErr) {
+         continue;
+      }//if
+
+      // summarize for variance for RNA degradation
+      if (numatoms == numdegcells) {
+         Double_t tmp = 0.0;
+         for (Int_t i=0; i<p; i++) { 
+            tmp = TMath::Log2(arrPM[i]) - arrInt[i];
+            arrVar[i] += tmp * tmp;
+         }//for_i
+      }//if
+
+//??      if (exlevel > 0) {
+//??      }//if
+   }//for_id
+
 // Write trees to file 
    for (Int_t k=0; k<numdata; k++) {
       // quantiles for residual trees
@@ -3223,10 +3412,17 @@ Int_t XGCProcesSet::DoDataQualityControl(Int_t numdata, TTree **datatree,
       err = this->QualityQuantiles(exprtree[k], expr[k], nquant, q, quantL, quantSE, quantLE);
       if (err != errNoErr) goto cleanup;
 
+      // means and standard deviations for RNA degradation
+      for (Int_t i=0; i<numdegcells; i++) { 
+         arrMNS[i] = arrInt[i*numdata + k];
+         arrSES[i] = TMath::Sqrt(arrVar[i*numdata + k]/(numdegunits - 1))/TMath::Sqrt(numdegunits);
+      }//for_i
+
       // quality expression trees
       AddQualTreeInfo(exprtree[k], exprtree[k]->GetName(), fQualifier->GetOption(),
                       fQualifier->GetQualOption(), idx, quantL[0], quantL[nquant-1],
-                      nquant, q, quantL, quantSE, quantLE);
+                      nquant, q, quantL, quantSE, quantLE,
+                      numdegunits, numdegcells, arrMNS, arrSES);
 
       if ((err = WriteTree(exprtree[k], TObject::kOverwrite)) == errNoErr) {
 //TO DO??  (ev "Qual" instead of "Expr"??)
@@ -3257,6 +3453,10 @@ cleanup:
    if (quantSE) {delete [] quantSE; quantSE = 0;}
    if (quantLE) {delete [] quantLE; quantLE = 0;}
    if (quantL)  {delete [] quantL;  quantL  = 0;}
+   if (arrSES)  {delete [] arrSES;  arrSES  = 0;}
+   if (arrMNS)  {delete [] arrMNS;  arrMNS  = 0;}
+   if (arrVar)  {delete [] arrVar;  arrVar  = 0;}
+   if (arrInt)  {delete [] arrInt;  arrInt  = 0;}
    if (arrPM)   {delete [] arrPM;   arrPM   = 0;}
    if (weight)  {delete [] weight;  weight  = 0;}
    if (residu)  {delete [] residu;  residu  = 0;}
@@ -7377,49 +7577,61 @@ Int_t XGCProcesSet::ExportQualTreeInfo(Int_t n, TString *names, const char *varl
    if(kCS) cout << "------XGCProcesSet::ExportQualTreeInfo------" << endl;
 
 // Decompose varlist
-   Bool_t hasTreeName = kFALSE;
-   Bool_t hasSetName  = kFALSE;
-   Bool_t hasOption   = kFALSE;
-   Bool_t hasQualOpt  = kFALSE;
-   Bool_t hasNUnits   = kFALSE;
-   Bool_t hasMinLevel = kFALSE;
-   Bool_t hasMaxLevel = kFALSE;
-   Bool_t hasNQuant   = kFALSE;
-   Bool_t hasQuant    = kFALSE;
-   Bool_t hasLevel    = kFALSE;
-   Bool_t hasNUSE     = kFALSE;
-   Bool_t hasRLE      = kFALSE;
+   Bool_t hasTreeName  = kFALSE;
+   Bool_t hasSetName   = kFALSE;
+   Bool_t hasOption    = kFALSE;
+   Bool_t hasQualOpt   = kFALSE;
+   Bool_t hasNUnits    = kFALSE;
+   Bool_t hasMinLevel  = kFALSE;
+   Bool_t hasMaxLevel  = kFALSE;
+   Bool_t hasNQuant    = kFALSE;
+   Bool_t hasQuant     = kFALSE;
+   Bool_t hasLevel     = kFALSE;
+   Bool_t hasNUSE      = kFALSE;
+   Bool_t hasRLE       = kFALSE;
+   Bool_t hasNDegUnits = kFALSE;
+   Bool_t hasNCells    = kFALSE;
+   Bool_t hasMNS       = kFALSE;
+   Bool_t hasSES       = kFALSE;
 
    if (strcmp(varlist,"*")  == 0) {
-      hasTreeName = kTRUE;
-      hasSetName  = kTRUE;
-      hasOption   = kTRUE;
-      hasQualOpt  = kTRUE;
-      hasNUnits   = kTRUE;
-      hasMinLevel = kTRUE;
-      hasMaxLevel = kTRUE;
-      hasNQuant   = kTRUE;
-      hasQuant    = kTRUE;
-      hasLevel    = kTRUE;
-      hasNUSE     = kTRUE;
-      hasRLE      = kTRUE;
+      hasTreeName  = kTRUE;
+      hasSetName   = kTRUE;
+      hasOption    = kTRUE;
+      hasQualOpt   = kTRUE;
+      hasNUnits    = kTRUE;
+      hasMinLevel  = kTRUE;
+      hasMaxLevel  = kTRUE;
+      hasNQuant    = kTRUE;
+      hasQuant     = kTRUE;
+      hasLevel     = kTRUE;
+      hasNUSE      = kTRUE;
+      hasRLE       = kTRUE;
+      hasNDegUnits = kTRUE;
+      hasNCells    = kTRUE;
+      hasMNS       = kTRUE;
+      hasSES       = kTRUE;
    } else {
       char *name  = new char[strlen(varlist) + 1];
       char *dname = name;
       name = strtok(strcpy(name,varlist),":");
       while(name) {
-         if (strcmp(name,"fName")       == 0) {hasTreeName = kTRUE;}
-         if (strcmp(name,"fSetName")    == 0) {hasSetName  = kTRUE;}
-         if (strcmp(name,"fOption")     == 0) {hasOption   = kTRUE;}
-         if (strcmp(name,"fQualOption") == 0) {hasQualOpt  = kTRUE;}
-         if (strcmp(name,"fNUnits")     == 0) {hasNUnits   = kTRUE;}
-         if (strcmp(name,"fMinLevel")   == 0) {hasMinLevel = kTRUE;}
-         if (strcmp(name,"fMaxLevel")   == 0) {hasMaxLevel = kTRUE;}
-         if (strcmp(name,"fNQuantiles") == 0) {hasNQuant   = kTRUE;}
-         if (strcmp(name,"fQuantiles")  == 0) {hasQuant    = kTRUE;}
-         if (strcmp(name,"fLevelQuant") == 0) {hasLevel    = kTRUE;}
-         if (strcmp(name,"fNUSEQuant")  == 0) {hasNUSE     = kTRUE;}
-         if (strcmp(name,"fRLEQuant")   == 0) {hasRLE      = kTRUE;}
+         if (strcmp(name,"fName")       == 0) {hasTreeName  = kTRUE;}
+         if (strcmp(name,"fSetName")    == 0) {hasSetName   = kTRUE;}
+         if (strcmp(name,"fOption")     == 0) {hasOption    = kTRUE;}
+         if (strcmp(name,"fQualOption") == 0) {hasQualOpt   = kTRUE;}
+         if (strcmp(name,"fNUnits")     == 0) {hasNUnits    = kTRUE;}
+         if (strcmp(name,"fMinLevel")   == 0) {hasMinLevel  = kTRUE;}
+         if (strcmp(name,"fMaxLevel")   == 0) {hasMaxLevel  = kTRUE;}
+         if (strcmp(name,"fNQuantiles") == 0) {hasNQuant    = kTRUE;}
+         if (strcmp(name,"fQuantiles")  == 0) {hasQuant     = kTRUE;}
+         if (strcmp(name,"fLevelQuant") == 0) {hasLevel     = kTRUE;}
+         if (strcmp(name,"fNUSEQuant")  == 0) {hasNUSE      = kTRUE;}
+         if (strcmp(name,"fRLEQuant")   == 0) {hasRLE       = kTRUE;}
+         if (strcmp(name,"fNDegUnits")  == 0) {hasNDegUnits = kTRUE;}
+         if (strcmp(name,"fNCells")     == 0) {hasNCells    = kTRUE;}
+         if (strcmp(name,"fMNS")        == 0) {hasMNS       = kTRUE;}
+         if (strcmp(name,"fSES")        == 0) {hasSES       = kTRUE;}
          name = strtok(NULL, ":");
          if (name == 0) break;
       }//while
@@ -7572,6 +7784,54 @@ Int_t XGCProcesSet::ExportQualTreeInfo(Int_t n, TString *names, const char *varl
       }//for_i
 
       delete [] rle;
+    }//if
+
+   if (hasNDegUnits) {
+      output << "NumDegUnits";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNDegUnits"));
+      output << endl;
+   }//if
+
+   if (hasNCells) {
+      output << "NumCells";
+      for (Int_t k=0; k<n; k++) output << sep << (Int_t)(info[k]->GetValue("fNCells"));
+      output << endl;
+   }//if
+
+   if (hasMNS) {
+      Double_t **mns = new Double_t*[n];
+      for (Int_t k=0; k<n; k++) {
+         mns[k] = info[k]->GetMNS();
+      }//for_k
+
+      Int_t ncells = (Int_t)(info[0]->GetValue("fNCells"));
+      for (Int_t i=0; i<ncells; i++) {
+         TString str; str.Form("MNS_%d", i);
+
+         output << str.Data();
+         for (Int_t k=0; k<n; k++) output << sep << mns[k][i];
+         output << endl;
+      }//for_i
+
+      delete [] mns;
+    }//if
+
+   if (hasSES) {
+      Double_t **ses = new Double_t*[n];
+      for (Int_t k=0; k<n; k++) {
+         ses[k] = info[k]->GetSES();
+      }//for_k
+
+      Int_t ncells = (Int_t)(info[0]->GetValue("fNCells"));
+      for (Int_t i=0; i<ncells; i++) {
+         TString str; str.Form("SES_%d", i);
+
+         output << str.Data();
+         for (Int_t k=0; k<n; k++) output << sep << ses[k][i];
+         output << endl;
+      }//for_i
+
+      delete [] ses;
     }//if
 
 // Cleanup
@@ -7770,6 +8030,48 @@ Int_t XGCProcesSet::MaxNumberCells(TTree *idxtree)
 
    return 2*(Int_t)idxinfo->GetValue("fMaxNPairs");
 }//MaxNumberCells
+
+//______________________________________________________________________________
+Int_t XGCProcesSet::MaxNumberUnitsCells(TTree *idxtree, XGCUnit *unit, Int_t numunits,
+                    Int_t *msk, Int_t *index, Int_t &numdegunits, Int_t &numdegcells)
+{
+   // Find maximal number of cells with identical number of cells and return:
+   // numdegcells: number of cells per probeset
+   // numdegunits: number of units with numdegcells
+   if(kCS) cout << "------XGCProcesSet::MaxNumberUnitsCells------" << endl;
+
+   Int_t err = errNoErr;
+
+   Int_t idx = 0;
+   for (Int_t id=0; id<numunits; id++) { 
+      idxtree->GetEntry(id);
+
+      // skip masked unit entries
+      if (msk[id] <= 0) continue;
+
+      index[idx++] = unit->GetNumAtoms();
+   }//for_id
+
+   Int_t max = TMath::MaxElement(idx, index);
+
+   Int_t *maxnum = 0;
+   if (!(maxnum = new (nothrow) Int_t[max])) return errInitMemory;
+   for (Int_t i=0; i<max; i++) maxnum[i] = 0;
+
+   for (Int_t i=0; i<max; i++) {
+      for (Int_t j=0; j<idx; j++) {
+         if (index[j] == i+1) maxnum[i]++;
+      }//for_j
+   }//for_i
+
+   numdegunits = TMath::MaxElement(max, maxnum); 
+   numdegcells = TMath::LocMax(max, maxnum) + 1;
+
+// Cleanup
+   if (maxnum) {delete [] maxnum; maxnum = 0;}
+
+   return err;
+}//MaxNumberUnitsCells
 
 //______________________________________________________________________________
 TTree *XGCProcesSet::SchemeTree(XAlgorithm *algorithm, void *scheme, TLeaf **scmleaf)

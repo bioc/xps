@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 02/20/2011
+// File created: 08/05/2002                          last modified: 03/27/2011
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -162,6 +162,10 @@ class XQualityTreeInfo: public XExpressionTreeInfo {
    protected:
       Double_t  *fNUSEQuant;    //[fNQuantiles] Array of residual quantiles
       Double_t  *fRLEQuant;     //[fNQuantiles] Array of weight quantiles
+      Int_t      fNDegUnits;    //number of units for RNA degradation probesets
+      Int_t      fNCells;       //number of cells for RNA degradation probesets
+      Double_t  *fMNS;          //[fNCells] Array of average intensities
+      Double_t  *fSES;          //[fNCells] Array of standard errors
       TString    fQualOption;   //Quality option
 
    public :
@@ -169,13 +173,18 @@ class XQualityTreeInfo: public XExpressionTreeInfo {
       XQualityTreeInfo(const char *name, const char *title);
       virtual ~XQualityTreeInfo();
 
-      virtual void AddQualInfo(Int_t nquant, Double_t *quantSE, Double_t *quantLE);
+      virtual void     AddQualInfo(Int_t nquant, Double_t *quantSE, Double_t *quantLE);
+      virtual void     AddRNADegInfo(Int_t ndegunits, Int_t ncells,
+                          Double_t *mns, Double_t *ses);
+      virtual Double_t GetValue(const char *name);
 
       void      SetQualOption(Option_t *option) {fQualOption = option;}
       Option_t *GetQualOption()           const {return fQualOption.Data();}
 
       Double_t *GetNUSEQuantiles();
       Double_t *GetRLEQuantiles();
+      Double_t *GetMNS();
+      Double_t *GetSES();
 
       ClassDef(XQualityTreeInfo,1) //QualityTreeInfo
 };
@@ -330,7 +339,8 @@ class XPreProcesSet: public XProcesSet {
       virtual void  AddQualTreeInfo(TTree *tree, const char *name, Option_t *option,
                        Option_t *qualopt, Int_t nunits, Double_t min, Double_t max,
                        Int_t nquant, Double_t *q, Double_t *quantL, Double_t *quantSE,
-                       Double_t *quantLE);
+                       Double_t *quantLE, Int_t ndegunits, Int_t ncells, Double_t *mns,
+                       Double_t *ses);
       virtual void  AddResdTreeInfo(TTree *tree, const char *name, Option_t *option,
                        Option_t *qualopt, Int_t nrows, Int_t ncols, Int_t nquant,
                        Double_t *q, Double_t *quantR, Double_t *quantW);
@@ -438,6 +448,8 @@ class XGCProcesSet: public XPreProcesSet {
                         Int_t msk, Double_t bgrd, Double_t bgdev, Int_t npix);
 
       virtual Int_t  MaxNumberCells(TTree *idxtree);
+      virtual Int_t  MaxNumberUnitsCells(TTree *idxtree, XGCUnit *unit, Int_t numunits,
+                        Int_t *msk, Int_t *index, Int_t &numdegunits, Int_t &numdegcells);
       virtual TTree *SchemeTree(XAlgorithm *algorithm, void *scheme, TLeaf **scmleaf);
       virtual TTree *UnitTree(XAlgorithm *algorithm, void *unit, Int_t &numunits);
 
