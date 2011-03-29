@@ -13,7 +13,7 @@ AffyRNAdeg(xps.data, treename = "*", qualopt = "raw", log.it = TRUE)
 
 summaryAffyRNAdeg(rna.deg, signif.digits=3)
 
-plotAffyRNAdeg(rna.deg, transform = "shift.scale", cols = NULL, ...)
+plotAffyRNAdeg(rna.deg, transform = "shift.scale", cols = NULL, add.legend = FALSE, ...)
 
 xpsRNAdeg(object, ...)
 }
@@ -28,6 +28,8 @@ xpsRNAdeg(object, ...)
   \item{transform}{transform data before plotting, one of "shift.scale",
    "shift.only", "none". }
   \item{cols}{vector of colors for plot, length is number of trees.}
+  \item{add.legend}{logical or integer, if TRUE or larger than zero then
+   a legend with the tree names will be drawn.}
   \item{object}{object of class \code{QualTreeSet}.}
   \item{\dots}{optional arguments to be passed to \code{plotAffyRNAdeg}.}
 }
@@ -48,6 +50,10 @@ xpsRNAdeg(object, ...)
  for each array while option "shift" staggers the plots for individual arrays
  vertically to make the display easier to read, and option "scale" normalizes
  the averaged intensities so that the standard deviation is equal to one.
+
+ Setting parameter \code{add.legend = TRUE} will add a legend containing all
+ tree names to the plot, while setting e.g. \code{add.legend = 6} will only
+ show the first 6 tree names.
 }
 \value{
   \code{AffyRNAdeg} returns a \code{list} with following components:

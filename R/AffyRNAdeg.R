@@ -57,14 +57,15 @@ function (rna.deg, signif.digits = 3)
 
 "plotAffyRNAdeg" <-
 function (rna.deg,
-          transform = "shift.scale",
-          cols      = NULL,
+          transform  = "shift.scale",
+          cols       = NULL,
+          add.legend = FALSE,
           ...)
 {
-#   if (debug.xps()) print("------plotAffyRNAdeg------")
+   if (debug.xps()) print("------plotAffyRNAdeg------")
 
-   if (!is.element(transform,c("shift.scale","shift.only","neither"))) {
-      stop("transform must be one of <shift.scale, shift.only, neither>");
+   if (!is.element(transform,c("shift.scale","shift.only","none"))) {
+      stop("transform must be one of <shift.scale, shift.only, none>");
    }#if
 
    ylab <- "Mean Intensity";
@@ -86,7 +87,15 @@ function (rna.deg,
       ylab <- paste(ylab, ": shifted");
    }#if
 
-   if (is.null(cols)) cols = rep(4, nrow(mns));
+   if (is.null(cols)) {
+      cols <- c("blue3", "blue2", "blue1", "steelblue3", "steelblue2", "steelblue1",
+                "lightblue3", "lightblue2", "lightblue1", "gray60",
+                "red3", "red2", "red1", "orange3", "orange2", "orange1",
+                "yellow3", "yellow2", "yellow1", "black");
+      cols <-rep(cols, (floor(nrow(mns)/length(cols)) + 1));
+      lty  <- unlist(lapply(1:5,function(x)rep(x,20)));
+      lty  <- rep(lty, (floor(nrow(mns)/(5*length(cols))) + 1));
+   }#if
 
    plot(-2, -1,
         pch = "",
@@ -103,6 +112,22 @@ function (rna.deg,
    for (i in 1:nrow(mns)) {
       lines(0:((ncol(mns) - 1)), mns[i, ], col=cols[i]);
    }#for
+
+   if (add.legend) {
+      if (is.numeric(add.legend)) {
+         n <- min(add.legend, nrow(mns));
+      } else {
+         n <- nrow(mns);
+      }#if
+
+      legend(x      = "topleft",
+             legend = namePart(rna.deg$sample.names)[1:n],
+             lty    = lty[1:n],
+             pt.bg  = "white",
+             col    = cols[1:n],
+             cex    = 0.6
+            );
+   }#if
 }#plotAffyRNAdeg
 
 #------------------------------------------------------------------------------#
