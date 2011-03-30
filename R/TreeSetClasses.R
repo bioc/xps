@@ -257,6 +257,8 @@ setGeneric("attachExpr",   function(object, ...)        standardGeneric("attachE
 setGeneric("removeExpr",   function(object)             standardGeneric("removeExpr"));
 setGeneric("xpsPreFilter", function(object, ...)        standardGeneric("xpsPreFilter"));
 setGeneric("xpsUniFilter", function(object, ...)        standardGeneric("xpsUniFilter"));
+setGeneric("corplot",      function(x, ...)             standardGeneric("corplot"));
+setGeneric("madplot",      function(x, ...)             standardGeneric("madplot"));
 setGeneric("mvaplot",      function(x, ...)             standardGeneric("mvaplot"));
 setGeneric("nuseplot",     function(x, ...)             standardGeneric("nuseplot"));
 setGeneric("rleplot",      function(x, ...)             standardGeneric("rleplot"));

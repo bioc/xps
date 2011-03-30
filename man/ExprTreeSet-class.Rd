@@ -3,12 +3,16 @@
 \alias{ExprTreeSet-class}
 \alias{ExprTreeSet}
 \alias{attachExpr,ExprTreeSet-method}
+\alias{corplot,ExprTreeSet-method}
+\alias{corplot}
 \alias{exprType,ExprTreeSet-method}
 \alias{exprType}
 \alias{exprType<-,ExprTreeSet,character-method}
 \alias{exprType<-}
 \alias{exprs,ExprTreeSet-method}
 \alias{exprs<-,ExprTreeSet,data.frame-method}
+\alias{madplot,ExprTreeSet-method}
+\alias{madplot}
 \alias{mvaplot,ExprTreeSet-method}
 \alias{normType,ExprTreeSet-method}
 \alias{normType}
@@ -67,10 +71,12 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
   \describe{
     \item{attachExpr}{\code{signature(object = "ExprTreeSet")}: exports expression trees from 
      \code{\link{ROOT}} expression file and and saves as data.frame \code{data}.}
+    \item{corplot}{\code{signature(x = "ExprTreeSet")}: creates a correlation image plot.}
     \item{exprType}{\code{signature(object = "ExprTreeSet")}: extracts slot \code{exprtype}.}
     \item{exprType<-}{\code{signature(object = "ExprTreeSet", value = "character")}: replaces slot \code{exprtype}.}
     \item{exprs}{\code{signature(object = "ExprTreeSet")}: extracts the expression data.frame.}
     \item{exprs<-}{\code{signature(object = "ExprTreeSet", value = "data.frame")}: replaces the expression data.frame.}
+    \item{madplot}{\code{signature(x = "ExprTreeSet")}: creates an MAD image plot.}
     \item{mvaplot}{\code{signature(x = "ExprTreeSet")}: creates an MvA-plot.}
     \item{normType}{\code{signature(object = "ExprTreeSet")}: extracts slot \code{normtype}.}
     \item{normType<-}{\code{signature(object = "ExprTreeSet", value = "character")}: replaces slot \code{normtype}.}

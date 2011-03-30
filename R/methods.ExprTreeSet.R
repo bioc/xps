@@ -17,6 +17,8 @@
 # xpsNormalize:
 # xpsPreFilter:
 # xpsUniFilter:
+# corplot:
+# madplot:
 # mvaplot:
 # nuseplot:
 # rleplot:
@@ -1151,6 +1153,136 @@ function(object,
 }#unifilter.ExprTreeSet
 
 setMethod("xpsUniFilter", "ExprTreeSet", unifilter.ExprTreeSet);
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("corplot", signature(x="ExprTreeSet"),
+   function(x,
+            which      = "UnitName",
+            transfo    = log2,
+            method     = "spearman",
+            col        = NULL,
+            names      = "namepart",
+            bmar       = NULL,
+            add.legend = FALSE,
+            ...) 
+   {
+      if (debug.xps()) print("------corplot.ExprTreeSet------")
+
+      m <- validData(x, which=which);
+      if (is.function(transfo)) m <- transfo(m);
+
+      if (is.null(names))              names <- colnames(m)
+      else if (names[1] == "namepart") names <- namePart(colnames(m))
+      else                             m     <- m[, names, drop=F];
+
+      m <- cor(m, method = method);
+
+      if (is.null(col)) col <- heat.colors(12);
+
+      if (is.null(bmar)) bmar <- adjustXLabMargins(names, bottom=6, cex=1.0);
+
+      oldpar <- par(no.readonly=TRUE, mar=c(bmar$b, bmar$b, 3, 1));
+      if (add.legend) {
+         layout(matrix(c(1, 2), 1, 2, byrow=TRUE), widths=c(7,1), heights=8, TRUE);
+         par(mar = c(bmar$b, bmar$b, 3, 0));
+      }#if
+
+      ## plot image
+      graphics::image(x    = 1:ncol(m),
+                      y    = 1:ncol(m),
+#                      z    = m,
+                      z    = m[order(m[,1], decreasing = TRUE),],
+                      xlab = "",
+                      ylab = "",
+                      zlim = range(m, na.rm=TRUE),
+                      main = "Array-Array Expression Level Correlation",
+                      col  = col,
+                      axes = FALSE);
+      box();
+      axis(1, at=1:ncol(m), labels=names, las=3);
+      axis(2, at=1:ncol(m), labels=names, las=2);
+
+      if (add.legend) {
+         par(mar = c(bmar$b, 1, 3, 3));
+         y <- pretty(range(m, na.rm=TRUE), 10);
+         m <- matrix(y, nrow=1, ncol=length(y));
+         graphics::image(m, xaxt="n", yaxt="n", col=col);
+         axis(4, label=y, at=seq(0, 1, by=(1/(length(y)-1))), las=2, cex.axis=0.8);
+         layout(1);
+         par(mar = c(5, 4, 4, 2) + 0.1);
+      }#if
+
+      par(oldpar);
+   }
+)#corplot
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("madplot", signature(x="ExprTreeSet"),
+   function(x,
+            which      = "UnitName",
+            transfo    = log2,
+            col        = NULL,
+            names      = "namepart",
+            bmar       = NULL,
+            add.legend = FALSE,
+            ...) 
+   {
+      if (debug.xps()) print("------madplot.ExprTreeSet------")
+
+      m <- validData(x, which=which);
+      if (is.function(transfo)) m <- transfo(m);
+
+      if (is.null(names))              names <- colnames(m)
+      else if (names[1] == "namepart") names <- namePart(colnames(m))
+      else                             m     <- m[, names, drop=F];
+
+      m <- distMAD(m);
+
+      ## color adapted from brewer.pal(9, "RdPu")
+      if (is.null(col)) col <- colorRampPalette(rgb(c(255,253,252,250,247,221,174,122,73),
+                                                    c(247,224,197,159,104,52,1,1,0),
+                                                    c(243,221,192,181,161,151,126,119,106),
+                                                    maxColorValue=255)
+                                               )(256);
+
+      if (is.null(bmar)) bmar <- adjustXLabMargins(names, bottom=6, cex=1.0);
+
+      oldpar <- par(no.readonly=TRUE, mar=c(bmar$b, bmar$b, 3, 1));
+      if (add.legend) {
+         layout(matrix(c(1, 2), 1, 2, byrow=TRUE), widths=c(7,1), heights=8, TRUE);
+         par(mar = c(bmar$b, bmar$b, 3, 0));
+      }#if
+
+      ## plot image
+      graphics::image(x    = 1:ncol(m),
+                      y    = 1:ncol(m),
+#                      z    = m,
+                      z    = m[order(m[,1], decreasing = TRUE),],
+                      xlab = "",
+                      ylab = "",
+                      zlim = range(m, na.rm=TRUE),
+                      main = "",
+                      col  = col,
+                      axes = FALSE);
+      box();
+      axis(1, at=1:ncol(m), labels=names, las=3);
+      axis(2, at=1:ncol(m), labels=names, las=2);
+
+      if (add.legend) {
+         par(mar = c(bmar$b, 1, 3, 3));
+         y <- pretty(range(m, na.rm=TRUE), 10);
+         m <- matrix(y, nrow=1, ncol=length(y));
+         graphics::image(m, xaxt="n", yaxt="n", col=col);
+         axis(4, label=y, at=seq(0, 1, by=(1/(length(y)-1))), las=2, cex.axis=0.8);
+         layout(1);
+         par(mar = c(5, 4, 4, 2) + 0.1);
+      }#if
+
+      par(oldpar);
+   }
+)#madplot
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

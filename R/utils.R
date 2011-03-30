@@ -31,6 +31,7 @@
 # type2Exten:
 # listTreeNames:
 # circle:
+# distMAD:
 # plotDensity:
 # pseudoPalette: 
 # adjustXLabMargins:
@@ -750,6 +751,26 @@ type2Exten <- function(type, datatype) {
    lines(x,  y, col=col, lty=lty, ...);
    lines(x, -y, col=col, lty=lty, ...);
 }#circle
+
+#------------------------------------------------------------------------------#
+# distMAD: calculate matrix of the mad of all pairwise differences of columns of x
+# adapted from package genefilter: dist2.R
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+"distMAD" <- function(x) {
+   m <- matrix(0, ncol=ncol(x), nrow=ncol(x));
+   rownames(m) <- colnames(x);
+   colnames(m) <- colnames(x);
+
+   if (ncol(x) == 1) return(m);
+
+   for(j in 2:ncol(x)) {
+      for(i in 1:(j-1)) {
+         m[i, j] = m[j, i] = mad(x[,i] - x[,j]);
+      }#for_i
+   }#for_j
+
+   return(m);
+}#distMAD
 
 #------------------------------------------------------------------------------#
 # plotDensity: function to plot density

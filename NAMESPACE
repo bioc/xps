@@ -118,10 +118,12 @@ exportMethods("addData",
 
 ## class ExprTreeSet
 exportMethods("attachExpr",
+              "corplot",
               "exprs",
               "exprs<-",
               "exprType",
               "exprType<-",
+              "madplot",
               "mvaplot",
               "normType",
               "normType<-",
