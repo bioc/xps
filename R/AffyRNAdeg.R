@@ -59,10 +59,41 @@ function (rna.deg, signif.digits = 3)
 function (rna.deg,
           transform  = "shift.scale",
           cols       = NULL,
+          summary    = FALSE,
           add.legend = FALSE,
           ...)
 {
    if (debug.xps()) print("------plotAffyRNAdeg------")
+
+   names <- rna.deg$sample.names;
+   if (is.null(cols)) {
+      cols <- c("blue3", "blue2", "blue1", "steelblue3", "steelblue2", "steelblue1",
+                "lightblue3", "lightblue2", "lightblue1", "gray60",
+                "red3", "red2", "red1", "orange3", "orange2", "orange1",
+                "yellow3", "yellow2", "yellow1", "black");
+      cols <-rep(cols, (floor(length(names)/length(cols)) + 1));
+      lty  <- unlist(lapply(1:5,function(x)rep(x,20)));
+      lty  <- rep(lty, (floor(length(names)/(5*length(cols))) + 1));
+   }#if
+
+   if (summary) {
+      bmar   <- adjustXLabMargins(names, bottom=6, cex=1.0);
+      oldpar <- par(no.readonly=TRUE, mar=c(bmar$b, 5, 3, 1));
+      slope  <- t(summaryAffyRNAdeg(rna.deg)["slope",,drop=FALSE]);
+
+      plot(slope,
+           col  = cols[1:length(names)],
+           las  = 2,
+           xaxt = "n",
+           xlab = "",
+           ylab = "Slope",
+           main = "RNA degradation plot: Slope",
+           ...);
+      axis(1, at=1:length(names), labels=namePart(names), las=2);
+
+      par(oldpar);
+      return();
+   }#if
 
    if (!is.element(transform,c("shift.scale","shift.only","none"))) {
       stop("transform must be one of <shift.scale, shift.only, none>");
@@ -85,16 +116,6 @@ function (rna.deg,
       mns <- sweep(mns, 1, 1:nrow(mns), "+");
 
       ylab <- paste(ylab, ": shifted");
-   }#if
-
-   if (is.null(cols)) {
-      cols <- c("blue3", "blue2", "blue1", "steelblue3", "steelblue2", "steelblue1",
-                "lightblue3", "lightblue2", "lightblue1", "gray60",
-                "red3", "red2", "red1", "orange3", "orange2", "orange1",
-                "yellow3", "yellow2", "yellow1", "black");
-      cols <-rep(cols, (floor(nrow(mns)/length(cols)) + 1));
-      lty  <- unlist(lapply(1:5,function(x)rep(x,20)));
-      lty  <- rep(lty, (floor(nrow(mns)/(5*length(cols))) + 1));
    }#if
 
    plot(-2, -1,
@@ -121,7 +142,7 @@ function (rna.deg,
       }#if
 
       legend(x      = "topleft",
-             legend = namePart(rna.deg$sample.names)[1:n],
+             legend = namePart(names)[1:n],
              lty    = lty[1:n],
              pt.bg  = "white",
              col    = cols[1:n],

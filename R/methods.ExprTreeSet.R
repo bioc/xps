@@ -21,6 +21,7 @@
 # madplot:
 # mvaplot:
 # nuseplot:
+# pcaplot:
 # rleplot:
 #==============================================================================#
 
@@ -1163,6 +1164,8 @@ setMethod("corplot", signature(x="ExprTreeSet"),
             method     = "spearman",
             col        = NULL,
             names      = "namepart",
+            sort       = FALSE,
+            reverse    = TRUE,
             bmar       = NULL,
             add.legend = FALSE,
             ...) 
@@ -1177,6 +1180,8 @@ setMethod("corplot", signature(x="ExprTreeSet"),
       else                             m     <- m[, names, drop=F];
 
       m <- cor(m, method = method);
+      if (reverse) 1 - m;
+      if (sort)    m[order(m[,1], decreasing = TRUE),];
 
       if (is.null(col)) col <- heat.colors(12);
 
@@ -1191,8 +1196,7 @@ setMethod("corplot", signature(x="ExprTreeSet"),
       ## plot image
       graphics::image(x    = 1:ncol(m),
                       y    = 1:ncol(m),
-#                      z    = m,
-                      z    = m[order(m[,1], decreasing = TRUE),],
+                      z    = m,
                       xlab = "",
                       ylab = "",
                       zlim = range(m, na.rm=TRUE),
@@ -1225,6 +1229,7 @@ setMethod("madplot", signature(x="ExprTreeSet"),
             transfo    = log2,
             col        = NULL,
             names      = "namepart",
+            sort       = FALSE,
             bmar       = NULL,
             add.legend = FALSE,
             ...) 
@@ -1239,6 +1244,7 @@ setMethod("madplot", signature(x="ExprTreeSet"),
       else                             m     <- m[, names, drop=F];
 
       m <- distMAD(m);
+      if (sort) m[order(m[,1], decreasing = TRUE),];
 
       ## color adapted from brewer.pal(9, "RdPu")
       if (is.null(col)) col <- colorRampPalette(rgb(c(255,253,252,250,247,221,174,122,73),
@@ -1258,8 +1264,7 @@ setMethod("madplot", signature(x="ExprTreeSet"),
       ## plot image
       graphics::image(x    = 1:ncol(m),
                       y    = 1:ncol(m),
-#                      z    = m,
-                      z    = m[order(m[,1], decreasing = TRUE),],
+                      z    = m,
                       xlab = "",
                       ylab = "",
                       zlim = range(m, na.rm=TRUE),
@@ -1366,6 +1371,41 @@ setMethod("nuseplot", signature(x="ExprTreeSet"),
       axis(side=1, outer=F, at=1:length(names), labels=names, ...);
    }
 )#nuseplot
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("pcaplot", signature(x="ExprTreeSet"),
+   function(x,
+            which   = "UnitName",
+            transfo = log2,
+            method  = "pearson",
+            sort    = FALSE,
+            col     = NULL,
+            names   = "namepart",
+            as.list = FALSE,
+            ...) 
+   {
+      if (debug.xps()) print("------pcaplot.ExprTreeSet------")
+
+      m <- validData(x, which=which);
+      if (is.function(transfo)) m <- transfo(m);
+
+      if (is.null(names))              names <- colnames(m)
+      else if (names[1] == "namepart") names <- namePart(colnames(m))
+      else                             m     <- m[, names, drop=F];
+
+      ## PCA
+      if (method == "none") pca <- prcomp(m)
+      else                  pca <- prcomp((1 - cor(m, method = method)));
+
+      ## plot PCA
+      plot(pca[[2]][,1:2],
+           main = "Principal Components Plot",
+           ...);
+
+      if (as.list) return(pca);
+   }
+)#pcaplot
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

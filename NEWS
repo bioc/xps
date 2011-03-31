@@ -2,9 +2,14 @@
 		CHANGES IN R VERSION 2.13.0
 
 
+VERSION xps-1.11.9
+
+    o add method: pcaplot()
+    o update method plotAffyRNAdeg()
+
 VERSION xps-1.11.8
 
-    o add methods: corplot()(), madplot()
+    o add methods: corplot(), madplot()
 
 VERSION xps-1.11.7
 
