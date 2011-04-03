@@ -15,6 +15,10 @@ function(x,
 {
    if (debug.xps()) print("------image.dev------")
 
+   ## this function will be removed
+   msg <- "this function will be removed, please use plotImage() instead.";
+   .Deprecated("plotImage", package="xps", msg);
+
    ## check for correct class
    if (!is (x, "DataTreeSet")) {
       stop(paste(sQuote("x"), "is not  class", sQuote("DataTreeSet")));

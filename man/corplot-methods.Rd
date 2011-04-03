@@ -27,6 +27,7 @@ corplot(x,
   \item{which}{type of probes to be used, for details see \code{\link{validData}}.}
   \item{transfo}{a valid function to transform the data, usually \dQuote{log2}, or \dQuote{0}.}
   \item{method}{a character string indicating which correlation coefficient is to be computed.}
+  \item{col}{vector of colors for plot, length is number of samples.}
   \item{names}{optional vector of sample names.}
   \item{sort}{logical, if TRUE the correlation matrix will be sorted decreasingly.}
   \item{reverse}{logical, if TRUE the correlation matrix will be replaced by \code{1 - cor()}.}

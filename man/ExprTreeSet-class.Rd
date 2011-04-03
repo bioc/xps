@@ -18,7 +18,6 @@
 \alias{normType<-}
 \alias{nuseplot,ExprTreeSet-method}
 \alias{pcaplot,ExprTreeSet-method}
-\alias{pcaplot}
 \alias{rleplot,ExprTreeSet-method}
 \alias{removeExpr,ExprTreeSet-method}
 \alias{se.exprs,ExprTreeSet-method}

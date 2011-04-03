@@ -261,7 +261,7 @@ setGeneric("corplot",      function(x, ...)             standardGeneric("corplot
 setGeneric("madplot",      function(x, ...)             standardGeneric("madplot"));
 setGeneric("mvaplot",      function(x, ...)             standardGeneric("mvaplot"));
 setGeneric("nuseplot",     function(x, ...)             standardGeneric("nuseplot"));
-setGeneric("pcaplot",      function(x, ...)             standardGeneric("rleplot"));
+setGeneric("pcaplot",      function(x, ...)             standardGeneric("pcaplot"));
 setGeneric("rleplot",      function(x, ...)             standardGeneric("rleplot"));
 
 

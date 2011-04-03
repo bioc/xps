@@ -446,7 +446,7 @@ setMethod("image", signature(x="ProcesSet"),
    function(x,
             bg         = FALSE,
             transfo    = log,
-            col        = gray((0:64)/64),
+            col        = NULL,
             names      = "namepart",
             xlab       = "",
             ylab       = "",
@@ -485,6 +485,9 @@ setMethod("image", signature(x="ProcesSet"),
          names <- unlist(treenames[ok]);
       }#if
 
+      ## colors
+      if (is.null(col)) col = gray((0:64)/64);
+
       ntrees <- length(names);
       nrows  <- nrows(schemeSet(x));
       ncols  <- ncols(schemeSet(x));
@@ -503,9 +506,10 @@ setMethod("image", signature(x="ProcesSet"),
          m  <- m[,nrows:1];
          if (is.function(transfo)) m <- transfo(m);
 
+         par(mar = c(1, 1, 2, 1));
          if (add.legend) {
             layout(matrix(c(1, 2), 1, 2, byrow=TRUE), widths=c(7,1), heights=8, TRUE);
-            par(mar = c(4, 4, 5, 0));
+            par(mar = c(1, 1, 2, 0));
          }#if
 
          graphics::image(as.matrix(m),
@@ -529,9 +533,11 @@ setMethod("image", signature(x="ProcesSet"),
             y <- pretty(c(lo, hi), 10);
             m <- matrix(y, nrow=1, ncol=length(y));
 
-            par(mar = c(4, 1, 5, 3));
+            par(mar = c(1, 1, 2, 3));
             graphics::image(m, xaxt="n", yaxt="n", col=col);
             axis(4, label=y, at=seq(0, 1, by=(1/(length(y)-1))), las=2, cex.axis=0.8);
+            layout(1);
+            par(mar = c(1, 1, 2, 1));
          }#if
       }#for
 

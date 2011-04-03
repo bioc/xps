@@ -8,7 +8,7 @@
 
 \emph{Usage}
 
-\code{image(x, bg = FALSE, transfo = log2, col = gray((0:64)/64), names = "namepart", xlab = "", ylab = "", add.legend = FALSE, ...)}
+\code{image(x, bg = FALSE, transfo = log2, col = NULL, names = "namepart", xlab = "", ylab = "", add.legend = FALSE, ...)}
 
 \code{image(x, type = c("resids", "pos.resids", "neg.resids", "sign.resids", "weights"), qualopt = c("raw", "adjusted", "normalized"), transfo = log2, col = NULL, names = "namepart", xlab = "", ylab = "", add.legend = FALSE, ...)}
 }
@@ -52,7 +52,7 @@
  data from these trees only will displayed as image(s).
 }
 \author{Christian Stratowa}
-\seealso{\code{\link{image.dev}}}
+\seealso{\code{\link{plotImage}}}
 \examples{
 \dontrun{
 ## images of raw intensities as imported using import.data()

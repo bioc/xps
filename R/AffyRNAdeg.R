@@ -58,7 +58,7 @@ function (rna.deg, signif.digits = 3)
 "plotAffyRNAdeg" <-
 function (rna.deg,
           transform  = "shift.scale",
-          cols       = NULL,
+          col        = NULL,
           summary    = FALSE,
           add.legend = FALSE,
           ...)
@@ -66,14 +66,14 @@ function (rna.deg,
    if (debug.xps()) print("------plotAffyRNAdeg------")
 
    names <- rna.deg$sample.names;
-   if (is.null(cols)) {
-      cols <- c("blue3", "blue2", "blue1", "steelblue3", "steelblue2", "steelblue1",
-                "lightblue3", "lightblue2", "lightblue1", "gray60",
-                "red3", "red2", "red1", "orange3", "orange2", "orange1",
-                "yellow3", "yellow2", "yellow1", "black");
-      cols <-rep(cols, (floor(length(names)/length(cols)) + 1));
-      lty  <- unlist(lapply(1:5,function(x)rep(x,20)));
-      lty  <- rep(lty, (floor(length(names)/(5*length(cols))) + 1));
+   if (is.null(col)) {
+      col <- c("blue3", "blue2", "blue1", "steelblue3", "steelblue2", "steelblue1",
+               "lightblue3", "lightblue2", "lightblue1", "gray60",
+               "red3", "red2", "red1", "orange3", "orange2", "orange1",
+               "yellow3", "yellow2", "yellow1", "black");
+      col <-rep(col, (floor(length(names)/length(col)) + 1));
+      lty <- unlist(lapply(1:5,function(x)rep(x,20)));
+      lty <- rep(lty, (floor(length(names)/(5*length(col))) + 1));
    }#if
 
    if (summary) {
@@ -82,7 +82,7 @@ function (rna.deg,
       slope  <- t(summaryAffyRNAdeg(rna.deg)["slope",,drop=FALSE]);
 
       plot(slope,
-           col  = cols[1:length(names)],
+           col  = col[1:length(names)],
            las  = 2,
            xaxt = "n",
            xlab = "",
@@ -131,7 +131,7 @@ function (rna.deg,
    axis(2);
 
    for (i in 1:nrow(mns)) {
-      lines(0:((ncol(mns) - 1)), mns[i, ], col=cols[i]);
+      lines(0:((ncol(mns) - 1)), mns[i, ], col=col[i]);
    }#for
 
    if (add.legend) {
@@ -145,7 +145,7 @@ function (rna.deg,
              legend = namePart(names)[1:n],
              lty    = lty[1:n],
              pt.bg  = "white",
-             col    = cols[1:n],
+             col    = col[1:n],
              cex    = 0.6
             );
    }#if

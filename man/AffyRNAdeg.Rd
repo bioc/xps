@@ -13,7 +13,7 @@ AffyRNAdeg(xps.data, treename = "*", qualopt = "raw", log.it = TRUE)
 
 summaryAffyRNAdeg(rna.deg, signif.digits=3)
 
-plotAffyRNAdeg(rna.deg, transform = "shift.scale", cols = NULL, summary = FALSE, add.legend = FALSE, ...)
+plotAffyRNAdeg(rna.deg, transform = "shift.scale", col = NULL, summary = FALSE, add.legend = FALSE, ...)
 
 xpsRNAdeg(object, ...)
 }
@@ -27,7 +27,7 @@ xpsRNAdeg(object, ...)
   \item{signif.digits}{number of significant digits to show.}
   \item{transform}{transform data before plotting, one of "shift.scale",
    "shift.only", "none". }
-  \item{cols}{vector of colors for plot, length is number of trees.}
+  \item{col}{vector of colors for plot, length is number of samples.}
   \item{summary}{logical, if TRUE then the slope of \code{summaryAffyRNAdeg} will be plotted.}
   \item{add.legend}{logical or integer, if TRUE or larger than zero then
    a legend with the tree names will be drawn.}
@@ -73,7 +73,12 @@ plotAffyRNAdeg(rnadeg)
 
 rnadeg <- AffyRNAdeg(rlm.all)
 result <- summaryAffyRNAdeg(rnadeg)
+
+## plot RNA degradation
 plotAffyRNAdeg(rnadeg)
+
+## plot slope of RNA degradation
+plotAffyRNAdeg(rnadeg, summary = TRUE)
 }
 }
 \keyword{manip}

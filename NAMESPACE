@@ -222,6 +222,7 @@ export(fitQC, fitRLM, rmaPLM)
 export(AffyRNAdeg, summaryAffyRNAdeg, plotAffyRNAdeg)
 export(boxplot.dev, image.dev, mvaplot.dev)
 export(prefilter, unifilter)
+export(plotImage, plotBoxplot)
 
 ## contructor functions
 export(ProjectInfo)

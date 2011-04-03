@@ -1,37 +1,28 @@
-"boxplot.dev" <-
+#------------------------------------------------------------------------------#
+# plotBoxplot: 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+"plotBoxplot" <-
 function(x,
          which   = "",
          size    = 0,
          transfo = log2,
          range   = 0,
          names   = "namepart",
-         mar     = c(10,5,4,1),
+         mar     = c(10,5,2,1),
          las     = 2,
+         cex     = 1.0,
          dev     = "screen",
          outfile = "BoxPlot",
          w       = 800,
          h       = 540,
          ...) 
 {
-   if (debug.xps()) print("------boxplot.dev------")
-
-   ## this function will be removed
-   msg <- "this function will be removed, please use plotBoxplot() instead.";
-   .Deprecated("plotBoxplot", package="xps", msg);
+   if (debug.xps()) print("------plotBoxplot------")
 
    ## check for correct class
    if (!extends(class(x), "ProcesSet")) {
       stop(paste(sQuote("x"), "is not derived from class", sQuote("ProcesSet")));
    }#if
-
-   ## get expression levels from data
-   m <- validData(x, which=which);
-   if (size > 1)             m <- m[seq(1,nrow(m),len=size),];
-   if (is.function(transfo)) m <- transfo(m);
-
-   if (is.null(names))              names <- colnames(m)
-   else if (names[1] == "namepart") names <- namePart(colnames(m))
-   else                             m     <- m[, names, drop=F];
 
    ## add extension to outfile
    outfile <- paste(outfile, dev, sep=".");
@@ -50,17 +41,31 @@ function(x,
    } else {
       stop(paste("unknown device dev=", sQuote(dev)));
    }#if
+
+   if (is.null(mar)) {
+      mar  <- c(5, 4, 4, 2) + 0.1;
+      bmar <- NULL;
+   } else {
+      bmar <- list(b=mar[1], cex=cex, w=w);
+   }#if
+
    oldpar <- par(no.readonly=TRUE, mar=mar);
 
    ## plot data
-   boxplot(data.frame(m),
-           range = range,
-           names = names,
-           las   = las,
+   boxplot(x,
+           which   = which,
+           size    = size,
+           transfo = transfo,
+           range   = range,
+           names   = names,
+           bmar    = bmar,
+           las     = las,
            ...)
 
    par(oldpar);
    if (dev != "screen") {
       dev.off();
    }#if
-}#boxplot.dev
+}#plotBoxplot
+
+#------------------------------------------------------------------------------#

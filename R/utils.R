@@ -72,6 +72,14 @@
    UNITYPE <- c("uvt", "stt", "wil", "var");
 
 
+#------------------------------------------------------------------------------#
+# options: parameters for images
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+   QUALOPT <- c("raw", "adjusted", "normalized");
+   RESIOPT <- c("resids", "pos.resids", "neg.resids", "sign.resids", "weights");
+
+
 ################################################################################
 # general utility functions
 ################################################################################
@@ -319,7 +327,8 @@ validQualityOption <- function(option, as.logical=FALSE) {
    if (debug.xps()) print("------validQualityOption------")
 
    TYPE <- c("raw", "adjusted", "normalized", "all");
-   if (is.na(match(option, TYPE))) {
+#   if (is.na(match(option, TYPE))) {
+   if (is.na(match(option, TYPE)[1])) {
       if (as.logical) return(FALSE);
       stop(paste(sQuote("option"), "is not a valid quality option"));
    }#if

@@ -1,10 +1,26 @@
-\name{boxplot.dev}
+\name{plotBoxplot}
+\alias{plotBoxplot}
 \alias{boxplot.dev}
 \title{Box Plots for Device}
 \description{
   Produce box-and-whisker plot(s) of the samples for the selected device.
 }
 \usage{
+plotBoxplot(x,
+            which   = "",
+            size    = 0,
+            transfo = log2,
+            range   = 0,
+            names   = "namepart",
+            mar     = c(10,5,2,1),
+            las     = 2,
+            cex     = 1.0,
+            dev     = "screen",
+            outfile = "BoxPlot",
+            w       = 800,
+            h       = 540,
+            ...) 
+
 boxplot.dev(x, which = "", size = 0, transfo = log2, range = 0, names = "namepart", mar = c(10, 5, 4, 1), las = 2, dev = "screen", outfile = "BoxPlot", w = 800, h = 540, ...)
 }
 \arguments{
@@ -16,6 +32,7 @@ boxplot.dev(x, which = "", size = 0, transfo = log2, range = 0, names = "namepar
   \item{names}{optional vector of sample names.}
   \item{mar}{plot margin.}
   \item{las}{style of axis labels.}
+  \item{cex}{amount by which plotting text and symbols should be magnified.}
   \item{dev}{graphics device to plot to, i.e. one of \dQuote{screen}, \dQuote{jpeg},\dQuote{png},
    \dQuote{pdf} or \dQuote{ps}.}
   \item{outfile}{the name of the output file.}
@@ -24,13 +41,12 @@ boxplot.dev(x, which = "", size = 0, transfo = log2, range = 0, names = "namepar
   \item{\dots}{optional arguments to be passed to \code{boxplot}.}
 }
 \details{
- Produces a boxplot for slot \code{data} for an object of class \code{\link{DataTreeSet}}
- or \code{\link{ExprTreeSet}} for the selected graphics device.
+ Produces a boxplot for slot \code{data} for an object of class \code{\link{DataTreeSet}},
+ \code{\link{ExprTreeSet}} or \code{\link{QualTreeSet}} for the selected graphics device.
 }
 \author{Christian Stratowa}
 \note{
- For a \code{\link{DataTreeSet}} object, data must first be attached using method 
- \code{\link{attachInten}}.
+ Function boxplot.dev() will be deprecated since it needs to attachInten()!!
 }
 \seealso{\code{\link{boxplot}}}
 \keyword{device}

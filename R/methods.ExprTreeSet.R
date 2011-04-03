@@ -1376,16 +1376,23 @@ setMethod("nuseplot", signature(x="ExprTreeSet"),
 
 setMethod("pcaplot", signature(x="ExprTreeSet"),
    function(x,
-            which   = "UnitName",
-            transfo = log2,
-            method  = "pearson",
-            sort    = FALSE,
-            col     = NULL,
-            names   = "namepart",
-            as.list = FALSE,
+            which      = "UnitName",
+            transfo    = log2,
+            method     = "none",
+            groups     = NULL,
+            screeplot  = FALSE,
+            squarepca  = FALSE,
+            pcs        = c(1,2),
+            add.labels = FALSE,
+            add.legend = FALSE,
+            col        = NULL,
+            names      = "namepart",
+            as.list    = FALSE,
             ...) 
    {
       if (debug.xps()) print("------pcaplot.ExprTreeSet------")
+
+      if (length(pcs) != 2) stop("only two principal components can be plotted.\n");
 
       m <- validData(x, which=which);
       if (is.function(transfo)) m <- transfo(m);
@@ -1395,13 +1402,74 @@ setMethod("pcaplot", signature(x="ExprTreeSet"),
       else                             m     <- m[, names, drop=F];
 
       ## PCA
-      if (method == "none") pca <- prcomp(m)
+      if (method == "none") pca <- prcomp(t(m))
       else                  pca <- prcomp((1 - cor(m, method = method)));
 
       ## plot PCA
-      plot(pca[[2]][,1:2],
-           main = "Principal Components Plot",
-           ...);
+      if (screeplot) {
+         screeplot(pca,
+                   xaxt = "n",
+                   main = "Screeplot for PCA",
+                   ...);
+         axis(1, at=1:ncol(m), labels=colnames(pca[[2]]), las=3);
+      }else{
+         if (squarepca) {
+            ylim <- max(abs(range(pca$x[,pcs[1]])));
+            ylim <- c(-ylim, ylim);
+         } else {
+            ylim <- NULL;
+         }#if
+
+
+         if (!is.null(groups)) {
+            if (length(groups) != length(names)) {
+               stop("length of groups must be equal to number of samples.\n");
+            }#if
+
+            groupnames <- as.character(groups);
+            groups     <- unique(groups);
+            plotsymbol <- 0:25;
+            plotsymbol <- split(plotsymbol[1:length(groups)], groups);
+            plotsymbol <- unlist(sapply(as.factor(groupnames),function(x)plotsymbol[[x]]));
+         }else{
+            groupnames <- names;
+            plotsymbol <- 1;
+         }#if
+
+         if (is.null(col)) {
+            col <- c("blue3", "blue2", "blue1", "steelblue3", "steelblue2", "steelblue1",
+                     "lightblue3", "lightblue2", "lightblue1", "gray60",
+                     "red3", "red2", "red1", "orange3", "orange2", "orange1",
+                     "yellow3", "yellow2", "yellow1", "black");
+            col <-rep(col, (floor(length(names)/length(col)) + 1));
+         }#if
+
+         plot(pca$x[,pcs],
+              ylim = ylim,
+              col  = col,
+              pch  = plotsymbol,
+              main = "Principal Components Plot",
+              ...);
+
+         if (add.labels) {
+            offset <-  (par("usr")[4] - par("usr")[3])/50;
+            text(pca$x[,pcs[1]], pca$x[,pcs[2]] + offset, label=names, cex=0.7);
+         }#if
+
+         pos.legend <- "topleft";
+         if (is.character(add.legend)) {
+            pos.legend <- add.legend;
+            add.legend <- TRUE;
+         }#if
+         if (!is.null(groups) & add.legend) {
+            legend(x      = pos.legend,
+                   legend = unique(groupnames),
+                   pch    = unique(plotsymbol),
+                   pt.bg  = "white",
+                   cex    = 0.6
+                  );
+         }#if
+      }#if
 
       if (as.list) return(pca);
    }
