@@ -17,7 +17,7 @@ function(x,
    if (debug.xps()) print("------plotImage------");
 
    qualopt <- match.arg(qualopt);
-   if (names == "namepart") {
+   if (names[1] == "namepart") {
       stop("<names='namepart'> is not possible for this function");
    }#if
 
@@ -27,22 +27,21 @@ function(x,
          stop(paste(sQuote(type), "is not a valid residual option"));
       }#if
 
-      if (names == "*") names <- unlist(treeNames(x));
+      if (names[1] == "*") names <- unlist(treeNames(x));
 
       if (type == "intensity") bg <- FALSE
       else                     bg <- TRUE;
 
-if (bg) stop("image for background not yet implemented");
+if (bg) stop("plotImage() for background not yet implemented");
 
    } else if (is (x, "QualTreeSet")) {
       if (is.na(match(type, RESIOPT))) {
          stop(paste(sQuote(type), "is not a valid residual option"));
       }#if
 
-      if (names == "*") {
-         names <- getTreeNames(rootFile(x), treetype=QUATYPE[4]);
-         names <- names[grep(qualopt, names)];
-      }#if
+      if (names[1] == "*") names <- getTreeNames(rootFile(x), treetype=QUATYPE[4]);
+
+      names <- names[grep(qualopt, names)];
    } else {
       stop(paste(sQuote("x"), "must be one of class <DataTreeSet, QualTreeSet>"));
    }#if
@@ -68,8 +67,8 @@ if (bg) stop("image for background not yet implemented");
 
    ## layout for images
    size <- function(x){c(ceiling(sqrt(x)), round(sqrt(x)))}
-   nc   <- size(length(names))[1];
-   nr   <- size(length(names))[2];
+   nr   <- size(length(names))[1];
+   nc   <- size(length(names))[2];
    nfig <- layout(matrix(c(1:(nr*nc)), nr, nc, byrow=TRUE), respect=TRUE);
 
    ## images

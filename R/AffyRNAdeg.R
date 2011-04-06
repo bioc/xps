@@ -67,14 +67,17 @@ function (rna.deg,
 
    names <- rna.deg$sample.names;
    if (is.null(col)) {
-      col <- c("blue3", "blue2", "blue1", "steelblue3", "steelblue2", "steelblue1",
-               "lightblue3", "lightblue2", "lightblue1", "gray60",
-               "red3", "red2", "red1", "orange3", "orange2", "orange1",
-               "yellow3", "yellow2", "yellow1", "black");
-      col <-rep(col, (floor(length(names)/length(col)) + 1));
-      lty <- unlist(lapply(1:5,function(x)rep(x,20)));
-      lty <- rep(lty, (floor(length(names)/(5*length(col))) + 1));
+#      col <- c("blue3", "blue2", "blue1", "steelblue3", "steelblue2", "steelblue1",
+#               "lightblue3", "lightblue2", "lightblue1", "gray60",
+#               "red3", "red2", "red1", "orange3", "orange2", "orange1",
+#               "yellow3", "yellow2", "yellow1", "black");
+      col <- c("blue4", "blue1", "steelblue1", "lightblue2", "gray60",
+               "red4", "orange3", "orange1", "yellow2", "black");
    }#if
+
+   lty <- unlist(lapply(1:5,function(x)rep(x,length(col))));
+   lty <- rep(lty, (floor(length(names)/(5*length(col))) + 1))[1:length(names)];
+   col <- rep(col, (floor(length(names)/length(col)) + 1))[1:length(names)];
 
    if (summary) {
       bmar   <- adjustXLabMargins(names, bottom=6, cex=1.0);
@@ -131,7 +134,7 @@ function (rna.deg,
    axis(2);
 
    for (i in 1:nrow(mns)) {
-      lines(0:((ncol(mns) - 1)), mns[i, ], col=col[i]);
+      lines(0:((ncol(mns) - 1)), mns[i, ], col=col[i], lty=lty[i]);
    }#for
 
    if (add.legend) {
