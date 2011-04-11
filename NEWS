@@ -2,6 +2,10 @@
 		CHANGES IN R VERSION 2.13.0
 
 
+VERSION xps-1.11.12
+
+    o update functions: plotBoxplot(), plotAffyRNAdeg()
+
 VERSION xps-1.11.11
 
     o update functions: plotImage(), plotAffyRNAdeg()

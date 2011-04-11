@@ -81,7 +81,7 @@ function (rna.deg,
 
    if (summary) {
       bmar   <- adjustXLabMargins(names, bottom=6, cex=1.0);
-      oldpar <- par(no.readonly=TRUE, mar=c(bmar$b, 5, 3, 1));
+      oldpar <- par(no.readonly=TRUE, mar=c(bmar$b, 5, 3, 1), pch=19);
       slope  <- t(summaryAffyRNAdeg(rna.deg)["slope",,drop=FALSE]);
 
       plot(slope,

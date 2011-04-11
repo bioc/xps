@@ -279,7 +279,8 @@ setMethod("coiplot", signature(x="QualTreeSet"),
       ds <- export(x,
                    treetype     = "brd",
                    varlist      = "userinfo:fCOIXhi:fCOIYhi:fCOIXlo:fCOIYlo",
-                   as.dataframe = TRUE);
+                   as.dataframe = TRUE,
+                   verbose      = FALSE);
 
       pos   <- t(ds[1:2,grep(qualopt, colnames(ds))]);
       neg   <- t(ds[3:4,grep(qualopt, colnames(ds))]);

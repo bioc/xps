@@ -8,7 +8,7 @@ function(x,
          transfo = log2,
          range   = 0,
          names   = "namepart",
-         mar     = c(10,5,2,1),
+         mar     = NULL,
          las     = 2,
          cex     = 1.0,
          dev     = "screen",
@@ -43,13 +43,12 @@ function(x,
    }#if
 
    if (is.null(mar)) {
-      mar  <- c(5, 4, 4, 2) + 0.1;
-      bmar <- NULL;
+      bmar   <- NULL;
+      oldpar <- par(no.readonly=TRUE);
    } else {
-      bmar <- list(b=mar[1], cex=cex, w=w);
+      bmar   <- list(b=mar[1], cex=cex, w=w);
+      oldpar <- par(no.readonly=TRUE, mar=mar);
    }#if
-
-   oldpar <- par(no.readonly=TRUE, mar=mar);
 
    ## plot data
    boxplot(x,
