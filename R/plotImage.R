@@ -29,11 +29,26 @@ function(x,
 
       if (names[1] == "*") names <- unlist(treeNames(x));
 
-      if (type == "intensity") bg <- FALSE
-      else                     bg <- TRUE;
+      bg <- FALSE;
+   } else if (is (x, "ExprTreeSet")) {
+      if (is.na(match(type, c("intensity", "background")))) {
+         stop(paste(sQuote(type), "is not a valid data option"));
+      }#if
 
-if (bg) stop("plotImage() for background not yet implemented");
+      if (type == "intensity") {
+         if (names[1] == "*") names <- getTreeNames(rootFile(x), treetype=ADJTYPE[1]);
 
+         bg <- FALSE;
+      } else {
+         if (names[1] == "*") {
+            exten <- unique(extenPart(getTreeNames(rootFile(x))));
+            id    <- match(exten, BGDTYPE);
+            id    <- id[!is.na(id)];
+            names <- getTreeNames(rootFile(x), treetype=BGDTYPE[id]);
+         }#if
+
+         bg <- TRUE;
+      }#if
    } else if (is (x, "QualTreeSet")) {
       if (is.na(match(type, RESIOPT))) {
          stop(paste(sQuote(type), "is not a valid residual option"));
@@ -74,7 +89,7 @@ if (bg) stop("plotImage() for background not yet implemented");
    ## images
    layout.show(nfig);
    for (i in 1:length(names)) {
-      if (is (x, "DataTreeSet")) {
+      if (is (x, "DataTreeSet") | is(x, "ExprTreeSet")) {
          image(x,
                bg         = bg,
                transfo    = transfo,
