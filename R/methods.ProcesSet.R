@@ -479,7 +479,7 @@ setMethod("image", signature(x="ProcesSet"),
          ok <- ok[!is.na(ok)];
 
          if (length(ok) == 0) {
-            stop(paste(sQuote("names"), "is not a valid residual tree name"));
+            stop(paste(sQuote("names"), "is not a valid data tree name"));
          }#if
 
          names <- unlist(treenames[ok]);
