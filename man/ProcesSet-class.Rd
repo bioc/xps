@@ -2,6 +2,7 @@
 \docType{class}
 \alias{ProcesSet-class}
 \alias{ProcesSet}
+\alias{attachData,ProcesSet-method}
 \alias{boxplot,ProcesSet-method}
 \alias{chipName,ProcesSet-method}
 \alias{chipType,ProcesSet-method}
@@ -10,6 +11,7 @@
 \alias{hist,ProcesSet-method}
 \alias{image,ProcesSet-method}
 \alias{mboxplot,ProcesSet-method}
+\alias{removeData,ProcesSet-method}
 \alias{schemeFile,ProcesSet-method}
 \alias{schemeFile}
 \alias{schemeFile<-,ProcesSet,character-method}
@@ -18,6 +20,8 @@
 \alias{schemeSet}
 \alias{schemeSet<-,ProcesSet,SchemeTreeSet-method}
 \alias{schemeSet<-}
+\alias{treeData,ProcesSet-method}
+\alias{treeData}
 \alias{validData,ProcesSet-method}
 
 \title{Class ProcesSet}
@@ -54,6 +58,8 @@ Class \code{"\linkS4class{TreeSet}"}, directly.
 }
 \section{Methods}{
   \describe{
+    \item{attachData}{\code{signature(object = "ProcesSet")}: exports data from 
+     \code{\link{ROOT}} data file and and saves as data.frame \code{data}.}
     \item{boxplot}{\code{signature(x = "ProcesSet")}: creates a \code{\link{boxplot}} of the
      data from data.frame \code{data}.}
     \item{chipName}{\code{signature(object = "ProcesSet")}: extracts slot \code{chipname} 
@@ -70,6 +76,8 @@ Class \code{"\linkS4class{TreeSet}"}, directly.
      data.frame \code{data} or \code{bgrd}, respectively.}
     \item{mboxplot}{\code{signature(x = "ProcesSet")}: creates an M-boxplot of the
      data from data.frame \code{data}.}
+    \item{removeData}{\code{signature(object = "ProcesSet")}: replaces data.frame \code{data} 
+     with an empty data.frame of dim(0,0).}
     \item{schemeFile}{\code{signature(object = "ProcesSet")}: extracts the \code{\link{ROOT}}  
      scheme file from slot \code{scheme}.}
     \item{schemeFile<-}{\code{signature(object = "ProcesSet"), value = "character")}: replaces the \code{\link{ROOT}}  
@@ -77,6 +85,8 @@ Class \code{"\linkS4class{TreeSet}"}, directly.
     \item{schemeSet}{\code{signature(object = "ProcesSet")}: extracts slot \code{scheme}.}
     \item{schemeSet<-}{\code{signature(object = "ProcesSet"), value = "SchemeTreeSet")}: replaces slot \code{scheme} 
      with a different \code{SchemeTreeSet}.}
+    \item{treeData}{\code{signature(object = "ProcesSet")}: extracts all columns 
+     from data.frame \code{data}.}
     \item{validData}{\code{signature(object = "ProcesSet")}: extracts a subset of columns 
      from data.frame \code{data}.}
 	 }

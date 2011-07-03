@@ -1,22 +1,22 @@
-\name{coiplot-methods}
-\docType{methods}
-\alias{coiplot-methods}
-\alias{coiplot}
-\title{Center-Of-Intensity QC Plots}
+\name{plotCOI}
+\alias{plotCOI}
+\title{Center-Of-Intensity QC Plots for Device}
 \description{
- Produce Center-Of-Intensity plot(s) of the positive and negative feature intensities.
-
-\emph{Usage}
-
-\code{
-coiplot(x,
+ Produce Center-Of-Intensity plot(s) of the positive and negative feature intensities for the
+ selected device.
+}
+\usage{
+plotCOI(x,
         type    = c("pos", "neg"),
         qualopt = "raw",
         radius  = 0.5,
         linecol = "gray70",
         visible = TRUE,
-       ...)
-}
+        dev     = "screen",
+        outfile = "CenterOfIntensityPlot",
+        w       = 540,
+        h       = 540,
+        ...)
 }
 \arguments{
   \item{x}{object of class \code{\link{QualTreeSet}}.}
@@ -27,6 +27,11 @@ coiplot(x,
   \item{linecol}{the color of the ablines and the circle to be drawn.}
   \item{visible}{logical, if TRUE then arrays outside the circle with \code{radius} will be
    flagged by labeling the data point with the array name.}
+  \item{dev}{graphics device to plot to, i.e. one of \dQuote{screen}, \dQuote{jpeg},\dQuote{png},
+   \dQuote{pdf} or \dQuote{ps}.}
+  \item{outfile}{the name of the output file.}
+  \item{w}{the width of the device in pixels.}
+  \item{h}{the height of the device in pixels.}
   \item{\dots}{optional arguments to be passed to \code{coiplot}.}
 }
 \details{
@@ -40,17 +45,6 @@ coiplot(x,
  be outliers. If \code{visible = TRUE} then outlier arrays will be flagged by labeling the data
  point(s) with the array name(s). 
 }
-\value{
- The names ot the outlier arrays, otherwise \code{NULL}.
-}
 \author{Christian Stratowa}
-\seealso{\code{\link{plotCOI}}, \code{\link{borderplot}}}
-\examples{
-\dontrun{
-## border intensities, created by e.g. rmaPLM()
-coiplot(rlm.all)
-coiplot(rlm.all, type="pos")
-coiplot(rlm.all, type="neg", radius=0.1)
-}
-}
-\keyword{methods}
+\seealso{\code{\link{coiplot}}}
+\keyword{device}

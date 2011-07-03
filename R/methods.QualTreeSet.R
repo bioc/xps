@@ -227,7 +227,7 @@ setMethod("borderplot", signature(x="QualTreeSet"),
       oldpar <- par(no.readonly = TRUE);
 
       if (length(type) == 2) {
-         layout(matrix(c(1,2), 1, 2, byrow=FALSE), c(1.1,0.9), 2, TRUE);
+         layout(matrix(c(1,2), 1, 2, byrow=FALSE), c(1.05,0.95), 2, FALSE);
          par(mar=c(bmar$b,5,2,0), pty="m", cex.axis=bmar$cex);
       } else {
          par(mar=c(bmar$b,5,2,1), pty="m", cex.axis=bmar$cex);
@@ -292,7 +292,7 @@ setMethod("coiplot", signature(x="QualTreeSet"),
 
       if (length(type) == 2) {
          oldpar <- par(no.readonly = TRUE);
-         layout(matrix(c(1,2), 1, 2, byrow=FALSE), c(1.1,0.9), 2, TRUE);
+         layout(matrix(c(1,2), 1, 2, byrow=FALSE), c(1.05,0.95), 2, FALSE);
          par(mar=c(5,5,2,0));
       }#if
 
@@ -357,7 +357,7 @@ setMethod("nuseplot", signature(x="QualTreeSet"),
             range    = 0,
             names    = "namepart",
             main     = "NUSE Plot",
-            ylim     = c(0.8,1.2),
+            ylim     = c(0.8, 1.2),
             las      = 2,
             add.line = TRUE,
             ...) 

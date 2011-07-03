@@ -1,27 +1,24 @@
 #------------------------------------------------------------------------------#
-# plotBoxplot: 
+# plotCOI: 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-"plotBoxplot" <-
+"plotCOI" <-
 function(x,
-         which   = "",
-         size    = 0,
-         transfo = log2,
-         range   = 0,
-         names   = "namepart",
-         mar     = NULL,
-         las     = 2,
-         cex     = 1.0,
+         type    = c("pos", "neg"),
+         qualopt = "raw",
+         radius  = 0.5,
+         linecol = "gray70",
+         visible = TRUE,
          dev     = "screen",
-         outfile = "BoxPlot",
-         w       = 800,
+         outfile = "CenterOfIntensityPlot",
+         w       = 540,
          h       = 540,
-         ...) 
+         ...)
 {
-   if (debug.xps()) print("------plotBoxplot------")
+   if (debug.xps()) print("------plotCOI------")
 
    ## check for correct class
-   if (!extends(class(x), "ProcesSet")) {
-      stop(paste(sQuote("x"), "is not derived from class", sQuote("ProcesSet")));
+   if (!is(x, "QualTreeSet")) {
+      stop(paste(sQuote("x"), "is not class", sQuote("QualTreeSet")));
    }#if
 
    ## add extension to outfile
@@ -42,26 +39,18 @@ function(x,
       stop(paste("unknown device dev=", sQuote(dev)));
    }#if
 
-   if (is.null(mar)) {
-      bmar <- NULL;
-   } else {
-      bmar <- list(b=mar[1], cex=cex, w=w);
-   }#if
-
    ## plot data
-   boxplot(x,
-           which   = which,
-           size    = size,
-           transfo = transfo,
-           range   = range,
-           names   = names,
-           bmar    = bmar,
-           las     = las,
-           ...)
+   coiplot(x,
+           type    = type,
+           qualopt = qualopt,
+           radius  = radius,
+           linecol = linecol,
+           visible = visible,
+           ...) 
 
    if (dev != "screen") {
       dev.off();
    }#if
-}#plotBoxplot
+}#plotCOI
 
 #------------------------------------------------------------------------------#

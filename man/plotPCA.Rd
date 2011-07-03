@@ -1,15 +1,11 @@
-\name{pcaplot-methods}
-\docType{methods}
-\alias{pcaplot-methods}
-\alias{pcaplot}
-\title{PCA Plot}
+\name{plotPCA}
+\alias{plotPCA}
+\title{PCA Plot for Device}
 \description{
-  This function produces a PCA plot of the first two principle components.
-
-\emph{Usage}
-
-\code{
-pcaplot(x,
+ This function produces a PCA plot of the first two principle components for the selected device.
+}
+\usage{
+plotPCA(x,
         which      = "UnitName",
         transfo    = log2,
         method     = "none",
@@ -22,8 +18,11 @@ pcaplot(x,
         col        = NULL,
         names      = "namepart",
         as.list    = FALSE,
-         ...)
-}
+        dev        = "screen",
+        outfile    = "PCAPlot",
+        w          = 540,
+        h          = 540,
+        ...) 
 }
 \arguments{
   \item{x}{object of class \code{\link{ExprTreeSet}}.}
@@ -41,10 +40,15 @@ pcaplot(x,
   \item{col}{vector of colors for plot, length is number of samples.}
   \item{names}{optional vector of sample names.}
   \item{as.list}{logical, if TRUE then a \code{list} will be returned in addition to the plot.}
+  \item{dev}{graphics device to plot to, i.e. one of \dQuote{screen}, \dQuote{jpeg},\dQuote{png},
+   \dQuote{pdf} or \dQuote{ps}.}
+  \item{outfile}{the name of the output file.}
+  \item{w}{the width of the device in pixels.}
+  \item{h}{the height of the device in pixels.}
   \item{\dots}{optional arguments to be passed to \code{plot}.}
 }
 \details{
- Function \code{pcaplot} produces a PCA plot of the first two principle components for slot
+ Function \code{plotPCA} produces a PCA plot of the first two principle components for slot
  \code{data} or the correlations between the columns of slot \code{data}, respectively, of an
  object of class \code{\link{ExprTreeSet}}.
 
@@ -57,12 +61,6 @@ pcaplot(x,
  \code{names="namepart"} column names will be displayed without name extension. If \code{names}
  is a vector of column names, only these columns will displayed as mvaplot.
 }
-\value{
- None by default.
-
- Optionally, for \code{as.list=TRUE} a \code{list} will be returned with the components \code{sdev}
- and \code{rotation}, see \code{[stats]prcomp}.
-}
-\author{Christian Stratowa, partly adapted from function plotPCA() of package affycoretools}
-\seealso{\code{\link{plotPCA}}, \code{\link{corplot}} \code{\link{madplot}}}
-\keyword{methods}
+\author{Christian Stratowa}
+\seealso{\code{\link{pcaplot}}}
+\keyword{device}

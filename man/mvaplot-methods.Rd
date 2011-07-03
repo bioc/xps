@@ -9,7 +9,17 @@
 \emph{Usage}
 
 \code{
-mvaplot(x, which = "UnitName", transfo = log2, method  = "median", names = "namepart", ylim = c(-6,6), xlab = "A", ylab = "M", pch = '.', las = 2, ...)
+mvaplot(x,
+        which   = "UnitName",
+        transfo = log2,
+        method  = "median",
+        names   = "namepart",
+        ylim    = c(-6,6),
+        xlab    = "A",
+        ylab    = "M",
+        pch     = '.',
+        las     = 2,
+        ...)
 }
 }
 \arguments{
@@ -33,5 +43,5 @@ mvaplot(x, which = "UnitName", transfo = log2, method  = "median", names = "name
  is a vector of column names, only these columns will displayed as mvaplot.
 }
 \author{Christian Stratowa}
-\seealso{\code{\link{mvaplot.dev}}}
+\seealso{\code{\link{plotMA}}}
 \keyword{methods}

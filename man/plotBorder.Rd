@@ -1,15 +1,12 @@
-\name{borderplot-methods}
-\docType{methods}
-\alias{borderplot-methods}
-\alias{borderplot}
-\title{Plots of Border Elements}
+\name{plotBorder}
+\alias{plotBorder}
+\title{Plots of Border Elements for Device}
 \description{
- Produce box-and-whisker plot(s) of the positive and negative feature intensities.
-
-\emph{Usage}
-
-\code{
-borderplot(x,
+ Produce box-and-whisker plot(s) of the positive and negative feature intensities for the
+ selected device.
+}
+\usage{
+plotBorder(x,
            type    = c("pos", "neg"),
            qualopt = "raw",
            transfo = log2,
@@ -18,8 +15,11 @@ borderplot(x,
            ylim    = NULL,
            bmar    = NULL,
            las     = 2,
-           ...)
-}
+           dev     = "screen",
+           outfile = "BorderPlot",
+           w       = 800,
+           h       = 540,
+           ...) 
 }
 \arguments{
   \item{x}{object of class \code{\link{QualTreeSet}}.}
@@ -32,6 +32,11 @@ borderplot(x,
   \item{ylim}{the y limits of the plot.}
   \item{bmar}{optional \code{list} for bottom margin and axis label magnification \code{cex.axis}.}
   \item{las}{the style of axis labels.}
+  \item{dev}{graphics device to plot to, i.e. one of \dQuote{screen}, \dQuote{jpeg},\dQuote{png},
+   \dQuote{pdf} or \dQuote{ps}.}
+  \item{outfile}{the name of the output file.}
+  \item{w}{the width of the device in pixels.}
+  \item{h}{the height of the device in pixels.}
   \item{\dots}{optional arguments to be passed to \code{borderplot}.}
 }
 \details{
@@ -47,14 +52,5 @@ borderplot(x,
  depending on the number of label characters and the number of samples.  
 }
 \author{Christian Stratowa}
-\seealso{\code{\link{plotBorder}}, \code{\link{coiplot}}}
-\examples{
-\dontrun{
- ## border intensities, created by e.g. rmaPLM()
- getTreeNames(rootFile(rlm.all), treetype="brd")
- borderplot(rlm.all)
- borderplot(rlm.all, type="pos")
- borderplot(rlm.all, type="neg")
-}
-}
-\keyword{methods}
+\seealso{\code{\link{borderplot}}}
+\keyword{device}

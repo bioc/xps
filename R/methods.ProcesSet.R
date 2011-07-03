@@ -9,7 +9,10 @@
 # schemeSet<-:
 # chipName:
 # chipType:
+# attachData: 
+# removeData: 
 # getTreeData:
+# treeData:
 # validData:
 # export:
 # boxplot:
@@ -130,6 +133,45 @@ setMethod("chipType", signature(object="ProcesSet"),
 # ProcesSet methods:
 #------------------------------------------------------------------------------#
 
+setMethod("attachData", signature(object="ProcesSet"),
+   function(object,
+            treenames = character(0),
+            varlist   = character(0),
+            outfile   = "data.txt")
+   {
+      if (debug.xps()) print("------attachData.ProcesSet------")
+
+      treetype <- extenPart(object@treenames);
+      if (treenames[1] == "*") treenames <- object@treenames;
+      if (length(treenames) > 0) {
+         object@data <- export(object,
+                               treenames    = treenames,
+                               treetype     = treetype,
+                               varlist      = varlist,
+                               outfile      = outfile,
+                               as.dataframe = TRUE,
+                               verbose      = FALSE);
+      } else {
+         warning("missing tree names, data will not be added.");
+      }#if
+      return(object);
+   }
+)#attachData
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("removeData", signature(object="ProcesSet"),
+   function(object) {
+      if (debug.xps()) print("------removeData.ProcesSet------")
+
+      object@data <- data.frame(matrix(nr=0,nc=0));
+      gc(); #????
+      return(object);
+   }
+)#removeData
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 setMethod("getTreeData", signature(object="ProcesSet"),
    function(object,
             treetype = "cel",
@@ -144,6 +186,12 @@ setMethod("getTreeData", signature(object="ProcesSet"),
       return(ds);
    }
 )#getTreeData
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("treeData", signature(object="ProcesSet"),
+   function(object) object@data
+)#treeData
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -374,14 +422,17 @@ setMethod("boxplot", signature(x="ProcesSet"),
 
 setMethod("mboxplot", signature(x="ProcesSet"),
    function(x,
-            which   = "",
-            size    = 0,
-            transfo = log2,
-            method  = "mean",
-            range   = 0,
-            ylim    = c(-1,1),
-            outline = FALSE,
-            names   = "namepart",
+            which    = "",
+            size     = 0,
+            transfo  = log2,
+            method   = "mean",
+            range    = 0,
+            names    = "namepart",
+            main     = "RLE Plot",
+            ylim     = c(-1,1),
+            las      = 2,
+            add.line = TRUE,
+            outline  = FALSE,
             ...) 
    {
       if (debug.xps()) print("------mboxplot.ProcesSet------")
@@ -403,12 +454,16 @@ setMethod("mboxplot", signature(x="ProcesSet"),
 
       boxplot(rle,
               range   = range,
+              main    = main,
               xlab    = '',
               xaxt    = 'n',
               ylim    = ylim,
               outline = outline);
-      abline(h=0);
-      axis(side=1, outer=F, at=1:length(names), labels=names, ...);
+
+      if (add.line) {
+         abline(0, 0, lty=2, col="gray70");
+      }#if
+      axis(side=1, outer=F, at=1:length(names), labels=names, las=las, ...);
    }
 )#mboxplot
 
@@ -416,27 +471,62 @@ setMethod("mboxplot", signature(x="ProcesSet"),
 
 setMethod("hist", signature(x="ProcesSet"),
    function(x,
-            which   = "",
-            size    = 0,
-            transfo = log2,
-            ylab    = "density",
-            xlab    = "log intensity",
-            type    = "l",
-            col     = 1:6,
+            which      = "",
+            size       = 0,
+            transfo    = log2,
+            xlab       = "log intensity",
+            ylab       = "density",
+            names      = "namepart",
+            type       = "l",
+            col        = 1:6,
+            lty        = 1:5,
+            add.legend = FALSE,
+            verbose    = TRUE,
             ...) 
    {
       if (debug.xps()) print("------hist.ProcesSet------")
+
+      if (verbose) {verbose=FALSE;} ## for compatibility to hist.DataTreeSet
 
       m <- validData(x, which=which);
       if (size > 1) m <- m[seq(1,nrow(m),len=size),];
       if (is.function(transfo)) m <- transfo(m);
 
-      plotDensity(m,
-                  ylab = ylab,
-                  xlab = xlab,
-                  type = type,
-                  col  = col,
-                  ...);
+      treenames <- colnames(m);
+      if (is.null(names)) {
+         names <- treenames;
+      } else if (names[1] == "namepart") {
+         names <- namePart(treenames);
+      } else {
+         treenames <- namePart(treeNames(x));
+
+         ok <- match(namePart(names), treenames);
+         ok <- ok[!is.na(ok)];
+         if (length(ok) == 0) {
+            stop(paste(sQuote("names"), "is not a valid tree name"));
+         }#if
+
+         m     <- m[,ok];
+         names <- treenames[ok];
+      }#if
+
+      plotDensities(m,
+                    ylab = ylab,
+                    xlab = xlab,
+                    type = type,
+                    lty  = lty,
+                    col  = col,
+                    ...);
+
+      if (add.legend) {
+         legend(x      = "topright",
+                legend = names[1:ncol(m)],
+                lty    = lty,
+                pt.bg  = "white",
+                col    = col,
+                cex    = 0.6
+               );
+      }#if
    }
 )#hist
 

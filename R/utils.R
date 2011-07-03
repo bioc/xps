@@ -22,6 +22,7 @@
 # validTreenames:
 # validTreetype:
 # getDatatype:
+# getDataXY:
 # CELNames:
 # CELHeader:
 # exonLevel:
@@ -32,7 +33,7 @@
 # listTreeNames:
 # circle:
 # distMAD:
-# plotDensity:
+# plotDensities:
 # pseudoPalette: 
 # adjustXLabMargins:
 # getNameType:
@@ -508,6 +509,30 @@ getDatatype <- function(treetype) {
 }#getDatatype
 
 #------------------------------------------------------------------------------#
+# getDataXY: get (X,Y) from data
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+getDataXY <- function(object) {
+   if (debug.xps()) print("------getDataXY------")
+
+   ## get (x,y) from data
+   if (min(dim(object@data)) == 0) {
+      treename <- treeNames(object)[[1]];
+      treetype <- extenPart(treename);
+      data <- export(object,
+                     treenames    = treename,
+                     treetype     = treetype,
+                     varlist      = "fX:fY",
+                     outfile      = "dataXY.txt",
+                     as.dataframe = TRUE,
+                     verbose      = FALSE);
+   } else {
+      data  <- object@data[,c("X","Y")];
+   }#if
+
+   return(data);
+}#getDataXY
+
+#------------------------------------------------------------------------------#
 # CELNames: utility function to get name part of CEL-file only
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 CELNames <- function(celnames) {
@@ -568,6 +593,7 @@ exonLevel <- function(exonlevel="", chiptype="GeneChip", as.sum=TRUE) {
    if (debug.xps()) print("------exonLevel------")
 
    exlevel <- 0; if (as.sum) exlevel <- c(0, 0, 0);
+
    if (chiptype == "GenomeChip") {
       ## separate levels for bgrd, norm, expr must be given as integers
       if (is.numeric(exonlevel)) {
@@ -647,17 +673,36 @@ exonLevel <- function(exonlevel="", chiptype="GeneChip", as.sum=TRUE) {
 exonLevelIDs <- function(exonlevel, data, mask, ncol) {
    if (debug.xps()) print("------exonLevelIDs------")
 
-   id <- sapply(exonlevel,
+   mask <- cbind((mask[, "X"] + 1 + ncol*mask[,"Y"]), mask);
+   data <- cbind((data[, "X"] + 1 + ncol*data[,"Y"]), data);
+   colnames(mask)[1] <- "XY";
+   colnames(data)[1] <- "XY";
+
+   id <- sapply(unique(exonlevel),
                 function(x) {
-                   xy <- mask[mask[, "Mask"] == x, c("X","Y")];
-                   id <- match(xy[,"X"]   + ncol*xy[,"Y"],
-                               data[,"X"] + ncol*data[,"Y"]);
+                   xy <- mask[mask[, "Mask"] == x,];
+                   id <- match(xy[,"XY"], data[,"XY"]);
                 }
          );
    id <- unique(unlist(id));
 
    return(id[order(id)]);
 }#exonLevelIDs
+
+#exonLevelIDs <- function(exonlevel, data, mask, ncol) {
+#   if (debug.xps()) print("------exonLevelIDs------")
+#
+#   id <- sapply(exonlevel,
+#                function(x) {
+#                   xy <- mask[mask[, "Mask"] == x, c("X","Y")];
+#                   id <- match(xy[,"X"]   + ncol*xy[,"Y"],
+#                               data[,"X"] + ncol*data[,"Y"]);
+#                }
+#         );
+#   id <- unique(unlist(id));
+#
+#   return(id[order(id)]);
+#}#exonLevelIDs
 
 #------------------------------------------------------------------------------#
 # extenPart: utility function to extract extension part from "name.exten"
@@ -782,22 +827,22 @@ type2Exten <- function(type, datatype) {
 }#distMAD
 
 #------------------------------------------------------------------------------#
-# plotDensity: function to plot density
+# plotDensities: function to plot density
 # taken from package affy: plot.density.R
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-plotDensity <- function(mat,
-                        ylab="density", xlab="x", type="l", col=1:6,
-                        ...) {
-  
+plotDensities <- function(mat,
+                          ylab="density", xlab="x", type="l", lty=1:5, col=1:6,
+                          ...) 
+{
    x.density <- apply(mat, 2, density);
 
    all.x <- do.call("cbind", lapply(x.density, function(x) x$x));
    all.y <- do.call("cbind", lapply(x.density, function(x) x$y));
   
-   matplot(all.x, all.y, ylab=ylab, xlab=xlab, type=type, col=col, ...);
+   matplot(all.x, all.y, ylab=ylab, xlab=xlab, type=type, lty=lty, col=col, ...);
 
    invisible(list(all.x=all.x, all.y=all.y));
-}#plotDensity
+}#plotDensities
 
 #------------------------------------------------------------------------------#
 # pseudoPalette: function for coloring pseudo chip images.

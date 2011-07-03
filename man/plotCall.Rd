@@ -1,24 +1,23 @@
-\name{callplot-methods}
-\docType{methods}
-\alias{callplot-methods}
-\alias{callplot}
-\title{Barplot of Percent Present and Absent Calls.}
+\name{plotCall}
+\alias{plotCall}
+\title{Barplot of Percent Present and Absent Calls for Device}
 \description{
-Creates a barplot of percent Present/Marginal/Absent calls.
-
-\emph{Usage}
-
-\code{
-callplot(x,
-         beside = TRUE,
-         names  = "namepart",
-         col    = c("red","green","blue"),
-         legend = c("P","M","A"),
-         ylim   = c(0,100),
-         ylab   = "detection call [\%]",
-         las    = 2,
-         ...)
+ Creates a barplot of percent Present/Marginal/Absent calls for the selected device.
 }
+\usage{
+plotCall(x,
+         beside  = TRUE,
+         names   = "namepart",
+         col     = c("red","green","blue"),
+         legend  = c("P","M","A"),
+         ylim    = c(0,100),
+         ylab    = "detection call [\%]",
+         las     = 2,
+         dev     = "screen",
+         outfile = "CallPlot",
+         w       = 800,
+         h       = 540,
+         ...) 
 }
 \arguments{
   \item{x}{object of class \code{\link{CallTreeSet}}.}
@@ -30,6 +29,11 @@ callplot(x,
   \item{ylim}{the y limits of the plot.}
   \item{ylab}{a label for the y axis.}
   \item{las}{the style of axis labels.}
+  \item{dev}{graphics device to plot to, i.e. one of \dQuote{screen}, \dQuote{jpeg},\dQuote{png},
+   \dQuote{pdf} or \dQuote{ps}.}
+  \item{outfile}{the name of the output file.}
+  \item{w}{the width of the device in pixels.}
+  \item{h}{the height of the device in pixels.}
   \item{\dots}{optional arguments to be passed to \code{barplot}.}
 }
 \details{
@@ -40,5 +44,5 @@ callplot(x,
  is a vector of column names, only these columns will displayed as callplot.
 }
 \author{Christian Stratowa}
-\seealso{\code{\link{plotCall}}, \code{\link{pmplot}}}
-\keyword{methods}
+\seealso{\code{\link{callplot}}}
+\keyword{device}

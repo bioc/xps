@@ -12,6 +12,7 @@ function(x,
          outfile = "Image",
          w       = 800,
          h       = 800,
+         verbose = TRUE,
          ...) 
 {
    if (debug.xps()) print("------plotImage------");
@@ -89,6 +90,8 @@ function(x,
    ## images
    layout.show(nfig);
    for (i in 1:length(names)) {
+      if (verbose) cat("drawing image", i, "of", length(names), "...\r");
+
       if (is (x, "DataTreeSet") | is(x, "ExprTreeSet")) {
          image(x,
                bg         = bg,
@@ -112,6 +115,7 @@ function(x,
                ...);
       }#if
    }#for
+   if (verbose) cat("finished drawing", length(names), "images.   \n");
 
    par(oldpar);
    if (dev != "screen") {

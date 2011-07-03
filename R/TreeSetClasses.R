@@ -130,27 +130,37 @@ setClass("SchemeTreeSet",
    representation(chipname  = "character",
                   chiptype  = "character",
                   probeinfo = "list",
+                  unitname  = "data.frame",
                   mask      = "data.frame"
    ),
    contains=c("TreeSet"),
    prototype(chipname  = "",
              chiptype  = "GeneChip",
              probeinfo = list(),
+             unitname  = data.frame(matrix(nr=0,nc=0)),
              mask      = data.frame(matrix(nr=0,nc=0))
    )
 )#SchemeTreeSet
 
 # generic methods for class SchemeTreeSet
-setGeneric("chipName",   function(object)        standardGeneric("chipName"));
-setGeneric("chipType",   function(object)        standardGeneric("chipType"));
-setGeneric("chipType<-", function(object, value) standardGeneric("chipType<-"));
-setGeneric("chipMask",   function(object)        standardGeneric("chipMask"));
-setGeneric("chipMask<-", function(object, value) standardGeneric("chipMask<-"));
-setGeneric("probeInfo",  function(object)        standardGeneric("probeInfo"));
-setGeneric("nrows",      function(object)        standardGeneric("nrows"));
-setGeneric("ncols",      function(object)        standardGeneric("ncols"));
-setGeneric("attachMask", function(object)        standardGeneric("attachMask"));
-setGeneric("removeMask", function(object)        standardGeneric("removeMask"));
+setGeneric("chipName",            function(object)        standardGeneric("chipName"));
+setGeneric("chipType",            function(object)        standardGeneric("chipType"));
+setGeneric("chipType<-",          function(object, value) standardGeneric("chipType<-"));
+setGeneric("chipMask",            function(object)        standardGeneric("chipMask"));
+setGeneric("chipMask<-",          function(object, value) standardGeneric("chipMask<-"));
+setGeneric("unitNames",           function(object, ...)   standardGeneric("unitNames"));
+setGeneric("unitNames<-",         function(object, value) standardGeneric("unitNames<-"));
+setGeneric("probeInfo",           function(object)        standardGeneric("probeInfo"));
+setGeneric("nrows",               function(object)        standardGeneric("nrows"));
+setGeneric("ncols",               function(object)        standardGeneric("ncols"));
+setGeneric("attachMask",          function(object)        standardGeneric("attachMask"));
+setGeneric("removeMask",          function(object)        standardGeneric("removeMask"));
+setGeneric("attachUnitNames",     function(object, ...)   standardGeneric("attachUnitNames"));
+setGeneric("removeUnitNames",     function(object)        standardGeneric("removeUnitNames"));
+setGeneric("unitID2transcriptID", function(object, ...)   standardGeneric("unitID2transcriptID"));
+setGeneric("unitID2probesetID",   function(object, ...)   standardGeneric("unitID2probesetID"));
+setGeneric("transcriptID2unitID", function(object, ...)   standardGeneric("transcriptID2unitID"));
+setGeneric("probesetID2unitID",   function(object, ...)   standardGeneric("probesetID2unitID"));
 
 
 #------------------------------------------------------------------------------#
@@ -175,6 +185,9 @@ setGeneric("schemeFile<-",function(object, value) standardGeneric("schemeFile<-"
 setGeneric("schemeSet",   function(object)        standardGeneric("schemeSet"));
 setGeneric("schemeSet<-", function(object, value) standardGeneric("schemeSet<-"));
 setGeneric("getTreeData", function(object, ...)   standardGeneric("getTreeData"));
+setGeneric("attachData",  function(object, ...)   standardGeneric("attachData"));
+setGeneric("removeData",  function(object)        standardGeneric("removeData"));
+setGeneric("treeData",    function(object)        standardGeneric("treeData"));
 setGeneric("validData",   function(object, ...)   standardGeneric("validData"));
 setGeneric("boxplot",     function(x, ...)        standardGeneric("boxplot"));
 setGeneric("mboxplot",    function(x, ...)        standardGeneric("mboxplot"));
@@ -208,8 +221,13 @@ setGeneric("attachInten",       function(object, ...)        standardGeneric("at
 setGeneric("removeInten",       function(object)             standardGeneric("removeInten"));
 setGeneric("attachBgrd",        function(object, ...)        standardGeneric("attachBgrd"));
 setGeneric("removeBgrd",        function(object)             standardGeneric("removeBgrd"));
+setGeneric("attachDataXY",      function(object)             standardGeneric("attachDataXY"));
+setGeneric("removeDataXY",      function(object)             standardGeneric("removeDataXY"));
 setGeneric("validBgrd",         function(object, ...)        standardGeneric("validBgrd"));
 setGeneric("addData",           function(object, ...)        standardGeneric("addData"));
+setGeneric("indexUnits",        function(object, ...)        standardGeneric("indexUnits"));
+setGeneric("pmindex",           function(object, ...)        standardGeneric("pmindex"));
+setGeneric("mmindex",           function(object, ...)        standardGeneric("mmindex"));
 setGeneric("pm",                function(object, ...)        standardGeneric("pm"));
 setGeneric("mm",                function(object, ...)        standardGeneric("mm"));
 setGeneric("rawCELName",        function(object, ...)        standardGeneric("rawCELName"));

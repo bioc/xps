@@ -245,9 +245,7 @@ setMethod("removePVal", signature(object="CallTreeSet"),
    function(object) {
       if (debug.xps()) print("------removePVal.CallTreeSet------")
 
-      object@data  <- data.frame(matrix(nr=0,nc=0));
-      gc(); #????
-      return(object);
+      return(removeData(object));
    }
 )#removePVal
 
@@ -280,7 +278,7 @@ setMethod("removeCall", signature(object="CallTreeSet"),
    function(object) {
       if (debug.xps()) print("------removeCall.CallTreeSet------")
 
-      object@data  <- data.frame(matrix(nr=0,nc=0));
+      object@detcall <- data.frame(matrix(nr=0,nc=0));
       gc(); #????
       return(object);
    }

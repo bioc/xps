@@ -1,27 +1,26 @@
 #------------------------------------------------------------------------------#
-# plotBoxplot: 
+# plotCall: 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-"plotBoxplot" <-
+"plotCall" <-
 function(x,
-         which   = "",
-         size    = 0,
-         transfo = log2,
-         range   = 0,
+         beside  = TRUE,
          names   = "namepart",
-         mar     = NULL,
+         col     = c("red","green","blue"),
+         legend  = c("P","M","A"),
+         ylim    = c(0,100),
+         ylab    = "detection call [%]",
          las     = 2,
-         cex     = 1.0,
          dev     = "screen",
-         outfile = "BoxPlot",
+         outfile = "CallPlot",
          w       = 800,
          h       = 540,
          ...) 
 {
-   if (debug.xps()) print("------plotBoxplot------")
+   if (debug.xps()) print("------plotCall------")
 
    ## check for correct class
-   if (!extends(class(x), "ProcesSet")) {
-      stop(paste(sQuote("x"), "is not derived from class", sQuote("ProcesSet")));
+   if (!is(x, "CallTreeSet")) {
+      stop(paste(sQuote("x"), "is not class", sQuote("CallTreeSet")));
    }#if
 
    ## add extension to outfile
@@ -42,26 +41,20 @@ function(x,
       stop(paste("unknown device dev=", sQuote(dev)));
    }#if
 
-   if (is.null(mar)) {
-      bmar <- NULL;
-   } else {
-      bmar <- list(b=mar[1], cex=cex, w=w);
-   }#if
-
    ## plot data
-   boxplot(x,
-           which   = which,
-           size    = size,
-           transfo = transfo,
-           range   = range,
-           names   = names,
-           bmar    = bmar,
-           las     = las,
-           ...)
+   callplot(x,
+            beside = beside,
+            names  = names,
+            col    = col,
+            legend = legend,
+            ylim   = ylim,
+            ylab   = ylab,
+            las    = las,
+            ...);
 
    if (dev != "screen") {
       dev.off();
    }#if
-}#plotBoxplot
+}#plotCall
 
 #------------------------------------------------------------------------------#

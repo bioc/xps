@@ -1,23 +1,26 @@
 #------------------------------------------------------------------------------#
-# plotBoxplot: 
+# plotDensity: 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-"plotBoxplot" <-
+"plotDensity" <-
 function(x,
-         which   = "",
-         size    = 0,
-         transfo = log2,
-         range   = 0,
-         names   = "namepart",
-         mar     = NULL,
-         las     = 2,
-         cex     = 1.0,
-         dev     = "screen",
-         outfile = "BoxPlot",
-         w       = 800,
-         h       = 540,
+         which      = "",
+         size       = 0,
+         transfo    = log2,
+         ylab       = "density",
+         xlab       = "log intensity",
+         names      = "namepart",
+         type       = "l",
+         col        = 1:6,
+         lty        = 1:5,
+         add.legend = FALSE,
+         dev        = "screen",
+         outfile    = "DensityPlot",
+         w          = 540,
+         h          = 540,
+         verbose    = TRUE,
          ...) 
 {
-   if (debug.xps()) print("------plotBoxplot------")
+   if (debug.xps()) print("------plotDensity------")
 
    ## check for correct class
    if (!extends(class(x), "ProcesSet")) {
@@ -42,26 +45,24 @@ function(x,
       stop(paste("unknown device dev=", sQuote(dev)));
    }#if
 
-   if (is.null(mar)) {
-      bmar <- NULL;
-   } else {
-      bmar <- list(b=mar[1], cex=cex, w=w);
-   }#if
-
    ## plot data
-   boxplot(x,
-           which   = which,
-           size    = size,
-           transfo = transfo,
-           range   = range,
-           names   = names,
-           bmar    = bmar,
-           las     = las,
-           ...)
+   hist(x,
+        which      = which,
+        size       = size,
+        transfo    = transfo,
+        ylab       = ylab,
+        xlab       = xlab,
+        names      = names,
+        type       = type,
+        col        = col,
+        lty        = lty,
+        add.legend = add.legend,
+        verbose    = verbose,
+         ...);
 
    if (dev != "screen") {
       dev.off();
    }#if
-}#plotBoxplot
+}#plotDensity
 
 #------------------------------------------------------------------------------#

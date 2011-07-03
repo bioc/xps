@@ -3,6 +3,7 @@
 \alias{SchemeTreeSet-class}
 \alias{SchemeTreeSet}
 \alias{attachMask,SchemeTreeSet-method}
+\alias{attachUnitNames,SchemeTreeSet-method}
 \alias{chipMask,SchemeTreeSet-method}
 \alias{chipMask}
 \alias{chipMask<-,SchemeTreeSet,data.frame-method}
@@ -20,7 +21,16 @@
 \alias{nrows}
 \alias{probeInfo,SchemeTreeSet-method}
 \alias{probeInfo}
+\alias{probesetID2unitID,SchemeTreeSet-method}
 \alias{removeMask,SchemeTreeSet-method}
+\alias{removeUnitNames,SchemeTreeSet-method}
+\alias{transcriptID2unitID,SchemeTreeSet-method}
+\alias{unitID2probesetID,SchemeTreeSet-method}
+\alias{unitID2transcriptID,SchemeTreeSet-method}
+\alias{unitNames,SchemeTreeSet-method}
+\alias{unitNames}
+\alias{unitNames<-,SchemeTreeSet,data.frame-method}
+\alias{unitNames<-}
 
 \title{Class SchemeTreeSet}
 \description{This class provides the link to the \code{\link{ROOT}} scheme file and 
@@ -37,6 +47,8 @@ Objects can be created using the functions \code{\link{import.expr.scheme}},
      either \sQuote{GeneChip}, \sQuote{GenomeChip} or \sQuote{ExonChip}.}
     \item{\code{probeinfo}:}{Object of class \code{"list"} representing chip information, 
      including nrows, ncols, number of probes, etc.}
+    \item{\code{unitname}:}{Object of class \code{"data.frame"}. The data.frame can contain the  
+     mapping between the internal \code{UNIT_ID}s and the \code{UnitName}s, i.e. the probeset IDs.}
     \item{\code{mask}:}{Object of class \code{"data.frame"}. The data.frame can contain the mask 
      used to identify the probes as e.g. PM, MM or control probes.}
     \item{\code{setname}:}{Object of class \code{"character"} representing the name to the
@@ -61,6 +73,8 @@ Class \code{"\linkS4class{TreeSet}"}, directly.
   \describe{
     \item{attachMask}{\code{signature(object = "SchemeTreeSet")}: exports scheme tree from 
      \code{\link{ROOT}} scheme file and and saves as data.frame \code{mask}.}
+    \item{attachUnitNames}{\code{signature(object = "SchemeTreeSet")}: exports unit tree from 
+     \code{\link{ROOT}} scheme file and and saves as data.frame \code{unitname}.}
     \item{chipMask}{\code{signature(object = "SchemeTreeSet")}: extracts data.frame \code{mask}.}
     \item{chipMask<-}{\code{signature(object = "SchemeTreeSet", value = "data.frame")}: replaces 
      data.frame \code{mask}.}
@@ -75,8 +89,21 @@ Class \code{"\linkS4class{TreeSet}"}, directly.
     \item{nrows}{\code{signature(object = "SchemeTreeSet")}: extracts the physical number of 
      array rows from slot \code{probeinfo}.}
     \item{probeInfo}{\code{signature(object = "SchemeTreeSet")}: extracts slot \code{probeinfo}.}
+    \item{probesetID2unitID}{\code{signature(object = "SchemeTreeSet")}: extracts all or selected 
+     probesetIDs from data.frame \code{unitname} with UnitName, i.e. probeset ID, as (row)names.}
     \item{removeMask}{\code{signature(object = "SchemeTreeSet")}: replaces data.frame \code{mask} 
      with an empty data.frame of dim(0,0).}
+    \item{removeUnitNames}{\code{signature(object = "SchemeTreeSet")}: replaces data.frame 
+     \code{unitname} with an empty data.frame of dim(0,0).}
+    \item{transcriptID2unitID}{\code{signature(object = "SchemeTreeSet")}: extracts all or selected 
+     transcriptIDs from data.frame \code{unitname} with UnitName, i.e. transcript ID, as (row)names.}
+    \item{unitID2probesetID}{\code{signature(object = "SchemeTreeSet")}: extracts all or selected unitIDs
+     from data.frame \code{unitname} with UNIT_ID as (row)names.}
+    \item{unitID2transcriptID}{\code{signature(object = "SchemeTreeSet")}: extracts all or selected unitIDs
+     from data.frame \code{unitname} with UNIT_ID as (row)names.}
+    \item{unitNames}{\code{signature(object = "SchemeTreeSet")}: extracts data.frame \code{unitname}.}
+    \item{unitNames<-}{\code{signature(object = "SchemeTreeSet", value = "data.frame")}: replaces 
+     data.frame \code{unitname}.}
 	 }
 }
 \author{Christian Stratowa}

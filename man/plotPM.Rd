@@ -1,27 +1,26 @@
-\name{pmplot-methods}
-\docType{methods}
-\alias{pmplot-methods}
-\alias{pmplot}
-\title{Barplot of PM and MM Intensities.}
+\name{plotPM}
+\alias{plotPM}
+\title{Barplot of PM and MM Intensities for Device}
 \description{
-Creates a barplot of mean perfect match and mismatch intensities.
-
-\emph{Usage}
-
-\code{
-pmplot(x,
+ Creates a barplot of mean perfect match and mismatch intensities for the selected device.
+}
+\usage{
+plotPM(x,
        which   = "",
        size    = 0,
        transfo = NULL,
-       method  = "mean",
+       method  = mean,
        names   = "namepart",
        beside  = TRUE,
        col     = c("red", "blue"),
        legend  = c("PM","MM"),
        las     = 2,
        ylab    = "mean intensities",
-       ...)
-}
+       dev     = "screen",
+       outfile = "PMPlot",
+       w       = 540,
+       h       = 540,
+       ...) 
 }
 \arguments{
   \item{x}{object of class \code{\link{DataTreeSet}}.}
@@ -37,6 +36,11 @@ pmplot(x,
    or a logical indicating whether a legend should be included.}
   \item{las}{the style of axis labels.}
   \item{ylab}{a title for the y axis.}
+  \item{dev}{graphics device to plot to, i.e. one of \dQuote{screen}, \dQuote{jpeg},\dQuote{png},
+   \dQuote{pdf} or \dQuote{ps}.}
+  \item{outfile}{the name of the output file.}
+  \item{w}{the width of the device in pixels.}
+  \item{h}{the height of the device in pixels.}
   \item{\dots}{optional arguments to be passed to \code{barplot}.}
 }
 \details{
@@ -48,25 +52,5 @@ pmplot(x,
  is a vector of column names, only these columns will displayed as pmplot.
 }
 \author{Christian Stratowa}
-\note{
- Data must first be attached to class \code{\link{DataTreeSet}} using method \code{\link{attachInten}}.
-}
-\seealso{\code{\link{plotPM}}, \code{\link{boxplot}}, \code{\link{barplot}}}
-\examples{
-## load existing ROOT scheme file and ROOT data file
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
-data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
-
-## need to attach scheme mask and probe intensities
-data.test3 <- attachMask(data.test3)
-data.test3 <- attachInten(data.test3)
-
-if (interactive()) {
-pmplot(data.test3)
-}
-
-## optionally remove mask and data to free memory
-data.test3 <- removeInten(data.test3)
-data.test3 <- removeMask(data.test3)
-}
-\keyword{methods}
+\seealso{\code{\link{pmplot}}}
+\keyword{device}

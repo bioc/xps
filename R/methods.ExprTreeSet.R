@@ -268,9 +268,7 @@ setMethod("removeExpr", signature(object="ExprTreeSet"),
    function(object) {
       if (debug.xps()) print("------removeExpr.ExprTreeSet------")
 
-      object@data  <- data.frame(matrix(nr=0,nc=0));
-      gc(); #????
-      return(object);
+      return(removeData(object));
    }
 )#removeExpr
 
@@ -1338,13 +1336,15 @@ setMethod("mvaplot", signature(x="ExprTreeSet"),
 
 setMethod("nuseplot", signature(x="ExprTreeSet"),
    function(x,
-            which   = "UnitName",
-            size    = 0,
-            range   = 0,
-            ylim    = c(0.9,1.2),
-            outline = FALSE,
-            names   = "namepart",
-            las     = 2,
+            which    = "UnitName",
+            size     = 0,
+            range    = 0,
+            names    = "namepart",
+            main     = "NUSE Plot",
+            ylim     = c(0.8, 1.2),
+            las      = 2,
+            add.line = TRUE,
+            outline  = FALSE,
             ...) 
    {
       if (debug.xps()) print("------nuseplot.ExprTreeSet------")
@@ -1364,11 +1364,13 @@ setMethod("nuseplot", signature(x="ExprTreeSet"),
               range   = range,
               xlab    = '',
               xaxt    = 'n',
+              main    = main,
               ylim    = ylim,
-              outline = outline,
-              las     = las);
-      abline(1, 0);
-      axis(side=1, outer=F, at=1:length(names), labels=names, ...);
+              outline = outline);
+      if (add.line) {
+         abline(1, 0, lty=2, col="gray70");
+      }#if
+      axis(side=1, outer=F, at=1:length(names), labels=names, las=las, ...);
    }
 )#nuseplot
 
@@ -1479,27 +1481,31 @@ setMethod("pcaplot", signature(x="ExprTreeSet"),
 
 setMethod("rleplot", signature(x="ExprTreeSet"),
    function(x,
-            which   = "UnitName",
-            size    = 0,
-            range   = 0,
-            ylim    = c(-0.75,0.75),
-            outline = FALSE,
-            names   = "namepart",
-            las     = 2,
+            which    = "UnitName",
+            size     = 0,
+            range    = 0,
+            names    = "namepart",
+            main     = "RLE Plot",
+            ylim     = c(-1.0, 1.0),
+            las      = 2,
+            add.line = TRUE,
+            outline  = FALSE,
             ...) 
    {
       if (debug.xps()) print("------rleplot.ExprTreeSet------")
 
       mboxplot(x,
-               which   = which,
-               size    = size,
-               transfo = log2,
-               method  = "median",
-               range   = range,
-               ylim    = ylim,
-               outline = outline,
-               names   = names,
-               las     = las,
+               which    = which,
+               size     = size,
+               transfo  = log2,
+               method   = "median",
+               range    = range,
+               names    = names,
+               main     = main,
+               ylim     = ylim,
+               las      = las,
+               add.line = add.line,
+               outline  = outline,
                ...);
    }
 )#rleplot

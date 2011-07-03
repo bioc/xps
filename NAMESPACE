@@ -64,6 +64,7 @@ exportMethods("export",
 
 ## class SchemeTreeSet
 exportMethods("attachMask",
+              "attachUnitNames",
               "chipMask",
               "chipMask<-",
               "chipName",
@@ -72,34 +73,49 @@ exportMethods("attachMask",
               "ncols",
               "nrows",
               "probeInfo",
-              "removeMask")
+              "probesetID2unitID",
+              "removeMask",
+              "removeUnitNames",
+              "transcriptID2unitID",
+              "unitID2probesetID",
+              "unitID2transcriptID",
+              "unitNames",
+              "unitNames<-")
 
 ## class ProcesSet
-exportMethods("boxplot",
+exportMethods("attachData",
+              "boxplot",
               "getTreeData",
               "hist",
               "image",
               "mboxplot",
+              "removeData",
               "schemeFile",
               "schemeFile<-",
               "schemeSet",
               "schemeSet<-",
+              "treeData",
               "validData")
 
 ## class DataTreeSet
 exportMethods("addData",
               "attachBgrd",
+              "attachDataXY",
               "attachInten",
               "background",
               "background<-",
               "bgtreeNames",
+              "indexUnits",
               "intensity",
               "intensity<-",
               "mm",
+              "mmindex",
               "pm",
+              "pmindex",
               "pmplot",
               "rawCELName",
               "removeBgrd",
+              "removeDataXY",
               "removeInten",
               "validBgrd",
               "xpsBgCorrect",
@@ -220,9 +236,16 @@ export(qualify.rlm)
 export(fitQC, fitRLM, rmaPLM)
 #export(fitQC, fitPLM, fitRLM, rmaPLM)
 export(AffyRNAdeg, summaryAffyRNAdeg, plotAffyRNAdeg)
-export(boxplot.dev, image.dev, mvaplot.dev)
 export(prefilter, unifilter)
-export(plotImage, plotBoxplot)
+
+## plot device  functions
+export(boxplot.dev, image.dev, mvaplot.dev)
+export(plotBoxplot, plotDensity, plotImage)
+export(plotPM)
+export(plotCorr, plotMAD, plotMA, plotNUSE, plotPCA, plotRLE)
+export(plotCall)
+export(plotBorder, plotCOI)
+export(plotVolcano)
 
 ## contructor functions
 export(ProjectInfo)

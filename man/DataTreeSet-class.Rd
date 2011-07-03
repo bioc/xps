@@ -4,6 +4,7 @@
 \alias{DataTreeSet}
 \alias{addData,DataTreeSet-method}
 \alias{attachBgrd,DataTreeSet-method}
+\alias{attachDataXY,DataTreeSet-method}
 \alias{attachInten,DataTreeSet-method}
 \alias{attachMask,DataTreeSet-method}
 \alias{background,DataTreeSet-method}
@@ -12,17 +13,22 @@
 \alias{background<-}
 \alias{bgtreeNames,DataTreeSet-method}
 \alias{bgtreeNames}
+\alias{hist,DataTreeSet-method}
+\alias{indexUnits,DataTreeSet-method}
 \alias{intensity,DataTreeSet-method}
 \alias{intensity<-,DataTreeSet,data.frame-method}
 \alias{mm,DataTreeSet-method}
+\alias{mmindex,DataTreeSet-method}
 \alias{ncols,DataTreeSet-method}
 \alias{nrows,DataTreeSet-method}
 \alias{pm,DataTreeSet-method}
+\alias{pmindex,DataTreeSet-method}
 \alias{pmplot,DataTreeSet-method}
 \alias{projectInfo,DataTreeSet-method}
 \alias{projectInfo<-,DataTreeSet,ProjectInfo-method}
 \alias{rawCELName,DataTreeSet-method}
 \alias{removeBgrd,DataTreeSet-method}
+\alias{removeDataXY,DataTreeSet-method}
 \alias{removeInten,DataTreeSet-method}
 \alias{removeMask,DataTreeSet-method}
 \alias{validBgrd,DataTreeSet-method}
@@ -86,6 +92,8 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
      update \code{\link{ROOT}} data file \code{rootfile}.}
     \item{attachBgrd}{\code{signature(object = "DataTreeSet")}: exports background trees from 
      \code{\link{ROOT}} data file and and saves as data.frame \code{bgrd}.}
+    \item{attachDataXY}{\code{signature(object = "DataTreeSet")}: exports (x,y)-coordinates from 
+     \code{\link{ROOT}} data file and and saves as data.frame \code{data}.}
     \item{attachInten}{\code{signature(object = "DataTreeSet")}: exports intensity trees from 
      \code{\link{ROOT}} data file and and saves as data.frame \code{data}.}
     \item{attachMask}{\code{signature(object = "DataTreeSet")}: exports scheme tree from 
@@ -93,14 +101,20 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
     \item{background}{\code{signature(object = "DataTreeSet")}: extracts slot \code{bgrd}.}
     \item{background<-}{\code{signature(object = "DataTreeSet", value = "data.frame")}: replaces slot \code{bgrd}.}
     \item{bgtreeNames}{\code{signature(object = "DataTreeSet")}: extracts slot \code{bgtreenames}.}
+    \item{indexUnits}{\code{signature(object = "DataTreeSet")}: extracts (x,y)-coordinates and corresponding
+     indices for all or selected unitIDs.}
     \item{intensity}{\code{signature(object = "DataTreeSet")}: extracts slot \code{data}.}
     \item{intensity<-}{\code{signature(object = "DataTreeSet", value = "data.frame")}: replaces slot \code{data}.}
     \item{mm}{\code{signature(object = "DataTreeSet")}: extracts the mismatch intensities.}
+    \item{mmindex}{\code{signature(object = "DataTreeSet")}: extracts (x,y)-coordinates and corresponding
+     MM indices for all or selected unitIDs.}
     \item{ncols}{\code{signature(object = "DataTreeSet")}: extracts the physical number of 
      array columns from slot \code{scheme}.}
     \item{nrows}{\code{signature(object = "DataTreeSet")}: extracts the physical number of 
      array rows from slot \code{scheme}.}
     \item{pm}{\code{signature(object = "DataTreeSet")}: extracts the perfect match intensities.}
+    \item{pmindex}{\code{signature(object = "DataTreeSet")}: extracts (x,y)-coordinates and corresponding
+     PM indices for all or selected unitIDs.}
     \item{pmplot}{\code{signature(x = "DataTreeSet")}: creates a barplot of mean perfect match and
      mismatch intensities.}
     \item{projectInfo}{\code{signature(object = "DataTreeSet")}: extracts slot \code{projectinfo}.}
@@ -108,6 +122,8 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
     \item{rawCELName}{\code{signature(object = "DataTreeSet")}: returns the name(s) of the 
      imported raw CEL-files.}
     \item{removeBgrd}{\code{signature(object = "DataTreeSet")}: replaces data.frame \code{bgrd} 
+     with an empty data.frame of dim(0,0).}
+    \item{removeDataXY}{\code{signature(object = "DataTreeSet")}: replaces data.frame \code{data} 
      with an empty data.frame of dim(0,0).}
     \item{removeInten}{\code{signature(object = "DataTreeSet")}: replaces data.frame \code{data} 
      with an empty data.frame of dim(0,0).}

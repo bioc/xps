@@ -1,27 +1,29 @@
 #------------------------------------------------------------------------------#
-# plotBoxplot: 
+# plotPM: 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-"plotBoxplot" <-
+"plotPM" <-
 function(x,
          which   = "",
          size    = 0,
-         transfo = log2,
-         range   = 0,
+         transfo = NULL,
+         method  = mean,
          names   = "namepart",
-         mar     = NULL,
+         beside  = TRUE,
+         col     = c("red", "blue"),
+         legend  = c("PM","MM"),
          las     = 2,
-         cex     = 1.0,
+         ylab    = "mean intensities",
          dev     = "screen",
-         outfile = "BoxPlot",
-         w       = 800,
+         outfile = "PMPlot",
+         w       = 540,
          h       = 540,
          ...) 
 {
-   if (debug.xps()) print("------plotBoxplot------")
+   if (debug.xps()) print("------plotPM------")
 
    ## check for correct class
-   if (!extends(class(x), "ProcesSet")) {
-      stop(paste(sQuote("x"), "is not derived from class", sQuote("ProcesSet")));
+   if (!is(x, "DataTreeSet")) {
+      stop(paste(sQuote("x"), "is not class", sQuote("DataTreeSet")));
    }#if
 
    ## add extension to outfile
@@ -42,26 +44,23 @@ function(x,
       stop(paste("unknown device dev=", sQuote(dev)));
    }#if
 
-   if (is.null(mar)) {
-      bmar <- NULL;
-   } else {
-      bmar <- list(b=mar[1], cex=cex, w=w);
-   }#if
-
    ## plot data
-   boxplot(x,
-           which   = which,
-           size    = size,
-           transfo = transfo,
-           range   = range,
-           names   = names,
-           bmar    = bmar,
-           las     = las,
-           ...)
+   pmplot(x,
+          which   = which,
+          size    = size,
+          transfo = transfo,
+          method  = method,
+          names   = names,
+          beside  = beside,
+          col     = col,
+          legend  = legend,
+          las     = las,
+          ylab    = ylab,
+          ...);
 
    if (dev != "screen") {
       dev.off();
    }#if
-}#plotBoxplot
+}#plotPM
 
 #------------------------------------------------------------------------------#

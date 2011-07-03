@@ -14,11 +14,16 @@
 # removeInten:
 # attachBgrd:
 # removeBgrd:
+# attachDataXY: 
+# removeDataXY: 
 # attachMask:
 # removeMask:
 # validData:
 # validBgrd:
 # addData:
+# indexUnits: 
+# pmindex:
+# mmindex:
 # pm:
 # mm:
 # rawCELName:
@@ -34,7 +39,8 @@
 # xpsNormalize:
 # xpsSummarize:
 # xpsQualify:
-# pmplot:
+# hist: 
+# pmplot: 
 #==============================================================================#
 
 
@@ -254,7 +260,9 @@ setReplaceMethod("projectInfo", signature(object="DataTreeSet", value="ProjectIn
 #------------------------------------------------------------------------------#
 
 setMethod("attachInten", signature(object="DataTreeSet"),
-   function(object, treenames="*") {
+   function(object,
+            treenames = "*")
+   {
       if (debug.xps()) print("------attachInten.DataTreeSet------")
 
       treetype <- extenPart(object@treenames);
@@ -279,16 +287,16 @@ setMethod("removeInten", signature(object="DataTreeSet"),
    function(object) {
       if (debug.xps()) print("------removeInten.DataTreeSet------")
 
-      intensity(object, NULL, FALSE) <- data.frame(matrix(nr=0,nc=0));
-      gc(); #????
-      return(object);
+      return(removeData(object));
    }
 )#removeInten
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 setMethod("attachBgrd", signature(object="DataTreeSet"),
-   function(object, treenames="*") {
+   function(object,
+            treenames = "*")
+   {
       if (debug.xps()) print("------attachBgrd.DataTreeSet------")
 
       treetype <- extenPart(object@bgtreenames);
@@ -321,6 +329,36 @@ setMethod("removeBgrd", signature(object="DataTreeSet"),
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+setMethod("attachDataXY", signature(object="DataTreeSet"),
+   function(object)
+   {
+      if (debug.xps()) print("------attachDataXY.DataTreeSet------")
+
+      treename <- treeNames(object)[[1]];
+      treetype <- extenPart(treename);
+      object@data <- export(object,
+                            treenames    = treename,
+                            treetype     = treetype,
+                            varlist      = "fX:fY",
+                            outfile      = "dataXY.txt",
+                            as.dataframe = TRUE,
+                            verbose      = FALSE);
+      return(object);
+   }
+)#attachDataXY
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("removeDataXY", signature(object="DataTreeSet"),
+   function(object) {
+      if (debug.xps()) print("------removeDataXY.DataTreeSet------")
+
+      return(removeData(object));
+   }
+)#removeDataXY
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 setMethod("attachMask", signature(object="DataTreeSet"),
    function(object) {
       if (debug.xps()) print("------attachMask.DataTreeSet------")
@@ -350,71 +388,22 @@ setMethod("removeMask", signature(object="DataTreeSet"),
 
 "dataDataTreeSet" <-
 function(object,
-         which="") 
+         which = "") 
 {
    if (debug.xps()) print("------dataDataTreeSet------")
 
    ## check for presence of data
-   data  <- object@data;
+   data <- object@data;
    if (min(dim(data)) == 0) {
       stop(paste("slot", sQuote("data"), "has no data"));
    }#if
 
-   ## get column number for chip
-   ncol <- ncols(object@scheme);
-
-   ## check for presence of scheme mask
-   msk <- chipMask(object@scheme);
-   if (nrow(msk) == 0 || ncol(msk) == 0) {
-      cat("slot", sQuote("mask"), "of", sQuote("scheme"),
-          "is empty, importing mask from scheme.root...\n");
-      msk <- export(object@scheme,
-                    treetype     = "scm",
-                    varlist      = "fMask",
-                    as.dataframe = TRUE,
-                    verbose      = FALSE);
-   }#if
-   ## need to sort msk to Y then X
-   msk <- msk[order(msk[,"Y"], msk[,"X"]),];
-
-   ## get data indices from scheme mask
-   id <- which(msk[,"Mask"] < 99999999); ##all
-   if (chipType(object) == "GeneChip") {
-      if (which == "pm") {
-         id <- which(msk[,"Mask"] == 1);
-      } else if (which == "mm") {
-         id <- which(msk[,"Mask"] == 0);
-      } else if (which == "both") {
-         id <- c(which(msk[,"Mask"] == 1), which(msk[,"Mask"] == 0));
-         id <- id[order(id)];
-      }#if
-   } else if (chipType(object) == "GenomeChip") {
-      if (which == "") {
-         id <- 1:nrow(data); ##all
-      } else if (which == "antigenomic") {
-         id <- exonLevelIDs(-2, data, msk, ncol);
-      } else {
-         level <- exonLevel(which, "GenomeChip", as.sum=FALSE);
-         id    <- exonLevelIDs(level, data, msk, ncol);
-      }#if
-   } else if (chipType(object) == "ExonChip") {
-      if (which == "") {
-         id <- 1:nrow(data); ##all
-      } else if (which == "genomic") {
-         id <- exonLevelIDs(-1, data, msk, ncol);
-      } else if (which == "antigenomic") {
-         id <- exonLevelIDs(-2, data, msk, ncol);
-      } else {
-         level <- exonLevel(which, "ExonChip", as.sum=FALSE);
-         id    <- exonLevelIDs(level, data, msk, ncol);
-      }#if
-   }#if
+   id <- indexUnits(object, which=which, unitid="", data=data);
 
    treenames <- namePart(object@treenames);
    datanames <- namePart(colnames(data));
 
-   ds <- data[,!is.na(match(datanames, treenames))];
-   return(ds[id,]);
+   return(data[id,!is.na(match(datanames, treenames))]);
 }#dataDataTreeSet
 
 setMethod("validData", "DataTreeSet", dataDataTreeSet);
@@ -423,7 +412,7 @@ setMethod("validData", "DataTreeSet", dataDataTreeSet);
 
 "bgrdDataTreeSet" <-
 function(object,
-         which="") 
+         which = "") 
 {
    if (debug.xps()) print("------bgrdDataTreeSet------")
 
@@ -433,55 +422,7 @@ function(object,
       stop(paste("slot", sQuote("bgrd"), "has no data"));
    }#if
 
-   ## get column number for chip
-   ncol <- ncols(object@scheme);
-
-   ## check for presence of scheme mask
-   msk <- chipMask(object@scheme);
-   if (nrow(msk) == 0 || ncol(msk) == 0) {
-      cat("slot", sQuote("mask"), "of", sQuote("scheme"),
-          "is empty, importing mask from scheme.root...\n");
-      msk <- export(object@scheme,
-                    treetype     = "scm",
-                    varlist      = "fMask",
-                    as.dataframe = TRUE,
-                    verbose      = FALSE);
-   }#if
-   ## need to sort msk to Y then X
-   msk <- msk[order(msk[,"Y"], msk[,"X"]),];
-
-   ## get data indices from scheme mask
-   id <- which(msk[,"Mask"] < 99999999); ##all
-   if (chipType(object) == "GeneChip") {
-      if (which == "pm") {
-         id <- which(msk[,"Mask"] == 1);
-      } else if (which == "mm") {
-         id <- which(msk[,"Mask"] == 0);
-      } else if (which == "both") {
-         id <- c(which(msk[,"Mask"] == 1), which(msk[,"Mask"] == 0));
-         id <- id[order(id)];
-      }#if
-   } else if (chipType(object) == "GenomeChip") {
-      if (which == "") {
-         id <- 1:nrow(bgrd); ##all
-      } else if (which == "antigenomic") {
-         id <- exonLevelIDs(-2, bgrd, msk, ncol);
-      } else {
-         level <- exonLevel(which, "GenomeChip", as.sum=FALSE);
-         id    <- exonLevelIDs(level, bgrd, msk, ncol);
-      }#if
-   } else if (chipType(object) == "ExonChip") {
-      if (which == "") {
-         id <- 1:nrow(bgrd); ##all
-      } else if (which == "genomic") {
-         id <- exonLevelIDs(-1, bgrd, msk, ncol);
-      } else if (which == "antigenomic") {
-         id <- exonLevelIDs(-2, bgrd, msk, ncol);
-      } else {
-         level <- exonLevel(which, "ExonChip", as.sum=FALSE);
-         id    <- exonLevelIDs(level, bgrd, msk, ncol);
-      }#if
-   }#if
+   id <- indexUnits(object, which=which, unitid="", data=bgrd);
 
    treenames <- namePart(object@bgtreenames);
    bgrdnames <- namePart(colnames(bgrd));
@@ -701,6 +642,155 @@ function(object,
 }#addDataDataTreeSet
 
 setMethod("addData", "DataTreeSet", addDataDataTreeSet);
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+"indexDataTreeSet" <-
+function(object,
+            which   = "",
+            unitid  = NULL,
+            as.list = FALSE,
+            data    = NULL) 
+{
+   if (debug.xps()) print("------indexDataTreeSet.DataTreeSet------")
+
+   ## get scheme mask for (x,y)
+   msk <- chipMask(object@scheme);
+   if (min(dim(msk)) == 0) {
+      msk <- export(object@scheme,
+                    treetype     = "scm",
+                    varlist      = "fMask",
+                    as.dataframe = TRUE,
+                    verbose      = FALSE);
+   }#if
+
+   ## get column number for chip
+   ncol <- ncols(object@scheme);
+
+   ## initialize exon level
+   level <- 0;
+
+   ## get data indices from scheme mask
+   id <- which(msk[,"Mask"] < 99999999); ##all
+   if (chipType(object) == "GeneChip") {
+      ## if no unitid need to sort msk to Y then X (as in *.cel)
+      if (is.null(unitid) || unitid == "") {
+         msk <- msk[order(msk[,"Y"], msk[,"X"]),];
+      }#if
+
+      if (which == "pm") {
+         id <- which(msk[,"Mask"] == 1);
+      } else if (which == "mm") {
+         id <- which(msk[,"Mask"] == 0);
+      } else if (which == "both") {
+         id <- c(which(msk[,"Mask"] == 1), which(msk[,"Mask"] == 0));
+         id <- id[order(id)];
+      }#if
+   } else if (chipType(object) == "GenomeChip") {
+      if (is.null(data)) {
+         data <- getDataXY(object);
+      }#if
+
+      if (which[1] == "") {
+         id <- 1:nrow(data); ##all
+      } else if (which[1] == "antigenomic") {
+         level <- -2;
+         id    <- exonLevelIDs(level, data, msk, ncol);
+      } else {
+         level <- exonLevel(which, "GenomeChip", as.sum=FALSE);
+         id    <- exonLevelIDs(level, data, msk, ncol);
+      }#if
+   } else if (chipType(object) == "ExonChip") {
+      if (is.null(data)) {
+         data <- getDataXY(object);
+      }#if
+
+      if (which[1] == "") {
+         id <- 1:nrow(data); ##all
+      } else if (which[1] == "genomic") {
+         level <- -1;
+         id    <- exonLevelIDs(level, data, msk, ncol);
+      } else if (which[1] == "antigenomic") {
+         level <- -2;
+         id    <- exonLevelIDs(level, data, msk, ncol);
+      } else {
+         level <- exonLevel(which, "ExonChip", as.sum=FALSE);
+         id    <- exonLevelIDs(level, data, msk, ncol);
+      }#if
+   }#if
+
+   ## return result
+   if (is.null(unitid)) {
+      return(id);
+   } else if (unitid[1] == "*") {
+      if (chipType(object) == "GeneChip") {
+         msk <- msk[id,];
+         msk <- cbind((msk[, "X"] + ncol*msk[,"Y"] + 1), msk);
+      } else {
+         ## "XY" cannot be rownames since duplicate XY
+         msk <- cbind((msk[, "X"] + ncol*msk[,"Y"] + 1), msk);
+         msk <- msk[!is.na(match(msk[,1], id)),];
+      }#if
+      colnames(msk)[1] <- "XY"
+
+      ## necessary to eliminate probes with duplicate (x,y)
+      if (level[1] != 0) {
+         id  <- unlist(lapply(unique(level), function(x) which(msk[,"Mask"]==x)));
+         msk <- msk[id,];
+      }#if
+
+      if (as.list == TRUE) {
+         return(split(msk[,"XY"], msk[,"UNIT_ID"]));
+      } else {
+         return(msk[,c("UNIT_ID","X","Y","XY")]);
+      }#if
+   } else if (unitid[1] != "") {
+      if (chipType(object) == "GeneChip") {
+         msk <- msk[id,];
+         msk <- cbind((msk[, "X"] + ncol*msk[,"Y"] + 1), msk);
+      } else {
+         ## "XY" cannot be rownames since duplicate XY
+         msk <- cbind((msk[, "X"] + ncol*msk[,"Y"] + 1), msk);
+         msk <- msk[!is.na(match(msk[,1], id)),];
+      }#if
+      colnames(msk)[1] <- "XY"
+
+      ## check for valid UNIT_IDs
+      id  <- unique(msk[,"UNIT_ID"]);
+      len <- length(intersect(id, unitid));
+      if (length(unitid) != len) {
+         stop(paste("only", len, "of", length(unitid), "UNIT_IDs are valid"));
+      }#if
+
+      if (as.list == TRUE) {
+         id <- lapply(unitid, function(x) which(msk[,"UNIT_ID"] == x));
+         id <- lapply(id, function(x) msk[x,"XY"]);
+         names(id) <- unitid;
+         return(id);
+      } else {
+         id <- unlist(lapply(unitid, function(x) which(msk[,"UNIT_ID"] == x)));
+         return(msk[id,c("UNIT_ID","X","Y","XY")]);
+      }#if
+   }#if
+   return(id);
+}#indexDataTreeSet
+
+setMethod("indexUnits", "DataTreeSet", indexDataTreeSet);
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("pmindex", signature(object="DataTreeSet"),
+   function(object, unitid = NULL, as.list = TRUE) {
+      indexUnits(object, which = "pm", unitid, as.list);
+   }
+)#pmindex
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("mmindex", signature(object="DataTreeSet"),
+   function(object, unitid = NULL, as.list = TRUE) {
+      indexUnits(object, which = "mm", unitid, as.list);
+   }
+)#mmindex
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -3388,6 +3478,107 @@ function(object,
 }#qualify.DataTreeSet
 
 setMethod("xpsQualify", "DataTreeSet", qualify.DataTreeSet);
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("hist", signature(x="DataTreeSet"),
+   function(x,
+            which      = "",
+            size       = 0,
+            transfo    = log2,
+            xlab       = "log intensity",
+            ylab       = "density",
+            names      = "namepart",
+            type       = "l",
+            col        = 1:6,
+            lty        = 1:5,
+            add.legend = FALSE,
+            verbose    = TRUE,
+            ...) 
+   {
+      if (debug.xps()) print("------hist.DataTreeSet------")
+
+      treenames <- unlist(treeNames(x));
+      treetype  <- extenPart(treenames);
+
+      if (is.null(names)) {
+         names <- treenames;
+      } else if (names[1] == "namepart") {
+         names <- namePart(treenames);
+      } else {
+         treenames <- getTreeNames(rootFile(x));
+
+         ok <- match(names, treenames);
+         ok <- ok[!is.na(ok)];
+         if (length(ok) == 0) {
+            stop(paste(sQuote("names"), "is not a valid tree name"));
+         }#if
+
+         treenames <- treenames[ok];
+         treetype  <- extenPart(treenames);
+         names     <- treenames;
+      }#if
+
+      ttype <- treetype[!is.na(sapply(treetype, function(x) match(x, BGDTYPE)))];
+      if (length(ttype) > 0) {
+         varlist   <- "fBg";
+         colname   <- "BGRD";
+         treenames <- treenames[grep(unique(treetype), treenames)];
+      } else {
+         varlist   <- "fInten";
+         colname   <- "MEAN";
+         treetype  <- treetype[!is.na(sapply(treetype, function(x) match(x, c(RAWTYPE, ADJTYPE))))];
+         treenames <- treenames[grep(unique(treetype), treenames)];
+      }#if
+
+      id <- indexUnits(x, which=which, unitid="");
+      dx <- NULL;
+      dy <- NULL;
+      for (i in 1:length(treenames)) {
+         if (verbose) cat("importing tree", i, "of", length(treenames), "...\r");
+
+         ds <- export(x,
+                      treenames    = treenames[i],
+                      treetype     = treetype,
+                      varlist      = varlist,
+                      outfile      = "tmp.txt",
+                      as.dataframe = TRUE,
+                      verbose      = FALSE);
+
+         if (size > 1) id <- seq(1, nrow(ds), len=size);
+         ds <- as.matrix(ds[id, colname, drop=FALSE]);
+         if (is.function(transfo)) {
+            ok <- (ds[,1] > 0);
+            ds <- transfo(ds[ok, , drop=FALSE]);
+         }#if
+
+         ds <- density(ds[,1]);
+         dx <- cbind(dx, ds$x);
+         dy <- cbind(dy, ds$y);
+      }#for
+
+      if (verbose) cat("finished importing", length(treenames), "trees.   \n");
+
+      matplot(dx,
+              dy,
+              ylab = ylab,
+              xlab = xlab,
+              type = type,
+              col  = col,
+              lty  = lty,
+              ...);
+
+      if (add.legend) {
+         legend(x      = "topright",
+                legend = namePart(names)[1:length(treenames)],
+                lty    = lty,
+                pt.bg  = "white",
+                col    = col,
+                cex    = 0.6
+               );
+     }#if
+   }
+)#hist
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

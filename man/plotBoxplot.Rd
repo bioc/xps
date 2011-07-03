@@ -48,5 +48,5 @@ boxplot.dev(x, which = "", size = 0, transfo = log2, range = 0, names = "namepar
 \note{
  Function boxplot.dev() will be deprecated since it needs to attachInten()!!
 }
-\seealso{\code{\link{boxplot}}}
+\seealso{\code{\link{boxplot}}, \code{\link{plotBorder}}, \code{\link{plotNUSE}}, \code{\link{plotRLE}}}
 \keyword{device}

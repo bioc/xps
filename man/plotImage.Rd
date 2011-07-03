@@ -7,15 +7,16 @@
 }
 \usage{
 plotImage(x,
-          type    = character(),
-          qualopt = c("raw", "adjusted", "normalized"),
-          transfo = log2,
-          col     = NULL,
-          names   = character(),
-          dev     = "screen",
-          outfile = "Image",
-          w       = 800,
-          h       = 800,
+          type     = character(),
+          qualopt  = c("raw", "adjusted", "normalized"),
+          transfo  = log2,
+          col      = NULL,
+          names    = character(),
+          dev      = "screen",
+          outfile  = "Image",
+          w        = 800,
+          h        = 800,
+          verbose  = TRUE,
           ...) 
 
 image.dev(x, bg = FALSE, transfo = log2, col = gray((0:64)/64), names = "namepart", xlab = "", ylab = "", mar = c(1, 1, 2, 1), dev = "screen", outfile = "Image", w = 540, h = 540, ...)
@@ -38,11 +39,12 @@ image.dev(x, bg = FALSE, transfo = log2, col = gray((0:64)/64), names = "namepar
   \item{outfile}{the name of the output file.}
   \item{w}{the width of the device in pixels.}
   \item{h}{the height of the device in pixels.}
+  \item{verbose}{logical, if \code{TRUE} print status information.}
   \item{\dots}{optional arguments to be passed to \code{image}.}
 }
 \details{
  Creates intensity image(s) or residual image(s), respectively, for each array for the
- selected graphics device.
+ selected graphics device, see \code{\link{image}} for more details.
 
  For intensity image(s) \code{type} must be one of \dQuote{intensity}.
 

@@ -2,6 +2,15 @@
 		CHANGES IN R VERSION 2.14.0
 
 
+VERSION xps-1.13.2
+
+    o add functions plotXXX()
+    o function hist() no longer requires to attachInten()
+    o add functions indexUnits(), pmindex(), mmindex()
+    o add functions probesetID2unitID(), unitID2probesetID(), etc
+    o add functions attachUnitNames(), removeUnitNames()
+    o add functions attachDataXY(), removeDataXY()
+
 VERSION xps-1.13.1
 
     o update function plotImage() to draw background images

@@ -1,16 +1,12 @@
-\name{madplot-methods}
-\docType{methods}
-\alias{madplot-methods}
-\alias{madplot}
-\title{Array-Array Expression Level Distance Plot}
+\name{plotMAD}
+\alias{plotMAD}
+\title{Array-Array Expression Level Distance Plot for Device}
 \description{
  A false color display of between arrays distances, computed as the MAD of the M-values of
- each pair of arrays.
-
-\emph{Usage}
-
-\code{
-madplot(x,
+ each pair of arrays for the selected device.
+}
+\usage{
+plotMAD(x,
         which      = "UnitName",
         transfo    = log2,
         col        = NULL,
@@ -18,8 +14,11 @@ madplot(x,
         sort       = FALSE,
         bmar       = NULL,
         add.legend = FALSE,
+        dev        = "screen",
+        outfile    = "MADPlot",
+        w          = 540,
+        h          = 540,
         ...) 
-}
 }
 \arguments{
   \item{x}{object of class \code{\link{ExprTreeSet}}.}
@@ -30,6 +29,11 @@ madplot(x,
   \item{sort}{logical, if TRUE the correlation matrix will be sorted decreasingly.}
   \item{bmar}{optional \code{list} for bottom margin and axis label magnification \code{cex.axis}.}
   \item{add.legend}{logical, if TRUE then a color bar will be drawn.}
+  \item{dev}{graphics device to plot to, i.e. one of \dQuote{screen}, \dQuote{jpeg},\dQuote{png},
+   \dQuote{pdf} or \dQuote{ps}.}
+  \item{outfile}{the name of the output file.}
+  \item{w}{the width of the device in pixels.}
+  \item{h}{the height of the device in pixels.}
   \item{\dots}{optional arguments to be passed to \code{plot}.}
 }
 \details{
@@ -46,5 +50,5 @@ madplot(x,
  of label characters and the number of smaples.  
 }
 \author{Christian Stratowa}
-\seealso{\code{\link{plotMAD}}, \code{\link{corplot}}}
-\keyword{methods}
+\seealso{\code{\link{madplot}}}
+\keyword{device}

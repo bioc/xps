@@ -1,28 +1,27 @@
-\name{hist-methods}
-\docType{methods}
-\alias{hist-methods}
-\alias{hist}
-\title{Plot Density Estimate}
+\name{plotDensity}
+\alias{plotDensity}
+\title{Plot Density Estimate for Device}
 \description{
- Plot the density estimates for each sample.
-
-\emph{Usage}
-
-\code{
-hist(x,
-     which      = "",
-     size       = 0,
-     transfo    = log2,
-     xlab       = "log intensity",
-     ylab       = "density",
-     names      = "namepart",
-     type       = "l",
-     col        = 1:6,
-     lty        = 1:5,
-     add.legend = FALSE,
-     verbose    = TRUE,
-     ...)
+ Plot the density estimates for each sample for the selected device.
 }
+\usage{
+plotDensity(x,
+            which      = "",
+            size       = 0,
+            transfo    = log2,
+            ylab       = "density",
+            xlab       = "log intensity",
+            names      = "namepart",
+            type       = "l",
+            col        = 1:6,
+            lty        = 1:5,
+            add.legend = FALSE,
+            dev        = "screen",
+            outfile    = "DensityPlot",
+            w          = 540,
+            h          = 540,
+            verbose    = TRUE,
+            ...) 
 }
 \arguments{
   \item{x}{object of class \code{\link{DataTreeSet}} or \code{\link{ExprTreeSet}}.}
@@ -36,6 +35,11 @@ hist(x,
   \item{col}{colors to use for the different arrays.}
   \item{lty}{line types to use for the different arrays.}
   \item{add.legend}{logical, if TRUE then a legend will be drawn.}
+  \item{dev}{graphics device to plot to, i.e. one of \dQuote{screen}, \dQuote{jpeg},\dQuote{png},
+   \dQuote{pdf} or \dQuote{ps}.}
+  \item{outfile}{the name of the output file.}
+  \item{w}{the width of the device in pixels.}
+  \item{h}{the height of the device in pixels.}
   \item{verbose}{logical, if \code{TRUE} print status information.}
   \item{\dots}{optional arguments to be passed to \code{plot}.}
 }
@@ -47,18 +51,5 @@ hist(x,
  is a vector of column names, only these columns will displayed as callplot.
 }
 \author{Christian Stratowa}
-\note{
- For objects of class \code{DataTreeSet} it is no longer necessary to \code{attachInten} since
- each data tree will be imported separately.
-}
-\seealso{\code{\link{plotDensity}}}
-\examples{
-## load existing ROOT scheme file and ROOT data file
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
-data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
-
-if (interactive()) {
-hist(data.test3)
-}
-}
-\keyword{methods}
+\seealso{\code{\link{hist}}}
+\keyword{device}

@@ -8,9 +8,26 @@
 
 \emph{Usage}
 
-\code{image(x, bg = FALSE, transfo = log2, col = NULL, names = "namepart", xlab = "", ylab = "", add.legend = FALSE, ...)}
+\code{image(x,
+            bg        = FALSE,
+            transfo    = log2,
+            col        = NULL,
+            names      = "namepart",
+            xlab       = "",
+            ylab       = "",
+            add.legend = FALSE,
+            ...)}
 
-\code{image(x, type = c("resids", "pos.resids", "neg.resids", "sign.resids", "weights"), qualopt = c("raw", "adjusted", "normalized"), transfo = log2, col = NULL, names = "namepart", xlab = "", ylab = "", add.legend = FALSE, ...)}
+\code{image(x,
+            type       = c("resids", "pos.resids", "neg.resids", "sign.resids", "weights"),
+            qualopt    = c("raw", "adjusted", "normalized"),
+            transfo    = log2,
+            col        = NULL,
+            names      = "namepart",
+            xlab       = "",
+            ylab       = "",
+            add.legend = FALSE,
+            ...)}
 }
 \arguments{
   \item{x}{object of class \code{\link{ProcesSet}}.}

@@ -1,15 +1,12 @@
-\name{rleplot-methods}
-\docType{methods}
-\alias{rleplot-methods}
-\alias{rleplot}
-\title{Box Plots of Relative Log Expression (RLE)}
+\name{plotRLE}
+\alias{plotRLE}
+\title{Box Plots of Normalized Unscaled Standard Errors (NUSE) for Device}
 \description{
-  Produce boxplots of Relative Log Expression (RLE) values for the set of arrays.
-
-\emph{Usage}
-
-\code{
-rleplot(x,
+ Produce boxplot of Normalized Unscaled Standard Errors (NUSE) for the set of arrays and
+ the selected device.
+}
+\usage{
+plotRLE(x,
         which    = "UnitName",
         size     = 0,
         range    = 0,
@@ -19,8 +16,12 @@ rleplot(x,
         las      = 2,
         add.line = TRUE,
         outline  = FALSE,
+        dev      = "screen",
+        outfile  = "RLEPlot",
+        w        = 800,
+        h        = 540,
+        verbose  = TRUE,
         ...) 
-}
 }
 \arguments{
   \item{x}{object of class \code{\link{ExprTreeSet}} or \code{\link{QualTreeSet}}.}
@@ -33,6 +34,12 @@ rleplot(x,
   \item{las}{the style of axis labels.}
   \item{add.line}{\code{logical}, if TRUE a horizontal line is drawn.}
   \item{outline}{if \code{outline} is not true, the outliers are not drawn.}
+  \item{dev}{graphics device to plot to, i.e. one of \dQuote{screen}, \dQuote{jpeg},\dQuote{png},
+   \dQuote{pdf} or \dQuote{ps}.}
+  \item{outfile}{the name of the output file.}
+  \item{w}{the width of the device in pixels.}
+  \item{h}{the height of the device in pixels.}
+  \item{verbose}{logical, if \code{TRUE} print status information.}
   \item{\dots}{optional arguments to be passed to \code{boxplot}.}
 }
 \details{
@@ -44,14 +51,5 @@ rleplot(x,
  is a vector of column names, only these columns will displayed as boxplot.
 }
 \author{Christian Stratowa}
-\seealso{\code{\link{plotRLE}}, \code{\link{mboxplot}}, \code{\link{nuseplot}}}
-\examples{
-# load existing ROOT scheme file and ROOT expression file for rma
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
-data.rma <- root.expr(scheme.test3, paste(.path.package("xps"),"rootdata/tmp_Test3RMA.root",sep="/"), "mdp")
-
-if (interactive()) {
-rleplot(data.rma)
-}
-}
-\keyword{methods}
+\seealso{\code{\link{rleplot}}}
+\keyword{device}

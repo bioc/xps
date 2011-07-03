@@ -1,26 +1,25 @@
-\name{corplot-methods}
-\docType{methods}
-\alias{corplot-methods}
-\alias{corplot}
-\title{Array-Array Expression Level Correlation Plot}
+\name{plotCorr}
+\alias{plotCorr}
+\title{Array-Array Expression Level Correlation Plot for Device}
 \description{
- A heat map of the array-array Spearman rank correlation coefficients.
-
-\emph{Usage}
-
-\code{
-corplot(x,
-        which      = "UnitName",
-        transfo    = log2,
-        method     = "spearman",
-        col        = NULL,
-        names      = "namepart",
-        sort       = FALSE,
-        reverse    = TRUE,
-        bmar       = NULL,
-        add.legend = FALSE,
-        ...) 
+ A heat map of the array-array Spearman rank correlation coefficients for the selected device.
 }
+\usage{
+plotCorr(x,
+         which      = "UnitName",
+         transfo    = log2,
+         method     = "spearman",
+         col        = NULL,
+         names      = "namepart",
+         sort       = FALSE,
+         reverse    = TRUE,
+         bmar       = NULL,
+         add.legend = FALSE,
+         dev        = "screen",
+         outfile    = "CorrelationPlot",
+         w          = 540,
+         h          = 540,
+         ...) 
 }
 \arguments{
   \item{x}{object of class \code{\link{ExprTreeSet}}.}
@@ -33,6 +32,11 @@ corplot(x,
   \item{reverse}{logical, if TRUE the correlation matrix will be replaced by \code{1 - cor()}.}
   \item{bmar}{optional \code{list} for bottom margin and axis label magnification \code{cex.axis}.}
   \item{add.legend}{logical, if TRUE then a color bar will be drawn.}
+  \item{dev}{graphics device to plot to, i.e. one of \dQuote{screen}, \dQuote{jpeg},\dQuote{png},
+   \dQuote{pdf} or \dQuote{ps}.}
+  \item{outfile}{the name of the output file.}
+  \item{w}{the width of the device in pixels.}
+  \item{h}{the height of the device in pixels.}
   \item{\dots}{optional arguments to be passed to \code{plot}.}
 }
 \details{
@@ -48,8 +52,5 @@ corplot(x,
  of label characters and the number of samples.  
 }
 \author{Christian Stratowa}
-\note{
-Setting \code{reverse = FALSE} displays the correlation heat map as in package \code{affyQCReport}.
-}
-\seealso{\code{\link{plotCorr}}, \code{\link{madplot}}}
-\keyword{methods}
+\seealso{\code{\link{corplot}}}
+\keyword{device}
