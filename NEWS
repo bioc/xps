@@ -2,6 +2,10 @@
 		CHANGES IN R VERSION 2.14.0
 
 
+VERSION xps-1.13.3
+    o correct problem in unitID2affyID() on Linux caused by sQuote()
+
+
 VERSION xps-1.13.2
 
     o add functions plotXXX()

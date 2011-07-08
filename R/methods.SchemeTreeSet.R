@@ -249,7 +249,7 @@ function(object,
    }#if
 
    id  <- split(id[,unitname], id[,"UNIT_ID"]);
-   id  <- lapply(unitID, function(x) eval(parse(text=paste("id",sQuote(x),sep="$"))));
+   id  <- lapply(unitID, function(x) eval(parse(text=paste("id$'", x, "'", sep=""))));
    len <- length(unlist(id));
    if (len != length(unitID)) {
       stop(paste("only", len, "of", length(unitID), "UNIT_IDs are valid"));
