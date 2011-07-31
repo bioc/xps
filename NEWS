@@ -2,9 +2,12 @@
 		CHANGES IN R VERSION 2.14.0
 
 
+VERSION xps-1.13.4
+    o move to ROOT version 5.30/00, update README
+    o update vignettes xps.Rnw and xpsClasses.Rnw
+
 VERSION xps-1.13.3
     o correct problem in unitID2affyID() on Linux caused by sQuote()
-
 
 VERSION xps-1.13.2
 

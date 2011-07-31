@@ -7,7 +7,7 @@ oriented framework developed at CERN. Thus, the prior installation of
 ROOT is a prerequisite for the usage of this package. ROOT can be
 downloaded from http://root.cern.ch. 
 
-Copyright (C) 2000-2010 Christian Stratowa, Vienna, Austria
+Copyright (C) 2000-2011 Christian Stratowa, Vienna, Austria
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -32,13 +32,15 @@ Content:
 
 I.   Install ROOT:
  Ia.  Install ROOT from source
- Ib.  Install ROOT for Windows
+ Ib.  Install ROOT for Windows XP
  Ic.  Install ROOT for Mac OS X
  Id.  Notes on  ROOT
 II.  Install package 'xps':
  IIa.  Install 'xps' from source
- IIb.  Install 'xps' for Windows
- IIc.  Tested architectures
+ IIb.  Install 'xps' as binary
+ IIc.  Install 'xps' for Windows XP
+ IId.  Install 'xps' for Windows 7 (Vista)
+ IIe.  Tested architectures
 III. Learning how to use package 'xps'
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -52,8 +54,12 @@ I. Install ROOT:
 
    1. get the sources of the latest ROOT from:
       http://root.cern.ch/drupal/content/downloading-root
+      or from: ftp://root.cern.ch/root/
 
-      Note: you can unzip root locally in any directory, resulting in <path>/root
+      Note 1: you can unzip root locally in any directory, resulting in <path>/root
+
+      Note 2: If you want to install root in a fixed location please read:
+              http://root.cern.ch/drupal/content/installing-root-source
 
    2. set ROOTSYS to the `root' directory:
 
@@ -65,9 +71,9 @@ I. Install ROOT:
    3. now type the build commands:
 
             all shells:
-              ./configure --help      [optional]
-              ./configure [<arch>]    [e.g. <arch>= linux or macosx]
-              make                    [or, make -j2 for dual CPU machines]
+              ./configure --help    [optional, shows e.g. <arch> for supported architectures]
+              ./configure [<arch>]  [e.g. <arch>= linux or macosx (32bit) or macosx64 (64bit)]
+              make                  [or, make -j2 for dual CPU machines]
 
    4. add $ROOTSYS/bin to PATH and $ROOTSYS/lib to LD_LIBRARY_PATH:
 
@@ -91,12 +97,12 @@ I. Install ROOT:
               root
 
 
- Ib.  Install ROOT for Windows
+ Ib.  Install ROOT for Windows XP
 
-   For Windows users it is important to install the recommended binary version
-   of ROOT, currently: root_v5.27.04.win32.vc90.msi
-   WindowsXP/NT/w2000 with VC++ 9.0, version 5.27/04
-   from: http://root.cern.ch/drupal/content/development-version-52704
+   For Windows XP users it is important to install the recommended binary 
+   version of ROOT, currently: root_v5.30.00.win32.vc90.msi
+   WindowsXP/NT/w2000 with VC++ 9.0, version 5.30/00
+   from: http://root.cern.ch/drupal/content/production-version-530
 
    It is recommended to install ROOT in the default directory C:\root.
    Furthermore, it is necessary to set the environment variable ROOTSYS:
@@ -109,14 +115,24 @@ I. Install ROOT:
  Ic.  Install ROOT for Mac OS X
 
    Mac users can either install ROOT from source or use the recommended binary
-   version of ROOT, currently: root_v5.27.04.macosx105-i386-gcc-4.0.tar.gz
-   This is the binary version for Leopard 32 bit, since the xps binary for
-   BioC 2.8 is built for 32 bit (since the 32 bit version of root is installed).
-   (For Snow Leopard there exist 32 bit and 64 bit binaries of ROOT.)
+   version of ROOT. For Leopard you need to compile the source:
+   root_v5.30.00.source.tar.gz
+
+   For Snow Leopard there exist binaries for 32 bit and 64bit, however, since 
+   the xps binary for BioC 2.9 is built on Leopard for 32 bit you need to
+   install: root_v5.30.00.macosx106-i386-gcc-4.2.tar.gz
 
    Personally, I am a Mac user and do all my development on my MacBook Pro,
    where I have installed WinXP and openSUSE 11.3 using VMware Fusion in order
    to test xps for these architectures. I prefer to install root from source.
+
+   On Leopard I install the 32 bit version:
+      ./configure macosx 
+      make
+
+   On Snow Leopard I install the 64 bit version:
+      ./configure macosx64
+      make
 
 
  Id.  Notes on  ROOT:
@@ -154,17 +170,17 @@ I. Install ROOT:
    to be compiled with the same compiler version as ROOT itself.
 
    Furthermore, daily versions from ROOT can be downloaded via svn and
-   should work fine with 'xps', however, the current versions 5.24/00 and
-   5.27/06 have been used to test 'xps' for both Linux openSUSE 11.3 and
+   should work fine with 'xps', however, the current version 5.30/00 and
+   5.27/04 have been used to test 'xps' for both Linux openSUSE 11.3 and
    MacOS X and WinXP.
 
    Note 4: ROOT fails to compile
    Like R, the ROOT framework can be installed on many architectures, see
    the list of supported architectures, when running  "./configure --help".
    However, ROOT may also compile on a number of other architectures. 
-   In case, the current official source files "root_v5.27.04.source.tar.gz"
-   or "root_v5.24.00.source.tar.gz" fail to compile, you can download the 
-   current development version from svn, see:
+   In case, the current official source file "root_v5.30.00.source.tar.gz"
+   fails to compile, you can download the current development version from 
+   svn, see:
       http://root.cern.ch/drupal/content/subversion-howto
 
    If this still fails and you are still interested to compile ROOT, please
@@ -220,13 +236,13 @@ II.  Install package 'xps':
 
  IIa.  Install 'xps' from source
 
-   Currently, xps can be downloaded as gezipped source file "xps_1.10.0.tar.gz"
-   for MacOS X (Intel and PPC) and for Linux
+   Currently, xps can be downloaded as gezipped source file "xps_1.14.0.tar.gz"
+   for MacOS X and for Linux.
 
    It can be installed with:
-      R CMD INSTALL xps_1.10.0.tar.gz
+      R CMD INSTALL xps_1.14.0.tar.gz
    or e.g. on a Mac in the User library:
-      R CMD INSTALL -l ~/Library/R/library xps_1.10.0.tar.gz
+      R CMD INSTALL -l ~/Library/R/library xps_1.14.0.tar.gz
 
    However, the recommended way to install packages from source is:
       source("http://bioconductor.org/biocLite.R")
@@ -235,28 +251,33 @@ II.  Install package 'xps':
 
  IIb.  Install 'xps' as binary
 
-   Package xps can also be installed as binary for MacOS X and Windows from the 
-   Bioconductor website using:
+   Package xps can also be installed as binary for MacOS X and Windows XP from 
+   the Bioconductor website using:
       source("http://bioconductor.org/biocLite.R")
       biocLite("xps")
 
    Important note: 
-   Please note that Bioconductor has built the xps binaries for release BioC 2.8
-   using ROOT version root_v5.27.04. Thus it is absolutely essential to install
-   this ROOT version first, and not the currently recommended version, otherwise
-   calling xps will result in an error message.You can always download any version
-   of root from: ftp://root.cern.ch/root
+   Please note that Bioconductor has built the xps binaries for release BioC 2.9
+   using ROOT version root_v5.30.00. Thus it is absolutely essential to install
+   this ROOT version first, otherwise calling xps will result in an error message.
+   You can always download any version of root from: ftp://root.cern.ch/root
 
 
- IIc.  Install 'xps' for Windows
+ IIc.  Install 'xps' for Windows XP
 
    The Windows binary of xps can be downloaded from the Bioconductor web site, and
    installed using: biocLite("xps")
 
    If you run xps from Rterm check if `System' in the control panel does contain the 
    following environment variables:
-      PATH:   C:\Programs\R\R-2.12.0\bin;%ROOTSYS%\bin;
+      PATH:   C:\Programs\R\R-2.14.0\bin;%ROOTSYS%\bin;
       ROOTSYS:C:\root
+
+   Note: Starting with BioC 2.9 the main build machine will be a Windows Server 2008 
+         R2 Enterprise (64-bit), which is not able to create Windows XP binaries of xps. 
+         Thus it may be possible that no downloadable binary for Windows XP does exist.
+         Then the only option would be to install xps from source. 
+         Alternatively, I can always send you the xps binary upon request. 
 
    If you want to install xps from source, then you need to do the following:
    You can still install the binaries for ROOT and R but in addition you need 
@@ -269,15 +290,31 @@ II.  Install package 'xps':
    by Microsoft:
       C:\Program Files (x86)\Microsoft Visual Studio 9\VC\vcvarsall.bat (or a similar path).
    Then you can install xps from source as usual:
-      R CMD INSTALL xps_1.10.0.tar.gz
+      R CMD INSTALL xps_1.14.0.tar.gz
 
 
- IId.  Tested architectures
+ IId.  Install 'xps' for Windows 7 (Vista)
+
+   I could install ROOT on Windows 7 (32bit) and could compile xps w/o problems.
+   Furthermore, I could load library(xps). However, using any xps method will result
+   in a bus error. 
+
+   Thus, I am sorry to say that xps does not work with Windows 7. I would like to 
+   support Windows 7 but it seems not to be possible, because it seems that R does 
+   not support DLLs written in VC++ which depend on other DLLs written in VC++, see:
+   https://www.stat.math.ethz.ch/pipermail/bioconductor/2009-December/030783.html
+
+   The only possibility would be to compile ROOT with MinGW, the compiler used by R.
+   Many people have tried to compile ROOT with MinGW, but nobody has succeeded yet. 
+
+
+ IIe.  Tested architectures
 
    Currently, package 'xps' has been built (with R CMD INSTALL) and
    passed R CMD check with no errors and no warnings on the following computers:
    1. MacBook Pro Core 2 Duo 2GHz with 2 GB RAM running MacOS X 10.6.3 and 10.4.11
-      R versions tested: R-2.7.x, R-2.8.x, R-2.9.x, R-2.10.x, R-2.11.x, R-2.12.x
+      R versions tested: R-2.7.x, R-2.8.x, R-2.9.x, R-2.10.x, R-2.11.x, R-2.12.x,
+      R-2.13.x, R-2.14.x
    2. PowerBook Titanium G4 550MHz with 1 GB RAM running MacOS X 10.4.9 and 10.4.11
       R versions tested: R-2.5.0, R-2.6.0, R-2.8.0
    3. HP Compaq nx6110 Intel Centrino 1.4 GHz with 512 MB RAM with Fedora Core 4
@@ -285,7 +322,7 @@ II.  Install package 'xps':
    4. HP Compaq nx6110 Intel Centrino 1.4 GHz with 512 MB RAM with Windows XP
       R versions tested: R-2.6.2, R-2.7.0, R-2.7.1
    5. VMware Fusion on MacBook Pro running Windows XP or openSUSE 11.3
-      R versions tested: R-2.9.x, R-2.10.x, R-2.11.x, R-2.12.x
+      R versions tested: R-2.9.x, R-2.10.x, R-2.11.x, R-2.12.x, R-2.13.x, R-2.14.x
       
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -307,7 +344,7 @@ III. Learning how to use package 'xps'
    in the example script "script4exon.R".
 
    Comments regarding the tested architectures:
-   1. MacBook Pro Intel Core 2 Duo 2GHz with 2 GB RAM running MacOS X 10.4.11
+   1. MacBook Pro Intel Core 2 Duo 2GHz with 2 GB RAM running MacOS X 10.6.6
       All examples were tested, including the Affymetrix human mixture
       dataset for HG-U133_Plus_2, HuGene-1_0-st-v1 AND HuEx-1_0-st-v2.r2
 

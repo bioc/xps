@@ -30,7 +30,7 @@
 \bibliographystyle{plainnat}
 
 \title{Introduction to the xps Package: Classes structure}
-\date{October, 2009}
+\date{July, 2011}
 \author{Christian Stratowa}
 \maketitle
 
@@ -117,6 +117,15 @@
  corresponding p-values are stored as \ROOT\ trees in \ROOT\ call files, accessible via
  class \Rclass{CallTreeSet}.
 \end{description}
+
+In addition, an extra S4 class exists for quality control: 
+
+\begin{description}
+\item
+{{\tt QualTreeSet}:} This class provides the link to the \ROOT\ quality control file and the 
+\ROOT\ trees contained therein. 
+\end{description}
+
 
  All of these S4 classes are derived from the same virtual base class \Rclass{TreeSet}. \\
 
@@ -277,8 +286,8 @@ head(ann)
 
 \subsection{{\tt ProcesSet} class} 
 
- This is the common base class for subclasses \Rclass{DataTreeSet}, \Rclass{ExprTreeSet}, and
- \Rclass{CallTreeSet}, respectively, and contains the following slots:
+ This is the common base class for subclasses \Rclass{DataTreeSet}, \Rclass{ExprTreeSet}, 
+ \Rclass{CallTreeSet} and \Rclass{QualTreeSet}, respectively, and contains the following slots:
 
 <<R>>=
 getClassDef("ProcesSet")
@@ -388,6 +397,24 @@ getClassDef("CallTreeSet")
 
  Slot \Rcode{data} contains the detection call p-values while slot \Rcode{detcall}
  contains the detection calls.
+
+
+\subsection{{\tt QualTreeSet} class} 
+
+ Class \Rclass{QualTreeSet} is obtained as result of fitting probe level models. 
+ It has the following slots:
+
+<<R>>=
+getClassDef("QualTreeSet")
+@
+
+ The additional slots are:
+\begin{description}
+  \item{{\tt qualtype}:}{ Object of class "character", representing the quality control 
+   option, i.e. 'raw', 'adjusted', 'normalized' or 'all'.}
+  \item{{\tt qualopt}:}{ Object of class "character", representing the quality control type, 
+   i.e. 'rlm' the normalization.}
+\end{description}
 
 
 \subsection{{\tt ProjectInfo} class} 

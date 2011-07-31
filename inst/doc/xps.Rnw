@@ -26,7 +26,7 @@
 \begin{document}
 
 \title{Introduction to the xps Package: Overview}
-\date{April, 2011}
+\date{July, 2011}
 \author{Christian Stratowa}
 \maketitle
 
@@ -158,7 +158,7 @@ getTreeNames(rootFile(data.test3))
 
 Now we have all {\it CEL} files imported as \ROOT\ \Rclass{Trees}. In later \Robject{R}-sessions
 we only need to load the corresponding \ROOT\ \Rclass{data} file using function 
-\Rfunction{root.data}. In this tutorial we will not use the file just created but
+\Rfunction{root.data()}. In this tutorial we will not use the file just created but
 the \ROOT\ \Rclass{data} file \Rclass{DataTest3\_cel.root}. \\
 
 
@@ -180,7 +180,7 @@ same name; you will get an error message. If you want to create a temporary \ROO
 \Rclass{data} file, which can be overwritten, the name must start with `tmp\_'. However, 
 in the example above we needed to use `tmpdt\_' otherwise R CMD check would produce 
 an error on Windows. Please note that `tmpdt\_' will not work with function 
-\Rfunction{import.data} for the reason described in Note 3 above.
+\Rfunction{import.data()} for the reason described in Note 3 above.
 
 {\bf Note 5:} It is highly recommended to keep the default setting \Rcode{verbose=TRUE}, 
 especially when working with exon arrays. On Windows you will see the verbose messages
@@ -228,68 +228,6 @@ tmp <- intensity(data.test3)
 head(tmp)
 @
 
-Now we want create some plots with the raw data. For this purpose we need not only
-attach the raw data, as shown above, but also slot \Rcode{mask} of \Rclass{scheme.test3},
-since  slot \Rcode{mask} contains the information which oligos on the array are PM, MM,
-or control oligos, respectivly. See Appendix A1 for an explanation and how  
-to avoid this step.
-<<results=hide>>=
-data.test3 <- attachMask(data.test3)
-data.test3 <- attachInten(data.test3)
-@
-
-{\bf Note:} We have applied method \Rfunction{attachMask} to \Rclass{data.test3} and not
-to \Rclass{scheme.test3}, since \Rclass{data.test3} contains its  own copy of 
-\Rclass{scheme.test3}. \\
-
-
-First, we create a density plot:
-
-\begin{center}
-<<hist, fig=TRUE>>=
-hist(data.test3)
-@
-\end{center}
-
-\pagebreak
-The corresponding boxplots are:
-
-\begin{center}
-<<boxplot, fig=TRUE>>=
-boxplot(data.test3)
-@
-\end{center}
-
-\pagebreak
-It is also possible to create an image for e.g. sample TestA1:
-
-\begin{center}
-<<image, fig=TRUE>>=
-image(data.test3, names="TestA1.cel")
-@
-\end{center}
-
-\pagebreak
-Finally we include a PM-MM-plot of the data:
-
-\begin{center}
-<<pmplot, fig=TRUE>>=
-pmplot(data.test3)
-@
-\end{center}
-
-After we are done, we remove the data from \Rclass{data.test3} to free \Robject{R} memory:
-<<>>=
-data.test3 <- removeInten(data.test3)
-data.test3 <- removeMask(data.test3)
-@
-
-This step is not necessary for small datasets or if the computer has sufficient RAM.
-
-{\bf Note:} From the description above it is evident, that it is not possible to plot exon 
-array data using e.g. functions \Rfunction{hist} or \Rfunction{image}, respectively, on 
-computers with 1GB RAM only. To allow plotting under low memory conditions, package \xps\ 
-supports \ROOT\ graphics, as described in Appendix A4. \\
 
 
 \section{Converting raw data to expression measures}
@@ -378,21 +316,235 @@ head(pval.mas5)
 @
 
 
-\subsection{Plotting results}
 
-Now we want to create some plots for the expression levels. In contrast to the raw data 
-we do not need to attach data, since expression levels and detection calls are already 
-stored in the \Robject{R} objects, e.g. in \Rclass{data.rma}, an instance of S4 class
-\Rclass{ExprTreeSet}, or in \Rclass{call.mas5}, an instance of S4 class \Rclass{CallTreeSet}, 
-respectively.
+\section{Quality control through data exploration}
+
+Quality Control (QC) assessment is a crucial step in successful analysis of microarray data, 
+it has to be done at every step of the analysis. For this purpose every S4 class of package 
+\xps\ provides it's own set of methods. 
+
+
+\subsection{\Rclass{DataTreeSet} based evaluation of raw data}
+
+Class \Rclass{DataTreeSet} allows an initial evaluation of the quality of the raw data. 
+
+\pagebreak
+\subsubsection{Basic quality plots}
+
+As a first step we want create some plots with the raw data. 
+
+{\bf Note:} Since the following plots import the necessary data directly from the \ROOT\ 
+\Rclass{data} file it is no longer necessary to \Rfunction{attachInten()}. \\
+
+First, we create a density plot:
+
+\begin{center}
+<<hist, fig=TRUE>>=
+hist(data.test3)
+@
+\end{center}
+
+\pagebreak
+The corresponding boxplots are:
+
+\begin{center}
+<<boxplot, fig=TRUE>>=
+boxplot(data.test3, which="userinfo:fIntenQuant")
+@
+\end{center}
+
+{\bf Note:} Using parameter \Rcode{which} with \Rcode{userinfo} allows to use pre-calculated 
+quantile values for function \Rfunction{boxplot()}, see the help \Rcode{?treeInfo}. This 
+allows to use \Rfunction{boxplot()} without the need to fill slot \Rcode{data}. 
+
+\pagebreak
+It is also possible to create an image for e.g. sample TestA1:
+
+\begin{center}
+<<image, fig=TRUE>>=
+image(data.test3, names="TestA1.cel")
+@
+\end{center}
+
+{\bf Note 1:} With the current version of package \xps\ the above plots no longer depend on 
+filling slot \Rcode{data} using function \Rfunction{attachInten()}. Instead, all data will be 
+imported from the corresponding \ROOT\ \Rclass{data} file on demand. Thus, it is now possible 
+to apply functions \Rfunction{hist()}, \Rfunction{boxplot()} and \Rfunction{image()}, respectively, 
+to datasets containing many samples, and to exon array data on computers with 1-2 GB RAM only. \\
+
+{\bf Note 2:} In addition to the R-graphics, package \xps\ also supports \ROOT\ graphics as 
+an alternative possibbility to create plots from large data. This is described in Appendix A4. \\
 
 
 \pagebreak
+\subsubsection{Additional quality assessment}
+
+As an additional QC step we include a PM-MM-plot of the data. However, in this case we need 
+not only attach the raw data, as shown above, but also slot \Rcode{mask} of \Rclass{scheme.test3},
+since  slot \Rcode{mask} contains the information which oligos on the array are PM, MM,
+or control oligos, respectivly. See Appendix A1 for an explanation and how  
+to avoid this step.
+<<results=hide>>=
+data.test3 <- attachMask(data.test3)
+data.test3 <- attachInten(data.test3)
+@
+
+{\bf Note:} We have applied method \Rfunction{attachMask()} to \Rclass{data.test3} and not
+to \Rclass{scheme.test3}, since \Rclass{data.test3} contains its  own copy of 
+\Rclass{scheme.test3}. \\
+
+Now we create the PM-MM-plot:
+
+\begin{center}
+<<pmplot, fig=TRUE>>=
+pmplot(data.test3)
+@
+\end{center}
+
+After we are done, we remove the data from \Rclass{data.test3} to free \Robject{R} memory:
+<<>>=
+data.test3 <- removeInten(data.test3)
+data.test3 <- removeMask(data.test3)
+@
+
+This step is not necessary for small datasets or if the computer has sufficient RAM.
+
+
+
+\subsection{\Rclass{QualTreeSet} based quality assessment}
+
+Class \Rclass{QualTreeSet} allows a detailed evalutation of raw data and normalized data by 
+fitting probe level models: 
+
+<<results=hide>>=
+rlm.all <- fitRLM(data.test3,"tmpdt_Test3RLM", qualopt="all", option="transcript", verbose=FALSE)
+@
+
+
+\subsubsection{Evaluating chip quality}
+
+First we produce an RNA degradation plot, which can give some idea of how much degradation 
+of mRNA has occured:
+
+\begin{center}
+<<plotAffyRNAdeg-rlm, fig=TRUE>>=
+rnadeg <- AffyRNAdeg(rlm.all)
+plotAffyRNAdeg(rnadeg, add.legend=TRUE)
+@
+\end{center}
+
+{\bf Note:} Although RNA degradation plots were initially created for expression arrays only 
+function \Rfunction{AffyRNAdeg()} can also be applied to whole genome arrays and exon arrays. \\
+
+
+\pagebreak
+Next we create a "border elements plot" by analyzing the positive and negative control elements 
+on the outer edges of the Affymetrix arrays. This helps to visualise how consistent hybridization
+is around the edges of the arrays: 
+
+\begin{center}
+<<borderplot-rlm, fig=TRUE>>=
+borderplot(rlm.all)
+@
+\end{center}
+
+Large variations in positive controls can indicate non-uniform hybridization or gridding problems. 
+Variations in the negative controls indicate background fluctuations. \\
+
+
+\pagebreak
+As a further test we create "Center Of Intensity" (COI) plots of positive and negative border 
+elements: 
+
+\begin{center}
+<<coiplot-rlm, fig=TRUE>>=
+coiplot(rlm.all)
+@
+\end{center}
+
+If the hybridization is uniform across the array, the location of the COI for the positive/negative 
+elements will be located at the physical center of the array. In this case \Rfunction{coiplot()} 
+will return \Rcode{NULL}. Spatial variations in the hybridization or misalignment of the grid used 
+to determine the cell intensities will cause the COI to move from center. Then the names of affected 
+samples will be returned. \\
+
+
+\pagebreak
+\subsubsection{Fitting probe level models}
+
+Chip pseudo-images are used to detect artifacts on arrays that could pose potential quality problems 
+such as e.g. bubbles or scratches on the chip. Weights and residuals from model fitting procedures 
+can be accessed using methods \Rmethod{weights()} and \Rmethod{residuals()}, respectively, and can be 
+graphically displayed using the method \Rmethod{image()}. \\
+
+As an example we plot a pseudo-image of one array with the "weights":
+
+\begin{center}
+<<image-rlm, fig=TRUE>>=
+image(rlm.all, type="weights", names="TestA1_raw.res", add.legend=FALSE)
+@
+\end{center}
+
+{\bf Note:} Chip pseudo-images can also be applied to whole genome arrays and exon arrays. \\
+
+
+\pagebreak
+Normalized Unscaled Standard Errors (NUSE) can also be used for assessing chip quality. The SE 
+estimates are normalized such that for each probe set the median standard error across all arrays 
+is equal to 1. An array were there are elevated standard errors relative to the other arrays is 
+typically of lower quality. Boxplots of NUSE values can be used to compare the arrays:
+
+\begin{center}
+<<nuseplot-rlm, fig=TRUE>>=
+nuseplot(rlm.all, names="namepart")
+@
+\end{center}
+
+{\bf Note:} Here we show NUSE plots for raw data, background-corrected data and normalized 
+data. 
+
+However, usually boxplots are drawn for normalized data only: 
+
+\Rfunction{nuseplot(rlm.all, names="namepart:normalized")} 
+
+
+\pagebreak
+Relative Log Expression (RLE) plots are another useful measure to assess array quality. For each 
+probeset and array ratios are calculated between the log-expression of a probeset and the median 
+expression of this probeset across all arrays. Assuming that only few genes are differentially 
+expressed across arrays means that most of these RLE values will be centered close to 0. An RLE 
+boxplot can be produced using:
+
+\begin{center}
+<<rleplot-rlm, fig=TRUE>>=
+rleplot(rlm.all, names="namepart")
+@
+\end{center}
+
+{\bf Note:} Here we show RLE plots for raw data, background-corrected data and normalized 
+data. 
+
+However, usually boxplots are drawn for normalized data only: 
+
+\Rfunction{rleplot(rlm.all, names="namepart:normalized")} 
+
+
+\pagebreak
+\subsection{\Rclass{ExprTreeSet} based evaluation of normalized expression measures}
+
+Class \Rclass{ExprTreeSet} has further methods to assess the quality of expression measures. 
+
+\subsubsection{Basic quality plots}
+
+Now we want to create some plots for the expression levels. In contrast to the raw data 
+expression levels are already stored in the \Robject{R} objects, e.g. in \Rclass{data.rma}, 
+an instance of S4 class\Rclass{ExprTreeSet}. \\
+
 First, we create a density plot:
 
 \begin{center}
 <<hist-rma, fig=TRUE>>=
-hist(data.rma)
+hist(data.rma, add.legend=TRUE)
 @
 \end{center}
 
@@ -401,7 +553,7 @@ The corresponding boxplots are:
 
 \begin{center}
 <<boxplot-rma, fig=TRUE>>=
-boxplot(data.rma)
+boxplot(data.rma, bmar=list(b=9, cex.axis=0.8))
 @
 \end{center}
 
@@ -414,8 +566,84 @@ mvaplot(data.rma, pch=20, ylim=c(-2,2), names="TestB1.mdp_LEVEL")
 @
 \end{center}
 
+
+
 \pagebreak
-Finally we create present call plots:
+\subsubsection{Additional quality assessment}
+
+Another possibility to identify problematic arrays is to do between array comparisons. For this 
+purpose we can compute between arrays correlations and between arrays distances. \\
+
+In order to correlate all arrays from an experiment with each other we compute the array-array 
+Spearman rank correlation coefficients and draw a heat map: 
+
+\begin{center}
+<<corplot-rma, fig=FALSE>>=
+corplot(data.rma, add.legend=TRUE)
+@
+\end{center}
+
+\begin{figure}[h]
+\begin{center}
+  \includegraphics{Corrplot_legend.png}
+%  \includegraphics[width=70mm]{Corrplot_legend.png}
+\end{center}
+\end{figure}
+
+On the one hand correlation plots can assess between array quality, e.g. arrays belonging to the 
+same set of replicates should show high correlations, on the other hand these plot can show patterns 
+that reveal the experimental design. 
+
+
+\pagebreak
+Now let us determine the between arrays distances, computed as the MAD of the M-values of each 
+pair of arrays, and drawn as an array-array expression level distance plot (heat map): 
+
+\begin{center}
+<<madplot-rma, fig=FALSE>>=
+madplot(data.rma, add.legend=TRUE)
+@
+\end{center}
+
+\begin{figure}[h]
+\begin{center}
+  \includegraphics{MADplot_legend.png}
+%  \includegraphics[width=70mm]{MADplot_legend.png}
+\end{center}
+\end{figure}
+
+A MAD plot is an exploratory plot that can help detecting outlier arrays and batch effects: 
+If there is an outlier array you will see vertical and horizontal stripes of darker color in 
+the plot. Batch effects can be seen as blocks along the diagonal. 
+
+
+\pagebreak
+Finally we can plot the first two principal components from a principal components analysis (PCA). 
+This is used to show the overall structure of the data: 
+
+\begin{center}
+<<pcaplot-rma, fig=TRUE>>=
+pcaplot(data.rma, group=c("GrpA","GrpA","GrpB","GrpB"), add.labels=TRUE, add.legend=TRUE)
+@
+\end{center}
+
+PCA-plots can be very useful to detect outlier arrays between replicates as well as between 
+different groups. In most cases we expect replicates or groups to group together, indicating 
+general similarity in overall expression patterns.
+
+
+
+\pagebreak
+\subsection{\Rclass{CallTreeSet} based evaluation of detection calls}
+
+Another way to evaluate chip quality is to compare the percentage of present/absent calls. 
+Since the statistics is already pre-calcualted it can be obtained as follows: 
+
+<<>>=
+treeInfo(call.mas5, treetype="dc5", varlist ="userinfo:fPcAbsent:fPcMarginal:fPcPresent")
+@
+
+We can also plot the detection calls: 
 
 \begin{center}
 <<callplot, fig=TRUE>>=
@@ -423,37 +651,9 @@ callplot(call.mas5)
 @
 \end{center}
 
-Since the \ROOT\ expression files contain additional \ROOT\ \Rclass{Trees}, e.g.
-trees containing the computed background intensities, let us create an \Rfunction{image} 
-showing the distribution of the background intensities on an array for MAS5.
-
-First, we need to know the tree names stored in \Rclass{data.mas5}
-<<>>=
-getTreeNames(rootFile(data.mas5))
-@
-We decide to use tree `TestA2.wbg' (extension `wbg' stands for `weighted background', 
-see \Rfunction{?validTreetype}).
-
-In this case we need to export the background intensities directly from \ROOT\ file
-\Rclass{tmp\_Test3MAS5.root}. We can do this in the following way:
-<<results=hide>>=
-bgrd <- export.root(rootFile(data.mas5),schemeFile(data.mas5),"PreprocesSet","TestA2","wbg","fBg","BgrdROOTOut.txt",as.dataframe=TRUE, verbose=FALSE)
-@
-
-Then we need to convert background intensities to an object of type \Robject{matrix}:
-<<>>=
-wbg <- matrix(bgrd[,"BGRD"], ncol=ncols(schemeSet(data.mas5)), nrow=nrows(schemeSet(data.mas5)))
-@
-
-Finally, we can draw the image:
-
-\begin{center}
-<<image-bg, fig=TRUE>>=
-image(log2(wbg))
-@
-\end{center}
 
 
+\pagebreak
 \section{Filtering expression measures}
 
 The \xps\ package can also be used to filter (select) genes according to a variety of 
@@ -591,6 +791,8 @@ head(tmp)
 Now all 181 pre--selected genes are extracted as \Robject{data.frame} together with 
 the corresponding annotation and the filter mask. \\
 
+
+\pagebreak
 It is also possible to create a fold-change vs p-value plot, called \Rcode{volcanoplot}.
 Setting the parameter \Rcode{labels="fSymbol"} allows us to draw the corresponding gene 
 symbols, if known:
