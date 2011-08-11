@@ -2,6 +2,10 @@
 		CHANGES IN R VERSION 2.14.0
 
 
+VERSION xps-1.13.5
+    o update script4schemes.R to include schemes with annotation na32
+    o update script4xps.R and script4exon.R
+
 VERSION xps-1.13.4
     o move to ROOT version 5.30/00, update README
     o update vignettes xps.Rnw and xpsClasses.Rnw

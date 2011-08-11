@@ -406,7 +406,7 @@ setMethod("boxplot", signature(x="ProcesSet"),
                       group = rep(1:ncol(ds), each = 2)
                      );
       } else {
-         bx.p <- boxplot(ds, plot = FALSE, range = range);
+         bx.p <- boxplot(ds, plot = FALSE, names = names, range = range);
       }#if
 
       bxp(bx.p,

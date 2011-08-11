@@ -4,7 +4,7 @@
 # Note: please feel free to copy-paste the examples of interest and adapt the
 #       examples to your own needs
 #
-# Copyright (c) 2007-2010 Christian Stratowa, Vienna, Austria.
+# Copyright (c) 2007-2011 Christian Stratowa, Vienna, Austria.
 # All rights reserved.
 #
 #------------------------------------------------------------------------------#
@@ -43,7 +43,7 @@ scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
 # note: see script "script4schemes.R" how to create the newest scheme files
 #       for many Affymetrix expression arrays
 # note: do not separate name of ROOT files with dots, use underscores,
-#       e.g. do not use "Scheme.Test3.na31" but "Scheme_Test3_na31"
+#       e.g. do not use "Scheme.Test3.na32" but "Scheme_Test3_na32"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -51,16 +51,16 @@ scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # Test3:
-scheme.test3.na31 <- import.expr.scheme("Scheme_Test3_na31", filedir = file.path(scmdir, "na31"),
+scheme.test3.na32 <- import.expr.scheme("test3", filedir = file.path(scmdir, "na32"),
                      schemefile = file.path(libdir, "Test3.CDF"), 
                      probefile  = file.path(libdir, "Test3_probe.tab"), 
-                     annotfile  = file.path(anndir, "Version10Sep", "Test3.na31.annot.csv"))
+                     annotfile  = file.path(anndir, "Version11Jul", "Test3.na32.annot.csv"))
 
 # HG-U133_Plus_2:
-scheme.hgu133plus2.na31 <- import.expr.scheme("Scheme_HGU133p2_na31", filedir = file.path(scmdir, "na31"),
+scheme.hgu133plus2.na32 <- import.expr.scheme("hgu133plus2", filedir = file.path(scmdir, "na32"),
                            schemefile = file.path(libdir, "HG-U133_Plus_2.CDF"), 
                            probefile  = file.path(libdir, "HG-U133-PLUS_probe.tab"), 
-                           annotfile  = file.path(anndir, "Version10Sep", "HG-U133_Plus_2.na31.annot.csv"))
+                           annotfile  = file.path(anndir, "Version11Jul", "HG-U133_Plus_2.na32.annot.csv"))
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -68,10 +68,10 @@ scheme.hgu133plus2.na31 <- import.expr.scheme("Scheme_HGU133p2_na31", filedir = 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # HT_HG-U133_Plus_PM
-scheme.hthgu133pluspm.na31 <- import.expr.scheme("Scheme_HTHGU133pPM_na31", filedir = file.path(scmdir, "na31"),
+scheme.hthgu133pluspm.na32 <- import.expr.scheme("hthgu133pluspm", filedir = file.path(scmdir, "na32"),
                               schemefile = file.path(libdir, "HT_HG-U133_Plus_PM.CDF"), 
                               probefile  = file.path(libdir, "HT_HG-U133_Plus_PM.probe.tab"), 
-                              annotfile  = file.path(anndir, "Version10Sep", "HT_HG-U133_Plus_PM.na31.annot.csv"))
+                              annotfile  = file.path(anndir, "Version11Jul", "HT_HG-U133_Plus_PM.na32.annot.csv"))
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -79,18 +79,18 @@ scheme.hthgu133pluspm.na31 <- import.expr.scheme("Scheme_HTHGU133pPM_na31", file
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # HuGene-1_0-st-v1.r4: used as exon array
-scheme.hugene10stv1.na31 <- import.exon.scheme("Scheme_HuGene10stv1r4_na31", filedir = file.path(scmdir, "na31"),
+scheme.hugene10stv1.na32 <- import.exon.scheme("hugene10stv1", filedir = file.path(scmdir, "na32"),
                             file.path(libdir, "HuGene-1_0-st-v1.r4.analysis-lib-files", "HuGene-1_0-st-v1.r4.clf"),
                             file.path(libdir, "HuGene-1_0-st-v1.r4.analysis-lib-files", "HuGene-1_0-st-v1.r4.pgf"),
-                            file.path(anndir, "Version10Sep", "HuGene-1_0-st-v1.na31.hg19.probeset.csv"),
-                            file.path(anndir, "Version10Sep", "HuGene-1_0-st-v1.na31.hg19.transcript.csv"))
+                            file.path(anndir, "Version11Jul", "HuGene-1_0-st-v1.na32.hg19.probeset.csv"),
+                            file.path(anndir, "Version11Jul", "HuGene-1_0-st-v1.na32.hg19.transcript.csv"))
 
 # HuEx-1_0-st-v2.r2:
-scheme.huex10stv2.na31 <- import.exon.scheme("Scheme_HuEx10stv2r2_na31", filedir = file.path(scmdir, "na31"),
+scheme.huex10stv2.na32 <- import.exon.scheme("huex10stv2", filedir = file.path(scmdir, "na32"),
                           file.path(libdir, "HuEx-1_0-st-v2_libraryfile", "HuEx-1_0-st-r2", "HuEx-1_0-st-v2.r2.clf"),
                           file.path(libdir, "HuEx-1_0-st-v2_libraryfile", "HuEx-1_0-st-r2", "HuEx-1_0-st-v2.r2.pgf"),
-                          file.path(anndir, "Version10Sep", "HuEx-1_0-st-v2.na31.hg19.probeset.csv"),
-                          file.path(anndir, "Version10Sep", "HuEx-1_0-st-v2.na31.hg19.transcript.csv"))
+                          file.path(anndir, "Version11Jul", "HuEx-1_0-st-v2.na32.hg19.probeset.csv"),
+                          file.path(anndir, "Version11Jul", "HuEx-1_0-st-v2.na32.hg19.transcript.csv"))
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -98,28 +98,11 @@ scheme.huex10stv2.na31 <- import.exon.scheme("Scheme_HuEx10stv2r2_na31", filedir
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # HuGene-1_1-st-v1:
-scheme.hugene11stv1.na31 <- import.exon.scheme("Scheme_HuGene11stv1_na31", filedir = file.path(scmdir, "na31"),
+scheme.hugene11stv1.na32 <- import.exon.scheme("hugene11stv1", filedir = file.path(scmdir, "na32"),
                             file.path(libdir, "HuGene-1_1-st-v1.r4.analysis-lib-files", "HuGene-1_1-st-v1.r4.clf"),
                             file.path(libdir, "HuGene-1_1-st-v1.r4.analysis-lib-files", "HuGene-1_1-st-v1.r4.pgf"),
-                            file.path(anndir, "Version10Sep", "HuGene-1_1-st-v1.na31.hg19.probeset.csv"),
-                            file.path(anndir, "Version10Sep", "HuGene-1_1-st-v1.na31.hg19.transcript.csv"))
-
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# create ROOT scheme files for other Affymetrix arrays
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-# Yeast_2:
-scheme.yeast2.na31 <- import.expr.scheme("Scheme_Yeast2_na31", filedir = file.path(scmdir, "na31"),
-                      schemefile = file.path(libdir, "Yeast_2.cdf"),
-                      probefile  = file.path(libdir, "Yeast_2.probe.tab"),
-                      annotfile  = file.path(anndir, "Version10Sep", "Yeast_2.na31.annot.csv"))
-
-# miRNA-1_0:
-# note: you need to rename "miRNA-1_0.probe_list.20081203.txt" to "miRNA-1_0.probe.tab"
-scheme.mirna10 <- import.expr.scheme("Scheme_miRNA_1_0", filedir = file.path(scmdir, "na31"),
-                  schemefile = file.path(libdir, "miRNA-1_0.CDF"),
-                  probefile  = file.path(libdir, "miRNA-1_0.probe.tab"))
+                            file.path(anndir, "Version11Jul", "HuGene-1_1-st-v1.na32.hg19.probeset.csv"),
+                            file.path(anndir, "Version11Jul", "HuGene-1_1-st-v1.na32.hg19.transcript.csv"))
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -142,31 +125,31 @@ scheme.hgu133p2.umi <- import.expr.scheme("Scheme_HGU133p2_umi_refseq_v10",filed
 
 ### export different trees from ROOT scheme file
 # Test3: export as table only
-export(scheme.test3.na31, treetype="idx", outfile="Test3_idx.txt")
-export(scheme.test3.na31, treetype="scm", outfile="Test3_scm.txt")
-export(scheme.test3.na31, treetype="prb", outfile="Test3_prb.txt")
-export(scheme.test3.na31, treetype="ann", outfile="Test3_ann.txt")
+export(scheme.test3.na32, treetype="idx", outfile="Test3_idx.txt")
+export(scheme.test3.na32, treetype="scm", outfile="Test3_scm.txt")
+export(scheme.test3.na32, treetype="prb", outfile="Test3_prb.txt")
+export(scheme.test3.na32, treetype="ann", outfile="Test3_ann.txt")
 
 # export as table and import as data.frame
-idx <- export(scheme.test3.na31, treetype="idx", outfile="Test3_idx.txt",as.dataframe=TRUE)
-ann <- export(scheme.test3.na31, treetype="ann", outfile="Test3_ann.txt",as.dataframe=TRUE)
+idx <- export(scheme.test3.na32, treetype="idx", outfile="Test3_idx.txt",as.dataframe=TRUE)
+ann <- export(scheme.test3.na32, treetype="ann", outfile="Test3_ann.txt",as.dataframe=TRUE)
 
 ### attach mask later: if import parameter was: as.dataframe=FALSE
-scheme.test3.na31 <- attachMask(scheme.test3.na31)
-str(scheme.test3.na31)
+scheme.test3.na32 <- attachMask(scheme.test3.na32)
+str(scheme.test3.na32)
 ### export scheme mask
-msk <- chipMask(scheme.test3.na31)
-scheme.test3.na31 <- removeMask(scheme.test3.na31)
-str(scheme.test3.na31)
+msk <- chipMask(scheme.test3.na32)
+scheme.test3.na32 <- removeMask(scheme.test3.na32)
+str(scheme.test3.na32)
 
 ### scheme accessors
-rootFile(scheme.test3.na31)
-chipName(scheme.test3.na31)
-chipType(scheme.test3.na31)
-probeInfo(scheme.test3.na31)
+rootFile(scheme.test3.na32)
+chipName(scheme.test3.na32)
+chipType(scheme.test3.na32)
+probeInfo(scheme.test3.na32)
 
 ### browse ROOT scheme files
-root.browser(scheme.test3.na31)
+root.browser(scheme.test3.na32)
 
 
 
@@ -293,28 +276,34 @@ export.root(datafile, schemefile, "DataSet", "*", "cel", "*", "DataOutFile")
 # inspect ROOT file with ROOT browser (to quit ROOT, type ".q")
 root.browser(data.test3)
 
-### plot raw data
+### Note: no longer needed to attachInten()
+# plots
+hist(data.test3)
+image(data.test3)
+image(data.test3, names="TestA2.cel", add.legend=TRUE)
+boxplot(data.test3, which="userinfo:fIntenQuant")
+mboxplot(data.test3, ylim=c(-6,6))
+
+# plots to export
+plotImage(data.test3, type="intensity", names="*")
+plotImage(data.test3, type="intensity", names="TestA2.cel")
+plotImage(data.test3, type="intensity", names="*", dev="png", outfile="Image_data_inten1")
+plotImage(data.test3, type="intensity", names="TestA2.cel", dev="png", outfile="Image_TestA2")
+
+plotBoxplot(data.test3, which="userinfo:fIntenQuant")
+plotBoxplot(data.test3, which="userinfo:fIntenQuant", dev="png", outfile="Boxplot_DataTest3")
+plotBoxplot(data.test3, which="userinfo:fIntenQuant", dev="jpeg", outfile="Boxplot_DataTest3")
+plotBoxplot(data.test3, which="userinfo:fIntenQuant", dev="pdf", outfile="Boxplot_DataTest3")
+
+
+## PM-plot raw data: need to attachInten()
 # need to attach scheme mask, since it was not attached to scheme
 data.test3 <- attachMask(data.test3)
 # need to attach data first
 data.test3 <- attachInten(data.test3)
 str(data.test3)
 
-# plots
-hist(data.test3)
-image(data.test3)
-boxplot(data.test3)
-mboxplot(data.test3, ylim=c(-6,6))
 pmplot(data.test3)
-
-# plots to export
-image.dev(data.test3)
-image.dev(data.test3, dev="png", outfile="Image_DataTest3")
-image.dev(data.test3, dev="png", outfile="Image_DataTest3_TestA1",names="TestA1.cel_MEAN")
-boxplot.dev(data.test3)
-boxplot.dev(data.test3, dev="png", outfile="Boxplot_DataTest3")
-boxplot.dev(data.test3, dev="jpeg", outfile="Boxplot_DataTest3")
-boxplot.dev(data.test3, dev="pdf", outfile="Boxplot_DataTest3")
 
 # to avoid memory comsumption of R remove data:
 data.test3 <- removeInten(data.test3)
@@ -330,7 +319,7 @@ library(xps)
 
 ### define directories:
 # directory of ROOT scheme files
-scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes/na32"
 # directory containing Tissues CEL files
 celdir <- "/Volumes/GigaDrive/ChipData/Exon/HuMixture"
 # directory to store ROOT raw data files
@@ -338,7 +327,7 @@ datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 
 ### HG-U133_Plus_2 data: import raw data
 # first, import ROOT scheme file
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na31.root",sep="/"))
+scheme.u133p2 <- root.scheme(paste(scmdir,"hgu133plus2.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("u1332plus_ivt_breast_A.CEL","u1332plus_ivt_breast_B.CEL","u1332plus_ivt_breast_C.CEL",
@@ -357,7 +346,7 @@ data.mix.u133p2 <- import.data(scheme.u133p2, "HuTissuesU133P2", filedir=datdir,
 
 ### HuEx-1_0-st-v2 data: import raw data
 # first, import ROOT scheme file
-scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na31.root",sep="/"))
+scheme.exon <- root.scheme(paste(scmdir,"huex10stv2.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("huex_wta_breast_A.CEL","huex_wta_breast_B.CEL","huex_wta_breast_C.CEL",
@@ -379,7 +368,7 @@ celdir <- "/Volumes/GigaDrive/ChipData/Exon/HuGene"
 
 ### HuGene-1_0-st-v1 data: import raw data
 # first, import ROOT scheme file
-scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na31.root",sep="/"))
+scheme.genome <- root.scheme(paste(scmdir,"hugene10stv1.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("TisMap_Breast_01_v1_WTGene1.CEL","TisMap_Breast_02_v1_WTGene1.CEL","TisMap_Breast_03_v1_WTGene1.CEL",
@@ -399,7 +388,7 @@ library(xps)
 
 ### define directories:
 # directory of ROOT scheme files
-scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes/na32"
 # directory containing Tissues CEL files
 celdir <- "/Volumes/GigaDrive/ChipData/Plate/HT_PM_human_tissue_panel"
 # directory to store ROOT raw data files
@@ -407,7 +396,7 @@ datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 
 ### HT_HG-U133_Plus_PM data: import raw data
 # first, import ROOT scheme file
-scheme.u133ppm <- root.scheme(paste(scmdir,"Scheme_HTHGU133pPM_na31.root",sep="/"))
+scheme.u133ppm <- root.scheme(paste(scmdir,"hthgu133pluspm.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("Human_PM_TestData.A01.CEL","Human_PM_TestData.A02.CEL","Human_PM_TestData.A03.CEL",
@@ -427,7 +416,7 @@ library(xps)
 
 ### define directories:
 # directory of ROOT scheme files
-scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes/na32"
 # directory containing Tissues CEL files
 celdir <- "/Volumes/GigaDrive/ChipData/Plate/genetitan_plate_1_sample_data/Plate_1_9628"
 # directory to store ROOT raw data files
@@ -435,7 +424,7 @@ datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 
 ### HT_HG-U133_Plus_PM data: import raw data
 # first, import ROOT scheme file
-scheme.u133ppm <- root.scheme(paste(scmdir,"Scheme_HTHGU133pPM_na31.root",sep="/"))
+scheme.u133ppm <- root.scheme(paste(scmdir,"hthgu133pluspm.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("plate_1_id9628_A01.CEL","plate_1_id9628_B02.CEL","plate_1_id9628_C03.CEL",
@@ -455,7 +444,7 @@ library(xps)
 
 ### define directories:
 # directory of ROOT scheme files
-scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes/na32"
 # directory containing sample CEL files
 celdir <- "/Volumes/GigaDrive/ChipData/Plate/hg-u219-ap-sampledata"
 # directory to store ROOT raw data files
@@ -463,7 +452,7 @@ datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 
 ### HG-U219 data: import raw data
 # first, import ROOT scheme file
-scheme.u219 <- root.scheme(paste(scmdir,"Scheme_HGU219_na31.root",sep="/"))
+scheme.u219 <- root.scheme(paste(scmdir,"hgu219.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("HG-U219_MaqcA_1.CEL","HG-U219_MaqcA_2.CEL","HG-U219_MaqcA_3.CEL",
@@ -482,10 +471,10 @@ data.u219 <- import.data(scheme.u219, "MaqcDataHGU219", filedir=datdir,celdir=ce
 library(xps)
 
 # import ROOT scheme files
-scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na31.root",sep="/"))
-scheme.exon   <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na31.root",sep="/"))
-scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na31.root",sep="/"))
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes/na32"
+scheme.u133p2 <- root.scheme(paste(scmdir,"hgu133plus2.root",sep="/"))
+scheme.exon   <- root.scheme(paste(scmdir,"huex10stv2.root",sep="/"))
+scheme.genome <- root.scheme(paste(scmdir,"hugene10stv1.root",sep="/"))
 
 # import ROOT data files
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
@@ -498,93 +487,45 @@ root.browser(data.exon)
 
 
 ### plot raw data for HG-U133_Plus_2
-# need to attach scheme mask, since it was not attached to scheme
-data.u133p2 <- attachMask(data.u133p2)
-# need to attach data 
-data.u133p2 <- attachInten(data.u133p2)
-str(data.u133p2)
-
 # plots
 hist(data.u133p2)
 image(data.u133p2)
-boxplot(data.u133p2)
-mboxplot(data.u133p2, ylim=c(-6,6))
-pmplot(data.u133p2)
+boxplot(data.u133p2, which="userinfo:fIntenQuant")
 
 # plots to export
-image.dev(data.u133p2)
-image.dev(data.u133p2, dev="png", col=rainbow(32), outfile="Image_DataMixU133P2")
-image.dev(data.u133p2, dev="png", col=rainbow(32), outfile="Image_DataMixU133P2_BrA",names="BreastA.cel_MEAN")
-boxplot.dev(data.u133p2)
-boxplot.dev(data.u133p2, dev="png", w=600, h=480, outfile="Boxplot_DataMixU133P2")
-
-# to avoid memory comsumption of R remove data:
-data.u133p2 <- removeInten(data.u133p2)
-data.u133p2 <- removeMask(data.u133p2)
+plotImage(data.u133p2, type="intensity", dev="png", col=rainbow(32), outfile="Image_DataMixU133P2_BrA",names="BreastA.cel")
+plotBoxplot(data.u133p2, which="userinfo:fIntenQuant", dev="png", w=600, h=480, outfile="Boxplot_DataMixU133P2")
 
 
 ### plot raw data for HuEx-1_0-st-v2
-# On the PowerBook with 1GB RAM and the Compaq Laptop with 512 MB I did not test this
-# need to attach data first
-data.exon <- attachInten(data.exon)
-#data.exon <- attachInten(data.exon, treenames=c("BreastA","BreastB","ProstateA","ProstateB"))
-# need to attach scheme mask, since it was not attached to scheme
-data.exon <- attachMask(data.exon)
-
-# Note: On my MacBook Pro with 2 GB RAM it was necessary to use "core" values only and
-#       use only a subset of size=100000 rows, otherwise R returned memory errors:
-#       "Error: cannot allocate vector of size 50.0 Mb"
-
 # plots
-hist(data.exon, which="core",size=100000)
-image(data.exon)
-boxplot(data.exon, which="core",size=100000)
-mboxplot(data.exon, which="core",size=100000, ylim=c(-6,6))
-pmplot(data.exon, which="core",size=100000)
+names <- unlist(treeNames(data.exon))
+image(data.exon, names=names[1], add.legend=TRUE)
+hist(data.exon)
+hist(data.exon, which="core")
+boxplot(data.exon, which="userinfo:fIntenQuant")
 
 # plots to export
-image.dev(data.exon)
-image.dev(data.exon, dev="png",col=rainbow(32), outfile="Image_DataMixExon")
-image.dev(data.exon, dev="png",col=rainbow(32), outfile="Image_DataMixExon_BreastA",names="BreastA.cel_MEAN")
-boxplot.dev(data.exon, which="core",size=100000)
-boxplot.dev(data.exon, which="core",size=100000, dev="png",w=600, h=480, outfile="Boxplot_DataMixExon")
+outfile <- paste("Image_", names[1], sep="")
+plotImage(data.exon, type="intensity", names=names[1], dev="png", outfile=outfile)
+plotDensity(data.exon, add.legend=TRUE, dev="png", outfile="Density")
+plotBoxplot(data.exon, which="userinfo:fIntenQuant", mar=NULL, dev="png", outfile="Boxplot")
 
-# to avoid memory comsumption of R remove data:
-data.exon <- removeInten(data.exon)
-data.exon <- removeMask(data.exon)
-gc()
-
-# Note: To avoid the memory problems when plotting data, you can use the corresponding
-#       methods "root.drawxxx()", such as:
+# Note: You can also use the corresponding methods "root.drawxxx()", such as:
 root.density(data.exon, "*")
 root.image(data.exon, "BreastA.cel")
 root.hist2D(data.test3, "BreastA.cel", "BreastB.cel", option="COLZ")
 
 
 ### plot raw data for HuGene-1_0-st-v1
-# need to attach scheme mask, since it was not attached to scheme
-data.genome <- attachMask(data.genome)
-# need to attach data 
-data.genome <- attachInten(data.genome)
-
 # plots
-hist(data.genome)
-image(data.genome)
-boxplot(data.genome)
-mboxplot(data.genome, ylim=c(-6,6))
-pmplot(data.genome)
-pmplot(data.genome, which="core")
+hist(data.genome, which="core")
+image(data.genome, names="Breast01.cel_MEAN", add.legend=TRUE)
+boxplot(data.genome, which="userinfo:fIntenQuant")
 
 # plots to export
-image.dev(data.genome)
-image.dev(data.genome, dev="png", col=rainbow(32), outfile="Image_DataMixHuGene")
-image.dev(data.genome, dev="png", col=rainbow(32), outfile="Image_DataMixHuGene_Br01",names="Breast01.cel_MEAN")
-boxplot.dev(data.genome)
-boxplot.dev(data.genome, dev="png", w=600, h=480, outfile="Boxplot_DataMixHuGene")
-
-# to avoid memory comsumption of R remove data:
-data.genome <- removeInten(data.genome)
-data.genome <- removeMask(data.genome)
+plotImage(data.genome, type="intensity", names=names"Breast01.cel", dev="png", outfile="Image_DataMixHuGene_Br01")
+plotBoxplot(data.genome, which="userinfo:fIntenQuant", dev="png", w=600, h=480, outfile="Boxplot_DataMixHuGene")
 
 
 #------------------------------------------------------------------------------#
@@ -657,19 +598,7 @@ mboxplot(data.mas5, ylim=c(-4,5))
 
 # M vs A plots
 mvaplot(data.rma, pch=20, ylim=c(-2,2))
-mvaplot.dev(data.rma, pch=20, ylim=c(-2,2))
-mvaplot.dev(data.rma, pch=20, ylim=c(-2,2), dev="png",outfile="MvAPlot_Test3_rma")
-mvaplot.dev(data.rma, pch=20, ylim=c(-2,2), names="TestB1.mdp_LEVEL")
-mvaplot.dev(data.rma, pch=20, ylim=c(-2,2), names=c("TestA2.mdp_LEVEL","TestB1.mdp_LEVEL"))
-mvaplot.dev(data.rma, pch=20, ylim=c(-2,2), dev="png",outfile="MvAPlot_Test3_rma")
-mvaplot.dev(data.rma, pch=20, ylim=c(-2,2), names="TestB1.mdp_LEVEL", dev="png",outfile="MvAPlot_TestB1_rma")
-
 mvaplot(data.mas5, pch=20)
-mvaplot.dev(data.mas5, pch=20)
-mvaplot.dev(data.mas5, pch=20, names="TestB1.tmn_LEVEL")
-mvaplot.dev(data.mas5, pch=20, names=c("TestA2.tmn_LEVEL","TestB1.tmn_LEVEL"))
-mvaplot.dev(data.mas5, pch=20, dev="png",outfile="MvAPlot_Test3_mas5")
-mvaplot.dev(data.mas5, pch=20, names="TestB1.tmn_LEVEL", dev="png",outfile="MvAPlot_TestB1_mas5")
 
 # present call plots
 callplot(call.mas5)
@@ -751,12 +680,7 @@ hist(data.mas5)
 
 # boxplots
 boxplot(data.rma)
-boxplot.dev(data.rma)
-boxplot.dev(data.rma, dev="png", mar=c(4,4,1,1), w=480, h=480, outfile="BoxPlot_MixU133P2_rma")
-
 boxplot(data.mas5)
-boxplot.dev(data.mas5)
-boxplot.dev(data.mas5, dev="png", mar=c(4,4,1,1), w=480, h=480, outfile="BoxPlot_MixU133P2_mas5")
 
 # relative boxplots
 mboxplot(data.rma)
@@ -765,24 +689,11 @@ mboxplot(data.mas5, ylim=c(-4,5))
 
 # M vs A plots
 mvaplot(data.rma, pch=20, ylim=c(-4,4))
-mvaplot.dev(data.rma, pch=20, ylim=c(-6,6))
-mvaplot.dev(data.rma, pch=20, ylim=c(-6,6), dev="png",outfile="MvAPlot_MixU133P2_rma")
-mvaplot.dev(data.rma, pch=20, ylim=c(-6,6), names="BreastA.mdp_LEVEL")
-mvaplot.dev(data.rma, pch=20, ylim=c(-6,6), names=c("BreastA.mdp_LEVEL","BreastB.mdp_LEVEL"))
-mvaplot.dev(data.rma, pch=20, ylim=c(-6,6), dev="png",outfile="MvAPlot_MixU133P2_rma")
-mvaplot.dev(data.rma, pch=20, ylim=c(-6,6), names="BreastA.mdp_LEVEL", dev="png",outfile="MvAPlot_BreastA_rma")
-
 mvaplot(data.mas5, pch=20)
-mvaplot.dev(data.mas5, pch=20)
-mvaplot.dev(data.mas5, pch=20, names="BreastA.tmn_LEVEL")
-mvaplot.dev(data.mas5, pch=20, names=c("BreastA.tmn_LEVEL","BreastB.tmn_LEVEL"))
-mvaplot.dev(data.mas5, pch=20, dev="png",outfile="MvAPlot_MixU133P2_mas5")
-mvaplot.dev(data.mas5, pch=20, names="BreastA.tmn_LEVEL", dev="png",outfile="MvAPlot_BreastA_mas5")
 
 # present call plots
 callplot(call.mas5)
 callplot(call.mas5, beside=FALSE, ylim=c(0,125))
-#callplot(call.dabg)
 
 # image for rma background intensities
 # 1. find background treenames for data.rma
@@ -880,12 +791,7 @@ hist(data.mas5)
 
 # boxplots
 boxplot(data.rma)
-boxplot.dev(data.rma)
-boxplot.dev(data.rma, dev="png", mar=c(4,4,1,1), w=480, h=480, outfile="BoxPlot_MixExon_rma")
-
 boxplot(data.mas5)
-boxplot.dev(data.mas5)
-boxplot.dev(data.mas5, dev="png", mar=c(4,4,1,1), w=480, h=480, outfile="BoxPlot_MixExon_mas5")
 
 # relative boxplots
 mboxplot(data.rma)
@@ -894,18 +800,7 @@ mboxplot(data.mas5, ylim=c(-4,5))
 
 # M vs A plots
 mvaplot(data.rma, pch=20, ylim=c(-4,4))
-mvaplot.dev(data.rma, pch=20, ylim=c(-6,6))
-mvaplot.dev(data.rma, pch=20, ylim=c(-6,6), dev="png",outfile="MvAPlot_MixExon_rma")
-mvaplot.dev(data.rma, pch=20, ylim=c(-6,6), names="BreastA.mdp_LEVEL")
-mvaplot.dev(data.rma, pch=20, ylim=c(-6,6), names=c("BreastA.mdp_LEVEL","BreastB.mdp_LEVEL"))
-mvaplot.dev(data.rma, pch=20, ylim=c(-6,6), names="BreastA.mdp_LEVEL", dev="png",outfile="MvAPlot_MixExon_BreastA_rma")
-
 mvaplot(data.mas5, pch=20)
-mvaplot.dev(data.mas5, pch=20)
-mvaplot.dev(data.mas5, pch=20, names="BreastA.tmn_LEVEL")
-mvaplot.dev(data.mas5, pch=20, names=c("BreastA.tmn_LEVEL","BreastB.tmn_LEVEL"))
-mvaplot.dev(data.mas5, pch=20, dev="png",outfile="MvAPlot_MixExon_mas5")
-mvaplot.dev(data.mas5, pch=20, names="BreastA.tmn_LEVEL", dev="png",outfile="MvAPlot_MixExon_BreastA_mas5")
 
 # present call plots
 callplot(call.mas5)
@@ -1000,12 +895,7 @@ hist(data.mas5)
 
 # boxplots
 boxplot(data.rma)
-boxplot.dev(data.rma)
-boxplot.dev(data.rma, dev="png", mar=c(4,4,1,1), w=480, h=480, outfile="BoxPlot_MixHuGene_rma")
-
 boxplot(data.mas5)
-boxplot.dev(data.mas5)
-boxplot.dev(data.mas5, dev="png", mar=c(4,4,1,1), w=480, h=480, outfile="BoxPlot_MixHuGene_mas5")
 
 # relative boxplots
 mboxplot(data.rma)
@@ -1014,18 +904,7 @@ mboxplot(data.mas5, ylim=c(-4,5))
 
 # M vs A plots
 mvaplot(data.rma, pch=20, ylim=c(-4,4))
-mvaplot.dev(data.rma, pch=20, ylim=c(-6,6))
-mvaplot.dev(data.rma, pch=20, ylim=c(-6,6), dev="png",outfile="MvAPlot_MixHuGene_rma")
-mvaplot.dev(data.rma, pch=20, ylim=c(-6,6), names="Breast01.mdp_LEVEL")
-mvaplot.dev(data.rma, pch=20, ylim=c(-6,6), names=c("Breast01.mdp_LEVEL","Breast02.mdp_LEVEL"))
-mvaplot.dev(data.rma, pch=20, ylim=c(-6,6), names="Breast01.mdp_LEVEL", dev="png",outfile="MvAPlot_MixHuGene_Breast01_rma")
-
 mvaplot(data.mas5, pch=20)
-mvaplot.dev(data.mas5, pch=20)
-mvaplot.dev(data.mas5, pch=20, names="Breast01.tmn_LEVEL")
-mvaplot.dev(data.mas5, pch=20, names=c("Breast01.tmn_LEVEL","Breast02.tmn_LEVEL"))
-mvaplot.dev(data.mas5, pch=20, dev="png",outfile="MvAPlot_MixHuGene_mas5")
-mvaplot.dev(data.mas5, pch=20, names="Breast01.tmn_LEVEL", dev="png",outfile="MvAPlot_MixHuGene_Breast01_mas5")
 
 # present call plots
 callplot(call.mas5)
@@ -1275,12 +1154,6 @@ hist(data.bg.rma)
 mboxplot(data.bg.rma, ylim=c(-6,6))
 pmplot(data.bg.rma)
 image(data.bg.rma,col=rainbow(32))
-image.dev(data.bg.rma,col=rainbow(32))
-boxplot.dev(data.bg.rma)
-
-# plot background
-image.dev(data.bg.rma,bg=T,col=rainbow(32))
-image.dev(data.bg.rma,bg=T,transfo=0,col=rainbow(32))
 
 # remove data
 data.bg.rma <- removeInten(data.bg.rma)
@@ -1294,8 +1167,6 @@ data.qu.rma <- attachInten(data.qu.rma)
 
 hist(data.qu.rma)
 mboxplot(data.qu.rma, ylim=c(-6,6))
-image.dev(data.qu.rma,col=rainbow(32))
-boxplot.dev(data.qu.rma,transfo=0)
 
 data.qu.rma <- removeInten(data.qu.rma)
 
@@ -1307,7 +1178,6 @@ hist(data.mp.rma)
 boxplot(data.mp.rma)
 mboxplot(data.mp.rma)
 mvaplot(data.mp.rma, pch=20, ylim=c(-4,4))
-mvaplot.dev(data.mp.rma, pch=20, ylim=c(-4,4))
 
 ### alternatively save all data in same ROOT file using "update=TRUE"
 data.bg.rmall <- bgcorrect.rma(data.test3,"Test3RMAall",filedir=datdir,tmpdir="")

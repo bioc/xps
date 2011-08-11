@@ -5,7 +5,7 @@
 # Note: please feel free to copy-paste the examples of interest and adapt the
 #       examples to your own needs
 #
-# Copyright (c) 2007-2010 Christian Stratowa, Vienna, Austria.
+# Copyright (c) 2007-2011 Christian Stratowa, Vienna, Austria.
 # All rights reserved.
 #
 #------------------------------------------------------------------------------#
@@ -17,7 +17,7 @@ library(xps)
 # directory containing Affymetrix library files
 libdir <- "/Volumes/GigaDrive/Affy/libraryfiles"
 # directory containing Affymetrix annotation files
-anndir <- "/Volumes/GigaDrive/Affy/Annotation/Version08Mar"
+anndir <- "/Volumes/GigaDrive/Affy/Annotation"
 # directory to store ROOT scheme files
 scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
 
@@ -27,30 +27,24 @@ scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
 #------------------------------------------------------------------------------#
 
 # HG-U133_Plus_2:
-scheme.hgu133p2 <- import.expr.scheme("Scheme_HGU133p2_na27", filedir=scmdir,
-                   schemefile=paste(libdir,"HG-U133_Plus_2.cdf",sep="/"),
-                   probefile=paste(libdir,"HG-U133-PLUS_probe.tab",sep="/"),
-                   annotfile=paste(anndir,"HG-U133_Plus_2.na27.annot.csv",sep="/"))
+scheme.hgu133plus2 <- import.expr.scheme("hgu133plus2", filedir = file.path(scmdir, "na32"),
+                      schemefile = file.path(libdir, "HG-U133_Plus_2.CDF"), 
+                      probefile  = file.path(libdir, "HG-U133-PLUS_probe.tab"), 
+                      annotfile  = file.path(anndir, "Version11Jul", "HG-U133_Plus_2.na32.annot.csv"))
 
-# HuGene-1_0-st-v1.r3: import as genome scheme
-scheme.hugene10stv1r3 <- import.genome.scheme("Scheme_HuGene10stv1r3_na27",filedir=scmdir,
-                         layoutfile=paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.clf",sep="/"),
-                         schemefile=paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.pgf",sep="/"),
-                         transcript=paste(anndir,"HuGene-1_0-st-v1.na27.hg18.transcript.csv",sep="/"))
-
-# HuGene-1_0-st-v1.r4: import as exon scheme using new version na27.2
-scheme.hugene10stv1r4 <- import.exon.scheme("Scheme_HuGene10stv1r4_ex27_2",filedir=scmdir,
-                         layoutfile=paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.clf",sep="/"),
-                         schemefile=paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.pgf",sep="/"),
-                         probeset=paste(anndir,"HuGene-1_0-st-v1.na27.2.hg18.probeset.csv",sep="/"),
-                         transcript=paste(anndir,"HuGene-1_0-st-v1.na27.hg18.transcript.csv",sep="/"))
+# HuGene-1_0-st-v1.r4: used as exon array
+scheme.hugene10stv1 <- import.exon.scheme("hugene10stv1", filedir = file.path(scmdir, "na32"),
+                       file.path(libdir, "HuGene-1_0-st-v1.r4.analysis-lib-files", "HuGene-1_0-st-v1.r4.clf"),
+                       file.path(libdir, "HuGene-1_0-st-v1.r4.analysis-lib-files", "HuGene-1_0-st-v1.r4.pgf"),
+                       file.path(anndir, "Version11Jul", "HuGene-1_0-st-v1.na32.hg19.probeset.csv"),
+                       file.path(anndir, "Version11Jul", "HuGene-1_0-st-v1.na32.hg19.transcript.csv"))
 
 # HuEx-1_0-st-v2.r2:
-scheme.huex10stv2r2 <- import.exon.scheme("Scheme_HuEx10stv2r2_na27",filedir=scmdir,
-                       layoutfile=paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
-                       schemefile=paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
-                       probeset=paste(anndir,"HuEx-1_0-st-v2.na27.hg18.probeset.csv",sep="/"),
-                       transcript=paste(anndir,"HuEx-1_0-st-v2.na27.hg18.transcript.csv",sep="/"))
+scheme.huex10stv2 <- import.exon.scheme("huex10stv2", filedir = file.path(scmdir, "na32"),
+                     file.path(libdir, "HuEx-1_0-st-v2_libraryfile", "HuEx-1_0-st-r2", "HuEx-1_0-st-v2.r2.clf"),
+                     file.path(libdir, "HuEx-1_0-st-v2_libraryfile", "HuEx-1_0-st-r2", "HuEx-1_0-st-v2.r2.pgf"),
+                     file.path(anndir, "Version11Jul", "HuEx-1_0-st-v2.na32.hg19.probeset.csv"),
+                     file.path(anndir, "Version11Jul", "HuEx-1_0-st-v2.na32.hg19.transcript.csv"))
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -102,7 +96,7 @@ library(xps)
 
 ### define directories:
 # directory of ROOT scheme files
-scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes/na32"
 # directory containing Tissues CEL files
 celdir <- "/Volumes/GigaDrive/ChipData/Exon/HuMixture"
 # directory to store ROOT raw data files
@@ -110,7 +104,7 @@ datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 
 ### HG-U133_Plus_2 data: import raw data
 # first, import ROOT scheme file
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na27.root",sep="/"))
+scheme.u133p2 <- root.scheme(paste(scmdir,"hgu133plus2.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("u1332plus_ivt_breast_A.CEL","u1332plus_ivt_breast_B.CEL","u1332plus_ivt_breast_C.CEL",
@@ -133,7 +127,7 @@ celdir <- "/Volumes/GigaDrive/ChipData/Exon/HuGene"
 
 ### HuGene-1_0-st-v1 data: import raw data
 # first, import ROOT scheme file
-scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na27.root",sep="/"))
+scheme.genome <- root.scheme(paste(scmdir,"hugene10stv1.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("TisMap_Breast_01_v1_WTGene1.CEL","TisMap_Breast_02_v1_WTGene1.CEL","TisMap_Breast_03_v1_WTGene1.CEL",
@@ -155,7 +149,7 @@ celdir <- "/Volumes/GigaDrive/ChipData/Exon/HuMixture"
 
 ### HuEx-1_0-st-v2 data: import raw data
 # first, import ROOT scheme file
-scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na27.root",sep="/"))
+scheme.exon <- root.scheme(paste(scmdir,"huex10stv2.root",sep="/"))
 
 # subset of CEL files to import
 celfiles <- c("huex_wta_breast_A.CEL","huex_wta_breast_B.CEL","huex_wta_breast_C.CEL",
@@ -175,10 +169,10 @@ data.mix.exon <- import.data(scheme.exon, "HuTissuesExon", filedir=datdir,celdir
 library(xps)
 
 # import ROOT scheme files
-scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na27.root",sep="/"))
-scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na27.root",sep="/"))
-scheme.exon   <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na27.root",sep="/"))
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes/na32"
+scheme.u133p2 <- root.scheme(paste(scmdir,"hgu133plus2.root",sep="/"))
+scheme.genome <- root.scheme(paste(scmdir,"hugene10stv1.root",sep="/"))
+scheme.exon   <- root.scheme(paste(scmdir,"huex10stv2.root",sep="/"))
 
 # import ROOT data files
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
@@ -188,91 +182,38 @@ data.exon   <- root.data(scheme.exon, paste(datdir,"HuTissuesExon_cel.root",sep=
 
 
 ### plot raw data for HG-U133_Plus_2
-# need to attach scheme mask, since it was not attached to scheme
-data.u133p2 <- attachMask(data.u133p2)
-# need to attach data 
-data.u133p2 <- attachInten(data.u133p2)
-str(data.u133p2)
-
 # plots
 hist(data.u133p2)
-boxplot(data.u133p2)
-mboxplot(data.u133p2, ylim=c(-6,6))
-pmplot(data.u133p2)
-image.dev(data.u133p2, col=rainbow(32), names="BreastA.cel_MEAN")
+image(data.u133p2)
+boxplot(data.u133p2, which="userinfo:fIntenQuant")
 
-# to avoid memory comsumption of R remove data:
-data.u133p2 <- removeInten(data.u133p2)
-data.u133p2 <- removeMask(data.u133p2)
-gc()
-
-# plots - alternative possibility to avoid memory problems:
+# plots - alternative possibility:
 # select File->SaveAs...->nnn.png to save to disk
 root.density(data.u133p2)
 root.image(data.u133p2, treename="BreastA.cel")
 
 
 ### plot raw data for HuGene-1_0-st-v1
-# need to attach scheme mask, since it was not attached to scheme
-data.genome <- attachMask(data.genome)
-# need to attach data 
-data.genome <- attachInten(data.genome)
-str(data.genome)
-
 # plots
 hist(data.genome)
-boxplot(data.genome, which="core")
-mboxplot(data.genome, which="core", ylim=c(-6,6))
-pmplot(data.genome, which="core")
-image.dev(data.genome, col=rainbow(32), names="Breast01.cel_MEAN")
+boxplot(data.genome, which="userinfo:fIntenQuant")
+image(data.genome, col=rainbow(32), names="Breast01.cel")
 
-# to avoid memory comsumption of R remove data:
-data.genome <- removeInten(data.genome)
-data.genome <- removeMask(data.genome)
-gc()
-
-# plots - alternative possibility to avoid memory problems:
+# plots - alternative possibility:
 # select File->SaveAs...->nnn.png to save to disk
 root.density(data.genome)
 root.image(data.genome, treename="Breast01.cel")
 
 
 ### plot raw data for HuEx-1_0-st-v2
-# need to attach data first
-data.exon <- attachInten(data.exon)
-# need to attach scheme mask, since it was not attached to scheme
-data.exon <- attachMask(data.exon)
-str(data.exon)
-gc()
-
-# Note: On my MacBook Pro with 2 GB RAM it was necessary to use "core" values only and
-#       use only a subset of size=100000 rows, otherwise R returned memory errors:
-#       "Error: cannot allocate vector of size 50.0 Mb"
-
 # plots
-hist(data.exon, which="core",size=100000)
-boxplot(data.exon, which="core",size=100000)
-gc()
-mboxplot(data.exon, which="core",size=100000, ylim=c(-6,6))
-gc()
-pmplot(data.exon, which="core",size=100000)
-gc()
-image.dev(data.exon, col=rainbow(32), names="BreastA.cel_MEAN")
+names <- unlist(treeNames(data.exon))
+image(data.exon, names=names[1], add.legend=TRUE)
+hist(data.exon)
+hist(data.exon, which="core")
+boxplot(data.exon, which="userinfo:fIntenQuant")
 
-#########
-pmplot(data.exon, "metacore",size=100000)
-#BETTER (not implemented):
-#pmplot(data.exon, "metacore", "antigenomic",size=100000)
-#pmplot(data.exon, "core", "full",size=100000)
-#pmplot(data.exon, "core", "extended",size=100000)
-#########
-
-# to avoid memory comsumption of R remove data:
-data.exon <- removeInten(data.exon)
-data.exon <- removeMask(data.exon)
-gc()
-
-# plots - alternative possibility to avoid memory problems:
+# plots - alternative possibility:
 # select File->SaveAs...->nnn.png to save to disk
 root.density(data.exon)
 root.image(data.exon, treename="BreastA.cel")
@@ -290,8 +231,8 @@ root.image(data.exon, treename="BreastA.cel")
 library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
-scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na27.root",sep="/"))
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes/na32"
+scheme.u133p2 <- root.scheme(paste(scmdir,"hgu133plus2.root",sep="/"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.u133p2 <- root.data(scheme.u133p2, paste(datdir,"HuTissuesU133P2_cel.root",sep="/"))
 
@@ -357,8 +298,8 @@ save.image(file="HuTissues.U133P2.Rdata");
 library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
-scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.genome <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r3_na27.root",sep="/"))
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes/na32"
+scheme.genome <- root.scheme(paste(scmdir,"hugene10stv1.root",sep="/"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.genome <- root.data(scheme.genome, paste(datdir,"HuTissuesGenome_cel.root",sep="/"))
 
@@ -441,8 +382,8 @@ save.image(file="HuTissues.Genome.Rdata");
 library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
-scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na27.root",sep="/"))
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes/na32"
+scheme.exon <- root.scheme(paste(scmdir,"huex10stv2.root",sep="/"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.exon <- root.data(scheme.exon, paste(datdir,"HuTissuesExon_cel.root",sep="/"))
 
@@ -533,7 +474,7 @@ library(xps)
 
 ### define directories:
 # directory of ROOT scheme files
-scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes/na32"
 # directory containing Tissues CEL files
 celdir <- "/Volumes/GigaDrive/ChipData/Exon/HuMixture"
 # directory to store ROOT raw data files
@@ -541,7 +482,7 @@ datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 
 ### HG-U133_Plus_2 data: import raw data
 # import ROOT scheme file
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na27.root",sep="/"))
+scheme.u133p2 <- root.scheme(paste(scmdir,"hgu133plus2.root",sep="/"))
 
 # import current ROOT data file
 data.u133p2 <- root.data(scheme.u133p2, paste(datdir,"HuTissuesU133P2_cel.root",sep="/"))
@@ -578,7 +519,7 @@ data.u133p2 <- addData(data.u133p2, celdir=celdir, celfiles=celfiles, celnames=c
 
 ### HuEx-1_0-st-v2 data: import raw data
 # import ROOT scheme file
-scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na27.root",sep="/"))
+scheme.exon <- root.scheme(paste(scmdir,"huex10stv2.root",sep="/"))
 
 # import current ROOT data file
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
@@ -625,8 +566,8 @@ root.graph2D(data.exon, "BreastA.cel", "BreastB.cel", w=400, h=400)
 library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
-scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.u133p2 <- root.scheme(paste(scmdir,"Scheme_HGU133p2_na27.root",sep="/"))
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes/na32"
+scheme.u133p2 <- root.scheme(paste(scmdir,"hgu133plus2.root",sep="/"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.u133p2 <- root.data(scheme.u133p2, paste(datdir,"HuTissuesU133P2_cel.root",sep="/"))
 
@@ -653,8 +594,8 @@ boxplot(data.rma,las=2)
 library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
-scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na27.root",sep="/"))
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes/na32"
+scheme.exon <- root.scheme(paste(scmdir,"huex10stv2.root",sep="/"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.exon <- root.data(scheme.exon, paste(datdir,"HuTissuesExon_cel.root",sep="/"))
 
@@ -689,8 +630,8 @@ root.mvaplot(data.x.rma, "BreastA.mdp", "BreastB.mdp", w=400, h=400)
 library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
-scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.exon <- root.scheme(file.path(scmdir, "huex10stv2_na30.root"))
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes/na32"
+scheme.exon <- root.scheme(file.path(scmdir, "huex10stv2.root"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.exon   <- root.data(scheme.exon, file.path(datdir, "HuTissuesExon_cel.root"))
 
@@ -792,8 +733,8 @@ export.filter(puf.tc.dabg, treetype="stt", varlist="fUnitName:fTranscriptID:fSym
 library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
-scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
-scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na28.root",sep="/"))
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes/na32"
+scheme.exon <- root.scheme(paste(scmdir,"huex10stv2.root",sep="/"))
 datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
 data.exon <- root.data(scheme.exon, paste(datdir,"HuTissuesExon_cel.root",sep="/"))
 

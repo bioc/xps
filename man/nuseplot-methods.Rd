@@ -41,6 +41,12 @@ nuseplot(x,
  For \code{names=NULL} full column names of slot \code{data} will be displayed while for 
  \code{names="namepart"} column names will be displayed without name extension. If \code{names}
  is a vector of column names, only these columns will displayed as boxplot.
+
+ If an object of class \code{\link{QualTreeSet}} was created by fitting a probe level model 
+ with \code{qualopt="all"} then \code{nuseplot} will plot NUSE for "all" quality options. If 
+ you want to plot NUSE for a certain quality option only, e.g. "normalized" data only, then 
+ you can  use parameter \code{names} with \code{names="namepart:<qualopt>"}, 
+ e.g. \code{names="namepart:normalized"}. 
 }
 \author{Christian Stratowa}
 \seealso{\code{\link{plotNUSE}}, \code{\link{rleplot}}}
