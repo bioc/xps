@@ -10,13 +10,15 @@
 
 \emph{Usage}
 
-\code{pm(object, which = "pm")}
+\code{pm(object, which = "pm", unitID = NULL, unittype = "transcript")}
 
-\code{mm(object, which = "mm")}
+\code{mm(object, which = "mm", unitID = NULL, unittype = "transcript")}
 }
 \arguments{
   \item{object}{object of class \code{DataTreeSet}.}
   \item{which}{type of perfect match or mismatch probes to be returned.}
+  \item{unitID}{optional vector of UNIT_IDs.}
+  \item{unittype}{\code{character} vector, \dQuote{transcript} or \dQuote{probeset}.}
 }
 \details{
 For expression arrays all the perfect match (pm) or mismatch (mm) probes on the arrays 
@@ -61,6 +63,13 @@ data.test3 <- attachInten(data.test3)
 
 pm <- pm(data.test3)
 mm <- mm(data.test3)
+head(pm)
+head(mm)
+
+## need to convert Affy ID to UNIT_ID first
+id <- transcriptID2unitID(schemeSet(data.test3), transcriptID="100084_at", as.list=FALSE)
+pm <- pm(data.test3, unitID=id)
+mm <- mm(data.test3, unitID=id)
 head(pm)
 head(mm)
 

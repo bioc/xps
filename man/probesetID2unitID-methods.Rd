@@ -15,9 +15,11 @@
 \emph{Usage}
 
 \code{probesetID2unitID(object, probesetID = NULL, as.list = TRUE)}
+
 \code{transcriptID2unitID(object, transcriptID = NULL, as.list = TRUE)}
 
 \code{unitID2probesetID(object, unitid = NULL, as.list = TRUE)}
+
 \code{unitID2transcriptID(object, unitid = NULL, as.list = TRUE)}
 }
 \arguments{

@@ -21,6 +21,7 @@
 # unitID2probesetID:
 # transcriptID2unitID:
 # probesetID2unitID:
+# symbol2unitID:
 # export:
 #==============================================================================#
 
@@ -348,6 +349,45 @@ setMethod("probesetID2unitID", signature(object="SchemeTreeSet"),
       }#if
    }
 )#probesetID2unitID
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("symbol2unitID", signature(object="SchemeTreeSet"),
+   function(object,
+            symbol,
+            unittype = "transcript", 
+            as.list  = TRUE) 
+   {
+      if (debug.xps()) print("------symbol2unitID.SchemeTreeSet------")
+
+      if (unittype == "probeset") {
+         varlist  <- "fProbesetID:fSymbol";
+         treetype <- "anp";
+         colname  <- "ProbesetID";
+      } else {
+         varlist  <- "fTranscriptID:fSymbol";
+         treetype <- "ann";
+         if(chipType(object) == "ExonChip") colname  <- "TranscriptClusterID"
+         else                               colname  <- "ProbesetID";
+      }#if
+
+      ann <- export(object,
+                    treetype     = treetype,
+                    varlist      = varlist,
+                    outfile      = "tmp.txt",
+                    as.dataframe = TRUE,
+                    verbose      = FALSE);
+
+      id <- split(ann[,"GeneSymbol"], ann[,colname]);
+      id <- unlist(lapply(symbol, function(x) names(which(id == x))));
+
+      if (unittype == "probeset") {
+         return(probesetID2unitID(object, probesetID=id, as.list=as.list));
+      } else {
+         return(transcriptID2unitID(object, transcriptID=id, as.list=as.list));
+      }#if
+   }
+)#symbol2unitID
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

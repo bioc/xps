@@ -24,6 +24,7 @@
 \alias{pm,DataTreeSet-method}
 \alias{pmindex,DataTreeSet-method}
 \alias{pmplot,DataTreeSet-method}
+\alias{probesetplot,DataTreeSet-method}
 \alias{projectInfo,DataTreeSet-method}
 \alias{projectInfo<-,DataTreeSet,ProjectInfo-method}
 \alias{rawCELName,DataTreeSet-method}
@@ -117,6 +118,8 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
      PM indices for all or selected unitIDs.}
     \item{pmplot}{\code{signature(x = "DataTreeSet")}: creates a barplot of mean perfect match and
      mismatch intensities.}
+    \item{probesetplot}{\code{signature(x = "DataTreeSet")}: creates a line plot of probe intensities for 
+     a probeset.}
     \item{projectInfo}{\code{signature(object = "DataTreeSet")}: extracts slot \code{projectinfo}.}
     \item{projectInfo<-}{\code{signature(object = "DataTreeSet", value = "ProjectInfo")}: replaces slot \code{projectinfo}.}
     \item{rawCELName}{\code{signature(object = "DataTreeSet")}: returns the name(s) of the 

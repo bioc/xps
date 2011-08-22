@@ -41,6 +41,7 @@
 # xpsQualify:
 # hist: 
 # pmplot: 
+# probesetplot: 
 #==============================================================================#
 
 
@@ -388,7 +389,9 @@ setMethod("removeMask", signature(object="DataTreeSet"),
 
 "dataDataTreeSet" <-
 function(object,
-         which = "") 
+         which    = "",
+         unitID   = NULL, 
+         unittype = "transcript")
 {
    if (debug.xps()) print("------dataDataTreeSet------")
 
@@ -398,12 +401,13 @@ function(object,
       stop(paste("slot", sQuote("data"), "has no data"));
    }#if
 
-   id <- indexUnits(object, which=which, unitid="", data=data);
+   id <- indexUnits(object, which=which, unitID=unitID, unittype=unittype,
+                    as.list=TRUE, data=data);
 
    treenames <- namePart(object@treenames);
    datanames <- namePart(colnames(data));
 
-   return(data[id,!is.na(match(datanames, treenames))]);
+   return(data[unlist(id), !is.na(match(datanames, treenames))]);
 }#dataDataTreeSet
 
 setMethod("validData", "DataTreeSet", dataDataTreeSet);
@@ -412,7 +416,9 @@ setMethod("validData", "DataTreeSet", dataDataTreeSet);
 
 "bgrdDataTreeSet" <-
 function(object,
-         which = "") 
+         which    = "",
+         unitID   = NULL, 
+         unittype = "transcript")
 {
    if (debug.xps()) print("------bgrdDataTreeSet------")
 
@@ -422,12 +428,13 @@ function(object,
       stop(paste("slot", sQuote("bgrd"), "has no data"));
    }#if
 
-   id <- indexUnits(object, which=which, unitid="", data=bgrd);
+   id <- indexUnits(object, which=which, unitID=unitID, unittype=unittype,
+                    as.list=TRUE, data=bgrd);
 
    treenames <- namePart(object@bgtreenames);
    bgrdnames <- namePart(colnames(bgrd));
 
-   return(bgrd[id, !is.na(match(bgrdnames, treenames))]);
+   return(bgrd[unlist(id), !is.na(match(bgrdnames, treenames))]);
 }#bgrdDataTreeSet
 
 setMethod("validBgrd", "DataTreeSet", bgrdDataTreeSet);
@@ -646,19 +653,26 @@ setMethod("addData", "DataTreeSet", addDataDataTreeSet);
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 "indexDataTreeSet" <-
 function(object,
-            which   = "",
-            unitid  = NULL,
-            as.list = FALSE,
-            data    = NULL) 
+            which    = "",
+            unitID   = NULL,
+            unittype = "transcript", 
+            as.list  = FALSE,
+            data     = NULL) 
 {
    if (debug.xps()) print("------indexDataTreeSet.DataTreeSet------")
+
+   if (chipType(object) == "ExonChip" && unittype == "probeset") {
+      varlist <- "fMask:fProbesetID";
+   } else {
+      varlist <- "fMask";
+   }#if
 
    ## get scheme mask for (x,y)
    msk <- chipMask(object@scheme);
    if (min(dim(msk)) == 0) {
       msk <- export(object@scheme,
                     treetype     = "scm",
-                    varlist      = "fMask",
+                    varlist      = varlist,
                     as.dataframe = TRUE,
                     verbose      = FALSE);
    }#if
@@ -672,8 +686,8 @@ function(object,
    ## get data indices from scheme mask
    id <- which(msk[,"Mask"] < 99999999); ##all
    if (chipType(object) == "GeneChip") {
-      ## if no unitid need to sort msk to Y then X (as in *.cel)
-      if (is.null(unitid) || unitid == "") {
+      ## if no unitID need to sort msk to Y then X (as in *.cel)
+      if (is.null(unitID) || unitID == "") {
          msk <- msk[order(msk[,"Y"], msk[,"X"]),];
       }#if
 
@@ -719,9 +733,9 @@ function(object,
    }#if
 
    ## return result
-   if (is.null(unitid)) {
+   if (is.null(unitID)) {
       return(id);
-   } else if (unitid[1] == "*") {
+   } else if (unitID[1] == "*") {
       if (chipType(object) == "GeneChip") {
          msk <- msk[id,];
          msk <- cbind((msk[, "X"] + ncol*msk[,"Y"] + 1), msk);
@@ -743,7 +757,7 @@ function(object,
       } else {
          return(msk[,c("UNIT_ID","X","Y","XY")]);
       }#if
-   } else if (unitid[1] != "") {
+   } else if (unitID[1] != "") {
       if (chipType(object) == "GeneChip") {
          msk <- msk[id,];
          msk <- cbind((msk[, "X"] + ncol*msk[,"Y"] + 1), msk);
@@ -754,21 +768,27 @@ function(object,
       }#if
       colnames(msk)[1] <- "XY"
 
+      if (chipType(object) == "ExonChip" && unittype == "probeset") {
+         column <- "PROBESET_ID";
+      } else {
+         column <- "UNIT_ID";
+      }#if
+
       ## check for valid UNIT_IDs
-      id  <- unique(msk[,"UNIT_ID"]);
-      len <- length(intersect(id, unitid));
-      if (length(unitid) != len) {
-         stop(paste("only", len, "of", length(unitid), "UNIT_IDs are valid"));
+      id  <- unique(msk[,column]);
+      len <- length(intersect(id, unitID));
+      if (length(unitID) != len) {
+         stop(paste("only", len, "of", length(unitID), column, "are valid"));
       }#if
 
       if (as.list == TRUE) {
-         id <- lapply(unitid, function(x) which(msk[,"UNIT_ID"] == x));
+         id <- lapply(unitID, function(x) which(msk[,column] == x));
          id <- lapply(id, function(x) msk[x,"XY"]);
-         names(id) <- unitid;
+         names(id) <- unitID;
          return(id);
       } else {
-         id <- unlist(lapply(unitid, function(x) which(msk[,"UNIT_ID"] == x)));
-         return(msk[id,c("UNIT_ID","X","Y","XY")]);
+         id <- unlist(lapply(unitID, function(x) which(msk[,column] == x)));
+         return(msk[id,c(column,"X","Y","XY")]);
       }#if
    }#if
    return(id);
@@ -779,16 +799,16 @@ setMethod("indexUnits", "DataTreeSet", indexDataTreeSet);
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 setMethod("pmindex", signature(object="DataTreeSet"),
-   function(object, unitid = NULL, as.list = TRUE) {
-      indexUnits(object, which = "pm", unitid, as.list);
+   function(object, unitID = NULL, as.list = TRUE) {
+      indexUnits(object, which = "pm", unitID, as.list);
    }
 )#pmindex
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 setMethod("mmindex", signature(object="DataTreeSet"),
-   function(object, unitid = NULL, as.list = TRUE) {
-      indexUnits(object, which = "mm", unitid, as.list);
+   function(object, unitID = NULL, as.list = TRUE) {
+      indexUnits(object, which = "mm", unitID, as.list);
    }
 )#mmindex
 
@@ -796,7 +816,9 @@ setMethod("mmindex", signature(object="DataTreeSet"),
 
 "pm.DataTreeSet" <-
 function(object,
-         which = "pm") 
+         which = "pm", 
+         unitID   = NULL, 
+         unittype = "transcript")
 {
    if (debug.xps()) print("------pm.DataTreeSet------")
 
@@ -811,7 +833,7 @@ function(object,
       stop(paste("invalid argument", sQuote("which")));
    }#if
 
-   return(validData(object, which=which));
+   return(validData(object, which=which, unitID=unitID, unittype=unittype));
 }#pm.DataTreeSet
 
 setMethod("pm", "DataTreeSet", pm.DataTreeSet);
@@ -820,7 +842,9 @@ setMethod("pm", "DataTreeSet", pm.DataTreeSet);
 
 "mm.DataTreeSet" <-
 function(object,
-         which = "mm") 
+         which = "mm", 
+         unitID   = NULL, 
+         unittype = "transcript")
 {
    if (debug.xps()) print("------mm.DataTreeSet------")
 
@@ -829,7 +853,7 @@ function(object,
       stop(paste("invalid argument", sQuote("which")));
    }#if
 
-   return(validData(object, which=which));
+   return(validData(object, which=which, unitID=unitID, unittype=unittype));
 }#mm.DataTreeSet
 
 setMethod("mm", "DataTreeSet", mm.DataTreeSet);
@@ -3531,7 +3555,7 @@ setMethod("hist", signature(x="DataTreeSet"),
          treenames <- treenames[grep(unique(treetype), treenames)];
       }#if
 
-      id <- indexUnits(x, which=which, unitid="");
+      id <- indexUnits(x, which=which, unitID="");
       dx <- NULL;
       dy <- NULL;
       for (i in 1:length(treenames)) {
@@ -3584,17 +3608,17 @@ setMethod("hist", signature(x="DataTreeSet"),
 
 setMethod("pmplot", signature(x="DataTreeSet"),
    function(x,
-           which   = "",
-           size    = 0,
-           transfo = NULL,
-           method  = mean,
-           names   = "namepart",
-           beside  = TRUE,
-           col     = c("red", "blue"),
-           legend  = c("PM","MM"),
-           las     = 2,
-           ylab    = "mean intensities",
-           ...) 
+            which   = "",
+            size    = 0,
+            transfo = NULL,
+            method  = mean,
+            names   = "namepart",
+            beside  = TRUE,
+            col     = c("red", "blue"),
+            legend  = c("PM","MM"),
+            las     = 2,
+            ylab    = "mean intensities",
+            ...) 
    {
       if (debug.xps()) print("------pmplot.DataTreeSet------")
 
@@ -3643,6 +3667,86 @@ setMethod("pmplot", signature(x="DataTreeSet"),
               ...);
    }
 )#pmplot
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("probesetplot", signature(x="DataTreeSet"),
+   function(x,
+            unitID,
+            unittype   = "transcript",
+            which      = "pm",
+            transfo    = log2,
+            names      = "namepart",
+            ylim       = NULL,
+            col        = 1:6,
+            lty        = 1:5,
+            add.legend = FALSE,
+           ...) 
+   {
+      if (debug.xps()) print("------probesetplot.DataTreeSet------")
+
+      ## check for presence of data
+      data <- x@data;
+      if (min(dim(data)) == 0) {
+         stop(paste("slot", sQuote("data"), "has no data"));
+      }#if
+
+      ## convert unitID
+      if (unittype == "transcript") {
+         unitid <- transcriptID2unitID(x@scheme, unitID);
+      } else if (unittype == "probeset") {
+         unitid <- probesetID2unitID(x@scheme, unitID);
+      } else {
+         unitid <- unitID;
+      }#if
+
+      id <- indexUnits(x, which=which, unitID=unitid, unittype=unittype, as.list=TRUE, data=data);
+
+      if (is.null(names))              names <- x@treenames
+      else if (names[1] == "namepart") names <- namePart(x@treenames);
+
+      treenames <- namePart(names);
+      datanames <- namePart(colnames(data));
+
+      data <- data[id[[1]], !is.na(match(datanames, treenames)), drop=FALSE];
+      colnames(data) <- names;
+
+      if (is.function(transfo)) data <- transfo(data);
+      if (is.null(ylim))        ylim <- range(data);
+
+      plot(data[,1],
+           type = "n",
+           main = paste("UnitID:", unitID),
+           ylab = "Intensity",
+           ylim = ylim,
+           ...);
+
+      col <-rep(col, (floor(length(names)/length(col)) + 1));
+      lty <-rep(lty, (floor(length(names)/length(lty)) + 1));
+      for (i in 1:ncol(data)) {
+         lines(data[,i], 
+               type = "l",
+               lty  = lty[i],
+               col  = col[i]
+              );
+      }#for
+
+      pos.legend <- "topleft";
+      if (is.character(add.legend)) {
+         pos.legend <- add.legend;
+         add.legend <- TRUE;
+      }#if
+      if (add.legend) {
+         legend(x      = pos.legend,
+                legend = names[1:ncol(data)],
+                lty    = lty,
+                pt.bg  = "white",
+                col    = col,
+                cex    = 0.6
+               );
+      }#if
+   }
+)#probesetplot
 
 #------------------------------------------------------------------------------#
 

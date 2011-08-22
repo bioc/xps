@@ -12,16 +12,17 @@
 
 \emph{Usage}
 
-\code{indexUnits(object, which = "", unitid = NULL, as.list = TRUE, data = NULL)}
+\code{indexUnits(object, which = "", unitID = NULL, unittype = "transcript", as.list = TRUE, data = NULL)}
 
-\code{pmindex(object, unitid = NULL, as.list = TRUE)}
+\code{pmindex(object, unitID = NULL, as.list = TRUE)}
 
-\code{mmindex(object, unitid = NULL, as.list = TRUE)}
+\code{mmindex(object, unitID = NULL, as.list = TRUE)}
 }
 \arguments{
   \item{object}{Object of class \code{"DataTreeSet"}.}
   \item{which}{type of probes to be used, for details see \code{\link{validData}}.}
-  \item{unitid}{optional vector of UNIT_IDs.}
+  \item{unitID}{optional vector of UNIT_IDs.}
+  \item{unittype}{\code{character} vector, \dQuote{transcript} or \dQuote{probeset}.}
   \item{as.list}{if TRUE a \code{list} will be returned (default is \code{data.frame}).}
   \item{data}{optional \code{data.frame} containing (x,y)-coordinates.}
 }
@@ -29,13 +30,13 @@
  Function \code{indexUnits} returns a \code{data.frame} or \code{list} with locations of the probes in
  each probe set. 
 
- By default a \code{data.frame} for selected \code{unitid}s or all unitIDs (\code{unitid="*"}) will be
+ By default a \code{data.frame} for selected \code{unitID}s or all unitIDs (\code{unitID="*"}) will be
  returned with columns <UNIT_ID, X, Y, XY>. Here "XY" are the selected rows of slot \code{data}.
  
  For \code{as.list=TRUE} a \code{list} of unitIDs will be returned containing the selected rows "XY". The
  names of the elements in the list returned are the \code{UNIT_ID}s.
 
- For \code{unitid=NULL} a vector of \code{data} rows "XY" will be returned. 
+ For \code{unitID=NULL} a vector of \code{data} rows "XY" will be returned. 
 
  For expression arrays which can be one of "pm", "mm", or "both". Alternatively, functions \code{pmindex}
  and \code{mmindex} can be used for PM probes or MM probes, respectively. 
@@ -54,17 +55,17 @@ scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root
 data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
 
 ## dataXY not attached
-id <- indexUnits(data.test3, which="pm", unitid=c(34,36,122))
+id <- indexUnits(data.test3, which="pm", unitID=c(34,36,122))
 id
 
-## dataXY attached
+## dataXY attached (only necessary for whole genome and exon arrays)
 data.test3 <- attachDataXY(data.test3)
 xy <- treeData(data.test3)
-id <- indexUnits(data.test3, which="pm", unitid=c(34,36,122), data=xy)
+id <- indexUnits(data.test3, which="pm", unitID=c(34,36,122), data=xy)
 id
-id <- indexUnits(data.test3, which="", unitid=c(34,36,122), data=xy)
+id <- indexUnits(data.test3, which="", unitID=c(34,36,122), data=xy)
 id
-id <- indexUnits(data.test3, which="", unitid=34, as.list=FALSE, data=xy)
+id <- indexUnits(data.test3, which="", unitID=34, as.list=FALSE, data=xy)
 id
 data.test3 <- removeDataXY(data.test3)
 

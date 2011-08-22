@@ -161,6 +161,7 @@ setGeneric("unitID2transcriptID", function(object, ...)   standardGeneric("unitI
 setGeneric("unitID2probesetID",   function(object, ...)   standardGeneric("unitID2probesetID"));
 setGeneric("transcriptID2unitID", function(object, ...)   standardGeneric("transcriptID2unitID"));
 setGeneric("probesetID2unitID",   function(object, ...)   standardGeneric("probesetID2unitID"));
+setGeneric("symbol2unitID",       function(object, ...)   standardGeneric("symbol2unitID"));
 
 
 #------------------------------------------------------------------------------#
@@ -245,6 +246,7 @@ setGeneric("xpsNormalize",      function(object, ...)        standardGeneric("xp
 setGeneric("xpsSummarize",      function(object, ...)        standardGeneric("xpsSummarize"));
 setGeneric("xpsQualify",        function(object, ...)        standardGeneric("xpsQualify"));
 setGeneric("pmplot",            function(x, ...)             standardGeneric("pmplot"));
+setGeneric("probesetplot",      function(x, ...)             standardGeneric("probesetplot"));
 
 
 #------------------------------------------------------------------------------#

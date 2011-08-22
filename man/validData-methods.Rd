@@ -8,13 +8,15 @@
 \emph{Usage}
 
 \code{
-validData(object, which = "")
+validData(object, which = "", unitID = NULL, unittype = "transcript")
 }
 }
 \arguments{
   \item{object}{object of class \code{DataTreeSet}, \code{ExprTreeSet} or \code{CallTreeSet}.}
   \item{which}{type of probes to be returned for \code{DataTreeSet}, otherwise name of column
    containing unit name.}
+  \item{unitID}{optional vector of UNIT_IDs.}
+  \item{unittype}{\code{character} vector, \dQuote{transcript} or \dQuote{probeset}.}
 }
 \details{
 For class \code{DataTreeSet} and expression arrays, \code{validData} returns all the 

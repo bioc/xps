@@ -443,7 +443,7 @@ setMethod("mboxplot", signature(x="ProcesSet"),
 
       if (is.null(names))              names <- colnames(m)
       else if (names[1] == "namepart") names <- namePart(colnames(m))
-      else                             m     <- m[, names, drop=F];
+      else                             m     <- m[, names, drop=FALSE];
 
       if (method == "median") {
          mn  <- apply(m, 1, median);
