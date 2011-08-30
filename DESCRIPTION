@@ -1,5 +1,5 @@
 Package: xps
-Version: 1.13.6
+Version: 1.13.7
 Title: Processing and Analysis of Affymetrix Oligonucleotide Arrays including
        Exon Arrays, Whole Genome Arrays and Plate Arrays
 Author: Christian Stratowa, Vienna, Austria
@@ -37,7 +37,7 @@ Collate: utils.R TreeSetClasses.R
          filter.R
          image.dev.R boxplot.dev.R mvaplot.dev.R
          plotBoxplot.R plotDensity.R plotImage.R
-         plotPM.R
+         plotPM.R plotProbeset.R
          plotCorr.R plotMAD.R plotMA.R plotNUSE.R plotPCA.R plotRLE.R
          plotCall.R
          plotBorder.R plotCOI.R

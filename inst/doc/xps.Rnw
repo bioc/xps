@@ -26,7 +26,7 @@
 \begin{document}
 
 \title{Introduction to the xps Package: Overview}
-\date{July, 2011}
+\date{September, 2011}
 \author{Christian Stratowa}
 \maketitle
 
@@ -220,6 +220,38 @@ tmp <- intensity(subdata.test3)
 head(tmp)
 @
 
+
+Often it is useful to obtain the intensities for a certain probeset only. As an example let 
+us find the intensities for probeset '93822\_at'. For this purpose we need to get the internal 
+UNIT\_ID first:
+<<>>=
+data.test3 <- attachUnitNames(data.test3)
+id <- transcriptID2unitID(data.test3, transcriptID="93822_at", as.list=FALSE)
+id
+@
+
+If we know the gene symbol, we could also do:
+<<>>=
+id <- symbol2unitID(data.test3, symbol="Rpl37a", as.list=FALSE)
+id
+@
+
+Now we can extract the PM intensities for the UNIT\_ID:
+<<>>=
+data <- validData(data.test3, which="pm", unitID=id)
+data
+@
+
+
+\pagebreak
+Finally we can plot the PM and MM intensities, in this case for a subset only.
+\begin{center}
+<<probesetplot, fig=TRUE>>=
+probesetplot(data.test3, unitID="93822_at", unittype="transcript", which="both", names=c("TestA1","TestA2"), add.legend="topright")
+@
+\end{center}
+
+
 When we no longer need the raw data, we can remove them from \Rclass{data.test3},
 thus avoiding memory consumption of \Robject{R}:
 <<>>=
@@ -230,6 +262,7 @@ head(tmp)
 
 
 
+\pagebreak
 \section{Converting raw data to expression measures}
 
 When we start a new \Robject{R}-session, it is necessary to load the \ROOT\ \Rclass{scheme} 

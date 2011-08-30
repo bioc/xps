@@ -162,6 +162,7 @@ setGeneric("unitID2probesetID",   function(object, ...)   standardGeneric("unitI
 setGeneric("transcriptID2unitID", function(object, ...)   standardGeneric("transcriptID2unitID"));
 setGeneric("probesetID2unitID",   function(object, ...)   standardGeneric("probesetID2unitID"));
 setGeneric("symbol2unitID",       function(object, ...)   standardGeneric("symbol2unitID"));
+setGeneric("unitID2symbol",       function(object, ...)   standardGeneric("unitID2symbol"));
 
 
 #------------------------------------------------------------------------------#

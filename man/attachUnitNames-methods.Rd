@@ -6,7 +6,8 @@
 \alias{removeUnitNames}
 \title{Attach/Remove Unit Names}
 \description{
- Attach/remove unit names, i.e. the Affymetrix probeset IDs to/from \code{\link{SchemeTreeSet}}.
+ Attach/remove unit names, i.e. the Affymetrix probeset IDs to/from \code{\link{SchemeTreeSet}}
+ or to slot \code{scheme} of \code{\link{DataTreeSet}}.
 
 \emph{Usage}
 
@@ -15,7 +16,7 @@
 \code{removeUnitNames(object)}
 }
 \arguments{
-  \item{object}{Object of class \code{"SchemeTreeSet"}.}
+  \item{object}{Object of class \code{"SchemeTreeSet"} or \code{"DataTreeSet"}.}
   \item{treetype}{the unit tree type, i.e. \sQuote{idx} or \sQuote{pbs}.}
 }
 \details{
@@ -32,9 +33,13 @@
  the exon arrays as \dQuote{UnitName}.
 }
 \value{
-  A \code{\link{SchemeTreeSet}} object.
+  A \code{\link{DataTreeSet}} object or \code{\link{SchemeTreeSet}}.
 }
 \author{Christian Stratowa}
+\note{
+ Do not use \code{attachUnitNames} unless you know that your computer has sufficient RAM,
+ especially for exon array schemes.
+}
 \seealso{\code{\link{attachMask}}, \code{\link{removeMask}}}
 \examples{
 ## first, load ROOT scheme file

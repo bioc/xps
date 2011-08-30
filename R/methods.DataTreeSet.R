@@ -18,6 +18,14 @@
 # removeDataXY: 
 # attachMask:
 # removeMask:
+# attachUnitNames:
+# removeUnitNames:
+# unitID2transcriptID:
+# unitID2probesetID:
+# unitID2symbol:
+# transcriptID2unitID:
+# probesetID2unitID:
+# symbol2unitID:
 # validData:
 # validBgrd:
 # addData:
@@ -384,6 +392,81 @@ setMethod("removeMask", signature(object="DataTreeSet"),
       return(object);
    }
 )#removeMask
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("attachUnitNames", signature(object="DataTreeSet"),
+   function(object, treetype = "idx") {
+      if (debug.xps()) print("------attachUnitNames.DataTreeSet------")
+
+      unitNames(object@scheme) <- export(object@scheme,
+                                         treetype     = treetype,
+                                         varlist      = "fUnitName",
+                                         as.dataframe = TRUE,
+                                         verbose      = FALSE);
+      return(object);
+   }
+)#attachUnitNames
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("removeUnitNames", signature(object="DataTreeSet"),
+   function(object) {
+      if (debug.xps()) print("------removeUnitNames.DataTreeSet------")
+
+      unitNames(object@scheme) <- data.frame(matrix(nr=0,nc=0));
+      gc(); #????
+      return(object);
+   }
+)#removeUnitNames
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("unitID2transcriptID", signature(object="DataTreeSet"),
+   function(object, unitID = NULL, as.list = TRUE) {
+      return(unitID2transcriptID(object@scheme, unitID, as.list));
+   }
+)#unitID2transcriptID
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("unitID2probesetID", signature(object="DataTreeSet"),
+   function(object, unitID = NULL, as.list = TRUE) {
+      return(unitID2probesetID(object@scheme, unitID, as.list));
+   }
+)#unitID2probesetID
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("unitID2symbol", signature(object="DataTreeSet"),
+   function(object, unitID, unittype = "transcript", as.list = TRUE) {
+      return(unitID2symbol(object@scheme, unitID, unittype, as.list));
+   }
+)#unitID2symbol
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("transcriptID2unitID", signature(object="DataTreeSet"),
+   function(object, transcriptID = NULL, as.list = TRUE) {
+      return(transcriptID2unitID(object@scheme, transcriptID, as.list));
+   }
+)#transcriptID2unitID
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("probesetID2unitID", signature(object="DataTreeSet"),
+   function(object, probesetID = NULL, as.list = TRUE) {
+      return(probesetID2unitID(object@scheme, probesetID, as.list));
+   }
+)#probesetID2unitID
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("symbol2unitID", signature(object="DataTreeSet"),
+   function(object, symbol, unittype = "transcript", as.list = TRUE) {
+      return(symbol2unitID(object@scheme, symbol, unittype, as.list));
+   }
+)#symbol2unitID
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -788,7 +871,11 @@ function(object,
          return(id);
       } else {
          id <- unlist(lapply(unitID, function(x) which(msk[,column] == x)));
-         return(msk[id,c(column,"X","Y","XY")]);
+         if (which[1] == "both") {
+            return(msk[id,c(column,"X","Y","XY","Mask")]);
+         } else {
+            return(msk[id,c(column,"X","Y","XY")]);
+         }#if
       }#if
    }#if
    return(id);
@@ -3691,7 +3778,7 @@ setMethod("probesetplot", signature(x="DataTreeSet"),
          stop(paste("slot", sQuote("data"), "has no data"));
       }#if
 
-      ## convert unitID
+      ## convert unitid
       if (unittype == "transcript") {
          unitid <- transcriptID2unitID(x@scheme, unitID);
       } else if (unittype == "probeset") {
@@ -3700,7 +3787,15 @@ setMethod("probesetplot", signature(x="DataTreeSet"),
          unitid <- unitID;
       }#if
 
-      id <- indexUnits(x, which=which, unitID=unitid, unittype=unittype, as.list=TRUE, data=data);
+      if (which[1] == "both") {
+         id  <- indexUnits(x, which=which, unitID=unitid, unittype=unittype, as.list=FALSE, data=data);
+         idx <- as.integer(id[,"XY"]);
+         msk <- as.integer(id[,"Mask"]);
+      } else {
+         id  <- indexUnits(x, which=which, unitID=unitid, unittype=unittype, as.list=TRUE, data=data);
+         idx <- id[[1]];
+         msk <- rep(1, length(id[[1]]));
+      }#if
 
       if (is.null(names))              names <- x@treenames
       else if (names[1] == "namepart") names <- namePart(x@treenames);
@@ -3708,11 +3803,23 @@ setMethod("probesetplot", signature(x="DataTreeSet"),
       treenames <- namePart(names);
       datanames <- namePart(colnames(data));
 
-      data <- data[id[[1]], !is.na(match(datanames, treenames)), drop=FALSE];
+      data <- data[idx, !is.na(match(datanames, treenames)), drop=FALSE];
       colnames(data) <- names;
 
       if (is.function(transfo)) data <- transfo(data);
       if (is.null(ylim))        ylim <- range(data);
+
+      ## optionally split data into pm and mm
+      numtrees <- ncol(data);
+      if (which[1] == "both") {
+         data <- cbind(data, msk);
+         colnames(data)[ncol(data)] <- "Mask";
+         data  <- cbind(data[data[,"Mask"] == 1, -ncol(data)],
+                        data[data[,"Mask"] == 0, -ncol(data)]);
+         names <- c(paste(names, "pm", sep="."),
+                    paste(names, "mm", sep="."));
+         colnames(data) <- names;
+      }#if
 
       plot(data[,1],
            type = "n",
@@ -3721,9 +3828,11 @@ setMethod("probesetplot", signature(x="DataTreeSet"),
            ylim = ylim,
            ...);
 
-      col <-rep(col, (floor(length(names)/length(col)) + 1));
-      lty <-rep(lty, (floor(length(names)/length(lty)) + 1));
-      for (i in 1:ncol(data)) {
+      col <-rep(col, (floor(numtrees/length(col)) + 1));
+      lty <-rep(lty, each=numtrees);
+
+      ## lines for PM
+      for (i in 1:numtrees) {
          lines(data[,i], 
                type = "l",
                lty  = lty[i],
@@ -3731,14 +3840,29 @@ setMethod("probesetplot", signature(x="DataTreeSet"),
               );
       }#for
 
+      ## lines for MM
+      if (which[1] == "both") {
+         for (i in 1:numtrees) {
+            lines(data[,numtrees+i], 
+                  type = "l",
+                  lty  = lty[numtrees+i],
+                  col  = col[i]
+                 );
+         }#for
+      }#if
+
       pos.legend <- "topleft";
       if (is.character(add.legend)) {
          pos.legend <- add.legend;
          add.legend <- TRUE;
       }#if
       if (add.legend) {
+         if (which[1] == "both") {
+            col      <- c(col[1:numtrees], col[1:numtrees]);
+            numtrees <- 2*numtrees;
+         }#if
          legend(x      = pos.legend,
-                legend = names[1:ncol(data)],
+                legend = names[1:numtrees],
                 lty    = lty,
                 pt.bg  = "white",
                 col    = col,

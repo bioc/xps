@@ -27,6 +27,7 @@
 \alias{symbol2unitID,SchemeTreeSet-method}
 \alias{transcriptID2unitID,SchemeTreeSet-method}
 \alias{unitID2probesetID,SchemeTreeSet-method}
+\alias{unitID2symbol,SchemeTreeSet-method}
 \alias{unitID2transcriptID,SchemeTreeSet-method}
 \alias{unitNames,SchemeTreeSet-method}
 \alias{unitNames}
@@ -102,6 +103,8 @@ Class \code{"\linkS4class{TreeSet}"}, directly.
      transcriptIDs from data.frame \code{unitname} with UnitName, i.e. transcript ID, as (row)names.}
     \item{unitID2probesetID}{\code{signature(object = "SchemeTreeSet")}: extracts all or selected unitIDs
      from data.frame \code{unitname} with UNIT_ID as (row)names.}
+    \item{symbol2unitID}{\code{signature(object = "SchemeTreeSet")}: extracts gene symbols for one
+     or more internal UNIT_ID(s).}
     \item{unitID2transcriptID}{\code{signature(object = "SchemeTreeSet")}: extracts all or selected unitIDs
      from data.frame \code{unitname} with UNIT_ID as (row)names.}
     \item{unitNames}{\code{signature(object = "SchemeTreeSet")}: extracts data.frame \code{unitname}.}

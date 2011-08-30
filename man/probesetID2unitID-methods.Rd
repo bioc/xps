@@ -10,7 +10,7 @@
 \alias{unitID2transcriptID}
 \title{Conversion between Probeset IDs and UnitIDs}
 \description{
- Convert probeset IDs and transcript IDs to UNIT_IDs and vice verse. 
+ Convert probeset IDs and transcript IDs to internal UNIT_IDs and vice verse. 
 
 \emph{Usage}
 
@@ -18,15 +18,15 @@
 
 \code{transcriptID2unitID(object, transcriptID = NULL, as.list = TRUE)}
 
-\code{unitID2probesetID(object, unitid = NULL, as.list = TRUE)}
+\code{unitID2probesetID(object, unitID = NULL, as.list = TRUE)}
 
-\code{unitID2transcriptID(object, unitid = NULL, as.list = TRUE)}
+\code{unitID2transcriptID(object, unitID = NULL, as.list = TRUE)}
 }
 \arguments{
-  \item{object}{Object of class \code{"DataTreeSet"}.}
+  \item{object}{Object of class \code{"SchemeTreeSet"} or \code{"DataTreeSet"}.}
   \item{probesetID}{optional vector of probeset IDs.}
   \item{transcriptID}{optional vector of transcript IDs.}
-  \item{unitid}{optional vector of UNIT_IDs.}
+  \item{unitID}{optional vector of UNIT_IDs.}
   \item{as.list}{if TRUE a \code{list} will be returned (default is \code{data.frame}).}
 }
 \details{

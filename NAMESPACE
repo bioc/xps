@@ -79,6 +79,7 @@ exportMethods("attachMask",
               "transcriptID2unitID",
               "symbol2unitID",
               "unitID2probesetID",
+              "unitID2symbol",
               "unitID2transcriptID",
               "unitNames",
               "unitNames<-")
@@ -243,7 +244,7 @@ export(prefilter, unifilter)
 ## plot device  functions
 export(boxplot.dev, image.dev, mvaplot.dev)
 export(plotBoxplot, plotDensity, plotImage)
-export(plotPM)
+export(plotPM, plotProbeset)
 export(plotCorr, plotMAD, plotMA, plotNUSE, plotPCA, plotRLE)
 export(plotCall)
 export(plotBorder, plotCOI)

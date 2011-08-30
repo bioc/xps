@@ -2,10 +2,15 @@
 		CHANGES IN R VERSION 2.14.0
 
 
+VERSION xps-1.13.7
+    o add function unitID2symbol()
+    o add function plotProbeset()
+    o update vignette xps.Rnw
+
 VERSION xps-1.13.6
     o update function indexUnits() for exon probesets
     o add function symbol2unitID()
-    o add functions probesetplot() and plotProbeset()
+    o add function probesetplot()
 
 VERSION xps-1.13.5
     o update script4schemes.R to include schemes with annotation na32

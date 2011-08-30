@@ -21,6 +21,7 @@
 # unitID2probesetID:
 # transcriptID2unitID:
 # probesetID2unitID:
+# unitID2symbol:
 # symbol2unitID:
 # export:
 #==============================================================================#
@@ -186,9 +187,7 @@ setMethod("removeMask", signature(object="SchemeTreeSet"),
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 setMethod("attachUnitNames", signature(object="SchemeTreeSet"),
-   function(object,
-            treetype = "idx")
-   {
+   function(object, treetype = "idx") {
       if (debug.xps()) print("------attachUnitNames.SchemeTreeSet------")
 
       unitNames(object) <- export(object,
@@ -349,6 +348,52 @@ setMethod("probesetID2unitID", signature(object="SchemeTreeSet"),
       }#if
    }
 )#probesetID2unitID
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("unitID2symbol", signature(object="SchemeTreeSet"),
+   function(object,
+            unitID,
+            unittype = "transcript", 
+            as.list  = TRUE) 
+   {
+      if (debug.xps()) print("------unitID2symbol.SchemeTreeSet------")
+
+      if (unittype == "probeset") {
+         varlist  <- "fProbesetID:fSymbol";
+         treetype <- "anp";
+         colname  <- "ProbesetID";
+      } else {
+         varlist  <- "fTranscriptID:fSymbol";
+         treetype <- "ann";
+         if(chipType(object) == "ExonChip") colname  <- "TranscriptClusterID"
+         else                               colname  <- "ProbesetID";
+      }#if
+
+      ann <- export(object,
+                    treetype     = treetype,
+                    varlist      = varlist,
+                    outfile      = "tmp.txt",
+                    as.dataframe = TRUE,
+                    verbose      = FALSE);
+
+      if (unittype == "probeset") {
+         affid <- unitID2probesetID(object, unitID=unitID, as.list=FALSE);
+      } else {
+         affid <- unitID2transcriptID(object, unitID=unitID, as.list=FALSE);
+      }#if
+
+      id <- split(ann[,"GeneSymbol"], ann[,colname]);
+      id <- id[unlist(lapply(affid, function(x) which(names(id) == x)))];
+
+      if (as.list) {
+         id <- as.list(id);
+         names(id) <- unitID;
+         return(id);
+      }#if
+      return(unlist(id));
+   }
+)#unitID2symbol
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

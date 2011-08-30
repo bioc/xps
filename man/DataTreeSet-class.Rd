@@ -7,6 +7,7 @@
 \alias{attachDataXY,DataTreeSet-method}
 \alias{attachInten,DataTreeSet-method}
 \alias{attachMask,DataTreeSet-method}
+\alias{attachUnitNames,DataTreeSet-method}
 \alias{background,DataTreeSet-method}
 \alias{background}
 \alias{background<-,DataTreeSet,data.frame-method}
@@ -24,6 +25,7 @@
 \alias{pm,DataTreeSet-method}
 \alias{pmindex,DataTreeSet-method}
 \alias{pmplot,DataTreeSet-method}
+\alias{probesetID2unitID,DataTreeSet-method}
 \alias{probesetplot,DataTreeSet-method}
 \alias{projectInfo,DataTreeSet-method}
 \alias{projectInfo<-,DataTreeSet,ProjectInfo-method}
@@ -32,6 +34,12 @@
 \alias{removeDataXY,DataTreeSet-method}
 \alias{removeInten,DataTreeSet-method}
 \alias{removeMask,DataTreeSet-method}
+\alias{removeUnitNames,DataTreeSet-method}
+\alias{symbol2unitID,DataTreeSet-method}
+\alias{transcriptID2unitID,DataTreeSet-method}
+\alias{unitID2probesetID,DataTreeSet-method}
+\alias{unitID2symbol,DataTreeSet-method}
+\alias{unitID2transcriptID,DataTreeSet-method}
 \alias{validBgrd,DataTreeSet-method}
 \alias{validBgrd}
 \alias{validData,DataTreeSet-method}
@@ -99,6 +107,8 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
      \code{\link{ROOT}} data file and and saves as data.frame \code{data}.}
     \item{attachMask}{\code{signature(object = "DataTreeSet")}: exports scheme tree from 
      \code{\link{ROOT}} scheme file and and saves as data.frame \code{mask} of slot \code{scheme}.}
+    \item{attachUnitNames}{\code{signature(object = "DataTreeSet")}: exports unit tree from 
+     \code{\link{ROOT}} scheme file and and saves as data.frame \code{unitname} of slot \code{scheme}.}
     \item{background}{\code{signature(object = "DataTreeSet")}: extracts slot \code{bgrd}.}
     \item{background<-}{\code{signature(object = "DataTreeSet", value = "data.frame")}: replaces slot \code{bgrd}.}
     \item{bgtreeNames}{\code{signature(object = "DataTreeSet")}: extracts slot \code{bgtreenames}.}
@@ -118,6 +128,8 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
      PM indices for all or selected unitIDs.}
     \item{pmplot}{\code{signature(x = "DataTreeSet")}: creates a barplot of mean perfect match and
      mismatch intensities.}
+    \item{probesetID2unitID}{\code{signature(object = "DataTreeSet")}: extracts all or selected 
+     probesetIDs from data.frame \code{unitname} of slot \code{scheme} with UnitName, i.e. probeset ID, as (row)names.}
     \item{probesetplot}{\code{signature(x = "DataTreeSet")}: creates a line plot of probe intensities for 
      a probeset.}
     \item{projectInfo}{\code{signature(object = "DataTreeSet")}: extracts slot \code{projectinfo}.}
@@ -132,6 +144,18 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
      with an empty data.frame of dim(0,0).}
     \item{removeMask}{\code{signature(object = "DataTreeSet")}: replaces data.frame \code{mask} 
      from slot \code{scheme} with an empty data.frame of dim(0,0).}
+    \item{removeUnitNames}{\code{signature(object = "DataTreeSet")}: replaces data.frame 
+     \code{unitname} from slot \code{scheme} with an empty data.frame of dim(0,0).}
+    \item{symbol2unitID}{\code{signature(object = "DataTreeSet")}: extracts internal UNIT_ID(s) for one
+     or more gene symbols.}
+    \item{transcriptID2unitID}{\code{signature(object = "DataTreeSet")}: extracts all or selected 
+     transcriptIDs from data.frame \code{unitname} of slot \code{scheme} with UnitName, i.e. transcript ID, as (row)names.}
+    \item{unitID2probesetID}{\code{signature(object = "DataTreeSet")}: extracts all or selected unitIDs
+     from data.frame \code{unitname} of slot \code{scheme} with UNIT_ID as (row)names.}
+    \item{symbol2unitID}{\code{signature(object = "DataTreeSet")}: extracts gene symbols for one
+     or more internal UNIT_ID(s).}
+    \item{unitID2transcriptID}{\code{signature(object = "DataTreeSet")}: extracts all or selected unitIDs
+     from data.frame \code{unitname} of slot \code{scheme} with UNIT_ID as (row)names.}
     \item{validBgrd}{\code{signature(object = "DataTreeSet")}: extracts the valid data 
      from data.frame \code{bgrd}.}
     \item{validData}{\code{signature(object = "DataTreeSet")}: extracts a subset of valid data 
