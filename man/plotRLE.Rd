@@ -1,8 +1,8 @@
 \name{plotRLE}
 \alias{plotRLE}
-\title{Box Plots of Normalized Unscaled Standard Errors (NUSE) for Device}
+\title{Box Plots of Relative Log Expression (RLE) for Device}
 \description{
- Produce boxplot of Normalized Unscaled Standard Errors (NUSE) for the set of arrays and
+ Produce boxplot of Relative Log Expression (RLE) for the set of arrays and
  the selected device.
 }
 \usage{

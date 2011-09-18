@@ -73,13 +73,13 @@ libdir <- "/my/path/Affy/libraryfiles"
 anndir <- "/my/path/Affy/Annotation"
 
 ## create scheme for HuGene-1_0-st-v1 whole genome array
-scheme.hugene10stv1r3.na27 <- import.genome.scheme("Scheme_HuEx10stv1r3_na27",filedir=scmdir,
-                              layoutfile=paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.clf",sep="/"),
-                              schemefile=paste(libdir,"HuGene-1_0-st-v1.r3.analysis_libraryfile/HuGene-1_0-st-v1.r3.pgf",sep="/"),
-                              transcript=paste(anndir,"HuGene-1_0-st-v1.na27.hg18.transcript.csv",sep="/"))
+scheme.hugene10stv1r3.na27 <- import.genome.scheme("Scheme_HuEx10stv1r3_na27", filedir=scmdir,
+                              layoutfile=file.path(libdir, "HuGene-1_0-st-v1.r3.analysis_libraryfile", "HuGene-1_0-st-v1.r3.clf"),
+                              schemefile=file.path(libdir, "HuGene-1_0-st-v1.r3.analysis_libraryfile", "HuGene-1_0-st-v1.r3.pgf"),
+                              transcript=file.path(anndir, "HuGene-1_0-st-v1.na27.hg18.transcript.csv"))
 
 ## access ROOT scheme file from new R session
-scheme.hugene10stv1r3 <- root.scheme(paste(scmdir,"Scheme_HuEx10stv1r3_na27.root",sep="/"))
+scheme.hugene10stv1r3 <- root.scheme(file.path(scmdir, "Scheme_HuEx10stv1r3_na27.root"))
 }
 }
 \keyword{manip}

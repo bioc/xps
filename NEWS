@@ -2,6 +2,12 @@
 		CHANGES IN R VERSION 2.14.0
 
 
+VERSION xps-1.13.8
+    o add functions attachProbe(), removeProbe(), etc.
+    o add functions contentGC(), probeSequence()
+    o add functions inten2GCplot(), plotInten2GC()
+    o update vignette xps.Rnw
+
 VERSION xps-1.13.7
     o add function unitID2symbol()
     o add function plotProbeset()

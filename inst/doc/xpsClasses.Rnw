@@ -30,7 +30,7 @@
 \bibliographystyle{plainnat}
 
 \title{Introduction to the xps Package: Classes structure}
-\date{July, 2011}
+\date{September, 2011}
 \author{Christian Stratowa}
 \maketitle
 

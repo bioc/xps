@@ -36,7 +36,7 @@ mboxplot(x, which = "", size = 0, transfo = log2, method  = "mean", range = 0, y
  For a \code{\link{DataTreeSet}} object, data must first be attached using method 
  \code{\link{attachInten}}.
 }
-\seealso{\code{\link{boxplot.dev}}, \code{\link{boxplot}}}
+\seealso{\code{\link{mvaplot}}, \code{\link{boxplot}}}
 \examples{
 # load existing ROOT scheme file and ROOT data file
 scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))

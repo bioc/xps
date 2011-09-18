@@ -1,6 +1,5 @@
 \name{plotBoxplot}
 \alias{plotBoxplot}
-\alias{boxplot.dev}
 \title{Box Plots for Device}
 \description{
   Produce box-and-whisker plot(s) of the samples for the selected device.
@@ -20,8 +19,6 @@ plotBoxplot(x,
             w       = 800,
             h       = 540,
             ...) 
-
-boxplot.dev(x, which = "", size = 0, transfo = log2, range = 0, names = "namepart", mar = c(10, 5, 4, 1), las = 2, dev = "screen", outfile = "BoxPlot", w = 800, h = 540, ...)
 }
 \arguments{
   \item{x}{object of class \code{\link{DataTreeSet}} or \code{\link{ExprTreeSet}}.}
@@ -45,8 +42,5 @@ boxplot.dev(x, which = "", size = 0, transfo = log2, range = 0, names = "namepar
  \code{\link{ExprTreeSet}} or \code{\link{QualTreeSet}} for the selected graphics device.
 }
 \author{Christian Stratowa}
-\note{
- Function boxplot.dev() will be deprecated since it needs to attachInten()!!
-}
 \seealso{\code{\link{boxplot}}, \code{\link{plotBorder}}, \code{\link{plotNUSE}}, \code{\link{plotRLE}}}
 \keyword{device}

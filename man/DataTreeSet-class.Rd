@@ -7,6 +7,7 @@
 \alias{attachDataXY,DataTreeSet-method}
 \alias{attachInten,DataTreeSet-method}
 \alias{attachMask,DataTreeSet-method}
+\alias{attachProbeContentGC,DataTreeSet-method}
 \alias{attachUnitNames,DataTreeSet-method}
 \alias{background,DataTreeSet-method}
 \alias{background}
@@ -18,6 +19,7 @@
 \alias{indexUnits,DataTreeSet-method}
 \alias{intensity,DataTreeSet-method}
 \alias{intensity<-,DataTreeSet,data.frame-method}
+\alias{intensity2GCplot,DataTreeSet-method}
 \alias{mm,DataTreeSet-method}
 \alias{mmindex,DataTreeSet-method}
 \alias{ncols,DataTreeSet-method}
@@ -34,6 +36,7 @@
 \alias{removeDataXY,DataTreeSet-method}
 \alias{removeInten,DataTreeSet-method}
 \alias{removeMask,DataTreeSet-method}
+\alias{removeProbeContentGC,DataTreeSet-method}
 \alias{removeUnitNames,DataTreeSet-method}
 \alias{symbol2unitID,DataTreeSet-method}
 \alias{transcriptID2unitID,DataTreeSet-method}
@@ -107,6 +110,8 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
      \code{\link{ROOT}} data file and and saves as data.frame \code{data}.}
     \item{attachMask}{\code{signature(object = "DataTreeSet")}: exports scheme tree from 
      \code{\link{ROOT}} scheme file and and saves as data.frame \code{mask} of slot \code{scheme}.}
+    \item{attachProbeContentGC}{\code{signature(object = "DataTreeSet")}: exports probe tree from 
+     \code{\link{ROOT}} scheme file and and saves \code{fNumberGC} as data.frame \code{probe}.}
     \item{attachUnitNames}{\code{signature(object = "DataTreeSet")}: exports unit tree from 
      \code{\link{ROOT}} scheme file and and saves as data.frame \code{unitname} of slot \code{scheme}.}
     \item{background}{\code{signature(object = "DataTreeSet")}: extracts slot \code{bgrd}.}
@@ -116,6 +121,8 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
      indices for all or selected unitIDs.}
     \item{intensity}{\code{signature(object = "DataTreeSet")}: extracts slot \code{data}.}
     \item{intensity<-}{\code{signature(object = "DataTreeSet", value = "data.frame")}: replaces slot \code{data}.}
+    \item{intensity2GCplot}{\code{signature(x = "DataTreeSet")}: creates a boxplot of probe intensities  
+     stratified by GC content.}
     \item{mm}{\code{signature(object = "DataTreeSet")}: extracts the mismatch intensities.}
     \item{mmindex}{\code{signature(object = "DataTreeSet")}: extracts (x,y)-coordinates and corresponding
      MM indices for all or selected unitIDs.}
@@ -144,6 +151,8 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
      with an empty data.frame of dim(0,0).}
     \item{removeMask}{\code{signature(object = "DataTreeSet")}: replaces data.frame \code{mask} 
      from slot \code{scheme} with an empty data.frame of dim(0,0).}
+    \item{removeProbeContentGC}{\code{signature(object = "DataTreeSet")}: replaces data.frame \code{probe} 
+     with an empty data.frame of dim(0,0).}
     \item{removeUnitNames}{\code{signature(object = "DataTreeSet")}: replaces data.frame 
      \code{unitname} from slot \code{scheme} with an empty data.frame of dim(0,0).}
     \item{symbol2unitID}{\code{signature(object = "DataTreeSet")}: extracts internal UNIT_ID(s) for one

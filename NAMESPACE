@@ -64,17 +64,27 @@ exportMethods("export",
 
 ## class SchemeTreeSet
 exportMethods("attachMask",
+              "attachProbe",
+              "attachProbeContentGC",
+              "attachProbeSequence",
               "attachUnitNames",
               "chipMask",
               "chipMask<-",
               "chipName",
+              "chipProbe",
+              "chipProbe<-",
               "chipType",
               "chipType<-",
               "ncols",
               "nrows",
+              "probeContentGC",
               "probeInfo",
+              "probeSequence",
               "probesetID2unitID",
               "removeMask",
+              "removeProbe",
+              "removeProbeContentGC",
+              "removeProbeSequence",
               "removeUnitNames",
               "transcriptID2unitID",
               "symbol2unitID",
@@ -110,6 +120,7 @@ exportMethods("addData",
               "indexUnits",
               "intensity",
               "intensity<-",
+              "intensity2GCplot",
               "mm",
               "mmindex",
               "pm",
@@ -242,9 +253,8 @@ export(AffyRNAdeg, summaryAffyRNAdeg, plotAffyRNAdeg)
 export(prefilter, unifilter)
 
 ## plot device  functions
-export(boxplot.dev, image.dev, mvaplot.dev)
 export(plotBoxplot, plotDensity, plotImage)
-export(plotPM, plotProbeset)
+export(plotPM, plotProbeset, plotIntensity2GC)
 export(plotCorr, plotMAD, plotMA, plotNUSE, plotPCA, plotRLE)
 export(plotCall)
 export(plotBorder, plotCOI)
@@ -256,11 +266,10 @@ export(PreFilter, UniFilter)
 
 ## root.functions
 export(root.scheme, root.data, root.merge.data, root.expr, root.call)
-export(root.image)
+export(root.density, root.image, root.profile)
 export(root.graph1D, root.graph2D, root.mvaplot)
 export(root.hist1D, root.hist2D, root.hist3D)
-export(root.density, root.profile)
-#to do export(root.draw.leaves)
+#to do export(root.draw, root.draw.leaves)
 
 ## utility functions
 export(xpsOptions, debug.xps)

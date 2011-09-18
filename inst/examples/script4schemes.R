@@ -83,6 +83,12 @@ scheme.hgu133plus2.na32 <- import.expr.scheme("hgu133plus2", filedir = file.path
                            probefile  = file.path(libdir, "HG-U133-PLUS_probe.tab"), 
                            annotfile  = file.path(anndir, "Version11Jul", "HG-U133_Plus_2.na32.annot.csv"))
 
+# PrimeView:
+scheme.primeview.na32 <- import.expr.scheme("primeview", filedir = file.path(scmdir, "na32"),
+                         schemefile = file.path(libdir, "PrimeView.CDF"), 
+                         probefile  = file.path(libdir, "PrimeView.probe.tab"), 
+                         annotfile  = file.path(anndir, "Version11Jul", "PrimeView.na32.annot.csv"))
+
 # MOE430A:
 scheme.moe430a.na32 <- import.expr.scheme("moe430a",filedir=file.path(scmdir, "na32"),
                        schemefile = file.path(libdir,"MOE430A.CDF"),

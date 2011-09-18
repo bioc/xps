@@ -47,6 +47,7 @@ probesetplot(x,
 \author{Christian Stratowa}
 \note{
  Data must first be attached to class \code{\link{DataTreeSet}} using method \code{\link{attachInten}}.
+ Furthermore, unit names must be attached using method \code{\link{attachUnitNames}}.
 }
 \seealso{\code{\link{plotPM}}, \code{\link{boxplot}}, \code{\link{barplot}}}
 \examples{

@@ -1,6 +1,5 @@
 \name{plotImage}
 \alias{plotImage}
-\alias{image.dev}
 \title{Plot Image(s) for Device}
 \description{
  Creates an image for each sample for the selected device.
@@ -18,22 +17,15 @@ plotImage(x,
           h        = 800,
           verbose  = TRUE,
           ...) 
-
-image.dev(x, bg = FALSE, transfo = log2, col = gray((0:64)/64), names = "namepart", xlab = "", ylab = "", mar = c(1, 1, 2, 1), dev = "screen", outfile = "Image", w = 540, h = 540, ...)
 }
 \arguments{
   \item{x}{object of class \code{\link{DataTreeSet}} or \code{\link{QualTreeSet}}.}
   \item{type}{character string specifying the type of image.}
   \item{qualopt}{character string specifying whether to draw residual image for \dQuote{raw},
   \dQuote{adjusted}, or \dQuote{normalized} intensities.}
-  \item{bg}{logical. If \code{FALSE}, intensities from slot \code{data} will be used;
-   if \code{TRUE}, background intensities from slot \code{bgrd} will be used.}
   \item{transfo}{a valid function to transform the data, usually \dQuote{log2}, or \dQuote{0}.}
   \item{col}{color range for intensities.}
   \item{names}{vector of sample names.}
-  \item{xlab}{a title for the x axis.}
-  \item{ylab}{a title for the y axis.}
-  \item{mar}{plot margins.}
   \item{dev}{graphics device to plot to, i.e. one of \dQuote{screen}, \dQuote{jpeg},\dQuote{png},
    \dQuote{pdf} or \dQuote{ps}.}
   \item{outfile}{the name of the output file.}
@@ -57,9 +49,6 @@ image.dev(x, bg = FALSE, transfo = log2, col = gray((0:64)/64), names = "namepar
  is a vector of column names, only these samples will displayed as image(s).
 }
 \author{Christian Stratowa}
-\note{
- Function image.dev() will be deprecated since it needs to attachInten()!!
-}
 \seealso{\code{\link{image-methods}}, \code{\link{image}}}
 \examples{
 \dontrun{

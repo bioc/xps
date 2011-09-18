@@ -1,8 +1,8 @@
 \name{plotProbeset}
 \alias{plotProbeset}
-\title{Barplot of PM and MM Intensities for Device}
+\title{Plot of Probe Intensities for a Probeset for Device.}
 \description{
- Creates a barplot of mean perfect match and mismatch intensities for the selected device.
+ Creates a line plot of probe intensities for a probeset for the selected device.
 }
 \usage{
 plotProbeset(x,
@@ -49,5 +49,9 @@ plotProbeset(x,
  is a vector of column names, line plots of probe intensities will only be drawn for these columns.
 }
 \author{Christian Stratowa}
+\note{
+ Data must first be attached to class \code{\link{DataTreeSet}} using method \code{\link{attachInten}}.
+ Furthermore, unit names must be attached using method \code{\link{attachUnitNames}}.
+}
 \seealso{\code{\link{probesetplot}}}
 \keyword{device}

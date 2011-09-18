@@ -50,7 +50,7 @@ import.exon.scheme(filename   = character(0),
  scheme file for every R session.
 
  Do not separate \code{filename} of ROOT files with dots, use underscores, e.g. do not use 
- \code{filename="Scheme.HuEx10stv2r2.na27"} but use \code{filename="Scheme_HuEx10stv2r2_na27"}
+ \code{filename="Scheme.HuEx10stv2r2.na32"} but use \code{filename="Scheme_HuEx10stv2r2_na32"}
  instead. Extension \dQuote{root} is added automatically, so that ROOT is able to recognize
  the file as ROOT file.
 
@@ -61,7 +61,7 @@ import.exon.scheme(filename   = character(0),
 }
 \section{Warning }{
  The current version of \sQuote{xps} should be able to import all Affymetrix exon array
- annotation files up to November 2008. However, since Affymetrix is still changing the headers
+ annotation files up to September 2011. However, since Affymetrix is still changing the headers
  and/or columns of the annotation files, future annotation files may require adaptation
  of the source code, thus the current version of \sQuote{xps} may not be able to read
  these files.
@@ -75,32 +75,34 @@ libdir <- "/my/path/Affy/libraryfiles"
 anndir <- "/my/path/Affy/Annotation"
 
 ## create scheme for HuEx-1_0-st-v2.r2 Exon array
-scheme.huex10stv2r2.na27 <- import.exon.scheme("Scheme_HuEx10stv2r2_na27",filedir=scmdir,
-                            layoutfile=paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
-                            schemefile=paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
-                            probeset=paste(anndir,"HuEx-1_0-st-v2.na27.hg18.probeset.csv",sep="/"),
-                            transcript=paste(anndir,"HuEx-1_0-st-v2.na27.hg18.transcript.csv",sep="/"))
+scheme.huex10stv2r2.na32 <- import.exon.scheme("Scheme_HuEx10stv2r2_na32", filedir=scmdir,
+                            layoutfile=file.path(libdir, "HuEx-1_0-st-v2_libraryfile", "HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf"),
+                            schemefile=file.path(libdir, "HuEx-1_0-st-v2_libraryfile", "HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf"),
+                            probeset=file.path(anndir, "HuEx-1_0-st-v2.na32.hg19.probeset.csv"),
+                            transcript=file.path(anndir, "HuEx-1_0-st-v2.na32.hg19.transcript.csv"))
 
 ## access ROOT scheme file from new R session
-scheme.huex10stv2r2 <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na27.root",sep="/"))
+scheme.exon <- root.scheme(paste(scmdir,"Scheme_HuEx10stv2r2_na32.root",sep="/"))
+
 
 ## create scheme for HuGene-1_0-st-v1.r4 as exon array
-scheme.hugene10stv1r4.na27 <- import.exon.scheme("Scheme_HuGene10stv1r4_na27_2",filedir=scmdir,
-                              layoutfile=paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.clf",sep="/"),
-                              schemefile=paste(libdir,"HuGene-1_0-st-v1.r4.analysis-lib-files/HuGene-1_0-st-v1.r4.pgf",sep="/"),
-                              probeset=paste(anndir,"HuGene-1_0-st-v1.na27.2.hg18.probeset.csv",sep="/"),
-                              transcript=paste(anndir,"HuGene-1_0-st-v1.na27.hg18.transcript.csv",sep="/"))
+scheme.hugene10stv1r4.na32 <- import.exon.scheme("Scheme_HuGene10stv1r4_na32",filedir=scmdir,
+                              layoutfile=file.path(libdir, "HuGene-1_0-st-v1.r4.analysis-lib-files", "HuGene-1_0-st-v1.r4.clf"),
+                              schemefile=file.path(libdir, "HuGene-1_0-st-v1.r4.analysis-lib-files", "HuGene-1_0-st-v1.r4.pgf"),
+                              probeset=file.path(anndir, "HuGene-1_0-st-v1.na32.hg19.probeset.csv"),
+                              transcript=file.path(anndir, "HuGene-1_0-st-v1.na32.hg19.transcript.csv"))
 
 ## access ROOT scheme file from new R session
-scheme.hugene10stv1r4 <- root.scheme(paste(scmdir,"Scheme_HuGene10stv1r4_na27_2.root",sep="/"))
+scheme.gene <- root.scheme(file.path(scmdir, "Scheme_HuGene10stv1r4_na32.root"))
+
 
 ## create scheme for HuEx-1_0-st-v2.r2 Exon array with the old annotation file
 scheme.huex10stv2r2.old <- import.exon.scheme("Scheme_HuEx10stv2r2_old",filedir=scmdir,
-                           layoutfile=paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.clf",sep="/"),
-                           schemefile=paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.pgf",sep="/"),
-                           probeset=paste(anndir,"HuEx-1_0-st-probeset-annot.csv",sep="/"),
-                           transcript=paste(anndir,"HuEx-1_0-st-transcript-annot.csv",sep="/"),
-                           control=paste(libdir,"HuEx-1_0-st-v2_libraryfile/HuEx-1_0-st-r2/HuEx-1_0-st-v2.r2.controls.ps",sep="/"))
+                           layoutfile=file.path(libdir, "HuEx-1_0-st-v2_libraryfile", "HuEx-1_0-st-r2", "HuEx-1_0-st-v2.r2.clf"),
+                           schemefile=file.path(libdir, "HuEx-1_0-st-v2_libraryfile", "HuEx-1_0-st-r2", "HuEx-1_0-st-v2.r2.pgf"),
+                           probeset=file.path(anndir, "HuEx-1_0-st-probeset-annot.csv"),
+                           transcript=file.path(anndir, "HuEx-1_0-st-transcript-annot.csv"),
+                           control=file.path(libdir, "HuEx-1_0-st-v2_libraryfile", "HuEx-1_0-st-r2", "HuEx-1_0-st-v2.r2.controls.ps"))
 }
 }
 \keyword{manip}

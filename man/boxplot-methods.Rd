@@ -42,7 +42,7 @@ boxplot(x, which = "", size = 0, transfo = log2, range = 0, names = "namepart", 
  of the data trees by calling \code{which="userinfo:varlist"}, where the \code{varlist} to call
  is described in method \code{\link{treeInfo}}.
 }
-\seealso{\code{\link{boxplot.dev}}, \code{\link[graphics]{boxplot}}}
+\seealso{\code{\link{plotBoxplot}}, \code{\link[graphics]{boxplot}}}
 \examples{
 ## load existing ROOT scheme file and ROOT data file
 scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))

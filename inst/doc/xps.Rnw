@@ -44,8 +44,8 @@ FARMS \citep{hochr:etal:2006} or DFW \citep{chen:etal:2007} are custom methods
 that can be registered for use with package \Rpackage{affy}. 
 
 Advantages in technology allow Affymetrix to supply whole-genome expression arrays 
-such as the new GeneChip Exon array systems (Exon 1.0 ST) and Gene array systems 
-(Gene 1.0 ST). The amount of data created with the new exon arrays poses a great 
+such as the new GeneChip Exon array systems (Exon 1.x ST) and Gene array systems 
+(Gene 1.x ST). The amount of data created with the new exon arrays poses a great 
 challenge, since R stores all objects in memory. 
 
 Package \xps\ ~- \Rclass{eXpression Profiling System} - is designed to analyze 
@@ -79,7 +79,7 @@ independent of \Robject{R} such avoiding inherent memory limitations.
 
 {\bf Note:} Absolutely no knowledge of \ROOT\ is required to use package \xps. However,
 the interested user could use package \xps\ independent of \Robject{R} by writing \ROOT\ macros,
-examples of which can be found in file "macro4XPS.C", located in subdirectory examples.
+examples of which can be found in file "macro4XPS.C", located in subdirectory xps/examples.
 
 
 \section{Getting Started}
@@ -242,6 +242,12 @@ data <- validData(data.test3, which="pm", unitID=id)
 data
 @
 
+To avoid the above message that slot 'mask' is empty we can do:
+
+<<>>=
+data.test3 <- attachMask(data.test3)
+@
+
 
 \pagebreak
 Finally we can plot the PM and MM intensities, in this case for a subset only.
@@ -260,6 +266,8 @@ tmp <- intensity(data.test3)
 head(tmp)
 @
 
+This step is not necessary for small datasets or if the computer has sufficient RAM.
+
 
 
 \pagebreak
@@ -273,8 +281,7 @@ scheme.test3 <- root.scheme(file.path(.path.package("xps"), "schemes", "SchemeTe
 data.test3 <- root.data(scheme.test3, file.path(.path.package("xps"),"rootdata", "DataTest3_cel.root"))
 @
 This step is not necessary when objects \Rclass{scheme.test3} and \Rclass{data.test3} are 
-already saved in an \Robject{R}-session.
-
+already saved in an \Robject{R}-session. \\
 
 Converting raw data to expression measures and computing detection calls is fairly simple.
 It is not necessary to attach any \Rcode{data} or \Rcode{mask} data.frames, since all
@@ -305,7 +312,7 @@ Now we want to compare the results by plotting the expression levels for the fir
 For this purpose we need to extract the expression levels from the resulting S4 classes 
 \Rclass{ExprTreeSet} as data.frames first:
 <<>>=
-expr.rma <- validData(data.rma)
+expr.rma  <- validData(data.rma)
 expr.mas5 <- validData(data.mas5)
 @
 Now we can plot the results for the first sample:
@@ -317,7 +324,7 @@ plot(expr.rma[,1],expr.mas5[,1],log="xy",xlim=c(1,20000),ylim=c(1,20000))
 \end{center}
 
 {\bf Note:} For both methods, `RMA' and `MAS5', true expression levels are extracted,
-which is in contrast to other packages which extract the log2 values for `RMA'.
+which is in contrast to other packages which extract the $\log_2$-values for `RMA'.
 
 
 \subsection{Calculating detection calls}
@@ -337,6 +344,7 @@ time, e.g. on a computer with 2.3GHz Intel Core 2 Duo processor and 2GB RAM, com
 DABG calls for HG-U133\_Plus\_2 arrays will take about 45 min/array. \\
 
 
+\pagebreak
 Both, detection call and detection p-value can be extracted as \Robject{data.frame}:
 <<>>=
 pres.mas5 <- presCall(call.mas5)
@@ -354,7 +362,8 @@ head(pval.mas5)
 
 Quality Control (QC) assessment is a crucial step in successful analysis of microarray data, 
 it has to be done at every step of the analysis. For this purpose every S4 class of package 
-\xps\ provides it's own set of methods. 
+\xps\ provides it's own set of methods. In addition \xps\ contains a special S4 class, called  
+\Rclass{QualTreeSet}, to allow a more extensive quality control. 
 
 
 \subsection{\Rclass{DataTreeSet} based evaluation of raw data}
@@ -406,7 +415,7 @@ to apply functions \Rfunction{hist()}, \Rfunction{boxplot()} and \Rfunction{imag
 to datasets containing many samples, and to exon array data on computers with 1-2 GB RAM only. \\
 
 {\bf Note 2:} In addition to the R-graphics, package \xps\ also supports \ROOT\ graphics as 
-an alternative possibbility to create plots from large data. This is described in Appendix A4. \\
+an alternative possibility to create plots from large data. This is described in Appendix A4. \\
 
 
 \pagebreak
@@ -440,138 +449,47 @@ data.test3 <- removeInten(data.test3)
 data.test3 <- removeMask(data.test3)
 @
 
-This step is not necessary for small datasets or if the computer has sufficient RAM.
 
+Since the dependence of intensity on probe sequence is a well established fact it may be of 
+interest to visualize the influence that the G/C content of all probes has on the intensity 
+distribution of each hybridization. For this purpose we can draw boxplots of the $\log_2$-intensities 
+as a function of the G/C content. \\
 
-
-\subsection{\Rclass{QualTreeSet} based quality assessment}
-
-Class \Rclass{QualTreeSet} allows a detailed evalutation of raw data and normalized data by 
-fitting probe level models: 
-
+First we need to attach the pre-computed G/C content to slot \Rcode{probe} and optionally also 
+slot \Rcode{mask}:
 <<results=hide>>=
-rlm.all <- fitRLM(data.test3,"tmpdt_Test3RLM", qualopt="all", option="transcript", verbose=FALSE)
+data.test3 <- attachProbeContentGC(data.test3)
+data.test3 <- attachMask(data.test3)
 @
 
-
-\subsubsection{Evaluating chip quality}
-
-First we produce an RNA degradation plot, which can give some idea of how much degradation 
-of mRNA has occured:
+Now we can create the boxplot of probe intensities stratified by GC content:
 
 \begin{center}
-<<plotAffyRNAdeg-rlm, fig=TRUE>>=
-rnadeg <- AffyRNAdeg(rlm.all)
-plotAffyRNAdeg(rnadeg, add.legend=TRUE)
+<<intensity2GCplot, fig=TRUE>>=
+intensity2GCplot(data.test3, treename = "TestA1.cel", which="mm")
 @
 \end{center}
 
-{\bf Note:} Although RNA degradation plots were initially created for expression arrays only 
-function \Rfunction{AffyRNAdeg()} can also be applied to whole genome arrays and exon arrays. \\
+Here we have have used the MM probes only to demonstrate the strong dependency of the background 
+$\log_2$-intensities of sample "TestA1.cel" on the number of G or C bases in the probe sequency. \\
 
-
-\pagebreak
-Next we create a "border elements plot" by analyzing the positive and negative control elements 
-on the outer edges of the Affymetrix arrays. This helps to visualise how consistent hybridization
-is around the edges of the arrays: 
-
-\begin{center}
-<<borderplot-rlm, fig=TRUE>>=
-borderplot(rlm.all)
+After we are done, we remove the data from \Rclass{data.test3} to free \Robject{R} memory:
+<<>>=
+data.test3 <- removeMask(data.test3)
+data.test3 <- removeProbeContentGC(data.test3)
 @
-\end{center}
-
-Large variations in positive controls can indicate non-uniform hybridization or gridding problems. 
-Variations in the negative controls indicate background fluctuations. \\
-
-
-\pagebreak
-As a further test we create "Center Of Intensity" (COI) plots of positive and negative border 
-elements: 
-
-\begin{center}
-<<coiplot-rlm, fig=TRUE>>=
-coiplot(rlm.all)
-@
-\end{center}
-
-If the hybridization is uniform across the array, the location of the COI for the positive/negative 
-elements will be located at the physical center of the array. In this case \Rfunction{coiplot()} 
-will return \Rcode{NULL}. Spatial variations in the hybridization or misalignment of the grid used 
-to determine the cell intensities will cause the COI to move from center. Then the names of affected 
-samples will be returned. \\
-
-
-\pagebreak
-\subsubsection{Fitting probe level models}
-
-Chip pseudo-images are used to detect artifacts on arrays that could pose potential quality problems 
-such as e.g. bubbles or scratches on the chip. Weights and residuals from model fitting procedures 
-can be accessed using methods \Rmethod{weights()} and \Rmethod{residuals()}, respectively, and can be 
-graphically displayed using the method \Rmethod{image()}. \\
-
-As an example we plot a pseudo-image of one array with the "weights":
-
-\begin{center}
-<<image-rlm, fig=TRUE>>=
-image(rlm.all, type="weights", names="TestA1_raw.res", add.legend=FALSE)
-@
-\end{center}
-
-{\bf Note:} Chip pseudo-images can also be applied to whole genome arrays and exon arrays. \\
-
-
-\pagebreak
-Normalized Unscaled Standard Errors (NUSE) can also be used for assessing chip quality. The SE 
-estimates are normalized such that for each probe set the median standard error across all arrays 
-is equal to 1. An array were there are elevated standard errors relative to the other arrays is 
-typically of lower quality. Boxplots of NUSE values can be used to compare the arrays:
-
-\begin{center}
-<<nuseplot-rlm, fig=TRUE>>=
-nuseplot(rlm.all, names="namepart")
-@
-\end{center}
-
-{\bf Note:} Here we show NUSE plots for raw data, background-corrected data and normalized 
-data. 
-
-However, usually boxplots are drawn for normalized data only: 
-
-\Rfunction{nuseplot(rlm.all, names="namepart:normalized")} 
-
-
-\pagebreak
-Relative Log Expression (RLE) plots are another useful measure to assess array quality. For each 
-probeset and array ratios are calculated between the log-expression of a probeset and the median 
-expression of this probeset across all arrays. Assuming that only few genes are differentially 
-expressed across arrays means that most of these RLE values will be centered close to 0. An RLE 
-boxplot can be produced using:
-
-\begin{center}
-<<rleplot-rlm, fig=TRUE>>=
-rleplot(rlm.all, names="namepart")
-@
-\end{center}
-
-{\bf Note:} Here we show RLE plots for raw data, background-corrected data and normalized 
-data. 
-
-However, usually boxplots are drawn for normalized data only: 
-
-\Rfunction{rleplot(rlm.all, names="namepart:normalized")} 
 
 
 \pagebreak
 \subsection{\Rclass{ExprTreeSet} based evaluation of normalized expression measures}
 
-Class \Rclass{ExprTreeSet} has further methods to assess the quality of expression measures. 
+Class \Rclass{ExprTreeSet} has some methods to assess the quality of expression measures. 
 
 \subsubsection{Basic quality plots}
 
-Now we want to create some plots for the expression levels. In contrast to the raw data 
-expression levels are already stored in the \Robject{R} objects, e.g. in \Rclass{data.rma}, 
-an instance of S4 class\Rclass{ExprTreeSet}. \\
+In the following sections we want to create some quality plots for the expression levels. In contrast 
+to the raw data, expression levels are already stored in slot \Rcode{data} of S4 class\Rclass{ExprTreeSet}, 
+e.g. in \Rclass{data.rma}. \\
 
 First, we create a density plot:
 
@@ -687,6 +605,130 @@ callplot(call.mas5)
 
 
 \pagebreak
+\subsection{\Rclass{QualTreeSet} based quality assessment}
+
+In addition to the quality assessments presented above, the dedicated S4 Class \Rclass{QualTreeSet} 
+allows a detailed evalutation of raw data and normalized data by fitting probe level models: 
+
+<<results=hide>>=
+rlm.all <- fitRLM(data.test3,"tmpdt_Test3RLM", qualopt="all", option="transcript", verbose=FALSE)
+@
+
+
+\subsubsection{Evaluating chip quality}
+
+First we produce an RNA degradation plot, which can give some idea of how much degradation 
+of mRNA has occured:
+
+\begin{center}
+<<plotAffyRNAdeg-rlm, fig=TRUE>>=
+rnadeg <- AffyRNAdeg(rlm.all)
+plotAffyRNAdeg(rnadeg, add.legend=TRUE)
+@
+\end{center}
+
+{\bf Note:} Although RNA degradation plots were initially created for expression arrays only 
+function \Rfunction{AffyRNAdeg()} can also be applied to whole genome arrays and exon arrays. \\
+
+
+\pagebreak
+Next we create a "border elements plot" by analyzing the positive and negative control elements 
+on the outer edges of the Affymetrix arrays. This helps to visualise how consistent hybridization
+is around the edges of the arrays: 
+
+\begin{center}
+<<borderplot-rlm, fig=TRUE>>=
+borderplot(rlm.all)
+@
+\end{center}
+
+Large variations in positive controls can indicate non-uniform hybridization or gridding problems. 
+Variations in the negative controls indicate background fluctuations. \\
+
+
+\pagebreak
+As a further test we create "Center Of Intensity" (COI) plots of positive and negative border 
+elements: 
+
+\begin{center}
+<<coiplot-rlm, fig=TRUE>>=
+coiplot(rlm.all)
+@
+\end{center}
+
+If the hybridization is uniform across the array, the location of the COI for the positive/negative 
+elements will be located at the physical center of the array. In this case \Rfunction{coiplot()} 
+will return \Rcode{NULL}. Spatial variations in the hybridization or misalignment of the grid used 
+to determine the cell intensities will cause the COI to move from center. Then the names of affected 
+samples will be returned. \\
+
+
+\pagebreak
+\subsubsection{Fitting probe level models}
+
+Chip pseudo-images are used to detect artifacts on arrays that could pose potential quality problems 
+such as e.g. bubbles or scratches on the chip. Weights and residuals from model fitting procedures 
+can be accessed using methods \Rmethod{weights()} and \Rmethod{residuals()}, respectively, and can be 
+graphically displayed using the method \Rmethod{image()}. \\
+
+As an example we plot a pseudo-image of one array with the "weights":
+
+\begin{center}
+<<image-rlm, fig=TRUE>>=
+image(rlm.all, type="weights", names="TestA1_raw.res", add.legend=FALSE)
+@
+\end{center}
+
+{\bf Note:} Chip pseudo-images can also be applied to whole genome arrays and exon arrays. \\
+
+
+\pagebreak
+Normalized Unscaled Standard Errors (NUSE) can also be used for assessing chip quality. The SE 
+estimates are normalized such that for each probe set the median standard error across all arrays 
+is equal to 1. An array were there are elevated standard errors relative to the other arrays is 
+typically of lower quality. Boxplots of NUSE values can be used to compare the arrays:
+
+\begin{center}
+<<nuseplot-rlm, fig=TRUE>>=
+nuseplot(rlm.all, names="namepart")
+@
+\end{center}
+
+{\bf Note:} Here we show NUSE plots for raw data, background-corrected data and normalized 
+data. \\
+
+However, usually boxplots are drawn for normalized data only: 
+
+<<eval=FALSE>>=
+nuseplot(rlm.all, names="namepart:normalized")
+@
+
+
+\pagebreak
+Relative Log Expression (RLE) plots are another useful measure to assess array quality. For each 
+probeset and array ratios are calculated between the log-expression of a probeset and the median 
+expression of this probeset across all arrays. Assuming that only few genes are differentially 
+expressed across arrays means that most of these RLE values will be centered close to 0. An RLE 
+boxplot can be produced using:
+
+\begin{center}
+<<rleplot-rlm, fig=TRUE>>=
+rleplot(rlm.all, names="namepart")
+@
+\end{center}
+
+{\bf Note:} Here we show RLE plots for raw data, background-corrected data and normalized 
+data. \\
+
+However, usually boxplots are drawn for normalized data only: 
+
+<<eval=FALSE>>=
+rleplot(rlm.all, names="namepart:normalized") 
+@
+
+
+
+\pagebreak
 \section{Filtering expression measures}
 
 The \xps\ package can also be used to filter (select) genes according to a variety of 
@@ -766,7 +808,7 @@ filters:
 \item \Rcode{fcFilter}: A `fold--change' filter, which selects only genes with an 
  absolute fold--change of at least 1.3, i.e. \Rcode{abs(mean(GrpB)/mean(GrpA)) >= 1.3}.
 \item \Rcode{unitestFilter}: A `unitest' filter to select genes where the p--value of
- the applied unitest, i.e. the \Rcode{t.test} is less than 0.1 (\Rcode{pval <= 0.1}).
+ the applied unitest, i.e. the \Rcode{t.test}, is less than 0.1 (\Rcode{pval <= 0.1}).
 \end{enumerate}
 Only genes satisfying both filters are considered to be differentially expressed. 
 
@@ -858,7 +900,7 @@ and saved in subdirectories \Rcode{libraryfiles} and \Rcode{Annotation}, respect
 \begin{itemize}
 \item GeneChip chip definition file: {\it Test3.CDF}
 \item Probe sequence file: {\it Test3\_probe.tab}
-\item Probeset annotation file: {\it Test3.na28.annot.csv}
+\item Probeset annotation file: {\it Test3.na32.annot.csv}
 \end{itemize}
 
 In a new \Robject{R}-session we load our library and define the directories, where
@@ -873,11 +915,11 @@ scmdir <- "/path/to/CRAN/Workspaces/Schemes"
 
 Now we can create a \ROOT\ \Rclass{scheme} file:
 <<eval=FALSE>>=
-scheme.test3 <- import.expr.scheme("Scheme_Test3_na28", 
-                       filedir=scmdir,  
-                       paste(libdir,"Test3.CDF",sep="/"), 
-                       paste(libdir,"Test3_probe.tab",sep="/"), 
-                       paste(anndir,"Test3.na28.annot.csv",sep="/"))
+scheme.test3 <- import.expr.scheme("SchemeTest3",
+                     filedir    = scmdir,
+                     schemefile = file.path(libdir, "Test3.CDF"), 
+                     probefile  = file.path(libdir, "Test3_probe.tab"), 
+                     annotfile  = file.path(anndir, "Test3.na32.annot.csv"))
 @
 
 The \Robject{R} object \Rclass{scheme.test3} is not needed lateron, since in every
@@ -885,13 +927,13 @@ new \Robject{R}-session the \ROOT\ \Rclass{scheme} file need to be imported firs
 
 <<eval=FALSE>>=
 scmdir <- "/path/to/CRAN/Workspaces/Schemes"
-scheme.test3 <- root.scheme(paste(scmdir,"SchemeTest3.root",sep="/"))
+scheme.test3 <- root.scheme(file.path(scmdir,"SchemeTest3.root"))
 @
 
 Package \xps\ includes a file "script4schemes.R" which contains code to import some of the 
 main CDF and annotation files, which can be copied to an \Robject{R}-session, including
-code to create \ROOT\ \Rclass{scheme} files for the currently available Exon arrays and
-Gene arrays.
+code to create \ROOT\ \Rclass{scheme} files for the currently available Exon arrays (Exon 1.x ST) 
+and Whole Genome arrays (Gene 1.x ST).
 
 {\bf Note 1:} Since \ROOT\ \Rclass{scheme} files need to be created only once, it is 
 recommended to save them in a common system directory, e.g. 'Schemes', which is accessible 
@@ -905,11 +947,11 @@ of \Rclass{SchemeTreeSet}, which contain this information already, by setting pa
 \Rcode{add.mask} of function \Rfunction{import.expr.scheme} to \Rcode{add.mask=TRUE}, 
 e.g.:
 <<eval=FALSE>>=
-scheme.test3 <- import.expr.scheme("Scheme_Test3_na28",..., add.mask=TRUE)
+scheme.test3 <- import.expr.scheme("SchemeTest3",..., add.mask=TRUE)
 @
 
-{\bf Note 3:} Please note that for the new GeneChip Exon array systems and Gene array systems
-Affymetrix no longer supports CDF-files, but uses the new CLF-files and PGF-files instead.
+{\bf Note 3:} Please note that for the new GeneChip Exon array systems and Whole Genome array 
+systems Affymetrix no longer supports CDF-files, but uses the new CLF-files and PGF-files instead.
 For this reason package \xps\ also uses CLF-, PGF-files to create the root scheme files, and
 does not use the inofficial CDF-files. See the help files \Rfunction{?import.exon.scheme}
 and \Rfunction{?import.genome.scheme} for more information.
@@ -919,10 +961,10 @@ and \Rfunction{?import.genome.scheme} for more information.
 %\label{appA2}
 
 Additional examples how to use package \xps\ can be found in file "script4xps.R", located
-in subdirectory 'examples'. Most of these examples are easily adaptable to users need and can 
+in subdirectory 'xps/examples'. Most of these examples are easily adaptable to users need and can 
 be copied with no or only minor modifications. Furthermore, a second file, "script4exon.R", 
-shows how to use \xps\ with the novel Affymetrix Gene and Exon arrays. Both files use the 
-Affymetrix "Human Tissue Datasets" for arrays HG-U133\_Plus\_2, HuEx-1\_0-st-v2 and 
+shows how to use \xps\ with the novel Affymetrix Whole Genome and Exon arrays. Both files use 
+the Affymetrix "Human Tissue Datasets" for arrays HG-U133\_Plus\_2, HuEx-1\_0-st-v2 and 
 HuGene-1\_0-st-v1, respectively.
 
 
@@ -962,9 +1004,8 @@ This class \Rclass{ExpressionSet} can now be used from within other Bioconductor
 \subsection{ROOT graphics}
 
 As noted earlier, package \xps\ allows to analyze Exon arrays on computers with only 1GB RAM. 
-However, in this case it is not possible to use R-based plots such as \Rfunction{image}, 
-\Rfunction{hist}, or \Rfunction{boxplot}, respectively. For this purpose \xps\ takes advantage 
-of the \ROOT\ graphics capabilities, which do not suffer from such memory limitations. 
+However, in some cases it may not possible to use R-based plots. For this purpose \xps\ takes 
+advantage of the \ROOT\ graphics capabilities, which do not suffer from such memory limitations. 
 
 In the following we will demonstrate some of the \ROOT\ graphics capabilities using the 33 exon 
 array data of all 11 tissues from the Affymetrix Exon Array Data Set "Tissue Mixture" (see 

@@ -18,6 +18,8 @@
 # removeDataXY: 
 # attachMask:
 # removeMask:
+# attachProbeContentGC:
+# removeProbeContentGC:
 # attachUnitNames:
 # removeUnitNames:
 # unitID2transcriptID:
@@ -50,6 +52,7 @@
 # hist: 
 # pmplot: 
 # probesetplot: 
+# intensity2GCplot: 
 #==============================================================================#
 
 
@@ -372,9 +375,12 @@ setMethod("attachMask", signature(object="DataTreeSet"),
    function(object) {
       if (debug.xps()) print("------attachMask.DataTreeSet------")
 
+      varlist <- "fMask";
+      if (chipType(object@scheme) == "ExonChip") varlist <- "fMask:fProbesetID";
+
       chipMask(object@scheme) <- export(object@scheme,
                                         treetype     = "scm",
-                                        varlist      = "fMask",
+                                        varlist      = varlist,
                                         as.dataframe = TRUE,
                                         verbose      = FALSE);
       return(object);
@@ -392,6 +398,29 @@ setMethod("removeMask", signature(object="DataTreeSet"),
       return(object);
    }
 )#removeMask
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("attachProbeContentGC", signature(object="DataTreeSet"),
+   function(object) {
+      if (debug.xps()) print("------attachProbeContentGC.DataTreeSet------")
+
+      object@scheme <- attachProbe(object@scheme, "fNumberGC");
+      return(object);
+   }
+)#attachProbeContentGC
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("removeProbeContentGC", signature(object="DataTreeSet"),
+   function(object) {
+      if (debug.xps()) print("------removeProbeContentGC.DataTreeSet------")
+
+      object@scheme <- removeProbe(object@scheme);
+      gc(); #????
+      return(object);
+   }
+)#removeProbeContentGC
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -753,6 +782,7 @@ function(object,
    ## get scheme mask for (x,y)
    msk <- chipMask(object@scheme);
    if (min(dim(msk)) == 0) {
+      cat("slot", sQuote("mask"), "is empty, importing mask from scheme.root...\n");
       msk <- export(object@scheme,
                     treetype     = "scm",
                     varlist      = varlist,
@@ -770,7 +800,7 @@ function(object,
    id <- which(msk[,"Mask"] < 99999999); ##all
    if (chipType(object) == "GeneChip") {
       ## if no unitID need to sort msk to Y then X (as in *.cel)
-      if (is.null(unitID) || unitID == "") {
+      if (is.null(unitID) || unitID[1] == "") {
          msk <- msk[order(msk[,"Y"], msk[,"X"]),];
       }#if
 
@@ -3871,6 +3901,73 @@ setMethod("probesetplot", signature(x="DataTreeSet"),
       }#if
    }
 )#probesetplot
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("intensity2GCplot", signature(x="DataTreeSet"),
+   function(x,
+             treename, 
+             which   = "",
+             transfo = log2,
+             range   = 0,
+             col     = c("lightblue", "darkblue"),
+             ...)  
+   {
+      if (debug.xps()) print("------intensity2GCplot.DataTreeSet------")
+
+      treenames <- getTreeNames(rootFile(x));
+      if (is.na(match(treename, treenames))) {
+         stop(paste(treename, "is not a valid tree name"));
+      }#if
+      treetype <- extenPart(treename);
+
+      ## get scheme GC and mask for (x,y)
+      ncol <- ncols(x@scheme);
+      gc <- probeContentGC(x@scheme, which=which);
+      gc <- gc[order(gc[,"Y"], gc[,"X"]),];
+      gc <- gc[gc[,"ContentGC"] > 0,];
+
+      ## GenomeChip/ExonChip have duplicated (x,y) 
+      xy <- gc[, "X"] + ncol*gc[,"Y"] + 1;
+      ok <- !duplicated(xy);
+      gc <- gc[ok, c("Mask", "ContentGC")]
+      rownames(gc) <- xy[ok];
+
+      ## get intensity
+      ds <- export(x,
+                   treenames    = treename,
+                   treetype     = treetype,
+                   varlist      = "fInten",
+                   outfile      = "tmp.txt",
+                   as.dataframe = TRUE,
+                   verbose      = FALSE);
+
+      rownames(ds) <- ds[, "X"] + ncol*ds[,"Y"] + 1;
+
+      ## why is rownames(gs) of type "character"?
+      id <- intersect(rownames(gc), rownames(ds));
+      ds <- cbind(ds[as.integer(id), "MEAN", drop=FALSE],
+                  gc[id, "ContentGC", drop=FALSE]);
+
+      if (is.function(transfo)) {
+         ds[,"MEAN"] <- transfo(ds[, "MEAN"]);
+      }#if
+
+      col <- colorRampPalette(col);
+      col <- col(nlevels(as.factor(ds[,"ContentGC"])));
+
+      trafo <- deparse(substitute(transfo));
+      trafo <- ifelse(trafo == "0", "", trafo);
+
+      boxplot(ds[,"MEAN"] ~ ds[,"ContentGC"],
+              range = range,
+              col   = col,
+              main  = treename,
+              xlab  = "GC content",
+              ylab  = paste(trafo, which, "intensity"),
+              ...);
+   }
+)#intensity2GCplot
 
 #------------------------------------------------------------------------------#
 

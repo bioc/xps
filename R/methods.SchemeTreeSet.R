@@ -10,11 +10,19 @@
 # chipMask<-:
 # unitNames:
 # unitNames<-:
+# probeContentGC:
+# probeSequence:
 # probeInfo:
 # nrows:
 # ncols:
 # attachMask:
 # removeMask:
+# attachProbe:
+# removeProbe:
+# attachProbeContentGC:
+# removeProbeContentGC:
+# attachProbeSequence:
+# removeProbeSequence:
 # attachUnitNames:
 # removeUnitNames:
 # unitID2transcriptID:
@@ -118,6 +126,19 @@ setReplaceMethod("chipMask", signature(object="SchemeTreeSet", value="data.frame
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+setMethod("chipProbe", signature(object="SchemeTreeSet"),
+   function(object) object@probe
+)#chipProbe
+
+setReplaceMethod("chipProbe", signature(object="SchemeTreeSet", value="data.frame"),
+   function(object, value) {
+      object@probe <- value;
+      return(object);
+   }
+)#chipProbe<-
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 setMethod("unitNames", signature(object="SchemeTreeSet"),
    function(object, as.list = FALSE) {
       if (as.list) {
@@ -135,6 +156,109 @@ setReplaceMethod("unitNames", signature(object="SchemeTreeSet", value="data.fram
       return(object);
    }
 )#unitNames<-
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("probeContentGC", signature(object="SchemeTreeSet"),
+   function(object,
+            which    = "",
+            unitID   = NULL,
+            unittype = "transcript")
+   {
+      if (debug.xps()) print("------probeContentGC.SchemeTreeSet------")
+
+      if (min(dim(object@probe)) == 0) {
+         stop(paste("slot", sQuote("probe"), "is empty"));
+      } else if (length(grep("ContentGC", colnames(object@probe))) == 0) {
+         stop(paste("missing column", sQuote("ContentGC")));
+      }#if
+
+      if (chipType(object) == "ExonChip" && unittype == "probeset") {
+         varlist <- "fMask:fProbesetID";
+         column  <- "PROBESET_ID";
+      } else {
+         varlist <- "fMask";
+         column  <- "UNIT_ID";
+      }#if
+
+      ## get scheme mask for (x,y)
+      msk <- chipMask(object);
+      if (min(dim(msk)) == 0) {
+         cat("slot", sQuote("mask"), "is empty, importing mask from scheme.root...\n");
+         msk <- export(object,
+                       treetype     = "scm",
+                       varlist      = varlist,
+                       as.dataframe = TRUE,
+                       verbose      = FALSE);
+      }#if
+
+      if (is.null(unitID) || unitID[1] == "" || unitID[1] == "*") {
+         probe <- cbind(msk[,c(column,"X","Y","Mask")], object@probe[,"ContentGC",drop=FALSE]);
+      } else {
+         ## check for valid UNIT_IDs
+         id  <- unique(msk[,column]);
+         len <- length(intersect(id, unitID));
+         if (length(unitID) != len) {
+            stop(paste("only", len, "of", length(unitID), column, "are valid"));
+         }#if
+
+         id    <- unlist(sapply(unitID, function(x) which(msk[,column] == x)));
+         probe <- cbind(msk[id,c(column,"X","Y","Mask")], object@probe[id,"ContentGC",drop=FALSE]);
+      }#if
+
+      id <- 1:nrow(probe);
+      if (chipType(object) == "GeneChip") {
+         if (which == "pm") {
+            id <- which(probe[,"Mask"] == 1);
+         } else if (which == "mm") {
+            id <- which(probe[,"Mask"] == 0);
+         }#if
+      } else if (chipType(object) == "GenomeChip") {
+         if (which[1] == "antigenomic") {
+            id <- which(probe[,"Mask"] == -2);
+         } else {
+            level <- exonLevel(which, "GenomeChip", as.sum=FALSE);
+            id    <- unlist(sapply(level, function(x) which(probe[,"Mask"] == x)));
+         }#if
+      } else if (chipType(object) == "ExonChip") {
+         if (which[1] == "genomic") {
+            id <- which(probe[,"Mask"] == -1);
+         } else if (which[1] == "antigenomic") {
+            id <- which(probe[,"Mask"] == -2);
+         } else {
+            level <- exonLevel(which, "ExonChip", as.sum=FALSE);
+            id    <- unlist(sapply(level, function(x) which(probe[,"Mask"] == x)));
+         }#if
+      }#if
+
+      return(probe[id,]);
+   }
+)#probeContentGC
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("probeSequence", signature(object="SchemeTreeSet"),
+   function(object,
+            unitID = NULL) 
+   {
+      if (debug.xps()) print("------probeSequence.SchemeTreeSet------")
+
+      if (min(dim(object@probe)) == 0) {
+         stop(paste("slot", sQuote("probe"), "is empty"));
+      } else if (length(grep("ProbeSequence", colnames(object@probe))) == 0) {
+         stop(paste("missing column", sQuote("ProbeSequence")));
+      }#if
+
+      if (!(is.null(unitID) || unitID[1] == "" || unitID[1] == "*")) {
+         id    <- unlist(sapply(unitID, function(x) which(object@probe[,"ProbeSetID"] == x)));
+         probe <- object@probe[id,c("ProbeSetID", "ProbeX", "ProbeY", "ProbeSequence")];
+
+         return(probe[which(probe[,"ProbeSequence"] != "N"),]);
+      }#if
+
+      return(object@probe[,c("ProbeSetID", "ProbeX", "ProbeY", "ProbeSequence")]);
+   }
+)#probeSequence
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -163,9 +287,12 @@ setMethod("attachMask", signature(object="SchemeTreeSet"),
    function(object) {
       if (debug.xps()) print("------attachMask.SchemeTreeSet------")
 
+      varlist <- "fMask";
+      if (chipType(object) == "ExonChip") varlist <- "fMask:fProbesetID";
+
       chipMask(object) <- export(object,
                                  treetype     = "scm",
-                                 varlist      = "fMask",
+                                 varlist      = varlist,
                                  as.dataframe = TRUE,
                                  verbose      = FALSE);
       return(object);
@@ -183,6 +310,73 @@ setMethod("removeMask", signature(object="SchemeTreeSet"),
       return(object);
    }
 )#removeMask
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("attachProbe", signature(object="SchemeTreeSet"),
+   function(object, varlist) {
+      if (debug.xps()) print("------attachProbe.SchemeTreeSet------")
+
+      object@probe <- export(object,
+                             treetype     = "prb",
+                             varlist      = varlist,
+                             as.dataframe = TRUE,
+                             verbose      = FALSE);
+      return(object);
+   }
+)#attachProbe
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("removeProbe", signature(object="SchemeTreeSet"),
+   function(object) {
+      if (debug.xps()) print("------removeProbe.SchemeTreeSet------")
+
+      object@probe <- data.frame(matrix(nr=0,nc=0));
+      gc(); #????
+      return(object);
+   }
+)#removeProbe
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("attachProbeContentGC", signature(object="SchemeTreeSet"),
+   function(object) {
+      if (debug.xps()) print("------attachProbeContentGC.SchemeTreeSet------")
+
+      return(attachProbe(object, "fNumberGC"));
+   }
+)#attachProbeContentGC
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("removeProbeContentGC", signature(object="SchemeTreeSet"),
+   function(object) {
+      if (debug.xps()) print("------removeProbeContentGC.SchemeTreeSet------")
+
+      return(removeProbe(object));
+   }
+)#removeProbeContentGC
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("attachProbeSequence", signature(object="SchemeTreeSet"),
+   function(object) {
+      if (debug.xps()) print("------attachProbeSequence.SchemeTreeSet------")
+
+      return(attachProbe(object, "fSequence"));
+   }
+)#attachProbeSequence
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("removeProbeSequence", signature(object="SchemeTreeSet"),
+   function(object) {
+      if (debug.xps()) print("------removeProbeSequence.SchemeTreeSet------")
+
+      return(removeProbe(object));
+   }
+)#removeProbeSequence
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

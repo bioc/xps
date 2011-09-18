@@ -1,5 +1,5 @@
 Package: xps
-Version: 1.13.7
+Version: 1.13.8
 Title: Processing and Analysis of Affymetrix Oligonucleotide Arrays including
        Exon Arrays, Whole Genome Arrays and Plate Arrays
 Author: Christian Stratowa, Vienna, Austria
@@ -23,10 +23,9 @@ Collate: utils.R TreeSetClasses.R
          methods.DataTreeSet.R methods.ExprTreeSet.R methods.CallTreeSet.R methods.QualTreeSet.R
          methods.FilterTreeSet.R methods.AnalysisTreeSet.R 
          Constructors.R
-         import.expr.scheme.R import.exon.scheme.R import.genome.scheme.R root.scheme.R
-         import.data.R root.data.R root.merge.data.R
-         root.expr.R root.call.R
+         import.R
          export.R
+         root.files.R
          rma.R mas4.R mas5.R mas5.call.R dabg.call.R
          dfw.R farms.R ini.call.R
          firma.R
@@ -35,14 +34,8 @@ Collate: utils.R TreeSetClasses.R
          fitQC.R qualify.R
          AffyRNAdeg.R
          filter.R
-         image.dev.R boxplot.dev.R mvaplot.dev.R
-         plotBoxplot.R plotDensity.R plotImage.R
-         plotPM.R plotProbeset.R
-         plotCorr.R plotMAD.R plotMA.R plotNUSE.R plotPCA.R plotRLE.R
-         plotCall.R
-         plotBorder.R plotCOI.R
-         plotVolcano.R
-         root.image.R root.density.R root.draw.R root.draw.leaves.R root.profile.R
+         plot.R
+         root.graphics.R
          zzz.R
 biocViews: ExonArray, GeneExpression, Microarray, OneChannel, DataImport, Preprocessing, Transcription, DifferentialExpression
 LazyLoad: yes

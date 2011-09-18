@@ -130,6 +130,7 @@ setClass("SchemeTreeSet",
    representation(chipname  = "character",
                   chiptype  = "character",
                   probeinfo = "list",
+                  probe     = "data.frame",
                   unitname  = "data.frame",
                   mask      = "data.frame"
    ),
@@ -137,32 +138,43 @@ setClass("SchemeTreeSet",
    prototype(chipname  = "",
              chiptype  = "GeneChip",
              probeinfo = list(),
+             probe     = data.frame(matrix(nr=0,nc=0)),
              unitname  = data.frame(matrix(nr=0,nc=0)),
              mask      = data.frame(matrix(nr=0,nc=0))
    )
 )#SchemeTreeSet
 
 # generic methods for class SchemeTreeSet
-setGeneric("chipName",            function(object)        standardGeneric("chipName"));
-setGeneric("chipType",            function(object)        standardGeneric("chipType"));
-setGeneric("chipType<-",          function(object, value) standardGeneric("chipType<-"));
-setGeneric("chipMask",            function(object)        standardGeneric("chipMask"));
-setGeneric("chipMask<-",          function(object, value) standardGeneric("chipMask<-"));
-setGeneric("unitNames",           function(object, ...)   standardGeneric("unitNames"));
-setGeneric("unitNames<-",         function(object, value) standardGeneric("unitNames<-"));
-setGeneric("probeInfo",           function(object)        standardGeneric("probeInfo"));
-setGeneric("nrows",               function(object)        standardGeneric("nrows"));
-setGeneric("ncols",               function(object)        standardGeneric("ncols"));
-setGeneric("attachMask",          function(object)        standardGeneric("attachMask"));
-setGeneric("removeMask",          function(object)        standardGeneric("removeMask"));
-setGeneric("attachUnitNames",     function(object, ...)   standardGeneric("attachUnitNames"));
-setGeneric("removeUnitNames",     function(object)        standardGeneric("removeUnitNames"));
-setGeneric("unitID2transcriptID", function(object, ...)   standardGeneric("unitID2transcriptID"));
-setGeneric("unitID2probesetID",   function(object, ...)   standardGeneric("unitID2probesetID"));
-setGeneric("transcriptID2unitID", function(object, ...)   standardGeneric("transcriptID2unitID"));
-setGeneric("probesetID2unitID",   function(object, ...)   standardGeneric("probesetID2unitID"));
-setGeneric("symbol2unitID",       function(object, ...)   standardGeneric("symbol2unitID"));
-setGeneric("unitID2symbol",       function(object, ...)   standardGeneric("unitID2symbol"));
+setGeneric("chipName",             function(object)        standardGeneric("chipName"));
+setGeneric("chipType",             function(object)        standardGeneric("chipType"));
+setGeneric("chipType<-",           function(object, value) standardGeneric("chipType<-"));
+setGeneric("chipMask",             function(object)        standardGeneric("chipMask"));
+setGeneric("chipMask<-",           function(object, value) standardGeneric("chipMask<-"));
+setGeneric("chipProbe",            function(object)        standardGeneric("chipProbe"));
+setGeneric("chipProbe<-",          function(object, value) standardGeneric("chipProbe<-"));
+setGeneric("unitNames",            function(object, ...)   standardGeneric("unitNames"));
+setGeneric("unitNames<-",          function(object, value) standardGeneric("unitNames<-"));
+setGeneric("probeContentGC",       function(object, ...)   standardGeneric("probeContentGC"));
+setGeneric("probeSequence",        function(object, ...)   standardGeneric("probeSequence"));
+setGeneric("probeInfo",            function(object)        standardGeneric("probeInfo"));
+setGeneric("nrows",                function(object)        standardGeneric("nrows"));
+setGeneric("ncols",                function(object)        standardGeneric("ncols"));
+setGeneric("attachMask",           function(object)        standardGeneric("attachMask"));
+setGeneric("removeMask",           function(object)        standardGeneric("removeMask"));
+setGeneric("attachProbe",          function(object, ...)   standardGeneric("attachProbe"));
+setGeneric("removeProbe",          function(object)        standardGeneric("removeProbe"));
+setGeneric("attachProbeContentGC", function(object)        standardGeneric("attachProbeContentGC"));
+setGeneric("removeProbeContentGC", function(object)        standardGeneric("removeProbeContentGC"));
+setGeneric("attachProbeSequence",  function(object)        standardGeneric("attachProbeSequence"));
+setGeneric("removeProbeSequence",  function(object)        standardGeneric("removeProbeSequence"));
+setGeneric("attachUnitNames",      function(object, ...)   standardGeneric("attachUnitNames"));
+setGeneric("removeUnitNames",      function(object)        standardGeneric("removeUnitNames"));
+setGeneric("unitID2transcriptID",  function(object, ...)   standardGeneric("unitID2transcriptID"));
+setGeneric("unitID2probesetID",    function(object, ...)   standardGeneric("unitID2probesetID"));
+setGeneric("transcriptID2unitID",  function(object, ...)   standardGeneric("transcriptID2unitID"));
+setGeneric("probesetID2unitID",    function(object, ...)   standardGeneric("probesetID2unitID"));
+setGeneric("symbol2unitID",        function(object, ...)   standardGeneric("symbol2unitID"));
+setGeneric("unitID2symbol",        function(object, ...)   standardGeneric("unitID2symbol"));
 
 
 #------------------------------------------------------------------------------#
@@ -248,6 +260,7 @@ setGeneric("xpsSummarize",      function(object, ...)        standardGeneric("xp
 setGeneric("xpsQualify",        function(object, ...)        standardGeneric("xpsQualify"));
 setGeneric("pmplot",            function(x, ...)             standardGeneric("pmplot"));
 setGeneric("probesetplot",      function(x, ...)             standardGeneric("probesetplot"));
+setGeneric("intensity2GCplot",  function(x, ...)             standardGeneric("intensity2GCplot"));
 
 
 #------------------------------------------------------------------------------#
