@@ -1,10 +1,11 @@
 Package: xps
-Version: 1.13.8
+Version: 1.13.9
 Title: Processing and Analysis of Affymetrix Oligonucleotide Arrays including
        Exon Arrays, Whole Genome Arrays and Plate Arrays
 Author: Christian Stratowa, Vienna, Austria
 Maintainer: Christian Stratowa <cstrato@aon.at>
 Depends: R (>= 2.6.0), methods
+Suggests: tools
 Description: The package handles pre-processing, normalization, filtering
       and analysis of Affymetrix GeneChip expression arrays, including exon 
       arrays (Exon 1.0 ST: core, extended, full probesets), gene arrays (Gene 1.0 ST)
@@ -36,6 +37,7 @@ Collate: utils.R TreeSetClasses.R
          filter.R
          plot.R
          root.graphics.R
+         xpsQAReport.R
          zzz.R
 biocViews: ExonArray, GeneExpression, Microarray, OneChannel, DataImport, Preprocessing, Transcription, DifferentialExpression
 LazyLoad: yes

@@ -2,6 +2,9 @@
 		CHANGES IN R VERSION 2.14.0
 
 
+VERSION xps-1.13.9
+    o add quality report function xpsQAReport()
+
 VERSION xps-1.13.8
     o add functions attachProbe(), removeProbe(), etc.
     o add functions contentGC(), probeSequence()

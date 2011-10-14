@@ -26,7 +26,7 @@
 \begin{document}
 
 \title{Introduction to the xps Package: Overview}
-\date{September, 2011}
+\date{October, 2011}
 \author{Christian Stratowa}
 \maketitle
 
@@ -541,9 +541,10 @@ corplot(data.rma, add.legend=TRUE)
 \end{center}
 \end{figure}
 
-On the one hand correlation plots can assess between array quality, e.g. arrays belonging to the 
-same set of replicates should show high correlations, on the other hand these plot can show patterns 
-that reveal the experimental design. 
+Correlation plots are useful for detecting outliers, failed hybridizations, or mistracked samples. 
+Specifically, these plots can assess between array quality, e.g. arrays belonging to the 
+same set of replicates should show high correlations, and are able to show patterns that reveal 
+the experimental design. 
 
 
 \pagebreak
@@ -633,7 +634,7 @@ function \Rfunction{AffyRNAdeg()} can also be applied to whole genome arrays and
 
 \pagebreak
 Next we create a "border elements plot" by analyzing the positive and negative control elements 
-on the outer edges of the Affymetrix arrays. This helps to visualise how consistent hybridization
+on the outer edges of the Affymetrix arrays. This helps to visualise how consistent the hybridization
 is around the edges of the arrays: 
 
 \begin{center}
@@ -695,9 +696,7 @@ nuseplot(rlm.all, names="namepart")
 \end{center}
 
 {\bf Note:} Here we show NUSE plots for raw data, background-corrected data and normalized 
-data. \\
-
-However, usually boxplots are drawn for normalized data only: 
+data. However, usually boxplots are drawn for normalized data only: 
 
 <<eval=FALSE>>=
 nuseplot(rlm.all, names="namepart:normalized")
@@ -718,9 +717,7 @@ rleplot(rlm.all, names="namepart")
 \end{center}
 
 {\bf Note:} Here we show RLE plots for raw data, background-corrected data and normalized 
-data. \\
-
-However, usually boxplots are drawn for normalized data only: 
+data. However, usually boxplots are drawn for normalized data only: 
 
 <<eval=FALSE>>=
 rleplot(rlm.all, names="namepart:normalized") 

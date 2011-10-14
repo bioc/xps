@@ -4,7 +4,7 @@
 useDynLib(xps)
 
 ## packages
-import(graphics, methods)
+import(graphics, methods, tools)
 
 ## S4 classes
 exportClasses(ProjectInfo,
@@ -263,6 +263,9 @@ export(plotVolcano)
 ## contructor functions
 export(ProjectInfo)
 export(PreFilter, UniFilter)
+
+## report functions
+export(xpsQAReport)
 
 ## root.functions
 export(root.scheme, root.data, root.merge.data, root.expr, root.call)

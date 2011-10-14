@@ -59,8 +59,9 @@ xpsMAS5Call(object, ...)
 
  The defaults for \code{tau}, \code{alpha1} and \code{alpha2} correspond to those in MAS5.0
  for expression arrays. However, when using this function for exon or whole genome arrays,
- new values for \code{alpha1} and \code{alpha2} must be determined. The recommended function
- for exon/genome arrays is \code{\link{dabg.call}}.
+ new values for \code{alpha1} and \code{alpha2} must be determined.Furthermore, in these
+ cases it may be better to use \code{bgcorrect.option = "correctbg"} to get reasonable present
+ calls. Note that the recommended function for exon/genome arrays is \code{\link{dabg.call}}.
 
  In order to use an alternative \code{\link{SchemeTreeSet}} set the corresponding
  SchemeTreeSet \code{xps.scheme}.
