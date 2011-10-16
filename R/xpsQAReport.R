@@ -74,6 +74,9 @@ function(xps.data,
    QCb <- sub("@CHIPNAME@", chipname, QCb);
    QCb <- sub("@CHIPTYPE@", chiptype, QCb);
 
+   ## need to replace "_" with "\_"
+   QCb <- gsub("_","\\\\_", QCb);
+
    write(QCb, file.path(docdir, "QAReport.Rnw"));
 
 
@@ -195,6 +198,7 @@ function(xps.data,
       QCc <- readLines(file.path(indir, "QC.call.Rnw"));
       QCc <- sub("@CHIPNAME@", chipname, QCc);
       QCc <- sub("@DETCALL@",  calltype, QCc);
+      QCc <- gsub("_","\\\\_", QCc);
 
       write(QCc, file.path(docdir, "QAReport.Rnw"), append=TRUE);
       write(QCp, file.path(docdir, "QAReport.Rnw"), append=TRUE);
@@ -317,6 +321,7 @@ function(xps.data,
 
    QCe <- readLines(file.path(indir, "QC.end.Rnw"));
    QCe <- sub("@DATASET@",  dataset,  QCe);
+   QCe <- gsub("_","\\\\_", QCe);
 
    write(QCe, file.path(docdir, "QAReport.Rnw"), append=TRUE);
 

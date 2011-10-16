@@ -2,8 +2,12 @@
 		CHANGES IN R VERSION 2.14.0
 
 
+VERSION xps-1.13.10
+    o update function xpsQAReport() to replace "_" with "\_" for *.Rnw
+
 VERSION xps-1.13.9
     o add quality report function xpsQAReport()
+    o update vignette xps.Rnw
 
 VERSION xps-1.13.8
     o add functions attachProbe(), removeProbe(), etc.
