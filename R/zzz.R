@@ -7,7 +7,7 @@
    require(utils);
    packageStartupMessage(paste("\nWelcome to", pkgname, "version", packageDescription(pkgname, field="Version")));
    packageStartupMessage("    an R wrapper for XPS - eXpression Profiling System");
-   packageStartupMessage("    (c) Copyright 2001-2011 by Christian Stratowa");
+   packageStartupMessage("    (c) Copyright 2001-2012 by Christian Stratowa");
    packageStartupMessage("    ");
 }
 

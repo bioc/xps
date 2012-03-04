@@ -26,7 +26,7 @@
 \begin{document}
 
 \title{Introduction to the xps Package: Overview}
-\date{October, 2011}
+\date{March, 2012}
 \author{Christian Stratowa}
 \maketitle
 
