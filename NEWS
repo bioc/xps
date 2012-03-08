@@ -2,6 +2,9 @@
 		CHANGES IN R VERSION 2.15.0
 
 
+VERSION xps-1.15.2
+    o move to ROOT version 5.32/01, update README
+
 VERSION xps-1.15.1
     o update zzz.R
 
