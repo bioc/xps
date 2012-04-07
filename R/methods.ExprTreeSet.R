@@ -487,7 +487,7 @@ function(object,
    }#if
 
    ## export/import result as dataframe
-   ds <- data.frame(matrix(nr=0,nc=0));
+   ds <- data.frame(matrix(nrow=0, ncol=0));
    if (add.data) {
       outfile  <- sub("\\.root", ".txt", rootfile);
       # get treename "treeset.treename.treetype"
@@ -799,7 +799,7 @@ function(object,
    treenames <- getTreeNames(rootfile, exten);
    numtrees  <- length(treenames);
 
-   ds <- data.frame(matrix(nr=0,nc=0));
+   ds <- data.frame(matrix(nrow=0, ncol=0));
    if (file.exists(outfile)) {
       ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
    } else {
@@ -1030,7 +1030,7 @@ function(object,
    }#if
 
    ## export optional unifilter
-   ds <- data.frame(matrix(nr=0,nc=0));
+   ds <- data.frame(matrix(nrow=0, ncol=0));
    if (numberFilters(filter) > 0) {
       ## export/import unifilter as dataframe
       outfile  <- sub("\\.root", ".txt", rootfile);
@@ -1128,7 +1128,7 @@ function(object,
    treenames <- getTreeNames(rootfile, exten);
    numtrees  <- length(treenames);
 
-   ds <- data.frame(matrix(nr=0,nc=0));
+   ds <- data.frame(matrix(nrow=0, ncol=0));
    if (file.exists(outfile)) {
       ds <- read.table(outfile, header=TRUE, check.names=FALSE, sep="\t", row.names=NULL);
    } else {

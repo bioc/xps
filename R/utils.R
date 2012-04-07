@@ -557,7 +557,7 @@ CELHeader <- function(celname, scheme) {
                    "                  6",
                    sep="");
 
-   header <- data.frame(matrix(nr=23,nc=1));
+   header <- data.frame(matrix(nrow=23,ncol=1));
 
    header[1, 1] <- "[CEL]";
    header[2, 1] <- "Version=3";
@@ -1035,6 +1035,11 @@ getTreeNames <- function(rootfile, treetype="*", setname=NULL, gettitle=FALSE) {
 #   return(tnames);
    return(as.vector(tnames, mode="character"));
 }#getTreeNames
+
+
+################################################################################
+# other utility functions
+################################################################################
 
 #------------------------------------------------------------------------------#
 # metaProbesets: create file containing meta probeset definitions for "apt-probeset-summarize"

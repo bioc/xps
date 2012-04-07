@@ -49,9 +49,9 @@ function(x,
    if (dev == "screen") {
       x11();
    } else if (dev == "jpeg") {
-      jpeg(file=outfile, width=w, height=h);
+      jpeg(filename=outfile, width=w, height=h);
    } else if (dev == "png") {
-      png(file=outfile, width=w, height=h);
+      png(filename=outfile, width=w, height=h);
    } else if (dev == "pdf") {
       pdf(file=outfile, width=w, height=h);
    } else if (dev == "ps") {
@@ -109,9 +109,9 @@ function(x,
    if (dev == "screen") {
       x11();
    } else if (dev == "jpeg") {
-      jpeg(file=outfile, width=w, height=h);
+      jpeg(filename=outfile, width=w, height=h);
    } else if (dev == "png") {
-      png(file=outfile, width=w, height=h);
+      png(filename=outfile, width=w, height=h);
    } else if (dev == "pdf") {
       pdf(file=outfile, width=w, height=h);
    } else if (dev == "ps") {
@@ -173,9 +173,9 @@ function(x,
    if (dev == "screen") {
       x11();
    } else if (dev == "jpeg") {
-      jpeg(file=outfile, width=w, height=h);
+      jpeg(filename=outfile, width=w, height=h);
    } else if (dev == "png") {
-      png(file=outfile, width=w, height=h);
+      png(filename=outfile, width=w, height=h);
    } else if (dev == "pdf") {
       pdf(file=outfile, width=w, height=h);
    } else if (dev == "ps") {
@@ -229,9 +229,9 @@ function(x,
    if (dev == "screen") {
       x11();
    } else if (dev == "jpeg") {
-      jpeg(file=outfile, width=w, height=h);
+      jpeg(filename=outfile, width=w, height=h);
    } else if (dev == "png") {
-      png(file=outfile, width=w, height=h);
+      png(filename=outfile, width=w, height=h);
    } else if (dev == "pdf") {
       pdf(file=outfile, width=w, height=h);
    } else if (dev == "ps") {
@@ -287,9 +287,9 @@ function(x,
    if (dev == "screen") {
       x11();
    } else if (dev == "jpeg") {
-      jpeg(file=outfile, width=w, height=h);
+      jpeg(filename=outfile, width=w, height=h);
    } else if (dev == "png") {
-      png(file=outfile, width=w, height=h);
+      png(filename=outfile, width=w, height=h);
    } else if (dev == "pdf") {
       pdf(file=outfile, width=w, height=h);
    } else if (dev == "ps") {
@@ -351,9 +351,9 @@ function(x,
    if (dev == "screen") {
       x11();
    } else if (dev == "jpeg") {
-      jpeg(file=outfile, width=w, height=h);
+      jpeg(filename=outfile, width=w, height=h);
    } else if (dev == "png") {
-      png(file=outfile, width=w, height=h);
+      png(filename=outfile, width=w, height=h);
    } else if (dev == "pdf") {
       pdf(file=outfile, width=w, height=h);
    } else if (dev == "ps") {
@@ -452,9 +452,9 @@ function(x,
    if (dev == "screen") {
       x11();
    } else if (dev == "jpeg") {
-      jpeg(file=outfile, width=w, height=h);
+      jpeg(filename=outfile, width=w, height=h);
    } else if (dev == "png") {
-      png(file=outfile, width=w, height=h);
+      png(filename=outfile, width=w, height=h);
    } else if (dev == "pdf") {
       pdf(file=outfile, width=w, height=h);
    } else if (dev == "ps") {
@@ -535,9 +535,9 @@ function(x,
    if (dev == "screen") {
       x11();
    } else if (dev == "jpeg") {
-      jpeg(file=outfile, width=w, height=h);
+      jpeg(filename=outfile, width=w, height=h);
    } else if (dev == "png") {
-      png(file=outfile, width=w, height=h);
+      png(filename=outfile, width=w, height=h);
    } else if (dev == "pdf") {
       pdf(file=outfile, width=w, height=h);
    } else if (dev == "ps") {
@@ -603,9 +603,9 @@ function(x,
    if (dev == "screen") {
       x11();
    } else if (dev == "jpeg") {
-      jpeg(file=outfile, width=w, height=h);
+      jpeg(filename=outfile, width=w, height=h);
    } else if (dev == "png") {
-      png(file=outfile, width=w, height=h);
+      png(filename=outfile, width=w, height=h);
    } else if (dev == "pdf") {
       pdf(file=outfile, width=w, height=h);
    } else if (dev == "ps") {
@@ -671,9 +671,9 @@ function(x,
    if (dev == "screen") {
       x11();
    } else if (dev == "jpeg") {
-      jpeg(file=outfile, width=w, height=h);
+      jpeg(filename=outfile, width=w, height=h);
    } else if (dev == "png") {
-      png(file=outfile, width=w, height=h);
+      png(filename=outfile, width=w, height=h);
    } else if (dev == "pdf") {
       pdf(file=outfile, width=w, height=h);
    } else if (dev == "ps") {
@@ -731,9 +731,9 @@ function(x,
    if (dev == "screen") {
       x11();
    } else if (dev == "jpeg") {
-      jpeg(file=outfile, width=w, height=h);
+      jpeg(filename=outfile, width=w, height=h);
    } else if (dev == "png") {
-      png(file=outfile, width=w, height=h);
+      png(filename=outfile, width=w, height=h);
    } else if (dev == "pdf") {
       pdf(file=outfile, width=w, height=h);
    } else if (dev == "ps") {
@@ -807,9 +807,9 @@ function(x,
    if (dev == "screen") {
       x11();
    } else if (dev == "jpeg") {
-      jpeg(file=outfile, width=w, height=h);
+      jpeg(filename=outfile, width=w, height=h);
    } else if (dev == "png") {
-      png(file=outfile, width=w, height=h);
+      png(filename=outfile, width=w, height=h);
    } else if (dev == "pdf") {
       pdf(file=outfile, width=w, height=h);
    } else if (dev == "ps") {
@@ -873,9 +873,9 @@ function(x,
    if (dev == "screen") {
       x11();
    } else if (dev == "jpeg") {
-      jpeg(file=outfile, width=w, height=h);
+      jpeg(filename=outfile, width=w, height=h);
    } else if (dev == "png") {
-      png(file=outfile, width=w, height=h);
+      png(filename=outfile, width=w, height=h);
    } else if (dev == "pdf") {
       pdf(file=outfile, width=w, height=h);
    } else if (dev == "ps") {
@@ -936,9 +936,9 @@ function(x,
    if (dev == "screen") {
       x11();
    } else if (dev == "jpeg") {
-      jpeg(file=outfile, width=w, height=h);
+      jpeg(filename=outfile, width=w, height=h);
    } else if (dev == "png") {
-      png(file=outfile, width=w, height=h);
+      png(filename=outfile, width=w, height=h);
    } else if (dev == "pdf") {
       pdf(file=outfile, width=w, height=h);
    } else if (dev == "ps") {
@@ -999,9 +999,9 @@ function(x,
    if (dev == "screen") {
       x11();
    } else if (dev == "jpeg") {
-      jpeg(file=outfile, width=w, height=h);
+      jpeg(filename=outfile, width=w, height=h);
    } else if (dev == "png") {
-      png(file=outfile, width=w, height=h);
+      png(filename=outfile, width=w, height=h);
    } else if (dev == "pdf") {
       pdf(file=outfile, width=w, height=h);
    } else if (dev == "ps") {
@@ -1074,9 +1074,9 @@ function(x,
    if (dev == "screen") {
       x11();
    } else if (dev == "jpeg") {
-      jpeg(file=outfile, width=w, height=h);
+      jpeg(filename=outfile, width=w, height=h);
    } else if (dev == "png") {
-      png(file=outfile, width=w, height=h);
+      png(filename=outfile, width=w, height=h);
    } else if (dev == "pdf") {
       pdf(file=outfile, width=w, height=h);
    } else if (dev == "ps") {

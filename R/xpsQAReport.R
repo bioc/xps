@@ -219,12 +219,12 @@ function(xps.data,
       rnadeg <- AffyRNAdeg(xps.qual);
 
       ## plot RNA degradation
-      png(file = file.path(docdir, "RNADegradationPlot.png"), width=540, height=540);
+      png(filename = file.path(docdir, "RNADegradationPlot.png"), width=540, height=540);
       plotAffyRNAdeg(rnadeg, add.legend=TRUE);
       dev.off()
 
       ## plot slope of RNA degradation
-      png(file = file.path(docdir, "RNADegradationSlope.png"), width=540, height=440);
+      png(filename = file.path(docdir, "RNADegradationSlope.png"), width=540, height=440);
       plotAffyRNAdeg(rnadeg, summary=TRUE);
       dev.off();
 

@@ -228,7 +228,7 @@ setReplaceMethod("intensity", signature(object="DataTreeSet", value="data.frame"
          object@filedir     <- filedir;
          object@treenames   <- as.list(paste(celnames, ".cel", sep=""));
          object@bgtreenames <- list();
-         object@bgrd        <- data.frame(matrix(nr=0,nc=0));
+         object@bgrd        <- data.frame(matrix(nrow=0, ncol=0));
 
          return(object);
       }#if
@@ -333,7 +333,7 @@ setMethod("removeBgrd", signature(object="DataTreeSet"),
    function(object) {
       if (debug.xps()) print("------removeBgrd.DataTreeSet------")
 
-      object@bgrd <- data.frame(matrix(nr=0,nc=0));
+      object@bgrd <- data.frame(matrix(nrow=0, ncol=0));
       gc(); #????
       return(object);
    }
@@ -393,7 +393,7 @@ setMethod("removeMask", signature(object="DataTreeSet"),
    function(object) {
       if (debug.xps()) print("------removeMask.DataTreeSet------")
 
-      chipMask(object@scheme) <- data.frame(matrix(nr=0,nc=0));
+      chipMask(object@scheme) <- data.frame(matrix(nrow=0, ncol=0));
       gc(); #????
       return(object);
    }
@@ -443,7 +443,7 @@ setMethod("removeUnitNames", signature(object="DataTreeSet"),
    function(object) {
       if (debug.xps()) print("------removeUnitNames.DataTreeSet------")
 
-      unitNames(object@scheme) <- data.frame(matrix(nr=0,nc=0));
+      unitNames(object@scheme) <- data.frame(matrix(nrow=0, ncol=0));
       gc(); #????
       return(object);
    }
@@ -1126,7 +1126,7 @@ function(object,
    }#if
 
    ## export result to outfile and import as dataframe ds
-   ds <- data.frame(matrix(nr=0,nc=0));
+   ds <- data.frame(matrix(nrow=0, ncol=0));
    if (add.data) {
       outfile  <- sub("\\.root", ".txt", rootfile);
       ## get treename "treeset.treename.treetype"
@@ -1316,7 +1316,7 @@ if (method == "plm") stop(paste(sQuote("method"), "<plm> is not implemented yet.
    }#if
 
    ## export result to outfile and import as dataframe ds
-   ds <- data.frame(matrix(nr=0,nc=0));
+   ds <- data.frame(matrix(nrow=0, ncol=0));
    if (add.data) {
       outfile  <- sub("\\.root", ".txt", rootfile);
       ## get treename "treeset.treename.treetype"
@@ -1461,7 +1461,7 @@ function(object,
    }#if
 
    ## export result to outfile and import as dataframe ds
-   ds <- data.frame(matrix(nr=0,nc=0));
+   ds <- data.frame(matrix(nrow=0, ncol=0));
    if (add.data) {
       outfile  <- sub("\\.root", ".txt", rootfile);
       ## get treename "treeset.treename.treetype"
@@ -1607,7 +1607,7 @@ function(object,
    }#if
 
    ## export result to outfile and import as dataframe ds
-   ds <- data.frame(matrix(nr=0,nc=0));
+   ds <- data.frame(matrix(nrow=0, ncol=0));
    if (add.data) {
       outfile  <- sub("\\.root", ".txt", rootfile);
       ## get treename "treeset.treename.treetype"
@@ -1783,8 +1783,8 @@ function(object,
    }#if
 
    ## export p-value to outfile and import as dataframe ds
-   ds <- data.frame(matrix(nr=0,nc=0));
-   dc <- data.frame(matrix(nr=0,nc=0));
+   ds <- data.frame(matrix(nrow=0, ncol=0));
+   dc <- data.frame(matrix(nrow=0, ncol=0));
    if (add.data) {
       outfile  <- sub("\\.root", "_pval.txt", rootfile);
       ## get treename "treeset.treename.treetype"
@@ -1972,8 +1972,8 @@ function(object,
    }#if
 
    ## export p-value to outfile and import as dataframe ds
-   ds <- data.frame(matrix(nr=0,nc=0));
-   dc <- data.frame(matrix(nr=0,nc=0));
+   ds <- data.frame(matrix(nrow=0, ncol=0));
+   dc <- data.frame(matrix(nrow=0, ncol=0));
    if (add.data) {
       outfile  <- sub("\\.root", "_pval.txt", rootfile);
       ## get treename "treeset.treename.treetype"
@@ -2192,8 +2192,8 @@ function(object,
    }#if
 
    ## export p-value to outfile and import as dataframe ds
-   ds <- data.frame(matrix(nr=0,nc=0));
-   dc <- data.frame(matrix(nr=0,nc=0));
+   ds <- data.frame(matrix(nrow=0, ncol=0));
+   dc <- data.frame(matrix(nrow=0, ncol=0));
    if (add.data) {
       outfile  <- sub("\\.root", "_pval.txt", rootfile);
       ## get treename "treeset.treename.treetype"
@@ -2539,7 +2539,7 @@ function(object,
    if (summarize.method != "none") {
       exten <- type2Exten(summarize.method, settype);
 
-      ds <- data.frame(matrix(nr=0,nc=0));
+      ds <- data.frame(matrix(nrow=0, ncol=0));
       if (add.data) {
          ## export result to outfile and import as dataframe
          outfile  <- sub("\\.root", ".txt", rootfile);
@@ -2883,7 +2883,7 @@ function(object,
    exten <- type2Exten(qualify.method, settype);
 
    ## export result to outfile and import as dataframe
-   ds <- data.frame(matrix(nr=0,nc=0));
+   ds <- data.frame(matrix(nrow=0, ncol=0));
    if (add.data) {
       outfile  <- sub("\\.root", ".txt", rootfile);
       ## get treename "treeset.treename.treetype"
@@ -3358,7 +3358,7 @@ function(object,
    exten <- type2Exten(method, settype);
 
    ## export result to outfile and import as dataframe
-   ds <- data.frame(matrix(nr=0,nc=0));
+   ds <- data.frame(matrix(nrow=0, ncol=0));
    if (add.data) {
       outfile  <- sub("\\.root", ".txt", rootfile);
       ## get treename "treeset.treename.treetype"
@@ -3562,7 +3562,7 @@ function(object,
    exten <- type2Exten(method, settype);
 
    ## export result to outfile and import as dataframe
-   ds <- data.frame(matrix(nr=0,nc=0));
+   ds <- data.frame(matrix(nrow=0, ncol=0));
    if (add.data) {
       outfile  <- sub("\\.root", ".txt", rootfile);
       ## get treename "treeset.treename.treetype"

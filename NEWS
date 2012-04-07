@@ -1,4 +1,13 @@
 
+		CHANGES IN R VERSION 2.17.0
+
+
+VERSION xps-1.17.1
+    o remove warnings: partial argument match
+    o zzz.R: use .onAttach()
+
+
+
 		CHANGES IN R VERSION 2.15.0
 
 
