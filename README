@@ -75,7 +75,18 @@ I. Install ROOT:
               ./configure [<arch>]  [e.g. <arch>= linux or macosx (32bit) or macosx64 (64bit)]
               make                  [or, make -j2 for dual CPU machines]
 
-   4. add $ROOTSYS/bin to PATH and $ROOTSYS/lib to LD_LIBRARY_PATH:
+            Note: ./configure should automatically detect the architecture, if not use e.g.
+              ./configure linux (32bit) ot linuxx8664gcc (64bit)
+
+   4. add bin/ to PATH and lib/ to LD_LIBRARY_PATH.
+
+            sh family:
+              . bin/thisroot.sh
+
+            csh family
+              source bin/thisroot.csh
+
+   5. add $ROOTSYS/bin to PATH and $ROOTSYS/lib to LD_LIBRARY_PATH:
 
             sh family: 
               export ROOTSYS=<path>/root
@@ -91,7 +102,7 @@ I. Install ROOT:
 
             Note: it is best to include above lines in e.g. ".bashrc" or ".bash_profile"
 
-   5. try running root:
+   6. try running root:
 
             all shells:
               root

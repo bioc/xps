@@ -4,7 +4,7 @@
 # Note: please feel free to copy-paste the examples of interest and adapt the
 #       examples to your own needs
 #
-# Copyright (c) 2010-2011 Christian Stratowa, Vienna, Austria.
+# Copyright (c) 2010-2012 Christian Stratowa, Vienna, Austria.
 # All rights reserved.
 #
 #------------------------------------------------------------------------------#
@@ -226,6 +226,15 @@ scheme.hugene10stv1.na32 <- import.exon.scheme("hugene10stv1", filedir = file.pa
                             file.path(anndir, "Version11Jul", "HuGene-1_0-st-v1.na32.hg19.probeset.csv"),
                             file.path(anndir, "Version11Jul", "HuGene-1_0-st-v1.na32.hg19.transcript.csv"))
 
+# HuGene-2_0-st: used as exon array
+# use perl script "HuGene20_update_AFFX.pl" to create corrected annotation files, see: 
+# https://www.stat.math.ethz.ch/pipermail/bioconductor/2012-August/047755.html
+scheme.hugene20st.na32 <- import.exon.scheme("hugene20stv1", filedir = file.path(scmdir, "na32"),
+                          file.path(libdir, "HuGene-2_0-st", "HuGene-2_0-st.clf"),
+                          file.path(libdir, "HuGene-2_0-st", "HuGene-2_0-st.pgf"),
+                          file.path(anndir, "Version11Jul", "HuGene-2_0-st-v1.na32.hg19.probeset.csv", "HuGene-2_0-st-v1.na32.hg19.probeset.corr.csv"),
+                          file.path(anndir, "Version11Jul", "HuGene-2_0-st-v1.na32.hg19.transcript.csv", "HuGene-2_0-st-v1.na32.hg19.transcript.corr.csv"))
+
 # MoGene-1_0-st-v1.r4: used as exon array
 scheme.mogene10stv1.na32 <- import.exon.scheme("mogene10stv1", filedir = file.path(scmdir, "na32"),
                             file.path(libdir, "MoGene-1_0-st-v1.r4.analysis-lib-files", "MoGene-1_0-st-v1.r4.clf"),
@@ -272,6 +281,15 @@ scheme.hugene11stv1.na32 <- import.exon.scheme("hugene11stv1", filedir = file.pa
                             file.path(libdir, "HuGene-1_1-st-v1.r4.analysis-lib-files", "HuGene-1_1-st-v1.r4.pgf"),
                             file.path(anndir, "Version11Jul", "HuGene-1_1-st-v1.na32.hg19.probeset.csv"),
                             file.path(anndir, "Version11Jul", "HuGene-1_1-st-v1.na32.hg19.transcript.csv"))
+
+# HuGene-2_1-st: 
+# use perl script "HuGene21_update_AFFX.pl" to create corrected annotation files, see: 
+# https://www.stat.math.ethz.ch/pipermail/bioconductor/2012-August/047755.html
+scheme.hugene21st.na32 <- import.exon.scheme("hugene21stv1", filedir = file.path(scmdir, "na32"),
+                          file.path(libdir, "HuGene-2_1-st", "HuGene-2_1-st.clf"),
+                          file.path(libdir, "HuGene-2_1-st", "HuGene-2_1-st.pgf"),
+                          file.path(anndir, "Version11Jul", "HuGene-2_1-st-v1.na32.hg19.probeset.csv", "HuGene-2_1-st-v1.na32.hg19.probeset.corr.csv"),
+                          file.path(anndir, "Version11Jul", "HuGene-2_1-st-v1.na32.hg19.transcript.csv", "HuGene-2_1-st-v1.na32.hg19.transcript.corr.csv"))
 
 # MoGene-1_1-st-v1.r4
 scheme.mogene11stv1.na32 <- import.exon.scheme("mogene11stv1", filedir = file.path(scmdir, "na32"),

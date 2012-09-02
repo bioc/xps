@@ -4,7 +4,7 @@
 # Note: please feel free to copy-paste the examples of interest and adapt the
 #       examples to your own needs
 #
-# Copyright (c) 2007-2011 Christian Stratowa, Vienna, Austria.
+# Copyright (c) 2007-2012 Christian Stratowa, Vienna, Austria.
 # All rights reserved.
 #
 #------------------------------------------------------------------------------#
@@ -377,6 +377,28 @@ celfiles <- c("TisMap_Breast_01_v1_WTGene1.CEL","TisMap_Breast_02_v1_WTGene1.CEL
 celnames <- c("Breast01","Breast02","Breast03","Prostate01","Prostate02","Prostate03")
 # import CEL files
 data.mix.genome <- import.data(scheme.genome, "HuTissuesGenome", filedir=datdir,celdir=celdir,celfiles=celfiles,celnames=celnames)
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# example 4a: Tissues from Affymetrix Human Gene 2.1 ST Plate Data Set
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# same R session for example
+
+# directory containing Tissues CEL files
+celdir <- "/Volumes/GigaDrive/ChipData/Exon/HuGene2/human2.0/HuGene2.1_Plate"
+
+### HuGene-2_1-st data: import raw data
+# first, import ROOT scheme file
+scheme.genome <- root.scheme(file.path(scmdir, "hugene21stv1.root"))
+
+# subset of CEL files to import
+celfiles <- c("Liver_HuGene-2_1_GT_Rep1_A03_MC.CEL","Liver_HuGene-2_1_GT_Rep2_D06_MC.CEL","Liver_HuGene-2_1_GT_Rep3_F02_MC.CEL",
+              "Spleen_HuGene-2_1_GT_Rep1_A11_MC.CEL","Spleen_HuGene-2_1_GT_Rep2_C07_MC.CEL","Spleen_HuGene-2_1_GT_Rep3_F04_MC.CEL")
+# rename CEL files
+celnames <- c("LiverRep1","LiverRep2","LiverRep3","SpleenRep1","SpleenRep2","SpleenRep3")
+# import CEL files
+data.genome <- import.data(scheme.genome, "HuTissuesGenome21", filedir=datdir,celdir=celdir,celfiles=celfiles,celnames=celnames)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -933,6 +955,52 @@ wbg <- matrix(bgrd[,"BGRD"], ncol=ncols(schemeSet(data.mas5)), nrow=nrows(scheme
 # 4. create image
 image(wbg)
 image(log2(wbg))
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# example 4a: Tissues from Affymetrix Human Gene 2.1 ST Plate Data Set 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+### new R session: load library xps
+library(xps)
+
+### first, load ROOT scheme file and ROOT data file
+scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes/na32"
+scheme.genome <- root.scheme(file.path(scmdir, "hugene21stv1.root"))
+datdir <- "/Volumes/GigaDrive/CRAN/Workspaces/ROOTData"
+data.genome <- root.data(scheme.genome, paste(datdir,"HuTissuesGenome21_cel.root",sep="/"))
+
+
+### preprocess raw data ###
+datdir <- getwd()
+
+# 1. RMA
+data.rma <- rma(data.genome,"HuGene21RMAcore",filedir=datdir,tmpdir="",
+                background="antigenomic",normalize=TRUE,exonlevel="core+affx")
+
+# 2. MAS5
+data.mas5 <- mas5(data.genome,"HuGene21MAS5core",filedir=datdir,tmpdir="",
+                  normalize=TRUE,sc=500,exonlevel="core+affx")
+
+# 3. MAS5 detection call (yes, this is possible for exon arrays)
+call.mas5 <- mas5.call(data.genome,"HuGene21Callcore",filedir=datdir,tmpdir="",
+                       exonlevel="core+affx")
+
+# 4. DABG detection call
+call.dabg <- dabg.call(data.genome,"HuGene21DABGcore",filedir=datdir,
+                       exonlevel="core+affx")
+
+# get data.frames
+expr.rma <- validData(data.rma)
+expr.mas5 <- validData(data.mas5)
+pval.mas5 <- pvalData(call.mas5)
+pres.mas5 <- presCall(call.mas5)
+pval.dabg <- pvalData(call.dabg)
+pres.dabg <- presCall(call.dabg)
+
+# export expression data
+export.expr(data.rma, treename = "*", treetype = "mdp", varlist = "fUnitName:fSymbol:fLevel", outfile = "HuGene21RMAcoreSymbols.txt", sep = "\t", as.dataframe = FALSE, verbose = TRUE)
+export.expr(data.rma, treename = "*", treetype = "mdp", varlist = "fUnitName:fName:fSymbol:fLevel", outfile = "HuGene21RMAcoreNamesSymbols.txt", sep = "\t", as.dataframe = FALSE, verbose = TRUE)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

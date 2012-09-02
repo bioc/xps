@@ -2,6 +2,11 @@
 		CHANGES IN R VERSION 2.17.0
 
 
+VERSION xps-1.17.2
+    o update script4schemes.R to include schemes for HuGene-2_x-st arrays
+    o update script4xps.R with example 4a for HuGene-2_1-st arrays
+    o update README
+
 VERSION xps-1.17.1
     o remove warnings: partial argument match
     o zzz.R: use .onAttach()
