@@ -278,7 +278,7 @@ setMethod("removeCall", signature(object="CallTreeSet"),
    function(object) {
       if (debug.xps()) print("------removeCall.CallTreeSet------")
 
-      object@detcall <- data.frame(matrix(nr=0,nc=0));
+      object@detcall <- data.frame(matrix(nrow=0,ncol=0));
       gc(); #????
       return(object);
    }

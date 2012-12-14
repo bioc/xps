@@ -37,6 +37,158 @@ scmdir <- "/Volumes/GigaDrive/CRAN/Workspaces/Schemes"
 
 
 #------------------------------------------------------------------------------#
+# Nov 2012: Affymetrix annotation "na33"
+#------------------------------------------------------------------------------#
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# create ROOT scheme files for ivt expression arrays
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# Test3:
+scheme.test3.na33 <- import.expr.scheme("test3", filedir = file.path(scmdir, "na33"),
+                     schemefile = file.path(libdir, "Test3.CDF"), 
+                     probefile  = file.path(libdir, "Test3_probe.tab"), 
+                     annotfile  = file.path(anndir, "Version12Nov", "Test3.na33.annot.csv"))
+
+# Hu6800: 
+# annotation file for na32 no longer provided by Affymetrix (see na30 annotations)
+
+# HG-U133A:
+scheme.hgu133a.na33 <- import.expr.scheme("hgu133a", filedir = file.path(scmdir, "na33"),
+                       schemefile = file.path(libdir, "HG-U133A.CDF"), 
+                       probefile  = file.path(libdir, "HG-U133A_probe.tab"), 
+                       annotfile  = file.path(anndir, "Version12Nov", "HG-U133A.na33.annot.csv"))
+
+# HG-U133B:
+scheme.hgu133b.na33 <- import.expr.scheme("hgu133b", filedir = file.path(scmdir, "na33"),
+                       schemefile = file.path(libdir, "HG-U133B.CDF"), 
+                       probefile  = file.path(libdir, "HG-U133B_probe.tab"), 
+                       annotfile  = file.path(anndir, "Version12Nov", "HG-U133B.na33.annot.csv"))
+
+# HG-U133_Plus_2:
+scheme.hgu133plus2.na33 <- import.expr.scheme("hgu133plus2", filedir = file.path(scmdir, "na33"),
+                           schemefile = file.path(libdir, "HG-U133_Plus_2.CDF"), 
+                           probefile  = file.path(libdir, "HG-U133-PLUS_probe.tab"), 
+                           annotfile  = file.path(anndir, "Version12Nov", "HG-U133_Plus_2.na33.annot.csv"))
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# create ROOT scheme files for whole genome and exon arrays
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# HuGene-1_0-st-v1.r4: used as exon array
+scheme.hugene10stv1.na33 <- import.exon.scheme("hugene10stv1", filedir = file.path(scmdir, "na33"),
+                            file.path(libdir, "HuGene-1_0-st-v1.r4.analysis-lib-files", "HuGene-1_0-st-v1.r4.clf"),
+                            file.path(libdir, "HuGene-1_0-st-v1.r4.analysis-lib-files", "HuGene-1_0-st-v1.r4.pgf"),
+                            file.path(anndir, "Version12Nov", "HuGene-1_0-st-v1.na33.hg19.probeset.csv"),
+                            file.path(anndir, "Version12Nov", "HuGene-1_0-st-v1.na33.hg19.transcript.csv"))
+
+# HuGene-2_0-st: used as exon array
+scheme.hugene20st.na33 <- import.exon.scheme("hugene20stv1", filedir = file.path(scmdir, "na33"),
+                          file.path(libdir, "HuGene-2_0-st", "HuGene-2_0-st.clf"),
+                          file.path(libdir, "HuGene-2_0-st", "HuGene-2_0-st.pgf"),
+                          file.path(anndir, "Version12Nov", "HuGene-2_0-st-v1.na33.hg19.probeset.csv"),
+                          file.path(anndir, "Version12Nov",  "HuGene-2_0-st-v1.na33.hg19.transcript.csv"))
+
+# MoGene-1_0-st-v1.r4: used as exon array
+scheme.mogene10stv1.na33 <- import.exon.scheme("mogene10stv1", filedir = file.path(scmdir, "na33"),
+                            file.path(libdir, "MoGene-1_0-st-v1.r4.analysis-lib-files", "MoGene-1_0-st-v1.r4.clf"),
+                            file.path(libdir, "MoGene-1_0-st-v1.r4.analysis-lib-files", "MoGene-1_0-st-v1.r4.pgf"),
+                            file.path(anndir, "Version12Nov", "MoGene-1_0-st-v1.na33.mm9.probeset.csv"),
+                            file.path(anndir, "Version12Nov", "MoGene-1_0-st-v1.na33.mm9.transcript.csv"))
+
+# MoGene-2_0-st: used as exon array
+scheme.mogene20st.na33 <- import.exon.scheme("mogene20stv1", filedir = file.path(scmdir, "na33"),
+                          file.path(libdir, "MoGene-2_0-st", "MoGene-2_0-st.clf"),
+                          file.path(libdir, "MoGene-2_0-st", "MoGene-2_0-st.pgf"),
+                          file.path(anndir, "Version12Nov", "MoGene-2_0-st-v1.na33.mm10.probeset.csv"),
+                          file.path(anndir, "Version12Nov",  "MoGene-2_0-st-v1.na33.mm10.transcript.csv"))
+
+# RaGene-1_0-st-v1.r4: used as exon array
+scheme.ragene10stv1.na33 <- import.exon.scheme("ragene10stv1", filedir = file.path(scmdir, "na33"),
+                            file.path(libdir, "RaGene-1_0-st-v1.r4.analysis-lib-files", "RaGene-1_0-st-v1.r4.clf"),
+                            file.path(libdir, "RaGene-1_0-st-v1.r4.analysis-lib-files", "RaGene-1_0-st-v1.r4.pgf"),
+                            file.path(anndir, "Version12Nov", "RaGene-1_0-st-v1.na33.rn4.probeset.csv"),
+                            file.path(anndir, "Version12Nov", "RaGene-1_0-st-v1.na33.rn4.transcript.csv"))
+
+# RaGene-2_0-st: used as exon array
+scheme.ragene20st.na33 <- import.exon.scheme("ragene20stv1", filedir = file.path(scmdir, "na33"),
+                          file.path(libdir, "RaGene-2_0-st", "RaGene-2_0-st.clf"),
+                          file.path(libdir, "RaGene-2_0-st", "RaGene-2_0-st.pgf"),
+                          file.path(anndir, "Version12Nov", "RaGene-2_0-st-v1.na33.rn4.probeset.csv"),
+                          file.path(anndir, "Version12Nov",  "RaGene-2_0-st-v1.na33.rn4.transcript.csv"))
+
+# HuEx-1_0-st-v2.r2:
+scheme.huex10stv2.na33 <- import.exon.scheme("huex10stv2", filedir = file.path(scmdir, "na33"),
+                          file.path(libdir, "HuEx-1_0-st-v2_libraryfile", "HuEx-1_0-st-r2", "HuEx-1_0-st-v2.r2.clf"),
+                          file.path(libdir, "HuEx-1_0-st-v2_libraryfile", "HuEx-1_0-st-r2", "HuEx-1_0-st-v2.r2.pgf"),
+                          file.path(anndir, "Version12Nov", "HuEx-1_0-st-v2.na33.hg19.probeset.csv"),
+                          file.path(anndir, "Version12Nov", "HuEx-1_0-st-v2.na33.hg19.transcript.csv"))
+
+# MoEx-1_0-st-v1.r2:
+scheme.moex10stv1.na33 <- import.exon.scheme("moex10stv1",filedir = file.path(scmdir, "na33"),
+                          file.path(libdir, "MoEx_libraryfile", "MoEx-1_0-st-v1.r2.clf"),
+                          file.path(libdir, "MoEx_libraryfile", "MoEx-1_0-st-v1.r2.pgf"),
+                          file.path(anndir, "Version12Nov", "MoEx-1_0-st-v1.na33.mm9.probeset.csv"),
+                          file.path(anndir, "Version12Nov", "MoEx-1_0-st-v1.na33.mm9.transcript.csv"))
+
+# RaEx-1_0-st-v1.r2:
+scheme.raex10stv1.na33 <- import.exon.scheme("raex10stv1",filedir=file.path(scmdir, "na33"),
+                          file.path(libdir, "RaEx_libraryfile", "RaEx-1_0-st-v1.r2.clf"),
+                          file.path(libdir, "RaEx_libraryfile", "RaEx-1_0-st-v1.r2.pgf"),
+                          file.path(anndir, "Version12Nov", "RaEx-1_0-st-v1.na33.rn4.probeset.csv"),
+                          file.path(anndir, "Version12Nov", "RaEx-1_0-st-v1.na33.rn4.transcript.csv"))
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# create ROOT scheme files for whole genome and exon plate arrays
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# HuGene-1_1-st-v1:
+scheme.hugene11stv1.na33 <- import.exon.scheme("hugene11stv1", filedir = file.path(scmdir, "na33"),
+                            file.path(libdir, "HuGene-1_1-st-v1.r4.analysis-lib-files", "HuGene-1_1-st-v1.r4.clf"),
+                            file.path(libdir, "HuGene-1_1-st-v1.r4.analysis-lib-files", "HuGene-1_1-st-v1.r4.pgf"),
+                            file.path(anndir, "Version12Nov", "HuGene-1_1-st-v1.na33.hg19.probeset.csv"),
+                            file.path(anndir, "Version12Nov", "HuGene-1_1-st-v1.na33.hg19.transcript.csv"))
+
+# HuGene-2_1-st: 
+scheme.hugene21st.na33 <- import.exon.scheme("hugene21stv1", filedir = file.path(scmdir, "na33"),
+                          file.path(libdir, "HuGene-2_1-st", "HuGene-2_1-st.clf"),
+                          file.path(libdir, "HuGene-2_1-st", "HuGene-2_1-st.pgf"),
+                          file.path(anndir, "Version12Nov",  "HuGene-2_1-st-v1.na33.hg19.probeset.csv"),
+                          file.path(anndir, "Version12Nov",  "HuGene-2_1-st-v1.na33.hg19.transcript.csv"))
+
+# MoGene-1_1-st-v1.r4:
+scheme.mogene11stv1.na33 <- import.exon.scheme("mogene11stv1", filedir = file.path(scmdir, "na33"),
+                            file.path(libdir, "MoGene-1_1-st-v1.r4.analysis-lib-files", "MoGene-1_1-st-v1.r4.clf"),
+                            file.path(libdir, "MoGene-1_1-st-v1.r4.analysis-lib-files", "MoGene-1_1-st-v1.r4.pgf"),
+                            file.path(anndir, "Version12Nov", "MoGene-1_1-st-v1.na33.mm9.probeset.csv"),
+                            file.path(anndir, "Version12Nov", "MoGene-1_1-st-v1.na33.mm9.transcript.csv"))
+
+# MoGene-2_1-st:
+scheme.mogene21stv1.na33 <- import.exon.scheme("mogene21stv1", filedir = file.path(scmdir, "na33"),
+                            file.path(libdir, "MoGene-2_1-st", "MoGene-2_1-st.clf"),
+                            file.path(libdir, "MoGene-2_1-st", "MoGene-2_1-st.pgf"),
+                            file.path(anndir, "Version12Nov", "MoGene-2_1-st-v1.na33.mm10.probeset.csv"),
+                            file.path(anndir, "Version12Nov", "MoGene-2_1-st-v1.na33.mm10.transcript.csv"))
+
+# RaGene-1_1-st-v1.r4:
+scheme.ragene11stv1.na33 <- import.exon.scheme("ragene11stv1", filedir = file.path(scmdir, "na33"),
+                            file.path(libdir, "RaGene-1_1-st-v1.r4.analysis-lib-files", "RaGene-1_1-st-v1.r4.clf"),
+                            file.path(libdir, "RaGene-1_1-st-v1.r4.analysis-lib-files", "RaGene-1_1-st-v1.r4.pgf"),
+                            file.path(anndir, "Version12Nov", "RaGene-1_1-st-v1.na33.rn4.probeset.csv"),
+                            file.path(anndir, "Version12Nov", "RaGene-1_1-st-v1.na33.rn4.transcript.csv"))
+
+# RaGene-2_1-st:
+scheme.ragene21stv1.na33 <- import.exon.scheme("ragene21stv1", filedir = file.path(scmdir, "na33"),
+                            file.path(libdir, "RaGene-2_1-st", "RaGene-2_1-st.clf"),
+                            file.path(libdir, "RaGene-2_1-st", "RaGene-2_1-st.pgf"),
+                            file.path(anndir, "Version12Nov", "RaGene-2_1-st-v1.na33.rn4.probeset.csv"),
+                            file.path(anndir, "Version12Nov", "RaGene-2_1-st-v1.na33.rn4.transcript.csv"))
+
+
+
+#------------------------------------------------------------------------------#
 # Jul 2011: Affymetrix annotation "na32"
 #------------------------------------------------------------------------------#
 
