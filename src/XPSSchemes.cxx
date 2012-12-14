@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 12/12/2010
+// File created: 05/18/2002                          last modified: 12/13/2012
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -56,6 +56,7 @@
 * Sep 2007 - Change fMask from class XScheme from "Short_t to "Int_t"
 * Feb 2009 - Add support for whole genome array probeset annotation file (na27)
 * Apr 2009 - Add support for both versions of probe info file "xxx_probe.tab"
+* Dec 2012 - Protect against tabs in Affymetrix annotation files
 *
 ******************************************************************************/
 
@@ -3969,6 +3970,8 @@ Int_t XGeneChip::ImportTransAnnotation(ifstream &input, Option_t *option,
       str = TString(nextline);
       // first need to replace "" with NA
       str.ReplaceAll("\"\"", "\"NA\"");
+      // replace tab with space to eliminate wrong tabs in Affymetrix transcript annotation files
+      str.ReplaceAll(tab, " ");
       // replace csv with tab
       str.ReplaceAll(csv, tab);
       // remove all "\"" from line
@@ -6382,6 +6385,8 @@ Int_t XGenomeChip::ImportTransAnnotation(ifstream &input, Option_t *option,
       str = TString(nextline);
       // first need to replace "" with NA
       str.ReplaceAll("\"\"", "\"NA\"");
+      // replace tab with space to eliminate wrong tabs in Affymetrix annotation files
+      str.ReplaceAll(tab, " ");
       // replace csv with tab
       str.ReplaceAll(csv, tab);
       // remove all "\"" from line
@@ -8990,6 +8995,8 @@ Int_t XExonChip::ImportTransAnnotation(ifstream &input, Option_t *option,
       str = TString(nextline);
       // first need to replace "" with NA
       str.ReplaceAll("\"\"", "\"NA\"");
+      // replace tab with space to eliminate wrong tabs in Affymetrix annotation files
+      str.ReplaceAll(tab, " ");
       // replace csv with tab
       str.ReplaceAll(csv, tab);
       // remove all "\"" from line
@@ -9496,6 +9503,8 @@ Int_t XExonChip::ImportProbesetAnnotation(ifstream &input, Option_t *option,
       str = TString(&nextline[0]);
       // first need to replace "" with NA
       str.ReplaceAll("\"\"", "\"NA\"");
+      // replace tab with space to eliminate wrong tabs in Affymetrix annotation files
+      str.ReplaceAll(tab, " ");
       // replace csv with tab
       str.ReplaceAll(csv, tab);
       // remove all "\"" from line

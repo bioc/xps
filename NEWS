@@ -1,5 +1,15 @@
 
-		CHANGES IN R VERSION 2.17.0
+		CHANGES IN R VERSION 2.16.X
+
+
+VERSION xps-1.19.1
+    o update Import..Annotation() methods in XPSchemes.cxx to protect against tabs in Affymetrix annotation files
+    o update script4schemes.R to include schemes with annotation na33
+    o remove sQuote() from man files mas5.Rd, rma.Rd, firma.Rd, farms.Rd, dabg.call.Rd, ini.call.Rd, dfw.Rd
+
+
+
+		CHANGES IN R VERSION 2.15.X
 
 
 VERSION xps-1.17.2
@@ -10,10 +20,6 @@ VERSION xps-1.17.2
 VERSION xps-1.17.1
     o remove warnings: partial argument match
     o zzz.R: use .onAttach()
-
-
-
-		CHANGES IN R VERSION 2.15.0
 
 
 VERSION xps-1.15.2

@@ -37,7 +37,7 @@ setMethod("initialize", "ProcesSet",
 
       ## prevent effects of multiple initialization
       if (is.null(scheme))  return(.Object);
-      if (is.null(data))    data   <- data.frame(matrix(nr=0,nc=0));
+      if (is.null(data))    data   <- data.frame(matrix(nrow=0,ncol=0));
       if (!is.list(params)) params <- as.list(params);
 
       .Object@scheme = scheme;
@@ -164,7 +164,7 @@ setMethod("removeData", signature(object="ProcesSet"),
    function(object) {
       if (debug.xps()) print("------removeData.ProcesSet------")
 
-      object@data <- data.frame(matrix(nr=0,nc=0));
+      object@data <- data.frame(matrix(nrow=0,ncol=0));
       gc(); #????
       return(object);
    }

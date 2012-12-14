@@ -49,9 +49,9 @@ differential alternative splicing for exon arrays, as described in Purdom et al.
 Following \code{option}s are valid for exon arrays:
 \tabular{ll}{
   \code{probeset}: \tab expression levels are computed for individual probe sets,
-   i.e. for each \sQuote{probeset_id}. \cr
+   i.e. for each 'probeset_id'. \cr
   \code{exon}: \tab expression levels are computed for exon clusters,
-   i.e. probe sets containing the same \sQuote{exon_id}, where each exon cluster
+   i.e. probe sets containing the same 'exon_id', where each exon cluster
    consists of one or more \code{probeset}s. \cr
 }
 Following \code{exonlevel} annotations are valid for exon arrays:

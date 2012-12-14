@@ -32,7 +32,7 @@ Following \code{exonlevel} annotations are valid for exon arrays:
 }
 Following \code{exonlevel} annotations are valid for whole genome arrays:
 \tabular{lll}{
-  \tab \code{core}:\tab \code{(=8192+1024)} probesets with category \sQuote{unique}, \sQuote{similar} and \sQuote{mixed}. \cr
+  \tab \code{core}:\tab \code{(=8192+1024)} probesets with category 'unique', 'similar' and 'mixed'. \cr
   \tab \code{metacore}:\tab \code{(=8192)} probesets with category \sQuote{unique} only. \cr
   \tab \code{affx}:\tab \code{(=60)} standard AFFX controls. \cr
   \tab \code{all}:\tab \code{(=9276)} combination of above (including affx).

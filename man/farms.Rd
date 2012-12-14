@@ -71,12 +71,12 @@ For exon arrays it is necessary to supply the requested \code{option} and \code{
 Following \code{option}s are valid for exon arrays:
 \tabular{ll}{
   \code{transcript}: \tab expression levels are computed for transcript clusters,
-   i.e. probe sets containing the same \sQuote{transcript_cluster_id}. \cr
+   i.e. probe sets containing the same 'transcript_cluster_id'. \cr
   \code{exon}: \tab expression levels are computed for exon clusters,
-   i.e. probe sets containing the same \sQuote{exon_id}, where each exon cluster
+   i.e. probe sets containing the same 'exon_id', where each exon cluster
    consists of one or more \code{probeset}s. \cr
   \code{probeset}: \tab expression levels are computed for individual probe sets,
-   i.e. for each \sQuote{probeset_id}. \cr
+   i.e. for each 'probeset_id'. \cr
 }
 Following \code{exonlevel} annotations are valid for exon arrays:
 \tabular{lll}{
@@ -91,8 +91,8 @@ Following \code{exonlevel} annotations are valid for exon arrays:
 }
 Following \code{exonlevel} annotations are valid for whole genome arrays:
 \tabular{lll}{
-  \tab \code{core}:\tab probesets with category \sQuote{unique}, \sQuote{similar} and \sQuote{mixed}. \cr
-  \tab \code{metacore}:\tab probesets with category \sQuote{unique} only. \cr
+  \tab \code{core}:\tab probesets with category 'unique', 'similar' and 'mixed'. \cr
+  \tab \code{metacore}:\tab probesets with category 'unique' only. \cr
   \tab \code{affx}:\tab standard AFFX controls. \cr
   \tab \code{all}:\tab combination of above (including affx).
 }

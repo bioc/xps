@@ -305,7 +305,7 @@ setMethod("removeMask", signature(object="SchemeTreeSet"),
    function(object) {
       if (debug.xps()) print("------removeMask.SchemeTreeSet------")
 
-      chipMask(object) <- data.frame(matrix(nr=0,nc=0));
+      chipMask(object) <- data.frame(matrix(nrow=0,ncol=0));
       gc(); #????
       return(object);
    }
@@ -332,7 +332,7 @@ setMethod("removeProbe", signature(object="SchemeTreeSet"),
    function(object) {
       if (debug.xps()) print("------removeProbe.SchemeTreeSet------")
 
-      object@probe <- data.frame(matrix(nr=0,nc=0));
+      object@probe <- data.frame(matrix(nrow=0,ncol=0));
       gc(); #????
       return(object);
    }
@@ -400,7 +400,7 @@ setMethod("removeUnitNames", signature(object="SchemeTreeSet"),
    function(object) {
       if (debug.xps()) print("------removeUnitNames.SchemeTreeSet------")
 
-      unitNames(object) <- data.frame(matrix(nr=0,nc=0));
+      unitNames(object) <- data.frame(matrix(nrow=0,ncol=0));
       gc(); #????
       return(object);
    }
