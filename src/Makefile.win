@@ -1,10 +1,18 @@
 #------------------------------------------------------------------------------
+# Makefile.win was adapted for ROOT compiled with MinGW by Alexey Lebedev
+# Makefile.win for compilation with VC++ 2010 is renamed to Makefile.vc10.win
+#------------------------------------------------------------------------------
 
-CL            = "${MSVSPATH}/cl"
-LINK          = "${MSVSPATH}/link"
+#CL            = "${MSVSPATH}/cl"
+#LINK          = "${MSVSPATH}/link"
+
+ROOTSYS_UNIX=$(shell echo "$(ROOTSYS)" | sed -e 's/\\/\//g')
+
+CL = g++ -pipe -mwindows 
+LINK = g++
 
 #check for libGraf setting
-ifneq ($(findstring _G__cpp_setupG__Graf1, ${ROOTSYS}/bin/root-config),)
+ifneq ($(findstring _G__cpp_setupG__Graf1, ${ROOTSYS_UNIX}/bin/root-config),)
 WHICHGRAF =_G__cpp_setupG__Graf1
 else
 WHICHGRAF =_G__cpp_setupG__Graf
@@ -12,25 +20,30 @@ endif
 
 #LDOPT         = -opt:ref
 LDOPT         = -opt:noref
+LDOPT=
+
 LDFLAGS       = $(LDOPT) $(conlflags) -nologo -include:_G__cpp_setupG__Hist \
                 -include:$(WHICHGRAF) -include:_G__cpp_setupG__G3D \
                 -include:_G__cpp_setupG__GPad -include:_G__cpp_setupG__Tree \
                 -include:_G__cpp_setupG__Rint -include:_G__cpp_setupG__PostScript \
                 -include:_G__cpp_setupG__Matrix -include:_G__cpp_setupG__Physics \
                 -include:_G__cpp_setupG__Ged 
+LDFLAGS=
 SOFLAGS       = $(dlllflags:-pdb:none=)
-ROOTLIBS      = "${ROOTSYS}/lib/libCore.lib" \
-                "${ROOTSYS}/lib/libCint.lib" "${ROOTSYS}/lib/libHist.lib" \
-                "${ROOTSYS}/lib/libGraf.lib" "${ROOTSYS}/lib/libGraf3d.lib" \
-                "${ROOTSYS}/lib/libGpad.lib" "${ROOTSYS}/lib/libTree.lib" \
-                "${ROOTSYS}/lib/libRint.lib" "${ROOTSYS}/lib/libPostscript.lib" \
-                "${ROOTSYS}/lib/libMatrix.lib" "${ROOTSYS}/lib/libPhysics.lib" \
-                "$(ROOTSYS)/lib/libNet.lib" "$(ROOTSYS)/lib/libRIO.lib" \
-                "$(ROOTSYS)/lib/libMathCore.lib"
+SOFLAGS= -mwindows -Wl,--subsystem,windows -Wl,--dll -shared
+
+ROOTLIBS      = "${ROOTSYS_UNIX}/lib/libCore.lib" \
+                "${ROOTSYS_UNIX}/lib/libCint.lib" "${ROOTSYS_UNIX}/lib/libHist.lib" \
+                "${ROOTSYS_UNIX}/lib/libGraf.lib" "${ROOTSYS_UNIX}/lib/libGraf3d.lib" \
+                "${ROOTSYS_UNIX}/lib/libGpad.lib" "${ROOTSYS_UNIX}/lib/libTree.lib" \
+                "${ROOTSYS_UNIX}/lib/libRint.lib" "${ROOTSYS_UNIX}/lib/libPostscript.lib" \
+                "${ROOTSYS_UNIX}/lib/libMatrix.lib" "${ROOTSYS_UNIX}/lib/libPhysics.lib" \
+                "$(ROOTSYS_UNIX)/lib/libNet.lib" "$(ROOTSYS_UNIX)/lib/libRIO.lib" \
+                "$(ROOTSYS_UNIX)/lib/libMathCore.lib"
 LIBS          = $(ROOTLIBS)
-GLIBS         = $(LIBS) "${ROOTSYS}/lib/libGui.lib" "${ROOTSYS}/lib/libGraf.lib" \
-                "${ROOTSYS}/lib/libGpad.lib" "${ROOTSYS}/lib/libGed.lib" \
-                "${ROOTSYS}/lib/libTreePlayer.lib" "${ROOTSYS}/lib/libTreeViewer.lib"
+GLIBS         = $(LIBS) "${ROOTSYS_UNIX}/lib/libGui.lib" "${ROOTSYS_UNIX}/lib/libGraf.lib" \
+                "${ROOTSYS_UNIX}/lib/libGpad.lib" "${ROOTSYS_UNIX}/lib/libGed.lib" \
+                "${ROOTSYS_UNIX}/lib/libTreePlayer.lib" "${ROOTSYS_UNIX}/lib/libTreeViewer.lib"
 LIBSALL       = $(ROOTLIBS)
 
 #------------------------------------------------------------------------------
@@ -49,81 +62,81 @@ MYSRC       = TMLMath.cxx TStat.cxx StatUtils.cxx \
               XPSProcessing.cxx XPSHybridizer.cxx XPSSelector.cxx XPSNormalizer.cxx XPSPreProcessing.cxx XPSNormation.cxx \
               XPSFilter.cxx XPSAnalyzer.cxx XPSAnalysis.cxx \
               rwrapper.cxx
-MYOBJ       = TMLMath.obj TStat.obj StatUtils.obj \
-              XPSBase.obj XPSUtils.obj \
-              XPSSchemes.obj \
-              XPSDataTypes.obj XPSProjectHandler.obj XPSData.obj \
-              XPSProcessing.obj XPSHybridizer.obj XPSSelector.obj XPSNormalizer.obj XPSPreProcessing.obj XPSNormation.obj \
-              XPSFilter.obj XPSAnalyzer.obj XPSAnalysis.obj \
-              rwrapper.obj xpsDict.obj
+MYOBJ       = TMLMath.o TStat.o StatUtils.o \
+              XPSBase.o XPSUtils.o \
+              XPSSchemes.o \
+              XPSDataTypes.o XPSProjectHandler.o XPSData.o \
+              XPSProcessing.o XPSHybridizer.o XPSSelector.o XPSNormalizer.o XPSPreProcessing.o XPSNormation.o \
+              XPSFilter.o XPSAnalyzer.o XPSAnalysis.o \
+              rwrapper.o xpsDict.o
 
 
 xps.dll:  $(MYOBJ)
-	$(LINK) /dll /def:xps.def /out:xps.dll fp10.obj $(SOFLAGS) $(LDFLAGS) $(GLIBS) *.obj 
+	$(LINK) -o xps.dll $(SOFLAGS) $(LDFLAGS) *.o $(GLIBS)
 	
-TMLMath.obj: TMLMath.h TMLMath.cxx
-	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c TMLMath.cxx
+TMLMath.o: TMLMath.h TMLMath.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -include w32pragma.h -O2 -DMSVC -DWIN32 -c TMLMath.cxx
 
-TStat.obj: TStat.h TStat.cxx
-	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c TStat.cxx
+TStat.o: TStat.h TStat.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c TStat.cxx
 	
-StatUtils.obj: StatUtils.h StatUtils.cxx
-	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c StatUtils.cxx
+StatUtils.o: StatUtils.h StatUtils.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c StatUtils.cxx
 	
-XPSBase.obj: XPSBase.h XPSBase.cxx
-	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSBase.cxx
+XPSBase.o: XPSBase.h XPSBase.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSBase.cxx
 
-XPSUtils.obj: XPSUtils.h XPSUtils.cxx
-	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSUtils.cxx
+XPSUtils.o: XPSUtils.h XPSUtils.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSUtils.cxx
 	
-XPSSchemes.obj: XPSSchemes.h XPSSchemes.cxx
-	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSSchemes.cxx
+XPSSchemes.o: XPSSchemes.h XPSSchemes.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSSchemes.cxx
 	
-XPSDataTypes.obj: XPSDataTypes.h XPSDataTypes.cxx
-	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSDataTypes.cxx
+XPSDataTypes.o: XPSDataTypes.h XPSDataTypes.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSDataTypes.cxx
 
-XPSProjectHandler.obj: XPSProjectHandler.h XPSProjectHandler.cxx
-	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSProjectHandler.cxx
+XPSProjectHandler.o: XPSProjectHandler.h XPSProjectHandler.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSProjectHandler.cxx
 	
-XPSData.obj: XPSData.h XPSData.cxx
-	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSData.cxx
+XPSData.o: XPSData.h XPSData.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSData.cxx
 	
-XPSProcessing.obj: XPSProcessing.h XPSProcessing.cxx
-	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSProcessing.cxx
+XPSProcessing.o: XPSProcessing.h XPSProcessing.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSProcessing.cxx
 
-XPSHybridizer.obj: XPSHybridizer.h XPSHybridizer.cxx
-	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSHybridizer.cxx
+XPSHybridizer.o: XPSHybridizer.h XPSHybridizer.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSHybridizer.cxx
 	
-XPSSelector.obj: XPSSelector.h XPSSelector.cxx
-	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSSelector.cxx
+XPSSelector.o: XPSSelector.h XPSSelector.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSSelector.cxx
 	
-XPSNormalizer.obj: XPSNormalizer.h XPSNormalizer.cxx
-	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSNormalizer.cxx
+XPSNormalizer.o: XPSNormalizer.h XPSNormalizer.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSNormalizer.cxx
 
-XPSPreProcessing.obj: XPSPreProcessing.h XPSPreProcessing.cxx
-	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSPreProcessing.cxx
+XPSPreProcessing.o: XPSPreProcessing.h XPSPreProcessing.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSPreProcessing.cxx
 	
-XPSNormation.obj: XPSNormation.h XPSNormation.cxx
-	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSNormation.cxx
+XPSNormation.o: XPSNormation.h XPSNormation.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSNormation.cxx
 	
-XPSFilter.obj: XPSFilter.h XPSFilter.cxx
-	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSFilter.cxx
+XPSFilter.o: XPSFilter.h XPSFilter.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSFilter.cxx
 
-XPSAnalyzer.obj: XPSAnalyzer.h XPSAnalyzer.cxx
-	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSAnalyzer.cxx
+XPSAnalyzer.o: XPSAnalyzer.h XPSAnalyzer.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSAnalyzer.cxx
 	
-XPSAnalysis.obj: XPSAnalysis.h XPSAnalysis.cxx
-	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c XPSAnalysis.cxx
+XPSAnalysis.o: XPSAnalysis.h XPSAnalysis.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSAnalysis.cxx
 
-rwrapper.obj: rwrapper.h rwrapper.cxx
-	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c rwrapper.cxx
+rwrapper.o: rwrapper.h rwrapper.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c rwrapper.cxx
 	
 xpsDict.cxx: $(MYHDR) xpsLinkDef.h
 	@echo "Generating dictionary $@..."
 	@rootcint -f $@ -c $(MYHDR) xpsLinkDef.h
 	
-xpsDict.obj: xpsDict.cxx xpsDict.h
-	$(CL) /I"${ROOTSYS}/include" /FIw32pragma.h /MT /EHsc /Ox /D "MSVC" /D "WIN32" /c xpsDict.cxx
+xpsDict.o: xpsDict.cxx xpsDict.h
+	$(CL) -I${ROOTSYS_UNIX}/include -include w32pragma.h -O3 -DMSVC -DWIN32 -c xpsDict.cxx
 
 clean:
 #	rm -f $(MYOBJ) *.a *.d *.rc 

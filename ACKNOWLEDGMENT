@@ -37,6 +37,13 @@ solve this problem. Furthermore, I want to thank Simon de Bernard for testing
 xps extensively, reporting bugs and even offering solutions, especially an 
 essential improvement in class XQuantileNormalizer. 
 
+Jan. 2013:
+Although xps, compiled with MS VC++, does work on Windows XP it did not work on 
+Vista and Windows 7. For this reason I am very grateful to Alexey Lebedev who 
+has adapted the ROOT source package for compilation with MinGW and succceded in 
+creating a ROOT binary which finally allows xps to work on Vista and Windows 7,
+too. 
+
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 

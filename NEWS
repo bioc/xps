@@ -1,11 +1,13 @@
 
-		CHANGES IN R VERSION 2.16.X
+		CHANGES IN R VERSION 2.16.X (or 3.00.X?)
 
+
+VERSION xps-1.19.2
+    o update configure.win and Makefile.win for ROOT compiled with MinGW; xps works now on Windows 7
 
 VERSION xps-1.19.1
     o update Import..Annotation() methods in XPSchemes.cxx to protect against tabs in Affymetrix annotation files
     o update script4schemes.R to include schemes with annotation na33
-    o remove sQuote() from man files mas5.Rd, rma.Rd, firma.Rd, farms.Rd, dabg.call.Rd, ini.call.Rd, dfw.Rd
 
 
 

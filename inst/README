@@ -1,4 +1,4 @@
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 The package handles the pre-processing and normalization of Affymetrix 
 GeneChip expression arrays, including Exon arrays. It is an R wrapper
@@ -7,7 +7,7 @@ oriented framework developed at CERN. Thus, the prior installation of
 ROOT is a prerequisite for the usage of this package. ROOT can be
 downloaded from http://root.cern.ch. 
 
-Copyright (C) 2000-2012 Christian Stratowa, Vienna, Austria
+Copyright (C) 2000-2013 Christian Stratowa, Vienna, Austria
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,24 +26,23 @@ can also obtain it by writing to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA.
 
 
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 Content:
 
 I.   Install ROOT:
  Ia.  Install ROOT from source
- Ib.  Install ROOT for Windows XP
+ Ib.  Install ROOT for Windows XP, Vista, and Windows 7
  Ic.  Install ROOT for Mac OS X
  Id.  Notes on  ROOT
 II.  Install package 'xps':
  IIa.  Install 'xps' from source
  IIb.  Install 'xps' as binary
- IIc.  Install 'xps' for Windows XP
- IId.  Install 'xps' for Windows 7 (Vista)
- IIe.  Tested architectures
+ IIc.  Install 'xps' for Windows XP, Vista, and Windows 7
+ IId.  Tested architectures
 III. Learning how to use package 'xps'
 
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 I. Install ROOT:
 
@@ -108,19 +107,26 @@ I. Install ROOT:
               root
 
 
- Ib.  Install ROOT for Windows XP
+ Ib.  Install ROOT for Windows XP, Vista and Windows 7
 
-   For Windows XP users it is important to install the recommended binary 
-   version of ROOT, currently: root_v5.32.01.win32.vc90.msi
-   WindowsXP/NT/w2000 with VC++ 9.0, version 5.32/01
-   from: http://root.cern.ch/drupal/content/production-version-532
+   For Windows users it is important to install a binary version of ROOT
+   compiled with MinGW, currently version root_v5.32.03, from:
+   to be announced; 
+   currently, please contact me to get 'root-mingw-O2.7z' of size 37MB
 
    It is recommended to install ROOT in the default directory C:\root.
    Furthermore, it is necessary to set the environment variable ROOTSYS:
-   under Windows 2000/XP/2003 you can use `System' in the control panel or the
+   under Windows you can use `System' in the control panel or the
    properties of `My Computer' (under the `Advanced' tab).
    Simply add: ROOTSYS=C:\root\bin 
           (or: ROOTSYS=C:\root      if you add %ROOTSYS%\bin to PATH)
+
+   Note: 
+   The only possibility was to compile ROOT with MinGW, the compiler used by R.
+   Many people had tried to compile ROOT with MinGW, but have failed.
+   Luckily, Alexey Lebedev has recently succeeded to compile ROOT with MinGE, see:
+   http://root.cern.ch/phpBB3/viewtopic.php?f=3&t=15818&sid=5317206c83b9e2122ec5850720a65d05
+   He did create the binary 'root-mingw-O2.7z' mentioned above.
 
 
  Ic.  Install ROOT for Mac OS X
@@ -130,12 +136,13 @@ I. Install ROOT:
    root_v5.32.01.source.tar.gz
 
    For Snow Leopard there exist binaries for 32 bit and 64bit, however, since 
-   the xps binary for BioC 2.10 is built on Leopard for 32 bit you need to
+   the xps binary for BioC 2.12 is built on Leopard for 32 bit you need to
    install: root_v5.32.01.macosx106-i386-gcc-4.2.tar.gz
 
    Personally, I am a Mac user and do all my development on my MacBook Pro,
-   where I have installed WinXP and openSUSE 11.4 using VMware Fusion in order
-   to test xps for these architectures. I prefer to install root from source.
+   where I have installed WinXP, Win7 and openSUSE 11.4 using VMware Fusion 
+   in order to test xps for these architectures. 
+   I prefer to install root from source.
 
    On Leopard I install the 32 bit version:
       ./configure macosx 
@@ -184,9 +191,9 @@ I. Install ROOT:
    to be compiled with the same compiler version as ROOT itself.
 
    Furthermore, daily versions from ROOT can be downloaded via svn and
-   should work fine with 'xps', however, the current version 5.32/01 and
-   version 5.30/00 have been used to test 'xps' for both Linux openSUSE 11.4
-   and MacOS X and WinXP.
+   should work fine with 'xps', however, the current versions 5.32/01 
+   and 5.34/03 have been used to test 'xps' for MacOS X. On Linux I did
+   test only 5.32/01, and on Windows only the MinGW binary 5.32/03.
 
    Note 4: ROOT fails to compile
    Like R, the ROOT framework can be installed on many architectures, see
@@ -244,19 +251,19 @@ I. Install ROOT:
       http://root.cern.ch/drupal/content/users-guide
 
 
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 II.  Install package 'xps':
 
  IIa.  Install 'xps' from source
 
-   Currently, xps can be downloaded as gezipped source file "xps_1.16.0.tar.gz"
+   Currently, xps can be downloaded as gezipped source file "xps_1.20.0.tar.gz"
    for MacOS X and for Linux.
 
    It can be installed with:
-      R CMD INSTALL xps_1.16.0.tar.gz
+      R CMD INSTALL xps_1.20.0.tar.gz
    or e.g. on a Mac in the User library:
-      R CMD INSTALL -l ~/Library/R/library xps_1.16.0.tar.gz
+      R CMD INSTALL -l ~/Library/R/library xps_1.20.0.tar.gz
 
    However, the recommended way to install packages from source is:
       source("http://bioconductor.org/biocLite.R")
@@ -271,15 +278,15 @@ II.  Install package 'xps':
       biocLite("xps")
 
    Important note: 
-   Please note that Bioconductor has built the xps binaries for release BioC 2.10
+   Please note that Bioconductor has built the xps binaries for release BioC 2.12
    using ROOT version root_v5.32.01. Thus it is absolutely essential to install
    this ROOT version first, otherwise calling xps will result in an error message.
    You can always download any version of root from: ftp://root.cern.ch/root
 
 
- IIc.  Install 'xps' for Windows XP
+ IIc.  Install 'xps' for Windows XP, Vista, and Windows 7
 
-   The Windows binary of xps could be downloaded from the Bioconductor web site, and
+   The Windows binary of xps can be downloaded from the Bioconductor web site, and
    installed using: biocLite("xps")
 
    If you run xps from Rterm check if `System' in the control panel does contain the 
@@ -287,59 +294,39 @@ II.  Install package 'xps':
       PATH:   C:\Programs\R\R-2.13.0\bin;%ROOTSYS%\bin;
       ROOTSYS:C:\root
 
-   Note: Starting with BioC 2.9 the main build machine is a Windows Server 2008 R2
-         Enterprise (64-bit), which is not able to create Windows XP binaries of xps. 
-         Thus a downloadable binary for Windows XP does no longer exist.
-         The only option is to install xps for Windows XP from source. 
-         Alternatively, I can always send you the xps binary upon request. 
-
    If you want to install xps from source, then you need to do the following:
-   You can still install the binaries for ROOT and R but in addition you need 
-   to install the following:
-   - Rtools.exe from: http://www.murdoch-sutherland.com/Rtools/
-   - Visual C++: you can download the image "VS2008ExpressENUX1397868.iso" for the
-     current version "Visual Studio 2008 Express" from the Microsoft web site.
+   You can still install the MinGW binary for ROOT and the R binary but in addition
+   you need to install the following:
+   - Rtools216.exe from: http://www.murdoch-sutherland.com/Rtools/
+   - ActivePerl-5.16.2.1602-MSWin32-x86-296513.msi
+   - basic-miktex-2.9.4521.exe
 
-   Before building xps from source you need to start the VC++ batch file provided
-   by Microsoft:
-      C:\Program Files (x86)\Microsoft Visual Studio 9\VC\vcvarsall.bat (or a similar path).
    Then you can install xps from source as usual:
-      R CMD INSTALL xps_1.16.0.tar.gz
+      R CMD INSTALL xps_1.20.0.tar.gz
 
 
- IId.  Install 'xps' for Windows 7 (Vista)
-
-   I could install ROOT on Windows 7 (32bit) and could compile xps w/o problems.
-   Furthermore, I could load library(xps). However, using any xps method will result
-   in a bus error. 
-
-   Thus, I am sorry to say that xps does not work with Windows 7. I would like to 
-   support Windows 7 but it seems not to be possible, because it seems that R does 
-   not support DLLs written in VC++ which depend on other DLLs written in VC++, see:
-   https://www.stat.math.ethz.ch/pipermail/bioconductor/2009-December/030783.html
-
-   The only possibility would be to compile ROOT with MinGW, the compiler used by R.
-   Many people have tried to compile ROOT with MinGW, but nobody has succeeded yet. 
-
-
- IIe.  Tested architectures
+ IId.  Tested architectures
 
    Currently, package 'xps' has been built (with R CMD INSTALL) and
    passed R CMD check with no errors and no warnings on the following computers:
+   1. MacBook Pro Core i7 2.4GHz with 8 GB RAM running MacOS X 10.7.5
+      R versions tested: R-2.14.x, R-2.15.2
    1. MacBook Pro Core 2 Duo 2GHz with 2 GB RAM running MacOS X 10.6.3 and 10.4.11
       R versions tested: R-2.7.x, R-2.8.x, R-2.9.x, R-2.10.x, R-2.11.x, R-2.12.x,
-      R-2.13.x, R-2.14.x, R-2.16.x
+      R-2.13.x, R-2.14.x
    2. PowerBook Titanium G4 550MHz with 1 GB RAM running MacOS X 10.4.9 and 10.4.11
       R versions tested: R-2.5.0, R-2.6.0, R-2.8.0
    3. HP Compaq nx6110 Intel Centrino 1.4 GHz with 512 MB RAM with Fedora Core 4
       R versions tested: R-2.4.1, R-2.6.0, R-2.7.0, R-2.7.1
    4. HP Compaq nx6110 Intel Centrino 1.4 GHz with 512 MB RAM with Windows XP
       R versions tested: R-2.6.2, R-2.7.0, R-2.7.1
-   5. VMware Fusion on MacBook Pro running Windows XP or openSUSE 11.3
+   5. VMware Fusion on MacBook Pro Core Duo running Windows XP or openSUSE 11.3
       R versions tested: R-2.9.x, R-2.10.x, R-2.11.x, R-2.12.x, R-2.13.x, R-2.14.x
+   6. VMware Fusion on MacBook Pro Core i7 running Windows XP or Windows 7
+      R versions tested: R-2.15.2
       
 
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 III. Learning how to use package 'xps'
 
@@ -382,6 +369,4 @@ III. Learning how to use package 'xps'
             too large; you need at least 1GB RAM.
 
 
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
