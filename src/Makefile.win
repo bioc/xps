@@ -75,68 +75,68 @@ xps.dll:  $(MYOBJ)
 	$(LINK) -o xps.dll $(SOFLAGS) $(LDFLAGS) *.o $(GLIBS)
 	
 TMLMath.o: TMLMath.h TMLMath.cxx
-	$(CL) -I${ROOTSYS_UNIX}/include -include w32pragma.h -O2 -DMSVC -DWIN32 -c TMLMath.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -include w32pragma.h -O2 -DWIN32 -c TMLMath.cxx
 
 TStat.o: TStat.h TStat.cxx
-	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c TStat.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DWIN32 -c TStat.cxx
 	
 StatUtils.o: StatUtils.h StatUtils.cxx
-	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c StatUtils.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DWIN32 -c StatUtils.cxx
 	
 XPSBase.o: XPSBase.h XPSBase.cxx
-	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSBase.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DWIN32 -c XPSBase.cxx
 
 XPSUtils.o: XPSUtils.h XPSUtils.cxx
-	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSUtils.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DWIN32 -c XPSUtils.cxx
 	
 XPSSchemes.o: XPSSchemes.h XPSSchemes.cxx
-	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSSchemes.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DWIN32 -c XPSSchemes.cxx
 	
 XPSDataTypes.o: XPSDataTypes.h XPSDataTypes.cxx
-	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSDataTypes.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DWIN32 -c XPSDataTypes.cxx
 
 XPSProjectHandler.o: XPSProjectHandler.h XPSProjectHandler.cxx
-	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSProjectHandler.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DWIN32 -c XPSProjectHandler.cxx
 	
 XPSData.o: XPSData.h XPSData.cxx
-	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSData.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DWIN32 -c XPSData.cxx
 	
 XPSProcessing.o: XPSProcessing.h XPSProcessing.cxx
-	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSProcessing.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DWIN32 -c XPSProcessing.cxx
 
 XPSHybridizer.o: XPSHybridizer.h XPSHybridizer.cxx
-	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSHybridizer.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DWIN32 -c XPSHybridizer.cxx
 	
 XPSSelector.o: XPSSelector.h XPSSelector.cxx
-	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSSelector.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DWIN32 -c XPSSelector.cxx
 	
 XPSNormalizer.o: XPSNormalizer.h XPSNormalizer.cxx
-	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSNormalizer.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DWIN32 -c XPSNormalizer.cxx
 
 XPSPreProcessing.o: XPSPreProcessing.h XPSPreProcessing.cxx
-	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSPreProcessing.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DWIN32 -c XPSPreProcessing.cxx
 	
 XPSNormation.o: XPSNormation.h XPSNormation.cxx
-	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSNormation.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DWIN32 -c XPSNormation.cxx
 	
 XPSFilter.o: XPSFilter.h XPSFilter.cxx
-	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSFilter.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DWIN32 -c XPSFilter.cxx
 
 XPSAnalyzer.o: XPSAnalyzer.h XPSAnalyzer.cxx
-	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSAnalyzer.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DWIN32 -c XPSAnalyzer.cxx
 	
 XPSAnalysis.o: XPSAnalysis.h XPSAnalysis.cxx
-	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c XPSAnalysis.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DWIN32 -c XPSAnalysis.cxx
 
 rwrapper.o: rwrapper.h rwrapper.cxx
-	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DMSVC -DWIN32 -c rwrapper.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -FIw32pragma.h   -O3 -DWIN32 -c rwrapper.cxx
 	
 xpsDict.cxx: $(MYHDR) xpsLinkDef.h
 	@echo "Generating dictionary $@..."
 	@rootcint -f $@ -c $(MYHDR) xpsLinkDef.h
 	
 xpsDict.o: xpsDict.cxx xpsDict.h
-	$(CL) -I${ROOTSYS_UNIX}/include -include w32pragma.h -O3 -DMSVC -DWIN32 -c xpsDict.cxx
+	$(CL) -I${ROOTSYS_UNIX}/include -include w32pragma.h -O3 -DWIN32 -c xpsDict.cxx
 
 clean:
 #	rm -f $(MYOBJ) *.a *.d *.rc 

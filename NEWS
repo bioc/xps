@@ -2,6 +2,9 @@
 		CHANGES IN R VERSION 2.16.X (or 3.00.X?)
 
 
+VERSION xps-1.19.3
+    o update Makefile.win
+
 VERSION xps-1.19.2
     o update configure.win and Makefile.win for ROOT compiled with MinGW; xps works now on Windows 7
 
