@@ -7,7 +7,6 @@
 #LINK          = "${MSVSPATH}/link"
 
 ROOTSYS_UNIX=$(shell echo "$(ROOTSYS)" | sed -e 's/\\/\//g')
-#ROOTSYS_UNIX = C:/root
 
 CL = g++ -pipe -mwindows 
 LINK = g++
@@ -134,8 +133,7 @@ rwrapper.o: rwrapper.h rwrapper.cxx
 	
 xpsDict.cxx: $(MYHDR) xpsLinkDef.h
 	@echo "Generating dictionary $@..."
-#	@rootcint -f $@ -c $(MYHDR) xpsLinkDef.h
-	@$(ROOTSYS_UNIX)/bin/rootcint -f $@ -c $(MYHDR) xpsLinkDef.h
+	@rootcint -f $@ -c $(MYHDR) xpsLinkDef.h
 
 	
 xpsDict.o: xpsDict.cxx xpsDict.h
