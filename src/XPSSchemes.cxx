@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 12/13/2012
+// File created: 05/18/2002                          last modified: 02/22/2013
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6,7 +6,7 @@
  *********************  XPS - eXpression Profiling System  *********************
  *******************************************************************************
  *
- *  Copyright (C) 2000-2010 Dr. Christian Stratowa
+ *  Copyright (C) 2000-2013 Dr. Christian Stratowa
  *
  *  Written by: Christian Stratowa, Vienna, Austria <cstrato@aon.at>
  *
@@ -4138,14 +4138,14 @@ Int_t XGeneChip::ImportTransAnnotation(ifstream &input, Option_t *option,
       if (idx == fNGenes) {
          cout << "   Number of annotated transcripts is <" << idx << ">." << endl;
       } else {
-         cout << "Note: Number of annotated transcripts <" << idx  
+         cout << "   Note: Number of annotated transcripts <" << idx  
               << "> is not equal to number of genes <" << fNGenes << ">" << endl;
       }//if
    }//if
 
    if (XManager::fgVerbose) {
       if (namb >0) {
-         cout << "Note: Number of transcripts with ambigous annotation is <"
+         cout << "   Note: Number of transcripts with ambigous annotation is <"
               << namb  << ">" << endl;
       }//if
    }//if
@@ -5371,7 +5371,7 @@ Int_t XGenomeChip::ReadData(ifstream &input, Option_t *option,
 // Check if number of annotated probesets is equal to probeset_count
    if (fNProbesets != size) {
       if (XManager::fgVerbose) {
-         cout << "Note: Number of annotated probesets <" << fNProbesets  
+         cout << "   Note: Number of annotated probesets <" << fNProbesets  
               << "> is not equal to number of probesets <" << size << ">." << endl;
       }//if
       // set final number of probesets
@@ -6254,13 +6254,20 @@ Int_t XGenomeChip::ImportTransAnnotation(ifstream &input, Option_t *option,
    lib_set_version = strtok((&((char*)nextline.c_str())[18]), sep);
 
 // Check for line "#%genome-species"
+   Bool_t hasSpecies = kTRUE;
    input.clear();
    input.seekg(position, ios::beg);
    while (nextline.compare(0, 16, "#%genome-species") != 0) {
       std::getline(input, nextline, delim);
-      if (input.eof()) return errPrematureEOF;
+//      if (input.eof()) return errPrematureEOF;
+      if (input.eof()) {hasSpecies = kFALSE; break;}
    }//while
-   genome_species = strtok((&((char*)nextline.c_str())[17]), sep);
+   if (hasSpecies == kTRUE) {
+      genome_species = strtok((&((char*)nextline.c_str())[17]), sep);
+   } else {
+      cout << "   Note: The following header line is missing: %genome-species=" << endl;
+      genome_species = "NA";
+   }//if
 
 // Check for line "#%genome-version"
    input.clear();
@@ -8503,7 +8510,7 @@ Int_t XExonChip::ReadData(ifstream &input, Option_t *option,
 // Check if total number of exons is equal to fNExons (determined in ImportExonAnnotation)
    if (exncount != fNExons) {
       if (XManager::fgVerbose) {
-         cout << "Note: Number of exons imported <" << exncount  
+         cout << "   Note: Number of exons imported <" << exncount  
               << "> is not equal to number of annotated exons <" << fNExons << ">."
               << endl;
       }//if
@@ -8861,13 +8868,20 @@ Int_t XExonChip::ImportTransAnnotation(ifstream &input, Option_t *option,
    lib_set_version = strtok((&((char*)nextline.c_str())[18]), sep);
 
 // Check for line "#%genome-species"
+   Bool_t hasSpecies = kTRUE;
    input.clear();
    input.seekg(position, ios::beg);
    while (nextline.compare(0, 16, "#%genome-species") != 0) {
       std::getline(input, nextline, delim);
-      if (input.eof()) return errPrematureEOF;
+//      if (input.eof()) return errPrematureEOF;
+      if (input.eof()) {hasSpecies = kFALSE; break;}
    }//while
-   genome_species = strtok((&((char*)nextline.c_str())[17]), sep);
+   if (hasSpecies == kTRUE) {
+      genome_species = strtok((&((char*)nextline.c_str())[17]), sep);
+   } else {
+      cout << "   Note: The following header line is missing: %genome-species=" << endl;
+      genome_species = "NA";
+   }//if
 
 // Check for line "#%genome-version"
    input.clear();
@@ -9353,13 +9367,20 @@ Int_t XExonChip::ImportProbesetAnnotation(ifstream &input, Option_t *option,
    lib_set_version = strtok(&nextline[18], sep);
 
 // Check for line "#%genome-species"
+   Bool_t hasSpecies = kTRUE;
    input.clear();
    input.seekg(position, ios::beg);
    while (strncmp("#%genome-species", nextline, 16) != 0) {
       input.getline(nextline, kAnnBuf, delim);
-      if (input.eof()) return errPrematureEOF;
+//      if (input.eof()) return errPrematureEOF;
+      if (input.eof()) {hasSpecies = kFALSE; break;}
    }//while
-   genome_species = strtok(&nextline[17], sep);
+   if (hasSpecies == kTRUE) {
+      genome_species = strtok(&nextline[17], sep);
+   } else {
+      cout << "   Note: The following header line is missing: %genome-species=" << endl;
+      genome_species = "NA";
+   }//if
 
 // Check for line "#%genome-version"
    input.clear();
