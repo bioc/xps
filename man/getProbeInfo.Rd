@@ -26,6 +26,6 @@ a \code{list} with parameters:
 }
 \author{Christian Stratowa}
 \examples{
-getProbeInfo(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+getProbeInfo(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
 }
 \keyword{manip}

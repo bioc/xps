@@ -28,7 +28,7 @@ sufficient RAM.
 \seealso{\code{\link{import.expr.scheme}}, \code{\link{import.exon.scheme}}, \code{\link{SchemeTreeSet}}}
 \examples{
 ## create class SchemeSet to access the ROOT scheme file for the Test3 GeneChip
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
 str(scheme.test3)
 
 \dontrun{

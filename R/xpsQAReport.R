@@ -38,7 +38,7 @@ function(xps.data,
    }#if
 
    ## directory containing parts of QAReport.Rnw
-   indir <- file.path(.path.package("xps"), "QC");
+   indir <- file.path(path.package("xps"), "QC");
 
    ## create directory containing final QAReport.Rnw
    if (file.exists(outdir)) {

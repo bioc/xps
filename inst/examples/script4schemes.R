@@ -674,7 +674,7 @@ scheme.moex10stv1.na31 <- import.exon.scheme("moex10stv1",filedir = file.path(sc
                           file.path(anndir, "Version10Sep", "MoEx-1_0-st-v1.na31.mm9.transcript.csv"))
 
 # original annotation files from 08/30/10: need to delete control->affx which are neg_control
-source(paste(.path.package("xps"),"examples/updateAnnotation.R",sep="/"))
+source(paste(path.package("xps"),"examples/updateAnnotation.R",sep="/"))
 deleteNegControlFromAffxControl("MoEx-1_0-st-v1.na31.mm9.probeset.csv", "MoEx-1_0-st-v1.na31.mm9.probeset.fixed.csv", eol="\n")
 deleteNegControlFromAffxControl("MoEx-1_0-st-v1.na31.mm9.transcript.csv", "MoEx-1_0-st-v1.na31.mm9.transcript.fixed.csv", eol="\n")
 # use fixed annotation files
@@ -1195,7 +1195,7 @@ scheme.mogene10stv1r3.na27 <- import.genome.scheme("Scheme_MoGene10stv1r3_na27",
 # MoGene-1_0-st-v1.r4: used as exon array
 # need to fix problem with annotation files first, see:
 # https://www.stat.math.ethz.ch/pipermail/bioconductor/2009-August/029049.html
-source(paste(.path.package("xps"),"examples/updateAnnotation.R",sep="/"))
+source(paste(path.package("xps"),"examples/updateAnnotation.R",sep="/"))
 updateAnnotation("MoGene-1_0-st-v1.na29.mm9.probeset.csv", "MoGene-1_0-st-v1.na29.mm9.probeset.fixed.csv", probeset="10338063", skip=18, eol="\n")
 updateAnnotation("MoGene-1_0-st-v1.na29.mm9.transcript.csv", "MoGene-1_0-st-v1.na29.mm9.transcript.fixed.csv", probeset="10338063", skip=19, eol="\n")
 
@@ -1227,7 +1227,7 @@ scheme.ragene10stv1r3.na25 <- import.genome.scheme("Scheme_RaGene10stv1r3_na25",
 # RaGene-1_0-st-v1.r4: used as exon array
 # need to fix problem with annotation files first, see:
 # https://www.stat.math.ethz.ch/pipermail/bioconductor/2009-August/029049.html
-source(paste(.path.package("xps"),"examples/updateAnnotation.R",sep="/"))
+source(paste(path.package("xps"),"examples/updateAnnotation.R",sep="/"))
 updateAnnotation("RaGene-1_0-st-v1.na29.rn4.probeset.csv", "RaGene-1_0-st-v1.na29.rn4.probeset.fixed.csv", probeset="10700063", skip=18, eol="\n")
 updateAnnotation("RaGene-1_0-st-v1.na29.rn4.transcript.csv", "RaGene-1_0-st-v1.na29.rn4.transcript.fixed.csv", probeset="10700063", skip=19, eol="\n")
 

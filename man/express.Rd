@@ -94,8 +94,8 @@ xpsPreprocess(object, ...)
 \seealso{\code{\link{bgcorrect}}, \code{\link{normalize}}, \code{\link{summarize}}}
 \examples{
 ## load existing ROOT scheme file and ROOT data file
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
-data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+data.test3 <- root.data(scheme.test3, paste(path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
 
 ## compute rma with a single call to express()
 expr.rma <- express(data.test3,"tmp_Test3Exprs",filedir=getwd(),tmpdir="",update=FALSE,

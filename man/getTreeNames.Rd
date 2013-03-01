@@ -24,8 +24,8 @@ A \code{vector} of tree names. For \code{gettitle=TRUE} a \code{vector} of tree 
 }
 \author{Christian Stratowa}
 \examples{
-getTreeNames(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
-getTreeNames(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"), "scm")
-getTreeNames(paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
+getTreeNames(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+getTreeNames(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"), "scm")
+getTreeNames(paste(path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
 }
 \keyword{manip}

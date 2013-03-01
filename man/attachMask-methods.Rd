@@ -36,7 +36,7 @@ removeMask(object)
 \seealso{\code{\link{import.expr.scheme}}, \code{\link{import.exon.scheme}}}
 \examples{
 ## load existing ROOT scheme file
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
 dim(chipMask(scheme.test3))
 
 scheme.test3 <- attachMask(scheme.test3)

@@ -69,7 +69,7 @@
 \seealso{\code{\link{attachMask}}}
 \examples{
 ## load existing ROOT scheme file
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
 dim(chipProbe(scheme.test3))
 
 scheme.test3 <- attachProbe(scheme.test3, varlist="fSequence:fNumberGC")

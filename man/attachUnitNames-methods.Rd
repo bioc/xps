@@ -43,7 +43,7 @@
 \seealso{\code{\link{attachMask}}, \code{\link{removeMask}}}
 \examples{
 ## first, load ROOT scheme file
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
 
 ## attach unitname
 scheme.test3 <- attachUnitNames(scheme.test3)

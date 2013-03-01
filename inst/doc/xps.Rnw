@@ -123,13 +123,13 @@ library(xps)
 
 For this demonstration {\it CEL} files are located in a common directory, in our case in:
 <<>>=
-celdir <- file.path(.path.package("xps"), "raw")
+celdir <- file.path(path.package("xps"), "raw")
 @ 
 
 Since our {\it CEL} files were created for GeneChip {\it Test3.CDF}, we need to load
 the corresponding \ROOT\ \Rclass{scheme} file first:
 <<>>=
-scheme.test3 <- root.scheme(file.path(.path.package("xps"), "schemes", "SchemeTest3.root"))
+scheme.test3 <- root.scheme(file.path(path.package("xps"), "schemes", "SchemeTest3.root"))
 @ 
 
 Now we can import the {\it CEL} files, in our case a subset first:
@@ -277,8 +277,8 @@ When we start a new \Robject{R}-session, it is necessary to load the \ROOT\ \Rcl
 and \ROOT\ \Rclass{data} files first:
 <<results=hide>>=
 library(xps)
-scheme.test3 <- root.scheme(file.path(.path.package("xps"), "schemes", "SchemeTest3.root"))
-data.test3 <- root.data(scheme.test3, file.path(.path.package("xps"),"rootdata", "DataTest3_cel.root"))
+scheme.test3 <- root.scheme(file.path(path.package("xps"), "schemes", "SchemeTest3.root"))
+data.test3 <- root.data(scheme.test3, file.path(path.package("xps"),"rootdata", "DataTest3_cel.root"))
 @
 This step is not necessary when objects \Rclass{scheme.test3} and \Rclass{data.test3} are 
 already saved in an \Robject{R}-session. \\
@@ -771,8 +771,8 @@ str(prefltr)
 This filter is then applied to expression data \Rclass{data.rma} created earlier, 
 using function \Rfunction{prefilter} with parameter \Rcode{minfilters=2}:
 <<echo=FALSE>>=
-data.rma@rootfile <- paste(.path.package("xps"),"rootdata/tmp_Test3RMA.root",sep="/")
-data.rma@filedir  <- paste(.path.package("xps"),"rootdata",sep="/")
+data.rma@rootfile <- paste(path.package("xps"),"rootdata/tmp_Test3RMA.root",sep="/")
+data.rma@filedir  <- paste(path.package("xps"),"rootdata",sep="/")
 @
 
 <<results=hide>>=
@@ -824,8 +824,8 @@ This filter is then applied to expression data \Rclass{data.rma} using function
 two groups. Furthermore, since we want to use only the pre--selected genes from 
 \Rfunction{prefilter} we need to set \Rcode{xps.fltr=rma.pfr}:
 <<echo=FALSE>>=
-data.rma@rootfile <- paste(.path.package("xps"),"rootdata/tmp_Test3RMA.root",sep="/")
-data.rma@filedir  <- paste(.path.package("xps"),"rootdata",sep="/")
+data.rma@rootfile <- paste(path.package("xps"),"rootdata/tmp_Test3RMA.root",sep="/")
+data.rma@filedir  <- paste(path.package("xps"),"rootdata",sep="/")
 @
 
 <<results=hide>>=

@@ -22,8 +22,8 @@ a \code{list} with parameters:
 \seealso{\code{\link{getChipName}}, \code{\link{getChipType}}}
 \examples{
 ## correct usage
-getNameType(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+getNameType(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
 ## incorrect usage
-getNameType(paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
+getNameType(paste(path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
 }
 \keyword{manip}

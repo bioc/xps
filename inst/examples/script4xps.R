@@ -175,11 +175,11 @@ library(xps)
 
 ### define directories:
 # directory containing Test3 CEL files
-celdir <- paste(.path.package("xps"),"raw",sep="/")
+celdir <- paste(path.package("xps"),"raw",sep="/")
 
 ### import raw data
 # first, import ROOT scheme file
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
 # import CEL files
 data.test3 <- import.data(scheme.test3, "DataTest3", celdir=celdir)
 str(data.test3)
@@ -225,10 +225,10 @@ str(subdata.test3)
 library(xps)
 
 ### 1.load existing ROOT scheme file
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
 
 ### 2.load existing ROOT data file
-rootfile <- paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/")
+rootfile <- paste(path.package("xps"),"rootdata/DataTest3_cel.root",sep="/")
 data.test3 <- root.data(scheme.test3, rootfile=rootfile)
 
 # alternatively load only subset from a ROOT data file into a different R session
@@ -269,8 +269,8 @@ export(data.test3, treename="TestB1", treetype="cel", varlist = "*", outfile="Te
 export(data.test3, treename=c("TestB1","TestA2"), treetype="cel", varlist = "fInten", outfile="TestB1A2_int_cel.txt")
 
 # export data directly from root file
-schemefile <- paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/")
-datafile   <- paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/")
+schemefile <- paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/")
+datafile   <- paste(path.package("xps"),"rootdata/DataTest3_cel.root",sep="/")
 export.root(datafile, schemefile, "DataSet", "*", "cel", "*", "DataOutFile")
 
 # inspect ROOT file with ROOT browser (to quit ROOT, type ".q")
@@ -567,8 +567,8 @@ plotBoxplot(data.genome, which="userinfo:fIntenQuant", dev="png", w=600, h=480, 
 library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
-data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+data.test3 <- root.data(scheme.test3, paste(path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
 
 
 ### preprocess raw data ###
@@ -1140,8 +1140,8 @@ boxplot(data.mas5)
 library(xps)
 
 ### first, load ROOT scheme file and ROOT data file
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
-data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+data.test3 <- root.data(scheme.test3, paste(path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
 
 ### second, preprocess raw data if not already done
 # e.g. RMA and MAS5 detection call
@@ -1206,8 +1206,8 @@ library(xps)
 datdir <- getwd()
 
 ### first, load ROOT scheme file and ROOT data file
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
-data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+data.test3 <- root.data(scheme.test3, paste(path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
 
 ### 1.step: background - rma
 data.bg.rma <- bgcorrect.rma(data.test3,"Test3RMABgrd",filedir=datdir)

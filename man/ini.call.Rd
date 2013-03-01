@@ -138,8 +138,8 @@ Exon levels can also be combined, with following combinations being most useful:
 \seealso{\code{\link{farms}}, \code{\link{mas5.call}}}
 \examples{
 ## first, load ROOT scheme file and ROOT data file
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
-data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+data.test3 <- root.data(scheme.test3, paste(path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
 
 ## I/NI call
 call.ini <- ini.call(data.test3,"tmp_Test3INI",verbose=FALSE)

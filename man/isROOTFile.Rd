@@ -16,6 +16,6 @@ isROOTFile(filename)
 \seealso{\code{\link{existsROOTFile}}}
 \author{Christian Stratowa}
 \examples{
-isROOTFile(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+isROOTFile(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
 }
 \keyword{manip}

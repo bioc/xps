@@ -20,8 +20,8 @@ a \code{character} with the chip type, either \sQuote{GeneChip} or \sQuote{ExonC
 \seealso{\code{\link{getChipName}}, \code{\link{getNameType}}}
 \examples{
 ## correct usage
-getChipType(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+getChipType(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
 ## incorrect usage
-getChipType(paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
+getChipType(paste(path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
 }
 \keyword{manip}

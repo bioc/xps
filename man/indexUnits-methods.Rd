@@ -51,8 +51,8 @@
 \seealso{\code{\link{unitID2transcriptID}}, \code{\link{unitID2probesetID}}}
 \examples{
 ## first, load ROOT scheme file and ROOT data file
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
-data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+data.test3 <- root.data(scheme.test3, paste(path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
 
 ## dataXY not attached
 id <- indexUnits(data.test3, which="pm", unitID=c(34,36,122))

@@ -72,12 +72,12 @@ import.data(xps.scheme,
 \seealso{\code{\link{root.data}}, \code{\link{DataTreeSet}}}
 \examples{
 ## get scheme and import CEL-files from package
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
-data.test3 <- import.data(scheme.test3,"tmp_data_test3",celdir=paste(.path.package("xps"),"raw",sep="/"))
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+data.test3 <- import.data(scheme.test3,"tmp_data_test3",celdir=paste(path.package("xps"),"raw",sep="/"))
 unlist(treeNames(data.test3))
 
 ## import only subset of CEL-files
-subdata.test3 <- import.data(scheme.test3,"tmpdt_data_test3",celdir=paste(.path.package("xps"),"raw",sep="/"),
+subdata.test3 <- import.data(scheme.test3,"tmpdt_data_test3",celdir=paste(path.package("xps"),"raw",sep="/"),
                  celfiles=c("TestA1.CEL","TestB2.CEL"),verbose=FALSE)
 unlist(treeNames(subdata.test3))
 }

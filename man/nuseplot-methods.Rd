@@ -52,8 +52,8 @@ nuseplot(x,
 \seealso{\code{\link{plotNUSE}}, \code{\link{rleplot}}}
 \examples{
 # load existing ROOT scheme file and ROOT expression file for rma
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
-data.rma <- root.expr(scheme.test3, paste(.path.package("xps"),"rootdata/tmp_Test3RMA.root",sep="/"), "mdp")
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+data.rma <- root.expr(scheme.test3, paste(path.package("xps"),"rootdata/tmp_Test3RMA.root",sep="/"), "mdp")
 
 if (interactive()) {
 nuseplot(data.rma)

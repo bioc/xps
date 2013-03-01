@@ -20,8 +20,8 @@ a \code{character} with the chip name.
 \seealso{\code{\link{getChipType}}, \code{\link{getNameType}}}
 \examples{
 ## correct usage
-getChipName(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+getChipName(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
 ## incorrect usage
-getChipName(paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
+getChipName(paste(path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
 }
 \keyword{manip}

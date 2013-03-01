@@ -2,6 +2,9 @@
 		CHANGES IN R VERSION 2.16.X (or 3.00.X)
 
 
+VERSION xps-1.19.8
+    o replace .path.package() with path.package()
+
 VERSION xps-1.19.7
     o update XPSSchemes.cxx to replace error with warning for missing annotation header '%genome-species'
 

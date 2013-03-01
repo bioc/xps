@@ -31,8 +31,8 @@ To get the names of all trees stored in separate \code{rootfiles} you can call f
 \seealso{\code{\link{root.data}}, \code{\link{DataTreeSet}}}
 \examples{
 ## get scheme and import CEL-files from package
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
-data.test3 <- import.data(scheme.test3,"tmp_datatest3",celdir=paste(.path.package("xps"),"raw",sep="/"),verbose=FALSE)
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+data.test3 <- import.data(scheme.test3,"tmp_datatest3",celdir=paste(path.package("xps"),"raw",sep="/"),verbose=FALSE)
 
 ## get subset of CEL-files
 subdataA <- root.data(scheme.test3,"tmp_datatest3_cel.root", celnames=c("TestA1.cel","TestA2.cel"))

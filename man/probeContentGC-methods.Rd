@@ -29,7 +29,7 @@
 \seealso{\code{\link{probeSequence}}}
 \examples{
 ## load ROOT scheme file
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
 scheme.test3 <- attachProbeContentGC(scheme.test3)
 
 ## get UNIT_ID for probeset IDs

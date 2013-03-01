@@ -23,6 +23,6 @@ existsROOTFile(filename, tmp.rm = TRUE)
 \seealso{\code{\link{isROOTFile}}}
 \author{Christian Stratowa}
 \examples{
-existsROOTFile(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+existsROOTFile(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
 }
 \keyword{manip}

@@ -53,8 +53,8 @@ rleplot(x,
 \seealso{\code{\link{plotRLE}}, \code{\link{mboxplot}}, \code{\link{nuseplot}}}
 \examples{
 # load existing ROOT scheme file and ROOT expression file for rma
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
-data.rma <- root.expr(scheme.test3, paste(.path.package("xps"),"rootdata/tmp_Test3RMA.root",sep="/"), "mdp")
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+data.rma <- root.expr(scheme.test3, paste(path.package("xps"),"rootdata/tmp_Test3RMA.root",sep="/"), "mdp")
 
 if (interactive()) {
 rleplot(data.rma)

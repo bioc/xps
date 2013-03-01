@@ -32,8 +32,8 @@ to avoid creating a new \code{\link{ROOT}} data file for every R session.
 \seealso{\code{\link{import.data}}, \code{\link{DataTreeSet}}}
 \examples{
 ## get scheme and import CEL-files from package
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
-data.test3 <- import.data(scheme.test3,"tmp_datatest3",celdir=paste(.path.package("xps"),"raw",sep="/"),verbose=FALSE)
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+data.test3 <- import.data(scheme.test3,"tmp_datatest3",celdir=paste(path.package("xps"),"raw",sep="/"),verbose=FALSE)
 
 ## use subset of CEL-files
 subdata.test3 <- root.data(scheme.test3,"tmp_datatest3_cel.root", celnames=c("TestA1.cel","TestB2.cel"))

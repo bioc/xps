@@ -90,8 +90,8 @@ current R session as \code{data.frame}. Otherwise, \code{NULL} will be returned.
 \seealso{\code{\link{export-methods}}}
 \examples{
 ## load existing ROOT scheme file and ROOT data file
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
-data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+data.test3 <- root.data(scheme.test3, paste(path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
 
 ## export as table only
 export(scheme.test3, treetype="idx", outfile="Test3_idx.txt",verbose=FALSE)

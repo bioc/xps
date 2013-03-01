@@ -54,8 +54,8 @@ i.e. \code{which} is either \dQuote{genomic} or \dQuote{antigenomic}.
 \seealso{\code{\link{validData}}}
 \examples{
 ## load existing ROOT scheme file and ROOT data file
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
-data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+data.test3 <- root.data(scheme.test3, paste(path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
 
 ## need to attach scheme mask and probe intensities
 data.test3 <- attachMask(data.test3)

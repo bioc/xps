@@ -45,8 +45,8 @@ boxplot(x, which = "", size = 0, transfo = log2, range = 0, names = "namepart", 
 \seealso{\code{\link{plotBoxplot}}, \code{\link[graphics]{boxplot}}}
 \examples{
 ## load existing ROOT scheme file and ROOT data file
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
-data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+data.test3 <- root.data(scheme.test3, paste(path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
 
 ## need to attach scheme mask and probe intensities only if "userinfo" is not used
 data.test3 <- attachMask(data.test3)

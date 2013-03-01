@@ -52,8 +52,8 @@ probesetplot(x,
 \seealso{\code{\link{plotPM}}, \code{\link{boxplot}}, \code{\link{barplot}}}
 \examples{
 ## load existing ROOT scheme file and ROOT data file
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
-data.test3 <- root.data(scheme.test3, paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+data.test3 <- root.data(scheme.test3, paste(path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
 
 ## need to attach probe intensities and optionally unit names
 data.test3 <- attachUnitNames(data.test3)

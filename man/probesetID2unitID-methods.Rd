@@ -50,7 +50,7 @@
 \seealso{\code{\link{unitID2transcriptID}}, \code{\link{unitID2probesetID}}}
 \examples{
 ## load ROOT scheme file
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
 
 ## unitNames not attached
 id <- unitID2probesetID(scheme.test3, c(2,34,229))

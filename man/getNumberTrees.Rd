@@ -23,7 +23,7 @@ Number of trees.
 }
 \author{Christian Stratowa}
 \examples{
-getNumberTrees(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
-getNumberTrees(paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
+getNumberTrees(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+getNumberTrees(paste(path.package("xps"),"rootdata/DataTest3_cel.root",sep="/"))
 }
 \keyword{manip}

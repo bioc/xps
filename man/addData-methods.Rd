@@ -33,14 +33,14 @@ addData(object, celdir = NULL, celfiles = "", celnames = NULL, project = NULL, v
 \seealso{\code{\link{import.data}}, \code{\link{root.data}}}
 \examples{
 ## get scheme and import subset of CEL-files from package
-scheme.test3 <- root.scheme(paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
-data.test3 <- import.data(scheme.test3,"tmp_test3",celdir=paste(.path.package("xps"),"raw",sep="/"),
+scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))
+data.test3 <- import.data(scheme.test3,"tmp_test3",celdir=paste(path.package("xps"),"raw",sep="/"),
               celfiles=c("TestA1.CEL","TestB2.CEL"),verbose=FALSE)
 
 unlist(treeNames(data.test3))
 
 ## add further subset of CEL-files
-data.test3 <- addData(data.test3,celdir=paste(.path.package("xps"),"raw",sep="/"),
+data.test3 <- addData(data.test3,celdir=paste(path.package("xps"),"raw",sep="/"),
               celfiles=c("TestA2.CEL","TestB1.CEL"),verbose=FALSE)
 
 unlist(treeNames(data.test3))

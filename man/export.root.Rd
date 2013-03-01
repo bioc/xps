@@ -31,8 +31,8 @@ current R session as \code{data.frame}. Otherwise, \code{NULL} will be returned.
 \seealso{\code{\link{export}}, \code{\link{export-methods}}}
 \examples{
 ## export data directly from root file
-schemefile <- paste(.path.package("xps"),"schemes/SchemeTest3.root",sep="/")
-datafile   <- paste(.path.package("xps"),"rootdata/DataTest3_cel.root",sep="/")
+schemefile <- paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/")
+datafile   <- paste(path.package("xps"),"rootdata/DataTest3_cel.root",sep="/")
 data <- export.root(datafile, schemefile, "DataSet", "*", "cel", "*", "DataOutFile.txt", as.dataframe = TRUE,verbose=FALSE)
 head(data)
 }
