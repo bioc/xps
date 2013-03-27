@@ -2,6 +2,9 @@
 		CHANGES IN R VERSION 2.16.X (or 3.00.X)
 
 
+VERSION xps-1.19.9
+    o update README
+
 VERSION xps-1.19.8
     o replace .path.package() with path.package()
 

@@ -91,12 +91,10 @@ I. Install ROOT:
               export ROOTSYS=<path>/root
               export PATH=$ROOTSYS/bin:$PATH
               export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
-              export DYLD_LIBRARY_PATH=$ROOTSYS/lib:$DYLD_LIBRARY_PATH (MacOS X only)
             csh family:
               setenv ROOTSYS <path>/root
               setenv PATH ${ROOTSYS}/bin:${PATH}
               setenv LD_LIBRARY_PATH ${ROOTSYS}/lib:${LD_LIBRARY_PATH}
-              setenv DYLD_LIBRARY_PATH ${ROOTSYS}/lib:${DYLD_LIBRARY_PATH} (MacOS X only)
               rehash
 
             Note: it is best to include above lines in e.g. ".bashrc" or ".bash_profile"
@@ -135,9 +133,13 @@ I. Install ROOT:
    version of ROOT. For Leopard you need to compile the source:
    root_v5.32.01.source.tar.gz
 
-   For Snow Leopard there exist binaries for 32 bit and 64bit, however, since 
-   the xps binary for BioC 2.12 is built on Leopard for 32 bit you need to
-   install: root_v5.32.01.macosx106-i386-gcc-4.2.tar.gz
+   For Snow Leopard and Lion there exist binaries for 32 bit and 64bit, however,
+   since the xps binary for BioC 2.13 is built on Snow Leopard for 64 bit you 
+   need to install:
+   root_v5.34.05.macosx106-x86_64-gcc-4.2.tar.gz
+
+   For Mountain Lion there exists a 64 bit binary:
+   root_v5.34.05.macosx64-10.8-i386.tar.gz
 
    Personally, I am a Mac user and do all my development on my MacBook Pro,
    where I have installed WinXP, Win7 and openSUSE 11.4 using VMware Fusion 
@@ -147,14 +149,25 @@ I. Install ROOT:
    On Leopard I install the 32 bit version:
       ./configure macosx 
       make
+      . bin/thisroot.sh
 
    On Snow Leopard I install the 64 bit version:
       ./configure macosx64
       make
+      . bin/thisroot.sh
 
    On Lion I install the 64 bit version:
      ./configure macosx64 --with-f77="/usr/bin/gfortran-4.2"
       make
+      . bin/thisroot.sh
+
+   Currently I do not have Mountain Lion for testing purposes.
+
+   Note:
+   I recommend to install ROOT in a directory which can be shown in the Mac
+   Finder, e.g. in the home directory or another subdirectory. I do NOT
+   recommend to install ROOT in directory /usr/local/ which is not displayed
+   in the Finder.
 
  Id.  Notes on  ROOT:
 
@@ -199,7 +212,7 @@ I. Install ROOT:
    Like R, the ROOT framework can be installed on many architectures, see
    the list of supported architectures, when running  "./configure --help".
    However, ROOT may also compile on a number of other architectures. 
-   In case, the current official source file "root_v5.32.01.source.tar.gz"
+   In case, the current official source file "root_v5.34.05.source.tar.gz"
    fails to compile, you can download the current development version from 
    svn, see:
       http://root.cern.ch/drupal/content/subversion-howto
@@ -279,8 +292,9 @@ II.  Install package 'xps':
 
    Important note: 
    Please note that Bioconductor has built the xps binaries for release BioC 2.12
-   using ROOT version root_v5.32.01. Thus it is absolutely essential to install
-   this ROOT version first, otherwise calling xps will result in an error message.
+   using ROOT version root_v5.34.05 for Mac and root-mingw-O2 for Windows. Thus it 
+   is absolutely essential to install this ROOT version first, otherwise calling xps
+   will result in an error message.
    You can always download any version of root from: ftp://root.cern.ch/root
 
 
@@ -291,13 +305,13 @@ II.  Install package 'xps':
 
    If you run xps from Rterm check if `System' in the control panel does contain the 
    following environment variables:
-      PATH:   C:\Programs\R\R-2.13.0\bin;%ROOTSYS%\bin;
+      PATH:   C:\Programs\R\R-3.0.0\bin;%ROOTSYS%\bin;
       ROOTSYS:C:\root
 
    If you want to install xps from source, then you need to do the following:
    You can still install the MinGW binary for ROOT and the R binary but in addition
    you need to install the following:
-   - Rtools216.exe from: http://www.murdoch-sutherland.com/Rtools/
+   - Rtools30.exe from: http://www.murdoch-sutherland.com/Rtools/
    - ActivePerl-5.16.2.1602-MSWin32-x86-296513.msi
    - basic-miktex-2.9.4521.exe
 
