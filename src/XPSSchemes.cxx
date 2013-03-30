@@ -1,4 +1,4 @@
-// File created: 05/18/2002                          last modified: 02/22/2013
+// File created: 05/18/2002                          last modified: 03/30/2013
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -6442,6 +6442,9 @@ Int_t XGenomeChip::ImportTransAnnotation(ifstream &input, Option_t *option,
          cytoband[idx]   = "NA";
          entrezid[idx]   = -1;
       } else {
+         nsub = 5;  //since TokenizeString() can change nsub
+         for (Int_t i=0; i<nsub; i++) names[i] = "---";
+
          Int_t index = 0;
          index = assigngene.Index(kSepSl3, kNumSl3, index, TString::kExact);
          // index>0 only if assigngene is a multipart entry
@@ -6476,6 +6479,9 @@ Int_t XGenomeChip::ImportTransAnnotation(ifstream &input, Option_t *option,
       } else if ((psettype[idx] == eINTRON) ||
                  (psettype[idx] == eEXON)   ||
                  (psettype[idx] == eUNMAPPED)) {
+         nsub = 5;  //since TokenizeString() can change nsub
+         for (Int_t i=0; i<nsub; i++) names[i] = "---";
+
          Int_t index = 0;
          index = assignmrna.Index(kSepSl3, kNumSl3, index, TString::kExact);
          // index>0 only if assignmrna is a multipart entry
@@ -9060,6 +9066,9 @@ Int_t XExonChip::ImportTransAnnotation(ifstream &input, Option_t *option,
          cytoband[idx]   = "NA";
          entrezid[idx]   = -1;
       } else {
+         nsub = 5;  //since TokenizeString() can change nsub
+         for (Int_t i=0; i<nsub; i++) names[i] = "---";
+
          Int_t index = 0;
          index = assigngene.Index(kSepSl3, kNumSl3, index, TString::kExact);
          // index>0 only if assigngene is a multipart entry
@@ -9086,6 +9095,9 @@ Int_t XExonChip::ImportTransAnnotation(ifstream &input, Option_t *option,
       if ((psettype[idx] == eINTRON) ||
           (psettype[idx] == eEXON)   ||
           (psettype[idx] == eUNMAPPED)) {
+         nsub = 5;  //since TokenizeString() can change nsub
+         for (Int_t i=0; i<nsub; i++) names[i] = "---";
+
          Int_t index = 0;
          index = assignmrna.Index(kSepSl3, kNumSl3, index, TString::kExact);
          // index>0 only if assignmrna is a multipart entry

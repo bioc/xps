@@ -2,6 +2,9 @@
 		CHANGES IN R VERSION 2.16.X (or 3.00.X)
 
 
+VERSION xps-1.19.10
+    o update XPSSchemes.cxx to correct possible memory error in TString array names[i]
+
 VERSION xps-1.19.9
     o update README
 
