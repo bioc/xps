@@ -2779,10 +2779,10 @@ void XPlot::DrawMVA(Int_t n, Double_t *x, Double_t *y, Int_t base,
 
    if (fMinX >= fMaxX){
       if (base == 0) {
-         fMinX = fMinX;
+//         fMinX = fMinX;
          fMaxX = (fMaxX * fMaxX) / 2;
       } else {
-         fMinX = fMinX;
+//         fMinX = fMinX;
          fMaxX = (fMaxX + fMaxX) / 2;
       }//if
    }//if

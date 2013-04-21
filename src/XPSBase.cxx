@@ -180,7 +180,7 @@ XFolder *XFolder::AddFolder(const char *name, const char *title, const char *typ
 
    // adapted from TFolder::AddFolder
    if (strchr(name, '/')) {
-      ::Error("XFolder::XFolder","folder name cannot contain a slash", name);
+      ::Error("TFolder::TFolder", "folder name cannot contain a slash: %s", name); 
       return 0;
    }
    if (strlen(GetName()) == 0) {

@@ -1,5 +1,11 @@
 
-		CHANGES IN R VERSION 2.16.X (or 3.00.X)
+		CHANGES IN R VERSION 3.00.X
+
+
+VERSION xps-1.21.1
+    o update README
+    o update Makefile to set include path (for ~/.R/Makevars)
+    o update XPSUtils.cxx to eliminate warning with clang
 
 
 VERSION xps-1.19.10
