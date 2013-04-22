@@ -199,6 +199,9 @@ Int_t XNormalizer::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk)
 
    Int_t err = errNoErr;
 
+   TH2F *his2all = 0;
+   TH2F *his2sel = 0;
+
 // Get number of masked genes
    Int_t length = 0;        
    for (Int_t i=0; i<n; i++) {
@@ -236,8 +239,6 @@ Int_t XNormalizer::Calculate(Int_t n, Double_t *x, Double_t *y, Int_t *msk)
 // Convert arrays to logbase
 //?? Fill histograms with log-values
 //?? delete histograms?? why so they exist?? drawing only??
-   TH2F *his2all;
-   TH2F *his2sel;
    his2all = new TH2F("his2all","H2all",200,1,5,200,1,5);
    his2sel = new TH2F("his2sel","H2sel",200,1,5,200,1,5);
 ///////////

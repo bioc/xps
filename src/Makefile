@@ -125,4 +125,5 @@ $(MAIN)Dict.$(SrcSuf): $(MYHDR)
 	@rootcint -f $@ -c $^
 
 .$(SrcSuf).$(ObjSuf):
-	$(CXX) $(CXXFLAGS) -c $<
+#	$(CXX) $(CXXFLAGS) -c $<
+	$(CXX) -I${ROOTSYS}/include $(CXXFLAGS) -c $<
