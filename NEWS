@@ -2,6 +2,12 @@
 		CHANGES IN R VERSION 3.00.X
 
 
+VERSION xps-1.21.3
+    o update XPSSchemes.cxx to replace error with warning for missing annotation header '%netaffx-annotation-'
+
+VERSION xps-1.21.2
+    o update XPSNormalizer.cxx to correct for uninitialized variables
+
 VERSION xps-1.21.1
     o update README
     o update Makefile to set include path (for ~/.R/Makevars)

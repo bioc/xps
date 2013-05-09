@@ -71,6 +71,12 @@ scheme.hgu133plus2.na33 <- import.expr.scheme("hgu133plus2", filedir = file.path
                            probefile  = file.path(libdir, "HG-U133-PLUS_probe.tab"), 
                            annotfile  = file.path(anndir, "Version12Nov", "HG-U133_Plus_2.na33.annot.csv"))
 
+# Rice:
+scheme.rice.na33 <- import.expr.scheme("rice", filedir = file.path(scmdir, "na33"),
+                     schemefile = file.path(libdir, "Rice.cdf"), 
+                     probefile  = file.path(libdir, "Rice.probe.tab"), 
+                     annotfile  = file.path(anndir, "Version12Nov", "Rice.na33.annot.csv"))
+
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # create ROOT scheme files for whole genome and exon arrays
@@ -185,6 +191,18 @@ scheme.ragene21stv1.na33 <- import.exon.scheme("ragene21stv1", filedir = file.pa
                             file.path(libdir, "RaGene-2_1-st", "RaGene-2_1-st.pgf"),
                             file.path(anndir, "Version12Nov", "RaGene-2_1-st-v1.na33.rn4.probeset.csv"),
                             file.path(anndir, "Version12Nov", "RaGene-2_1-st-v1.na33.rn4.transcript.csv"))
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# create ROOT scheme files for model organisms
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# RUSGene-1_1-st-v1:
+scheme.rusgene11stv1 <- import.exon.scheme("rusgene11stv1", filedir = file.path(scmdir, "designtime"),
+                        file.path(libdir, "RUSGene-1_1-st_rev2", "RUSGene-1_1-st.clf"),
+                        file.path(libdir, "RUSGene-1_1-st_rev2", "RUSGene-1_1-st.pgf"),
+                        file.path(anndir, "ModelOrganisms", "RUSGene-1_1-st-v1.design-time.20130417.probeset.csv"),
+                        file.path(anndir, "ModelOrganisms", "RUSGene-1_1-st-v1.design-time.20130417.transcript.csv"))
 
 
 
