@@ -6279,24 +6279,40 @@ Int_t XGenomeChip::ImportTransAnnotation(ifstream &input, Option_t *option,
    genome_version = strtok((&((char*)nextline.c_str())[17]), sep);
 
 // Check for line "#%netaffx-annotation-netaffx-build"
+   Bool_t hasNetBuild = kTRUE;
    input.clear();
    input.seekg(position, ios::beg);
    while (nextline.compare(0, 34, "#%netaffx-annotation-netaffx-build") != 0) {
       std::getline(input, nextline, delim);
-      if (input.eof()) return errPrematureEOF;
+//      if (input.eof()) return errPrematureEOF;
+      if (input.eof()) {hasNetBuild = kFALSE; break;}
    }//while
-   fVersionAnnot = strtok((&((char*)nextline.c_str())[35]), sep);
+   if (hasNetBuild == kTRUE) {
+      fVersionAnnot = strtok((&((char*)nextline.c_str())[35]), sep);
+   } else {
+      cout << "   Note: The following header line is missing: %netaffx-annotation-netaffx-build=" << endl;
+      fVersionAnnot = "NA";
+   }//if
 
 // Check for line "#%netaffx-annotation-data-type"
+   Bool_t hasNetType = kTRUE;
    input.clear();
    input.seekg(position, ios::beg);
    while (nextline.compare(0, 30, "#%netaffx-annotation-data-type") != 0) {
       std::getline(input, nextline, delim);
-      if (input.eof()) return errPrematureEOF;
+//      if (input.eof()) return errPrematureEOF;
+      if (input.eof()) {hasNetType = kFALSE; break;}
    }//while
-   annot_type = strtok((&((char*)nextline.c_str())[31]), sep);
+   if (hasNetType == kTRUE) {
+      annot_type = strtok((&((char*)nextline.c_str())[31]), sep);
+   } else {
+      cout << "   Note: The following header line is missing: %netaffx-annotation-data-type=" << endl;
+      annot_type = "NA";
+   }//if
 
 // Check for line ""transcript_cluster_id""
+   input.clear();
+   input.seekg(position, ios::beg);
    while (nextline.compare(0, 23, "\"transcript_cluster_id\"") != 0) {
       std::getline(input, nextline, delim);
       if (input.eof()) return errPrematureEOF;
@@ -8899,13 +8915,20 @@ Int_t XExonChip::ImportTransAnnotation(ifstream &input, Option_t *option,
    genome_version = strtok((&((char*)nextline.c_str())[17]), sep);
 
 // Check for line "#%netaffx-annotation-netaffx-build"
+   Bool_t hasNetBuild = kTRUE;
    input.clear();
    input.seekg(position, ios::beg);
    while (nextline.compare(0, 34, "#%netaffx-annotation-netaffx-build") != 0) {
       std::getline(input, nextline, delim);
-      if (input.eof()) return errPrematureEOF;
+//      if (input.eof()) return errPrematureEOF;
+      if (input.eof()) {hasNetBuild = kFALSE; break;}
    }//while
-   annot_version = strtok((&((char*)nextline.c_str())[35]), sep);
+   if (hasNetBuild == kTRUE) {
+      annot_version = strtok((&((char*)nextline.c_str())[35]), sep);
+   } else {
+      cout << "   Note: The following header line is missing: %netaffx-annotation-netaffx-build=" << endl;
+      annot_version = "NA";
+   }//if
 
    // compare annotation versions, but only main version, e.g. 27 for 27.2
    annps_version = fVersionAnnot;
@@ -8919,15 +8942,24 @@ Int_t XExonChip::ImportTransAnnotation(ifstream &input, Option_t *option,
    if (atoi(annot_version.Data()) >= kVersionAnnot22) {isNA22 = kTRUE;}
 
 // Check for line "#%netaffx-annotation-data-type"
+   Bool_t hasNetType = kTRUE;
    input.clear();
    input.seekg(position, ios::beg);
    while (nextline.compare(0, 30, "#%netaffx-annotation-data-type") != 0) {
       std::getline(input, nextline, delim);
-      if (input.eof()) return errPrematureEOF;
+//      if (input.eof()) return errPrematureEOF;
+      if (input.eof()) {hasNetType = kFALSE; break;}
    }//while
-   annot_type = strtok((&((char*)nextline.c_str())[31]), sep);
+   if (hasNetType == kTRUE) {
+      annot_type = strtok((&((char*)nextline.c_str())[31]), sep);
+   } else {
+      cout << "   Note: The following header line is missing: %netaffx-annotation-data-type=" << endl;
+      annot_type = "NA";
+   }//if
 
 // Check for line ""transcript_cluster_id""
+   input.clear();
+   input.seekg(position, ios::beg);
    while (nextline.compare(0, 23, "\"transcript_cluster_id\"") != 0) {
       std::getline(input, nextline, delim);
       if (input.eof()) return errPrematureEOF;
@@ -9404,28 +9436,44 @@ Int_t XExonChip::ImportProbesetAnnotation(ifstream &input, Option_t *option,
    genome_version = strtok(&nextline[17], sep);
 
 // Check for line "#%netaffx-annotation-netaffx-build"
+   Bool_t hasNetBuild = kTRUE;
    input.clear();
    input.seekg(position, ios::beg);
    while (strncmp("#%netaffx-annotation-netaffx-build", nextline, 34) != 0) {
       input.getline(nextline, kAnnBuf, delim);
-      if (input.eof()) return errPrematureEOF;
+//      if (input.eof()) return errPrematureEOF;
+      if (input.eof()) {hasNetBuild = kFALSE; break;}
    }//while
-   fVersionAnnot = strtok(&nextline[35], sep);
+   if (hasNetBuild == kTRUE) {
+      fVersionAnnot = strtok(&nextline[35], sep);
+   } else {
+      cout << "   Note: The following header line is missing: %netaffx-annotation-netaffx-build=" << endl;
+      fVersionAnnot = "NA";
+   }//if
 
 // Check for line "#%netaffx-annotation-data-type"
+   Bool_t hasNetType = kTRUE;
    input.clear();
    input.seekg(position, ios::beg);
    while (strncmp("#%netaffx-annotation-data-type", nextline, 30) != 0) {
       input.getline(nextline, kAnnBuf, delim);
-      if (input.eof()) return errPrematureEOF;
+//      if (input.eof()) return errPrematureEOF;
+      if (input.eof()) {hasNetType = kFALSE; break;}
    }//while
-   annot_type = strtok(&nextline[31], sep);
-   if ( strncmp(annot_type, "probe_set", 9) != 0) {
-      cerr << "Error: Annotation data type is not <probe_set>." << endl;
-      return errReadingInput;
+   if (hasNetType == kTRUE) {
+      annot_type = strtok(&nextline[31], sep);
+      if ( strncmp(annot_type, "probe_set", 9) != 0) {
+         cout << "Warning: Annotation data type is not <probe_set>." << endl;
+//         return errReadingInput;
+      }//if
+   } else {
+      cout << "   Note: The following header line is missing: %netaffx-annotation-data-type=" << endl;
+      annot_type = "NA";
    }//if
 
 // Check for line ""probeset_id""
+   input.clear();
+   input.seekg(position, ios::beg);
    while (strncmp("\"probeset_id\"", nextline, 13) != 0) {
       input.getline(nextline, kAnnBuf, delim);
       if (input.eof()) return errPrematureEOF;
