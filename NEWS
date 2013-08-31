@@ -2,6 +2,9 @@
 		CHANGES IN R VERSION 3.00.X
 
 
+VERSION xps-1.21.4
+    o update xpsQAReport.R for R-3.x
+
 VERSION xps-1.21.3
     o update XPSSchemes.cxx to replace error with warning for missing annotation header '%netaffx-annotation-'
 

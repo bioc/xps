@@ -47,11 +47,9 @@ function(xps.data,
    }#if
    if (!dir.create(outdir)) 
       stop("could not create report directory");
-   if (!dir.create(file.path(outdir, "inst"))) 
-      stop("could not create report subdirectory 'inst'");
-   if (!dir.create(file.path(outdir, "inst", "doc"))) 
-      stop("could not create report subdirectory 'doc'");
-   docdir <- file.path(outdir, "inst", "doc");
+   if (!dir.create(file.path(outdir, "png"))) 
+      stop("could not create report subdirectory 'png'");
+   docdir <- file.path(outdir, "png");
 
    ## optional pagebreak
    QCp <- readLines(file.path(indir, "QC.break.Rnw"));
@@ -327,7 +325,15 @@ function(xps.data,
 
    ## build vignette QC.pdf
    if (require(tools)) {
-      buildVignettes(dir=outdir, lib.loc=NULL, quiet=FALSE, clean=FALSE);
+      olddir <- getwd();
+      setwd(docdir);
+
+      tryCatch({Sweave("QAReport.Rnw");
+                setwd(outdir);
+                tools::texi2pdf(file.path(docdir, "QAReport.tex"), clean=TRUE)
+               },
+               finally = setwd(olddir)
+              );
    }#if
 }#xpsQAReport
 
