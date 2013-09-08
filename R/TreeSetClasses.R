@@ -352,6 +352,8 @@ setGeneric("weights",      function(object, ...)   standardGeneric("weights"));
 setGeneric("xpsRNAdeg",    function(object, ...)   standardGeneric("xpsRNAdeg"));
 setGeneric("borderplot",   function(x, ...)        standardGeneric("borderplot"));
 setGeneric("coiplot",      function(x, ...)        standardGeneric("coiplot"));
+setGeneric("NUSE",         function(x, ...)        standardGeneric("NUSE"));
+setGeneric("RLE",          function(x, ...)        standardGeneric("RLE"));
 
 
 #------------------------------------------------------------------------------#

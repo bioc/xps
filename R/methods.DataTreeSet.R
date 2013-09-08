@@ -44,6 +44,7 @@
 # xpsMAS5Call:
 # xpsDABGCall:
 # xpsINICall:
+# xpsQualityControl:
 # xpsPreprocess:
 # xpsBgCorrect:
 # xpsNormalize:

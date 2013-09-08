@@ -7,6 +7,7 @@
 \alias{borderplot,QualTreeSet-method}
 \alias{coiplot,QualTreeSet-method}
 \alias{image,QualTreeSet-method}
+\alias{NUSE,QualTreeSet-method}
 \alias{nuseplot,QualTreeSet-method}
 \alias{qualOption,QualTreeSet-method}
 \alias{qualOption}
@@ -18,6 +19,7 @@
 \alias{qualType<-}
 \alias{residuals,QualTreeSet-method}
 \alias{residuals}
+\alias{RLE,QualTreeSet-method}
 \alias{rleplot,QualTreeSet-method}
 \alias{weights,QualTreeSet-method}
 \alias{weights}
@@ -70,6 +72,7 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
      positive and negative feature intensities.}
     \item{image}{\code{signature(x = "QualTreeSet")}: creates a pseudo image for each quality 
      control tree, i.e. residual images.}
+    \item{NUSE}{\code{signature(x = "QualTreeSet")}: plot Normalized Unscaled Standard Errors, or return stats, values.}
     \item{nuseplot}{\code{signature(x = "QualTreeSet")}: creates a NUSE-plot.}
     \item{qualOption}{\code{signature(object = "QualTreeSet")}: extracts slot \code{qualopt}.}
     \item{qualOption<-}{\code{signature(object = "QualTreeSet", value = "character")}: replaces slot \code{qualopt}.}
@@ -77,6 +80,7 @@ Class \code{"\linkS4class{TreeSet}"}, by class "ProcesSet", distance 2.
     \item{qualType<-}{\code{signature(object = "QualTreeSet", value = "character")}: replaces slot \code{qualtype}.}
     \item{residuals}{\code{signature(object = "QualTreeSet")}: exports residuals from the
      residuals trees of the \code{\link{ROOT}} quality control file as data.frame \code{data}.}
+    \item{RLE}{\code{signature(x = "QualTreeSet")}: plot Relative Log Expression, or return stats, values.}
     \item{rleplot}{\code{signature(x = "QualTreeSet")}: creates a RLE-plot.}
     \item{weights}{\code{signature(object = "QualTreeSet")}: exports weights from the
      residuals trees of the \code{\link{ROOT}} quality control file as data.frame \code{data}.}

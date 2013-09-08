@@ -50,7 +50,7 @@ rleplot(x,
  e.g. \code{names="namepart:normalized"}. 
 }
 \author{Christian Stratowa}
-\seealso{\code{\link{plotRLE}}, \code{\link{mboxplot}}, \code{\link{nuseplot}}}
+\seealso{\code{\link{RLE}}, \code{\link{plotRLE}}, \code{\link{mboxplot}}, \code{\link{nuseplot}}}
 \examples{
 # load existing ROOT scheme file and ROOT expression file for rma
 scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))

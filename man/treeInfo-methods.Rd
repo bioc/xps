@@ -10,7 +10,7 @@
 
 \code{
  treeInfo(object,
-          treenames = "*",
+          treename = "*",
           treetype = character(0),
           varlist  = "*",
           qualopt  = NULL,
@@ -20,7 +20,7 @@
 }
 \arguments{
   \item{object}{Object of class \code{"TreeSet"}.}
-  \item{treenames}{Object of class \code{"list"} representing the names of the 
+  \item{treename}{Object of class \code{"list"} representing the names of the 
    \code{\link{ROOT}} trees.}
   \item{treetype}{type of tree to export, see \code{\link{validTreetype}}}
   \item{varlist}{names of tree leaves to export.}

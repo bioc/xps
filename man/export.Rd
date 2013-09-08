@@ -78,6 +78,13 @@ export(object, ...)
   \tab \code{fCall}:\tab detection call. \cr
   \tab \code{fPValue}:\tab detection p-value.
  }
+  Following \code{varlist} parameters are valid for \code{QualTreeSet}:
+ \tabular{lll}{
+  \tab \code{fLevel}:\tab expression level. \cr
+  \tab \code{fStderr}:\tab standard error. \cr
+  \tab \code{fNUSE}:\tab normalized unscaled standard error. \cr
+  \tab \code{fRLE}:\tab relative log expression value.
+ }
  An example: \code{varlist="fUnitName:fName:fSymbol:fLevel:fStdev:fEntrezID"}
 
  \code{export} is a generic method to export data from \code{\link{ROOT}} trees as text file.

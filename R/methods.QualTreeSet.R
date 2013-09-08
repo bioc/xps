@@ -11,11 +11,13 @@
 # residuals:
 # weights:
 # xpsRNAdeg:
+# image:
 # borderplot:
 # coiplot:
 # nuseplot:
 # rleplot:
-# image:
+# NUSE:
+# RLE:
 #==============================================================================#
 
 
@@ -190,6 +192,149 @@ function(object,
 }
 
 setMethod("xpsRNAdeg", "QualTreeSet", RNAdeg.QualTreeSet);
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("image", signature(x="QualTreeSet"),
+   function(x,
+            type       = c("resids", "pos.resids", "neg.resids", "sign.resids", "weights"),
+            qualopt    = c("raw", "adjusted", "normalized"),
+            transfo    = log2,
+            col        = NULL,
+            names      = "namepart",
+            xlab       = "",
+            ylab       = "",
+            add.legend = FALSE,
+            ...) 
+   {
+      if (debug.xps()) print("------image.QualTreeSet------")
+
+      type    <- match.arg(type);
+      qualopt <- match.arg(qualopt);
+      resname <- getTreeNames(rootFile(x), treetype=QUATYPE[4]);
+      if (qualopt != "all") {
+         resname <- resname[grep(qualopt, resname)];
+      }#if
+
+      if (is.null(names)) {
+         names <- resname;
+      } else if (names[1] == "namepart") {
+         names <- namePart(resname);
+      } else {
+         ok <- match(names, resname);
+         ok <- ok[!is.na(ok)];
+
+         if (length(ok) == 0) {
+            stop(paste(sQuote("names"), "is not a valid residual tree name"));
+         }#if
+
+         names <- resname[ok];
+      }#if
+
+      nres  <- length(names);
+      nrows <- nrows(schemeSet(x));
+      ncols <- ncols(schemeSet(x));
+
+      ## get range across all arrays
+      if (type != "weights") {
+         rg <- treeInfo(x, treetype="res", varlist="fResiduQuant", qualopt=qualopt);
+         rg <- range(rg);
+      }#if
+
+      ## colors
+      if (is.null(col)) {
+         if (type == "weights") {
+            col <- terrain.colors(25);
+         } else if (type == "resids") {
+            col <- pseudoPalette(low="blue",  high="red", mid="white");
+         } else if (type == "pos.resids") {
+            col <- pseudoPalette(low="white", high="red");
+         } else if (type == "neg.resids") {
+            col <- pseudoPalette(low="blue",  high="white");
+         } else if (type == "sign.resids") {
+            col <- pseudoPalette(low="blue",  high="red", mid="white");
+         }#if
+      }#if
+
+      ## plot images
+      if (nres > 1 && interactive()) par(ask=TRUE) else par(ask=FALSE);
+
+      for (i in 1:nres) {
+         if (type == "weights") {
+            ds <- weights(x, treename=names[i]);
+            m  <- matrix(ds[,"WEIGHT"], nrow=ncols, ncol=nrows, byrow=FALSE);
+            m  <- m[,nrows:1];
+            hi <- 1.0;
+            lo <- 0.0;
+         } else {
+            ds <- residuals(x, treename=names[i]);
+            m  <- matrix(ds[,"RESIDUAL"], nrow=ncols, ncol=nrows, byrow=FALSE);
+            m  <- m[,nrows:1];
+         }#if
+
+         if (type == "resids") {
+            hi <- max(abs(rg));
+            lo <- -max(abs(rg));
+            if (is.function(transfo)) {
+               m  <- sign(m) * transfo(abs(m) + 1);
+               hi <- max(transfo(abs(rg) + 1));
+               lo <- -max(transfo(abs(rg) + 1));
+            }#if
+         } else if (type == "pos.resids") {
+            m  <- pmax(m, 0);
+            hi <- max(rg);
+            lo <- 0.0;
+            if (is.function(transfo)) {
+               m  <- sign(m) * transfo(abs(m) + 1);
+               hi <- max(transfo(pmax(rg, 0) + 1));
+               lo <- 0.0;
+            }#if
+         } else if (type == "neg.resids") {
+            m  <- pmin(m, 0);
+            hi <- 0.0;
+            lo <- -abs(min(rg));
+            if (is.function(transfo)) {
+               m  <- sign(m) * transfo(abs(m) + 1);
+               hi <- 0.0;
+               lo <- -transfo(abs(min(rg)) + 1);
+            }#if
+         } else if (type == "sign.resids") {
+            m  <- sign(m);
+            hi <- 1.0;
+            lo <- -1.0;
+         }#if
+
+         par(mar = c(1, 1, 2, 1));
+         if (add.legend) {
+            layout(matrix(c(1, 2), 1, 2, byrow=TRUE), widths=c(7,1), heights=8, TRUE);
+            par(mar = c(1, 1, 2, 0));
+         }#if
+
+         graphics::image(m,
+                         zlim = c(lo, hi),
+                         col  = col,
+                         main = names[i],
+                         xlab = xlab,
+                         ylab = ylab,
+                         xaxt = 'n',
+                         yaxt = 'n',
+                         ...);
+         box();
+
+         if (add.legend) {
+            par(mar = c(1, 1, 2, 3));
+            y <- pretty(c(lo, hi), 10);
+            m <- matrix(y, nrow=1, ncol=length(y));
+            graphics::image(m, xaxt="n", yaxt="n", col=col);
+            axis(4, label=y, at=seq(0, 1, by=(1/(length(y)-1))), las=2, cex.axis=0.8);
+            layout(1);
+            par(mar = c(1, 1, 2, 1));
+         }#if
+      }#for
+
+      par(ask=FALSE);
+   }
+)#image
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -412,145 +557,92 @@ setMethod("rleplot", signature(x="QualTreeSet"),
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-setMethod("image", signature(x="QualTreeSet"),
+setMethod("NUSE", signature(x="QualTreeSet"),
    function(x,
-            type       = c("resids", "pos.resids", "neg.resids", "sign.resids", "weights"),
-            qualopt    = c("raw", "adjusted", "normalized"),
-            transfo    = log2,
-            col        = NULL,
-            names      = "namepart",
-            xlab       = "",
-            ylab       = "",
-            add.legend = FALSE,
+            treename = "*",
+            type     = c("plot", "stats", "values"),
+            qualopt  = NULL,
+            ...)
+   {
+      if (debug.xps()) print("------NUSE.QualTreeSet------")
+
+      if (treename == "*") treename <- unlist(treeNames(x));
+
+      exten <- extenPart(treename);
+      if (is.na(match(exten, QUATYPE[1:2]))) {
+         stop(paste(sQuote(exten), "is not a quality tree extension"));
+      }#if
+
+      type <- match.arg(type);
+      if (type == "stats") {
+         stats <- treeInfo(x,
+                           treename = treename,
+                           treetype = exten,
+                           varlist  = "fNQuantiles:fNUSEQuant",
+                           qualopt  = qualopt,
+                           ...);
+         return(stats);
+      } else if (type == "values") {
+         nuse <- export(x,
+                        treename     = treename,
+                        treetype     = exten,  # "rlm" or "plm"
+                        varlist      = "fUnitName:fNUSE",
+                        as.dataframe = TRUE,
+                        verbose      = FALSE);
+         return(nuse);
+      }#if
+
+      if (type == "plot") {
+         nuseplot(x, 
+                  names = qualopt,
+                  ...);
+      }#if
+   }
+)#NUSE
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+setMethod("RLE", signature(x="QualTreeSet"),
+   function(x,
+            treename = "*",
+            type     = c("plot", "stats", "values"),
+            qualopt  = NULL,
             ...) 
    {
-      if (debug.xps()) print("------image.QualTreeSet------")
+      if (debug.xps()) print("------RLE.QualTreeSet------")
 
-      type    <- match.arg(type);
-      qualopt <- match.arg(qualopt);
-      resname <- getTreeNames(rootFile(x), treetype=QUATYPE[4]);
-      if (qualopt != "all") {
-         resname <- resname[grep(qualopt, resname)];
+      if (treename == "*") treename <- unlist(treeNames(x));
+
+      exten <- extenPart(treename);
+      if (is.na(match(exten, QUATYPE[1:2]))) {
+         stop(paste(sQuote(exten), "is not a quality tree extension"));
       }#if
 
-      if (is.null(names)) {
-         names <- resname;
-      } else if (names[1] == "namepart") {
-         names <- namePart(resname);
-      } else {
-         ok <- match(names, resname);
-         ok <- ok[!is.na(ok)];
-
-         if (length(ok) == 0) {
-            stop(paste(sQuote("names"), "is not a valid residual tree name"));
-         }#if
-
-         names <- resname[ok];
+      type <- match.arg(type);
+      if (type == "stats") {
+         stats <- treeInfo(x,
+                           treename = treename,
+                           treetype = exten,
+                           varlist  = "fNQuantiles:fRLEQuant",
+                           qualopt  = qualopt,
+                           ...);
+         return(stats);
+      } else if (type == "values") {
+         rle <- export(x,
+                       treename     = treename,
+                       treetype     = exten,  # "rlm" or "plm"
+                       varlist      = "fUnitName:fRLE",
+                       as.dataframe = TRUE,
+                       verbose      = FALSE);
+         return(rle);
       }#if
 
-      nres  <- length(names);
-      nrows <- nrows(schemeSet(x));
-      ncols <- ncols(schemeSet(x));
-
-      ## get range across all arrays
-      if (type != "weights") {
-         rg <- treeInfo(x, treetype="res", varlist="fResiduQuant", qualopt=qualopt);
-         rg <- range(rg);
+      if (type == "plot") {
+         rleplot(x,
+                 names = qualopt,
+                 ...);
       }#if
-
-      ## colors
-      if (is.null(col)) {
-         if (type == "weights") {
-            col <- terrain.colors(25);
-         } else if (type == "resids") {
-            col <- pseudoPalette(low="blue",  high="red", mid="white");
-         } else if (type == "pos.resids") {
-            col <- pseudoPalette(low="white", high="red");
-         } else if (type == "neg.resids") {
-            col <- pseudoPalette(low="blue",  high="white");
-         } else if (type == "sign.resids") {
-            col <- pseudoPalette(low="blue",  high="red", mid="white");
-         }#if
-      }#if
-
-      ## plot images
-      if (nres > 1 && interactive()) par(ask=TRUE) else par(ask=FALSE);
-
-      for (i in 1:nres) {
-         if (type == "weights") {
-            ds <- weights(x, treename=names[i]);
-            m  <- matrix(ds[,"WEIGHT"], nrow=ncols, ncol=nrows, byrow=FALSE);
-            m  <- m[,nrows:1];
-            hi <- 1.0;
-            lo <- 0.0;
-         } else {
-            ds <- residuals(x, treename=names[i]);
-            m  <- matrix(ds[,"RESIDUAL"], nrow=ncols, ncol=nrows, byrow=FALSE);
-            m  <- m[,nrows:1];
-         }#if
-
-         if (type == "resids") {
-            hi <- max(abs(rg));
-            lo <- -max(abs(rg));
-            if (is.function(transfo)) {
-               m  <- sign(m) * transfo(abs(m) + 1);
-               hi <- max(transfo(abs(rg) + 1));
-               lo <- -max(transfo(abs(rg) + 1));
-            }#if
-         } else if (type == "pos.resids") {
-            m  <- pmax(m, 0);
-            hi <- max(rg);
-            lo <- 0.0;
-            if (is.function(transfo)) {
-               m  <- sign(m) * transfo(abs(m) + 1);
-               hi <- max(transfo(pmax(rg, 0) + 1));
-               lo <- 0.0;
-            }#if
-         } else if (type == "neg.resids") {
-            m  <- pmin(m, 0);
-            hi <- 0.0;
-            lo <- -abs(min(rg));
-            if (is.function(transfo)) {
-               m  <- sign(m) * transfo(abs(m) + 1);
-               hi <- 0.0;
-               lo <- -transfo(abs(min(rg)) + 1);
-            }#if
-         } else if (type == "sign.resids") {
-            m  <- sign(m);
-            hi <- 1.0;
-            lo <- -1.0;
-         }#if
-
-         par(mar = c(1, 1, 2, 1));
-         if (add.legend) {
-            layout(matrix(c(1, 2), 1, 2, byrow=TRUE), widths=c(7,1), heights=8, TRUE);
-            par(mar = c(1, 1, 2, 0));
-         }#if
-
-         graphics::image(m,
-                         zlim = c(lo, hi),
-                         col  = col,
-                         main = names[i],
-                         xlab = xlab,
-                         ylab = ylab,
-                         xaxt = 'n',
-                         yaxt = 'n',
-                         ...);
-         box();
-
-         if (add.legend) {
-            par(mar = c(1, 1, 2, 3));
-            y <- pretty(c(lo, hi), 10);
-            m <- matrix(y, nrow=1, ncol=length(y));
-            graphics::image(m, xaxt="n", yaxt="n", col=col);
-            axis(4, label=y, at=seq(0, 1, by=(1/(length(y)-1))), las=2, cex.axis=0.8);
-            layout(1);
-            par(mar = c(1, 1, 2, 1));
-         }#if
-      }#for
-
-      par(ask=FALSE);
    }
-)#image
+)#RLE
 
 #------------------------------------------------------------------------------#

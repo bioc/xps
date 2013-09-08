@@ -23,16 +23,16 @@ nuseplot(x,
 }
 }
 \arguments{
-  \item{x}{object of class \code{\link{ExprTreeSet}} or \code{\link{QualTreeSet}}.}
-  \item{which}{type of probes to be used, for details see \code{\link{validData}}.}
-  \item{size}{length of sequence to be generated as subset.}
+  \item{x}{object of class  or \code{\link{QualTreeSet}}.}
+  \item{which}{type of probes to be used, for details see \code{\link{validData}} (only \code{ExprTreeSet}).}
+  \item{size}{length of sequence to be generated as subset (only \code{ExprTreeSet}).}
   \item{range}{determines how far the plot whiskers extend out from the box.}
   \item{names}{optional vector of sample names.}
   \item{main}{the main title for the plot.}
   \item{ylim}{range for the plotted y values.}
   \item{las}{the style of axis labels.}
   \item{add.line}{\code{logical}, if TRUE a horizontal line is drawn.}
-  \item{outline}{if \code{outline} is not true, the outliers are not drawn.}
+  \item{outline}{if \code{outline} is not true, the outliers are not drawn (only \code{ExprTreeSet}).}
   \item{\dots}{optional arguments to be passed to \code{boxplot}.}
 }
 \details{
@@ -49,7 +49,7 @@ nuseplot(x,
  e.g. \code{names="namepart:normalized"}. 
 }
 \author{Christian Stratowa}
-\seealso{\code{\link{plotNUSE}}, \code{\link{rleplot}}}
+\seealso{\code{\link{NUSE}}, \code{\link{plotNUSE}}, \code{\link{rleplot}}}
 \examples{
 # load existing ROOT scheme file and ROOT expression file for rma
 scheme.test3 <- root.scheme(paste(path.package("xps"),"schemes/SchemeTest3.root",sep="/"))

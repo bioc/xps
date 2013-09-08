@@ -2,6 +2,10 @@
 		CHANGES IN R VERSION 3.00.X
 
 
+VERSION xps-1.21.5
+    o add QualTreeSet methods NUSE() and RLE() to get stats and values
+    o update man export.Rd
+
 VERSION xps-1.21.4
     o update xpsQAReport.R for R-3.x
 

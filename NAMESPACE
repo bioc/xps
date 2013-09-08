@@ -184,11 +184,13 @@ exportMethods("attachCall",
 exportMethods("borderplot",
               "borders",
               "coiplot",
+              "NUSE",
               "qualOption",
               "qualOption<-",
               "qualType",
               "qualType<-",
               "residuals",
+              "RLE",
               "weights",
               "xpsRNAdeg")
 
