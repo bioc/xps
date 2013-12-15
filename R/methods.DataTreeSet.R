@@ -3669,7 +3669,8 @@ setMethod("hist", signature(x="DataTreeSet"),
       } else {
          varlist   <- "fInten";
          colname   <- "MEAN";
-         treetype  <- treetype[!is.na(sapply(treetype, function(x) match(x, c(RAWTYPE, ADJTYPE))))];
+#         treetype  <- treetype[!is.na(sapply(treetype, function(x) match(x, c(RAWTYPE, ADJTYPE))))];
+         treetype  <- treetype[!is.na(sapply(treetype, function(x) match(x, c(RAWTYPE, ADJTYPE, CNRTYPE))))];
          treenames <- treenames[grep(unique(treetype), treenames)];
       }#if
 
