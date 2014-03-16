@@ -551,7 +551,7 @@ setMethod("image", signature(x="ProcesSet"),
       if (bg == FALSE) {
          varlist <- "fInten";
          colname <- "MEAN";
-         treetype <- treetype[!is.na(sapply(treetype, function(x) match(x, c(RAWTYPE, ADJTYPE))))];
+         treetype <- treetype[!is.na(sapply(treetype, function(x) match(x, c(RAWTYPE, ADJTYPE, CNRTYPE))))];
          treenames <- treenames[grep(unique(treetype), treenames)];
       } else {
          varlist  <- "fBg";
