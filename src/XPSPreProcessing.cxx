@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 03/27/2011
+// File created: 08/05/2002                          last modified: 06/25/2014
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -3023,7 +3023,7 @@ Int_t XGCProcesSet::DoDataQualityControl(Int_t numdata, TTree **datatree,
 
 // Get number of selected entries
    for (Int_t i=0; i<size; i++) {
-      numsels = (arrMask[i] == 1) ? ++numsels : numsels;
+      if (arrMask[i] == 1) numsels++; 
    }//for_i
 
 // Get data from datatrees (and bgrdtrees) and store in table or array
@@ -4249,7 +4249,7 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
 
 // Get number of selected entries
    for (Int_t i=0; i<size; i++) {
-      numsels = (arrMask[i] == 1) ? ++numsels : numsels;
+      if (arrMask[i] == 1) numsels++; 
    }//for_i
 
 // Get data from datatrees (and bgrdtrees) and store in table or array
@@ -5132,7 +5132,7 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
 
 // Get number of selected entries
    for (Int_t i=0; i<size; i++) {
-      numsels = (arrMask[i] == 1) ? ++numsels : numsels;
+      if (arrMask[i] == 1) numsels++; 
    }//for_i
 
 //TEST
@@ -9588,7 +9588,7 @@ Int_t XExonProcesSet::DoSpliceExpress(Int_t numdata, TTree **datatree,
 // Get number of selected entries
    numsels = 0;
    for (Int_t i=0; i<size; i++) {
-      numsels = (arrMask[i] == 1) ? ++numsels : numsels;
+      if (arrMask[i] == 1) numsels++; 
    }//for_i
 
 //TEST
