@@ -1,6 +1,20 @@
 
+		CHANGES IN R VERSION 3.1.X
+
+
+VERSION xps-1.25.2
+    o update XPSPreProcessing.cxx to reset mask to initial values for each array (necessary for whole genome/exon arrays)
+
+VERSION xps-1.25.1
+    o update XPSPreProcessing.cxx to remove -Wsequence-point warning for numsels = ++numsels
+
+
+
 		CHANGES IN R VERSION 3.00.X
 
+
+VERSION xps-1.23.2
+    o add type CNRTYPE to image() and hist()
 
 VERSION xps-1.21.5
     o add QualTreeSet methods NUSE() and RLE() to get stats and values

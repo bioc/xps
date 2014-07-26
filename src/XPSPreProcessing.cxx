@@ -1,4 +1,4 @@
-// File created: 08/05/2002                          last modified: 03/27/2011
+// File created: 08/05/2002                          last modified: 07/25/2014
 // Author: Christian Stratowa 06/18/2000
 
 /*
@@ -61,7 +61,7 @@
 * Aug 2007 - Add support for whole genome arrays, class XGenomeProcesSet
 * Aug 2008 - Add summarization algorithms FARMS and DFW, classes XFARMS, XDFW
 * Oct 2008 - Add I/NI-call algorithm class XINICall
-* Jul 2009 - Add tree->DrobBasket() to avoid memory increase for >2000 trees
+* Jul 2009 - Add tree->DropBasket() to avoid memory increase for >2000 trees
 *          - Allow to change bufsize of tree branches
 * Feb 2010 - Add support for alternative splicing, method DoSpliceExpress()
 *          - Add exon splice/summarization algorithms, classes XSpliceExpressor, XSpliceExpression
@@ -2427,12 +2427,14 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
 
 // Init local arrays to store data from trees
    Int_t    *arrMask = 0;  //mask data
+   Int_t    *arrTemp = 0;  //temp mask data
    Double_t *arrIntx = 0;  //intensities for tree x (e.g. raw intensities)
    Double_t *arrInty = 0;  //intensities for tree y (e.g. output intensities)
    Double_t *dummy   = 0;  //to prevent compilation error
 
 // Initialize memory for local arrays
    if (!(arrMask = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
+   if (!(arrTemp = new (nothrow) Int_t[size]))    {err = errInitMemory; goto cleanup;}
    if (!(arrIntx = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
    if (!(arrInty = new (nothrow) Double_t[size])) {err = errInitMemory; goto cleanup;}
 
@@ -2449,6 +2451,9 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
 // Get mask for PM/MM from scheme tree and store in array 
    err = this->SchemeMask(chip, level, size, arrMask);
    if (err != errNoErr) goto cleanup;
+
+// save mask in temp array to reset mask later
+   for (Int_t i=0; i<size; i++) arrTemp[i] = arrMask[i];
 
    // informing user
    if (XManager::fgVerbose) {
@@ -2644,8 +2649,9 @@ Int_t XGCProcesSet::Normalize(Int_t numdata, TTree **datatree,
          err = FillDataArrays(datatree[k], numrows, numcols, arrInty, 0, 0);
          if (err != errNoErr) break;
 
-//ev??// reset mask to initial value for each k
-//for (Int_t i=0; i<size; i++) arrMask[i] = arrTmp[i];
+         // need to reset mask to initial values for each k (necessary for whole genome/exon arrays!
+         for (Int_t i=0; i<size; i++) arrMask[i] = arrTemp[i];
+
          // select non-variant units, calculate mask and fill mask tree
          if ((err = fNormSelector->Calculate(size, arrIntx, arrInty, arrMask))) break;
 
@@ -2684,6 +2690,7 @@ cleanup:
    // delete arrays
    if (arrInty) {delete [] arrInty; arrInty = 0;}
    if (arrIntx) {delete [] arrIntx; arrIntx = 0;}
+   if (arrTemp) {delete [] arrTemp; arrTemp = 0;}
    if (arrMask) {delete [] arrMask; arrMask = 0;}
 
    delete [] reftree;
@@ -3023,7 +3030,7 @@ Int_t XGCProcesSet::DoDataQualityControl(Int_t numdata, TTree **datatree,
 
 // Get number of selected entries
    for (Int_t i=0; i<size; i++) {
-      numsels = (arrMask[i] == 1) ? ++numsels : numsels;
+      if (arrMask[i] == 1) numsels++; 
    }//for_i
 
 // Get data from datatrees (and bgrdtrees) and store in table or array
@@ -4249,7 +4256,7 @@ Int_t XGCProcesSet::DoMultichipCall(Int_t numdata, TTree **datatree,
 
 // Get number of selected entries
    for (Int_t i=0; i<size; i++) {
-      numsels = (arrMask[i] == 1) ? ++numsels : numsels;
+      if (arrMask[i] == 1) numsels++; 
    }//for_i
 
 // Get data from datatrees (and bgrdtrees) and store in table or array
@@ -5132,7 +5139,7 @@ Int_t XGCProcesSet::DoMultichipExpress(Int_t numdata, TTree **datatree,
 
 // Get number of selected entries
    for (Int_t i=0; i<size; i++) {
-      numsels = (arrMask[i] == 1) ? ++numsels : numsels;
+      if (arrMask[i] == 1) numsels++; 
    }//for_i
 
 //TEST
@@ -8411,7 +8418,7 @@ Int_t XGCProcesSet::FillDataArrays(TTree *datatree, TTree *bgrdtree, Bool_t doBg
    // Fill arrays inten, stdev, npix with data from datatree.
    // If bgrdtree != 0 fill arrays bgrd, bgdev with data from bgrdtree
    // If bgrdtree != 0 and doBg == kTRUE then subtract background from intensity
-   if(kCS) cout << "------XGCProcesSet::FillDataArrays------" << endl;
+   if(kCS) cout << "------XGCProcesSet::FillDataArrays(bgrd)------" << endl;
 
 // Init datatree
    XGCCell *gccell = 0;
@@ -8486,7 +8493,7 @@ Int_t XGCProcesSet::FillDataArrays(TTree *datatree, TTree *bgrdtree, Bool_t doBg
 {
    // Fill arrays inten, stdev, npix with data from datatree.
    // If bgrdtree != 0 and doBg == kTRUE then subtract background from intensity
-   if(kCS) cout << "------XGCProcesSet::FillDataArrays------" << endl;
+   if(kCS) cout << "------XGCProcesSet::FillDataArrays(doBg)------" << endl;
 
 // Init datatree
    XGCCell *gccell = 0;
@@ -9588,7 +9595,7 @@ Int_t XExonProcesSet::DoSpliceExpress(Int_t numdata, TTree **datatree,
 // Get number of selected entries
    numsels = 0;
    for (Int_t i=0; i<size; i++) {
-      numsels = (arrMask[i] == 1) ? ++numsels : numsels;
+      if (arrMask[i] == 1) numsels++; 
    }//for_i
 
 //TEST
