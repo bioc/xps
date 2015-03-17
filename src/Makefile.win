@@ -8,8 +8,8 @@
 
 ROOTSYS_UNIX=$(shell echo "$(ROOTSYS)" | sed -e 's/\\/\//g')
 
-CL = g++ -pipe -mwindows 
-LINK = g++
+CL = $(RTOOLS)gcc492_32/bin/$(CXX) -pipe -mwindows 
+LINK = $(RTOOLS)gcc492_32/bin/$(CXX)
 
 #check for libGraf setting
 ifneq ($(findstring _G__cpp_setupG__Graf1, ${ROOTSYS_UNIX}/bin/root-config),)
