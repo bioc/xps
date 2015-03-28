@@ -91,10 +91,12 @@ I. Install ROOT:
               export ROOTSYS=<path>/root
               export PATH=$ROOTSYS/bin:$PATH
               export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
+              export DYLD_LIBRARY_PATH=$ROOTSYS/lib:$DYLD_LIBRARY_PATH        (Mac OS X only)
             csh family:
               setenv ROOTSYS <path>/root
               setenv PATH ${ROOTSYS}/bin:${PATH}
               setenv LD_LIBRARY_PATH ${ROOTSYS}/lib:${LD_LIBRARY_PATH}
+              setenv DYLD_LIBRARY_PATH ${ROOTSYS}/lib:${DYLD_LIBRARY_PATH}    (Mac OS X only)
               rehash
 
             Note: it is best to include above lines in e.g. ".bashrc" or ".bash_profile"
@@ -105,7 +107,7 @@ I. Install ROOT:
               root
 
 
- Ib.  Install ROOT for Windows XP, Vista and Windows 7
+ Ib.  Install ROOT for Windows XP, Vista and Windows 7 (32 bit only)
 
    For Windows users it is important to install a binary version of ROOT
    compiled with MinGW, currently version root_v5.32.03, from:

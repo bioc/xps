@@ -10,7 +10,7 @@
 .onAttach <- function(libname, pkgname) {
    packageStartupMessage(paste("\nWelcome to", pkgname, "version", packageDescription(pkgname, fields="Version")));
    packageStartupMessage("    an R wrapper for XPS - eXpression Profiling System");
-   packageStartupMessage("    (c) Copyright 2001-2014 by Christian Stratowa");
+   packageStartupMessage("    (c) Copyright 2001-2015 by Christian Stratowa");
    packageStartupMessage("    ");
 }
 
