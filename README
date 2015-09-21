@@ -34,7 +34,8 @@ I.   Install ROOT:
  Ia.  Install ROOT from source
  Ib.  Install ROOT for Windows XP, Vista, and Windows 7
  Ic.  Install ROOT for Mac OS X
- Id.  Notes on  ROOT
+ Id.  Install ROOT for Mac OS X Mavericks and Yosemite
+ Ie.  Notes on  ROOT
 II.  Install package 'xps':
  IIa.  Install 'xps' from source
  IIb.  Install 'xps' as binary
@@ -110,9 +111,10 @@ I. Install ROOT:
  Ib.  Install ROOT for Windows XP, Vista and Windows 7 (32 bit only)
 
    For Windows users it is important to install a binary version of ROOT
-   compiled with MinGW, currently version root_v5.32.03, from:
-   to be announced; 
-   currently, please contact me to get 'root-mingw-O2.7z' of size 37MB
+   compiled with MinGW, currently version root_v5.32.03:
+   Currently you can download this ROOT version from:
+   https://docs.google.com/file/d/0B0qZ3XBoK1ubVzl5MHBEaWxQdW8/edit
+   If this does not work, please contact me to get 'root-mingw-O2.7z' of size 37MB
 
    It is recommended to install ROOT in the default directory C:\root.
    Furthermore, it is necessary to set the environment variable ROOTSYS:
@@ -171,7 +173,107 @@ I. Install ROOT:
    recommend to install ROOT in directory /usr/local/ which is not displayed
    in the Finder.
 
- Id.  Notes on  ROOT:
+
+ Id.  Install ROOT for Mac OS X Mavericks and Yosemite
+
+   First I have installed XQuartz from:
+   http://xquartz.macosforge.org/downloads/SL/XQuartz-2.7.7.dmg
+
+   Then I have installed Xcode and the 'Command Line Tools ' for Xcode. 
+
+   At last I have installed gfortran from:
+   http://cran.r-project.org/bin/macosx/tools/gfortran-4.2.3.dmg
+
+   Then you need to create in your home directory the file '.bashrc'
+
+   Here is as example my '.bashrc' file:
+
+# - - - - - - - - - - - - - - - - - -
+# .bashrc
+
+# User specific aliases and functions
+
+#svn
+export PATH=$PATH:/usr/local/bin
+
+# latex
+export PATH=/usr/texbin:$PATH
+
+# ROOT settings
+export MACOSX_DEPLOYMENT_TARGET=10.9
+export TMPDIR=/Users/cstrato/temp
+
+# here you add your path to root
+export ROOTSYS=/Volumes/GigaData/ROOT/root
+export PATH=$ROOTSYS/bin:$PATH
+export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH=$ROOTSYS/lib:$DYLD_LIBRARY_PATH
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+    . /etc/bashrc
+fi
+# - - - - - - - - - - - - - - - - - -
+
+   Usually I compile ROOT from source, see below. 
+   However, you can also download ROOT binaries.
+
+   For Mavericks you need to download:
+   ftp://root.cern.ch/root/root_v5.34.30.macosx64-10.9-clang60.dmg
+
+   For Yosemite you need to download:
+   ftp://root.cern.ch/root/root_v5.34.30.macosx64-10.10-clang61.tar.gz
+   (As far as I know, older versions of ROOT do not run under Yosemite.)
+
+   To compile ROOT I have downloaded the source from:
+   ftp://root.cern.ch/root/root_v5.34.30.source.tar.gz
+
+   After extracting root in my home directory I did compile root by typing in the Terminal:
+   $ ./configure macosx64 --with-f77="/usr/bin/gfortran-4.2"
+   $ make
+   $ . bin/thisroot.sh
+
+   Note that in this way ROOT is compiled with the clang/clang++ compiler
+   and not with gcc/g++!!! 
+   I tried to compile root with gcc/g++ but did only get error messages.
+
+   To test if ROOT is ok I did run the tutorials from xterm:
+   $ cd /Users/cstrato/root/tutorials
+   $ root
+   [root 0] .x demos.C
+    run some tutorials from the appearing buttons then quit root:
+   [root 1] .q
+
+   After installing R-3.0.2 I have also installed MacTex from:
+   http://mirror.ctan.org/systems/mac/mactex/mactex-basic.pkg
+   http://mirror.ctan.org/systems/mac/mactex/mactex-additions.pkg
+
+   To install Bioconductor packages including xps I usually create the
+   following sub-directories:
+   /Users/cstrato/Library/R/3.0/library
+
+   Now comes the important part in order to compile xps with clang/clang++:
+   In you home directory you need to create an invisible directory '.R' (dot R)
+   by typing in xterm:
+   $ mkdir '.R'
+
+   Then you need to create a text file named 'Makevars', which contains
+   the following four lines:
+   CC=clang
+   CXX=clang++
+   CFLAGS="-mtune=native -g -O2 -Wall -pedantic -Wconversion"
+   CXXFLAGS="-mtune=native -g -O2 -Wall -pedantic -Wconversion"
+
+   The file 'Makevars' must be put into the invisible directory '.R'.
+
+   Now you are able to compile xps with clang/clang++:
+   R CMD INSTALL -l ~/Library/R/3.0/library xps_1.26.0.tar.gz
+
+   To check if xps does work correctly I do also:
+   R CMD check xps_1.26.0.tar.gz
+
+
+ Ie.  Notes on  ROOT:
 
    Note 1: Alternative ROOT installation
    If you want to install ROOT in a fixed location, not depending on ROOTSYS,
