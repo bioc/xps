@@ -43,6 +43,8 @@
  *******************************************************************************
  */
 
+using namespace std;
+
 // R includes:
 #include "RnmathR.h"
 #include "RdpqR.h"  

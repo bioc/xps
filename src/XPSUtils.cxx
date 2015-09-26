@@ -49,6 +49,9 @@
 * Apr 2009 - Add functions GetHeaderOrder() and TokenizeString()
 ******************************************************************************/
 
+
+using namespace std;
+
 // IMPORTANT: must be defined for PowerPC and undefined for Intel PCs
 #include <RConfig.h>
 #if !defined(R__BYTESWAP)

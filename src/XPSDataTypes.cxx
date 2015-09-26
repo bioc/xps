@@ -46,6 +46,8 @@
 *
 ******************************************************************************/
 
+using namespace std;
+
 #include <Riostream.h>
 #include "TError.h"
 

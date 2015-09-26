@@ -324,7 +324,7 @@ function(xps.data,
    write(QCe, file.path(docdir, "QAReport.Rnw"), append=TRUE);
 
    ## build vignette QC.pdf
-   if (require(tools)) {
+   if (requireNamespace("tools")) {
       olddir <- getwd();
       setwd(docdir);
 

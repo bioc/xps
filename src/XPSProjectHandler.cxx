@@ -42,6 +42,8 @@
 *
 ******************************************************************************/
 
+using namespace std;
+
 #include <Riostream.h>
 
 #include "XPSProjectHandler.h"

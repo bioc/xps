@@ -64,6 +64,8 @@
 *
 ******************************************************************************/
 
+using namespace std;
+
 #include <cstdlib>
 #include <cfloat>
 #include <new>  //needed for new (nothrow)

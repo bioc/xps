@@ -43,6 +43,8 @@
 +            preprocessCore as option, and to reduce memory consumption
 ******************************************************************************/
 
+using namespace std;
+
 //#ifndef ROOT_Varargs
 #include "Varargs.h"
 //#endif

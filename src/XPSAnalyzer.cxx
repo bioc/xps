@@ -35,6 +35,8 @@
  *******************************************************************************
  */
 
+using namespace std;
+
 //#ifndef ROOT_Varargs
 #include "Varargs.h"
 //#endif

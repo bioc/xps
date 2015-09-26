@@ -326,7 +326,7 @@ setMethod("image", signature(x="QualTreeSet"),
             y <- pretty(c(lo, hi), 10);
             m <- matrix(y, nrow=1, ncol=length(y));
             graphics::image(m, xaxt="n", yaxt="n", col=col);
-            axis(4, label=y, at=seq(0, 1, by=(1/(length(y)-1))), las=2, cex.axis=0.8);
+            axis(4, labels=y, at=seq(0, 1, by=(1/(length(y)-1))), las=2, cex.axis=0.8);
             layout(1);
             par(mar = c(1, 1, 2, 1));
          }#if

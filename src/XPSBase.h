@@ -310,18 +310,18 @@ class XTreeSet: public TNamed {
       static Bool_t fgPrintHeader; //! print header for content only once
 
    protected:
-      virtual Int_t IsBinaryFile(ifstream &/*input*/)            {return 0;}
-      virtual Int_t ReadHeader(ifstream &/*input*/, const char * /*sep*/, char /*delim*/)
+      virtual Int_t IsBinaryFile(std::ifstream &/*input*/)            {return 0;}
+      virtual Int_t ReadHeader(std::ifstream &/*input*/, const char * /*sep*/, char /*delim*/)
                                                                  {return 0;}
-      virtual Int_t ReadData(ifstream &/*input*/, Option_t * /*option*/, const char * /*sep*/,
+      virtual Int_t ReadData(std::ifstream &/*input*/, Option_t * /*option*/, const char * /*sep*/,
                        char /*delim*/, Int_t /*split*/)          {return 0;}
-      virtual Int_t ReadBinaryHeader(ifstream &/*input*/, const char * /*sep*/, char /*delim*/)
+      virtual Int_t ReadBinaryHeader(std::ifstream &/*input*/, const char * /*sep*/, char /*delim*/)
                                                                  {return 0;}
-      virtual Int_t ReadBinaryData(ifstream &/*input*/, Option_t * /*option*/, const char * /*sep*/,
+      virtual Int_t ReadBinaryData(std::ifstream &/*input*/, Option_t * /*option*/, const char * /*sep*/,
                        char /*delim*/, Int_t /*split*/)          {return 0;}
-      virtual Int_t ReadXMLHeader(ifstream &/*input*/, const char * /*sep*/, char /*delim*/)
+      virtual Int_t ReadXMLHeader(std::ifstream &/*input*/, const char * /*sep*/, char /*delim*/)
                                                                  {return 0;}
-      virtual Int_t ReadXMLData(ifstream &/*input*/, Option_t * /*option*/,
+      virtual Int_t ReadXMLData(std::ifstream &/*input*/, Option_t * /*option*/,
                        const char * /*sep*/, char /*delim*/, Int_t /*split*/)
                                                                  {return 0;}
       
@@ -341,25 +341,25 @@ class XTreeSet: public TNamed {
       virtual void  RemoveTreeHeader(XTreeHeader *header);
       virtual void  RemoveTreeHeaders();
       virtual Int_t Export(const char *exten, const char *varlist,
-                       ofstream &output, const char *sep);
+                       std::ofstream &output, const char *sep);
       virtual Int_t ExportTrees(const char *exten, const char *varlist, 
-                       ofstream &output, const char *sep);
+                       std::ofstream &output, const char *sep);
       virtual Int_t ExportTree(const char *exten, Int_t n, TString *names,  
-                       const char *varlist, ofstream &output, const char *sep);
+                       const char *varlist, std::ofstream &output, const char *sep);
       virtual Int_t ExportTreeInfo(const char * /*exten*/, Int_t /*n*/, TString * /*names*/,  
-                       const char * /*varlist*/, ofstream &/*output*/, const char * /*sep*/)
+                       const char * /*varlist*/, std::ofstream &/*output*/, const char * /*sep*/)
                                                                             {return 0;}
       virtual Int_t ExportTreeType(const char * /*exten*/, Int_t /*n*/, TString * /*names*/,  
-                       const char * /*varlist*/, ofstream &/*output*/, const char * /*sep*/)
+                       const char * /*varlist*/, std::ofstream &/*output*/, const char * /*sep*/)
                                                                             {return 0;}
       virtual Int_t ExportTreeXML(const char * /*exten*/, Int_t /*n*/, TString * /*names*/,  
-                       const char * /*varlist*/, ofstream &/*output*/, const char * /*sep*/)
+                       const char * /*varlist*/, std::ofstream &/*output*/, const char * /*sep*/)
                                                                             {return 0;}
       virtual Int_t HandleOption(const char * /*name*/, Option_t * /*opt*/) {return 0;}
       virtual Int_t HandleOption(TTree * /*tree*/, Option_t * /*opt*/)      {return 0;}
-      virtual Int_t Import(ifstream &input, Option_t *option,
+      virtual Int_t Import(std::ifstream &input, Option_t *option,
                        const char *sep, char delim, Int_t split);
-      virtual Int_t ImportXML(ifstream &input, Option_t *option,
+      virtual Int_t ImportXML(std::ifstream &input, Option_t *option,
                        const char *sep, char delim, Int_t split);
       virtual Int_t Initialize(TFile *file, XSetting *setting,
                        const char *infile = "", const char *treename = "");
@@ -505,7 +505,7 @@ class XManager: public TNamed {
       virtual XTreeSet *NewTreeSet(const char * /*type*/)        {return 0;}
       virtual XPlot    *NewPlotter(const char *name, const char *title = "");
       virtual Int_t     ExportTrees(const char *exten, const char *varlist, 
-                           ofstream &output, Bool_t asXML, const char *sep);
+                           std::ofstream &output, Bool_t asXML, const char *sep);
       virtual Int_t     DeleteTreeSetInfo(const char * /*name*/) {return 0;}
       virtual Int_t     HandleOption(const char *setname, const char *treename,
                            Option_t *option);

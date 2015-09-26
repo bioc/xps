@@ -43,6 +43,8 @@
  *******************************************************************************
  */
 
+using namespace std;
+
 #include <new>  //needed for new (nothrow)
 
 // ROOT
