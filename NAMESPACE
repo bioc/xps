@@ -4,7 +4,7 @@
 useDynLib(xps)
 
 ## packages
-import(graphics, methods, tools)
+import(graphics, grDevices, methods, stats, tools, utils)
 
 ## S4 classes
 exportClasses(ProjectInfo,
