@@ -89,8 +89,11 @@ ifneq ($(subst $(MACOSX_MINOR),,1234),1234)
 ifeq ($(MACOSX_MINOR),4)
 		ln -sf $@ $(subst .$(DllSuf),.so,$@)
 else
-		$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ \
+#		$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ \
+#		   $(OutPutOpt) $(subst .$(DllSuf),.so,$@)
+		$(LD) -bundle $(LDFLAGS) $^ $(GLIBS) $(MYLIBS) \
 		   $(OutPutOpt) $(subst .$(DllSuf),.so,$@)
+
 endif
 endif
 else

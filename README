@@ -35,7 +35,8 @@ I.   Install ROOT:
  Ib.  Install ROOT for Windows XP, Vista, and Windows 7
  Ic.  Install ROOT for Mac OS X
  Id.  Install ROOT for Mac OS X Mavericks and Yosemite
- Ie.  Notes on  ROOT
+ Ie.  Install ROOT for Mac OS Sierra
+ If.  Notes on  ROOT
 II.  Install package 'xps':
  IIa.  Install 'xps' from source
  IIb.  Install 'xps' as binary
@@ -129,6 +130,12 @@ I. Install ROOT:
    Luckily, Alexey Lebedev has recently succeeded to compile ROOT with MinGE, see:
    http://root.cern.ch/phpBB3/viewtopic.php?f=3&t=15818&sid=5317206c83b9e2122ec5850720a65d05
    He did create the binary 'root-mingw-O2.7z' mentioned above.
+
+   NOTE from Dec 2016:
+   Sadly, with the current versions of R it is no longer possible to install
+   ROOT and thus use 'xps', since the new Windows toolchain for R-3.3.0 requires
+   to use gcc/g++ 4.9.3, see: https://stat.ethz.ch/pipermail/bioc-devel/2016-March/008935.html
+   and this is incompatible with the binary 'root-mingw-O2.7z'.
 
 
  Ic.  Install ROOT for Mac OS X
@@ -273,7 +280,44 @@ fi
    R CMD check xps_1.26.0.tar.gz
 
 
- Ie.  Notes on  ROOT:
+ Ie.  Install ROOT for Mac OS Sierra
+
+   First I have installed XQuartz, currently version XQuartz-2.7.11.dmg
+
+   Then I have installed Xcode 8.1 and the 'Command Line Tools ' for Xcode. 
+
+   At last I have installed gfortran from:
+   http://coudert.name/software/gfortran-6.1-ElCapitan.dmg
+
+   Then you need to create in your home directory the file '.bashrc', see e.g. §Ic
+
+   Since currently there does not exist a ROOT binary for Sierra and Xcode 8
+   you need to compile it from the source, which you can download from:
+   https://root.cern.ch/download/root_v5.34.36.source.tar.gz
+
+   NOTE:
+   You can no longer compile root with configure/make, since the ROOT
+   developers have switched to 'Cmake'
+
+   First you need  to download Cmake from:
+   https://cmake.org/download/cmake-3.7.1-Darwin-x86_64.dmg
+
+   For command line use you need to add in .bashrc:
+   PATH="/Applications/CMake.app/Contents/bin":"$PATH"
+
+   In oder to compile root with cmake you need to create a build dir, e.g.:
+   $ mkdir /Volumes/T3Data/ROOT/root
+   $ cd /Volumes/T3Data/ROOT/root
+
+   Cmake requires you to provide the directory containing the source code, e.g.:
+   $ cmake /Volumes/T3Data/ROOT/src/root
+   $ cmake --build .
+   $ . bin/thisroot.sh
+
+   Then you can test 'root' and install 'xps' as described above.
+
+
+ If.  Notes on  ROOT:
 
    Note 1: Alternative ROOT installation
    If you want to install ROOT in a fixed location, not depending on ROOTSYS,
@@ -421,6 +465,12 @@ II.  Install package 'xps':
 
    Then you can install xps from source as usual:
       R CMD INSTALL xps_1.20.0.tar.gz
+
+   NOTE from Dec 2016:
+   Sadly, with the current versions of R it is no longer possible to install
+   ROOT and thus use 'xps', since the new Windows toolchain for R-3.3.0 requires
+   to use gcc/g++ 4.9.3, see: https://stat.ethz.ch/pipermail/bioc-devel/2016-March/008935.html
+   and this is incompatible with the binary 'root-mingw-O2.7z'.
 
 
  IId.  Tested architectures

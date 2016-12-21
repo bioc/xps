@@ -2,6 +2,10 @@
 		CHANGES IN R VERSION 3.3.X
 
 
+VERSION xps-1.35.2
+    o update Makefile for MacOS Sierra
+    o update README file
+
 VERSION xps-1.35.1
     o update import in NAMESPACE
 
