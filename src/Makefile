@@ -73,27 +73,15 @@ PROGRAMS    = $(MYDLL)
 all:            $(PROGRAMS)
 
 $(MYDLL):    $(MYOBJ)
-ifeq ($(ARCH),aix)
-		/usr/ibmcxx/bin/makeC++SharedLib $(OutPutOpt) $@ $(LIBS) $(GLIBS) -p 0 $^
-else
-ifeq ($(ARCH),aix5)
-		/usr/vacpp/bin/makeC++SharedLib $(OutPutOpt) $@ $(LIBS) $(GLIBS) -p 0 $^
-else
 ifeq ($(PLATFORM),macosx)
 # We need to make both the .dylib and the .so
-#		$(LD) $(SOFLAGS) $^ $(OutPutOpt) $@ $(GLIBS)
-#x		$(LD) $(SOFLAGS) $^ $(GLIBS) $(MYLIBS) $(OutPutOpt) $@ 
-#		$(LD) $(SOFLAGS)$@ $(LDFLAGS) $^ $(OutPutOpt) $@
 		$(LD) $(SOFLAGS)$@ $(LDFLAGS) $^ $(GLIBS) $(MYLIBS) $(OutPutOpt) $@
 ifneq ($(subst $(MACOSX_MINOR),,1234),1234)
 ifeq ($(MACOSX_MINOR),4)
 		ln -sf $@ $(subst .$(DllSuf),.so,$@)
 else
-#		$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ \
-#		   $(OutPutOpt) $(subst .$(DllSuf),.so,$@)
 		$(LD) -bundle $(LDFLAGS) $^ $(GLIBS) $(MYLIBS) \
 		   $(OutPutOpt) $(subst .$(DllSuf),.so,$@)
-
 endif
 endif
 else
@@ -104,15 +92,11 @@ ifeq ($(PLATFORM),win32)
 		$(LD) $(SOFLAGS) $(LDFLAGS) $^ $*.exp $(LIBS) \
 		   $(OutPutOpt)$@
 else
-#		$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(GLIBS)
 		$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(GLIBS) $(MYLIBS) $(OutPutOpt) $@ 
-endif
-endif
 endif
 endif
 
 clean-$(MAIN):
-#		@rm -f $(OBJS) core
 		@rm -f $(OBJS) core $(MAIN)Dict.* $(MAIN).$(DllSuf) *.so
 
 mostlyclean:    clean
@@ -128,5 +112,4 @@ $(MAIN)Dict.$(SrcSuf): $(MYHDR)
 	@rootcint -f $@ -c $^
 
 .$(SrcSuf).$(ObjSuf):
-#	$(CXX) $(CXXFLAGS) -c $<
 	$(CXX) -I${ROOTSYS}/include $(CXXFLAGS) -c $<

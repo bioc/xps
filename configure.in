@@ -45,7 +45,6 @@ if test -z "${ROOTSYS}"; then
    echo ""
    echo "      export ROOTSYS=/opt/root"
    echo '      export "PATH=$ROOTSYS/bin:$PATH" '
-   echo '      export "LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH" '
    echo "      R CMD INSTALL ${R_PACKAGE_NAME}"
    echo ""
    echo "   Please consult the README file for more information"
@@ -53,43 +52,6 @@ if test -z "${ROOTSYS}"; then
    exit 1
 else
    echo "found ROOT version `root-config --version` in directory `root-config --prefix`"
-fi
-
-# check for LD_LIBRARY_PATH:
-if test -z "${LD_LIBRARY_PATH}"; then
-   echo ""
-   echo "${R_PACKAGE_NAME} configuration error:"
-   echo ""
-   echo "   You must set the shell variable LD_LIBRARY_PATH to the"
-   echo "   directory where ROOT resides and re-run R CMD INSTALL"
-   echo "   e.g., (using Bourne shell syntax):"
-   echo ""
-   echo '      export "LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH" '
-   echo "      R CMD INSTALL ${R_PACKAGE_NAME}"
-   echo ""
-   echo "   Please consult the README file for more information"
-   echo ""
-   exit 1
-fi
-
-# for MacOS X check for DYLD_LIBRARY_PATH:
-OS=`uname`
-if test "${OS}" = Darwin; then 
-   if test -z "${DYLD_LIBRARY_PATH}"; then
-      echo ""
-      echo "${R_PACKAGE_NAME} configuration error:"
-      echo ""
-      echo "   You must set the shell variable DYLD_LIBRARY_PATH to the"
-      echo "   directory where ROOT resides and re-run R CMD INSTALL"
-      echo "   e.g., (using Bourne shell syntax):"
-      echo ""
-      echo '      export "DYLD_LIBRARY_PATH=$ROOTSYS/lib:$DYLD_LIBRARY_PATH" '
-      echo "      R CMD INSTALL ${R_PACKAGE_NAME}"
-      echo ""
-      echo "   Please consult the README file for more information"
-      echo ""
-      exit 1
-   fi
 fi
 
 exit 0

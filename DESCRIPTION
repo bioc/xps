@@ -1,5 +1,5 @@
 Package: xps
-Version: 1.35.2
+Version: 1.35.3
 Title: Processing and Analysis of Affymetrix Oligonucleotide Arrays
         including Exon Arrays, Whole Genome Arrays and Plate Arrays
 Author: Christian Stratowa, Vienna, Austria
@@ -32,7 +32,7 @@ biocViews: ExonArray, GeneExpression, Microarray, OneChannel,
         DataImport, Preprocessing, Transcription,
         DifferentialExpression
 LazyLoad: yes
-SystemRequirements: GNU make, root_v5.34.05 <http://root.cern.ch> - See
+SystemRequirements: GNU make, root_v5.34.36 <http://root.cern.ch> - See
         README file for installation instructions.
 NeedsCompilation: yes
 Packaged: 2016-10-17 22:22:36 UTC; biocbuild

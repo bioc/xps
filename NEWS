@@ -2,6 +2,11 @@
 		CHANGES IN R VERSION 3.3.X
 
 
+VERSION xps-1.35.3
+    o eliminate dependency on DYLD_LIBRARY_PATH and LD_LIBRARY_PATH
+    o update configure.in file
+    o update Makefile.arch to use -rpath with ld
+
 VERSION xps-1.35.2
     o update Makefile for MacOS Sierra
     o update README file
