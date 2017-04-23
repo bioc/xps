@@ -43,6 +43,10 @@ HASTHREAD    := $(shell $(ROOTCONFIG) --has-thread)
 ROOTDICTTYPE := $(shell $(ROOTCONFIG) --dicttype)
 ROOTCINT     := rootcint
 
+ifeq ($(ROOTSYS),)
+ROOTSYS      := $(shell $(ROOTCONFIG) --prefix)
+endif
+
 
 ifeq ($(ARCH),linux)
 # Linux with egcs, gcc 2.9x, gcc 3.x
@@ -261,7 +265,8 @@ CXX           = g++
 CXXFLAGS      = $(OPT2) -pipe -Wall -W -Woverloaded-virtual
 LD            = $(MACOSXTARGET) g++
 #LDFLAGS       = $(OPT2)
-LDFLAGS       = $(OPT2) -rpath $(shell $(ROOTCONFIG) --prefix)/lib
+#LDFLAGS       = $(OPT2) -rpath $(shell $(ROOTCONFIG) --prefix)/lib
+LDFLAGS       = $(OPT2) -rpath $(shell $(ROOTCONFIG) --prefix)/lib -rpath $(shell $(ROOTCONFIG) --prefix)/lib/root
 UNDEFOPT      = dynamic_lookup
 # The SOFLAGS will be used to create the .dylib,
 # the .so will be created separately

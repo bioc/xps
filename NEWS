@@ -2,6 +2,11 @@
 		CHANGES IN R VERSION 3.3.X
 
 
+VERSION xps-1.35.4
+    o eliminate dependency on ROOTSYS
+    o update configure.in file
+    o update Makefile.arch to add ROOTSYS an  update -rpath 
+
 VERSION xps-1.35.3
     o eliminate dependency on DYLD_LIBRARY_PATH and LD_LIBRARY_PATH
     o update configure.in file
