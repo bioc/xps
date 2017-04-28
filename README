@@ -34,11 +34,12 @@ The contents of the INSTALL file are:
 
 I.   Install ROOT:
  Ia.  Install ROOT from source
- Ib.  Install ROOT for Windows XP, Vista, and Windows 7
- Ic.  Install ROOT for Mac OS X
- Id.  Install ROOT for Mac OS X Mavericks and Yosemite
- Ie.  Install ROOT for Mac OS Sierra
- If.  Notes on  ROOT
+ Ib.  Install ROOT for Mac OS X
+ Ic.  Install ROOT for Mac OS X Mavericks and Yosemite
+ Id.  Install ROOT for Mac OS Sierra
+ Ie.  Install ROOT for Mac OS El Capitan
+ If.  Install ROOT for Windows XP, Vista, and Windows 7
+ Ig.  Notes on  ROOT
 II.  Install package 'xps':
  IIa.  Install 'xps' from source
  IIb.  Install 'xps' as binary
@@ -63,8 +64,16 @@ Learning how to use package 'xps'
 
    The use of Affymetrix human Tissues dataset is also explained in more detail
    in the example script "script4exon.R".
+   
+   Note:
+   Please note that the new ThermoFisher Scientic Clariom Arrays, such as the
+   human HTA 2.0, mouse MTA 1.0, and rat HT arrays are NOT supported.
+    
 
-   Comments regarding the tested architectures:
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+Comments regarding the tested architectures:
+
    1. MacBook Pro Intel Core 2 Duo 2GHz with 2 GB RAM running MacOS X 10.6.6
       All examples were tested, including the Affymetrix human mixture
       dataset for HG-U133_Plus_2, HuGene-1_0-st-v1 AND HuEx-1_0-st-v2.r2
