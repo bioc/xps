@@ -2,6 +2,9 @@
 		CHANGES IN R VERSION 3.4.X
 
 
+VERSION xps-1.39.1
+    o XPSData.h - correct selassignment
+
 VERSION xps-1.37.2
     o configure.in file - unix line endings
 

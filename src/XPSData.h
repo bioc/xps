@@ -1047,7 +1047,7 @@ class XExpression {
       Int_t    GetUnitID()    const {return fUnitID;}
       Double_t GetLevel()     const {return fLevel;}
 
-      virtual Double_t GetValue(Int_t id = 1) {id = id; return fLevel;}
+      virtual Double_t GetValue(Int_t id = 1) {Int_t idx = id; id = idx; return fLevel;}
 
       ClassDef(XExpression,1) //Expression
 };
