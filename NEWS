@@ -1,491 +1,227 @@
+CHANGES IN VERSION 1.39
+-----------------------
 
-		CHANGES IN R VERSION 3.4.X
-
-
-VERSION xps-1.39.1
     o XPSData.h - correct selassignment
 
-VERSION xps-1.37.2
-    o configure.in file - unix line endings
+CHANGES IN VERSION 1.37
+-----------------------
 
-VERSION xps-1.37.1
+    o configure.in file - unix line endings
     o update INSTALL and README file
 
+CHANGES IN VERSION 1.35
+-----------------------
 
-
-		CHANGES IN R VERSION 3.3.X
-
-
-VERSION xps-1.35.4
     o eliminate dependency on ROOTSYS
     o update configure.in file
     o update Makefile.arch to add ROOTSYS an  update -rpath 
-
-VERSION xps-1.35.3
     o eliminate dependency on DYLD_LIBRARY_PATH and LD_LIBRARY_PATH
     o update configure.in file
     o update Makefile.arch to use -rpath with ld
-
-VERSION xps-1.35.2
     o update Makefile for MacOS Sierra
     o update README file
-
-VERSION xps-1.35.1
     o update import in NAMESPACE
 
+CHANGES IN VERSION 1.29
+-----------------------
 
-
-		CHANGES IN R VERSION 3.2.X
-
-
-VERSION xps-1.29.1
     o update README file
 
-VERSION xps-1.27.1
+CHANGES IN VERSION 1.27
+-----------------------
+
     o add SystemRequirements GNU make
 
+CHANGES IN VERSION 1.25
+-----------------------
 
-
-		CHANGES IN R VERSION 3.1.X
-
-
-VERSION xps-1.25.2
     o update XPSPreProcessing.cxx to reset mask to initial values for each array (necessary for whole genome/exon arrays)
-
-VERSION xps-1.25.1
     o update XPSPreProcessing.cxx to remove -Wsequence-point warning for numsels = ++numsels
 
+CHANGES IN VERSION 1.23
+-----------------------
 
-
-		CHANGES IN R VERSION 3.00.X
-
-
-VERSION xps-1.23.2
     o add type CNRTYPE to image() and hist()
 
-VERSION xps-1.21.5
+CHANGES IN VERSION 1.21
+-----------------------
+
     o add QualTreeSet methods NUSE() and RLE() to get stats and values
     o update man export.Rd
-
-VERSION xps-1.21.4
     o update xpsQAReport.R for R-3.x
-
-VERSION xps-1.21.3
     o update XPSSchemes.cxx to replace error with warning for missing annotation header '%netaffx-annotation-'
-
-VERSION xps-1.21.2
     o update XPSNormalizer.cxx to correct for uninitialized variables
-
-VERSION xps-1.21.1
     o update README
     o update Makefile to set include path (for ~/.R/Makevars)
     o update XPSUtils.cxx to eliminate warning with clang
 
+CHANGES IN VERSION 1.19
+-----------------------
 
-VERSION xps-1.19.10
     o update XPSSchemes.cxx to correct possible memory error in TString array names[i]
-
-VERSION xps-1.19.9
     o update README
-
-VERSION xps-1.19.8
     o replace .path.package() with path.package()
-
-VERSION xps-1.19.7
     o update XPSSchemes.cxx to replace error with warning for missing annotation header '%genome-species'
-
-VERSION xps-1.19.2 - 6
     o update configure.win and Makefile.win for ROOT compiled with MinGW; xps works now on Windows 7
-
-VERSION xps-1.19.1
     o update Import..Annotation() methods in XPSchemes.cxx to protect against tabs in Affymetrix annotation files
     o update script4schemes.R to include schemes with annotation na33
 
+CHANGES IN VERSION 1.17
+-----------------------
 
-
-		CHANGES IN R VERSION 2.15.X
-
-
-VERSION xps-1.17.2
     o update script4schemes.R to include schemes for HuGene-2_x-st arrays
     o update script4xps.R with example 4a for HuGene-2_1-st arrays
     o update README
-
-VERSION xps-1.17.1
     o remove warnings: partial argument match
     o zzz.R: use .onAttach()
 
+CHANGES IN VERSION 1.15
+-----------------------
 
-VERSION xps-1.15.2
-    o move to ROOT version 5.32/01, update README
-
-VERSION xps-1.15.1
+    o move to ROOT CHANGES IN VERSION 5.32/01, update README
     o update zzz.R
 
+CHANGES IN VERSION 1.13
+-----------------------
 
-
-		CHANGES IN R VERSION 2.14.0
-
-
-VERSION xps-1.13.10
     o update function xpsQAReport() to replace "_" with "\_" for *.Rnw
-
-VERSION xps-1.13.9
     o add quality report function xpsQAReport()
     o update vignette xps.Rnw
-
-VERSION xps-1.13.8
     o add functions attachProbe(), removeProbe(), etc.
     o add functions contentGC(), probeSequence()
     o add functions inten2GCplot(), plotInten2GC()
     o update vignette xps.Rnw
-
-VERSION xps-1.13.7
     o add function unitID2symbol()
     o add function plotProbeset()
     o update vignette xps.Rnw
-
-VERSION xps-1.13.6
     o update function indexUnits() for exon probesets
     o add function symbol2unitID()
     o add function probesetplot()
-
-VERSION xps-1.13.5
     o update script4schemes.R to include schemes with annotation na32
     o update script4xps.R and script4exon.R
-
-VERSION xps-1.13.4
-    o move to ROOT version 5.30/00, update README
+    o move to ROOT CHANGES IN VERSION 5.30/00, update README
     o update vignettes xps.Rnw and xpsClasses.Rnw
-
-VERSION xps-1.13.3
     o correct problem in unitID2affyID() on Linux caused by sQuote()
-
-VERSION xps-1.13.2
-
     o add functions plotXXX()
     o function hist() no longer requires to attachInten()
     o add functions indexUnits(), pmindex(), mmindex()
     o add functions probesetID2unitID(), unitID2probesetID(), etc
     o add functions attachUnitNames(), removeUnitNames()
     o add functions attachDataXY(), removeDataXY()
-
-VERSION xps-1.13.1
-
     o update function plotImage() to draw background images
 
-
-
-		CHANGES IN R VERSION 2.13.0
-
-
-VERSION xps-1.11.12
+CHANGES IN VERSION 1.11
+-----------------------
 
     o update functions: plotBoxplot(), plotAffyRNAdeg()
-
-VERSION xps-1.11.11
-
     o update functions: plotImage(), plotAffyRNAdeg()
-
-VERSION xps-1.11.10
-
     o add functions: plotImage(), plotBoxplot()
     o update methods image()
-
-VERSION xps-1.11.9
-
     o add method: pcaplot()
     o update method plotAffyRNAdeg()
-
-VERSION xps-1.11.8
-
     o add methods: corplot(), madplot()
-
-VERSION xps-1.11.7
-
     o update method plotAffyRNAdeg()
-
-VERSION xps-1.11.6
-
     o add methods for RNA degradation plots: xpsRNAdeg(), plotAffyRNAdeg()
     o add man pages
-
-VERSION xps-1.11.5
-
     o correct minor bug in XPSProcessing.cxx: ExportExprTreeInfo()
     o update method image()
     o add man pages
-
-VERSION xps-1.11.4
-
     o add new class QualTreeSet to add quality control features
     o add functions qualify() and fitQC() and derived functions
     o add method image() for residual plots of IVT, Gene ST, Exon ST and plate arrays
     o add new plots coiplot() and borderplot()
     o update boxplot(), callplot(), image() to be independent of slot 'data'
-
-VERSION xps-1.11.3
-
     o add function trma()
-
-VERSION xps-1.11.1
-
     o update DESCRIPTION to correct SystemRequirements to root_v5.27.04
     o update function READ_WSTRING() to handle big endian for PPC
 
-
-
-		CHANGES IN R VERSION 2.12.0
-
-
-VERSION xps-1.9.9
+CHANGES IN VERSION 1.9
+----------------------
 
     o update method XExonChip::ProbesetLevel() for whole genome annotation na31 files
-
-VERSION xps-1.9.8
-
     o	revert update of Makefile.win
-
-VERSION xps-1.9.7
-
     o	update Makefile.win to clean xpsLinkDef.h
     o	update script4schemes.R for annotation na31 (updated release)
-
-VERSION xps-1.9.6
-
-    o	update information files for new ROOT Version 5.27/04 (root_v5.27/04)
+    o	update information files for new ROOT CHANGES IN VERSION 5.27/04 (root_v5.27/04)
     o	update script4xps.R, script4schemes.R for annotation na31
-
-VERSION xps-1.9.5
-
     o	update import.data to use make.names(celnames) to protect against certain characters
-
-VERSION xps-1.9.4
-
     o	update root.profile.R, macroDrawProfilePlot.C to allow selecting subset of trees
     o	in read.table() set stringsAsFactors=FALSE
-
-VERSION xps-1.9.3
-
     o	update method XPreFilter::Calculate() to handle exon arrays correctly
-
-VERSION xps-1.9.2
-
     o	update Makefile and Makefile.arch
-
-VERSION xps-1.9.1
-
     o	add support in XPSAnalysis.cxx to export exon array probeset annotations (filters)
 
-
-
-		CHANGES IN R VERSION 2.11.0
-
-
-VERSION xps-1.7.9
+CHANGES IN VERSION 1.7
+----------------------
 
     o	update method validData() to handle slot data containing different column types
     o	update methods seExprTreeSet(), rleplot(), mvaplot(), nuseplot()
-
-
-VERSION xps-1.7.8
-
     o	add method xpsFIRMA()
     o	add functions firma(), firma.expr(), firma.score()
-
-
-VERSION xps-1.7.7
-
     o	update bgcorrect.R to warn from using tmpdir resulting in empty root file
     o	update normalize.R to warn from using tmpdir resulting in empty root file
-
-
-VERSION xps-1.7.6
-
     o	minor change to allow computation with g++ 4.4.x
-
-
-VERSION xps-1.7.4
-
     o	add NEWS
-
-
-VERSION xps-1.7.3
-
     o	add ExprTreeSet methods validSE(), nuseplot(), rleplot()
     o	allow to export layout trees for incomplete *.CLF files
     o	update examples/updateAnnotation.R
-
-
-VERSION xps-1.7.2
-
     o	add examples/updateAnnotation.R
     o update script4xps.R
-
-
-VERSION xps-1.7.1
-
     o allow using mas5() and mas5.call() with plate arrays w/o MMs
     o update script4xps.R
 
-
-
-		CHANGES IN R VERSION 2.10.0
-
-
-VERSION xps-1.5.19
+CHANGES IN VERSION 1.5
+----------------------
 
     o update script4xps.R
-
-
-VERSION xps-1.5.18
-
     o add parameter bgcorrect.option to function mas5.call()
-
-
-VERSION xps-1.5.17
-
     o	update README 
-
-
-VERSION xps-1.5.16
-
     o allow handling of probesets w/o MMs on Citrus.CDF
-
-
-VERSION xps-1.5.15
-
     o validBgrd() implement 'which'
     o add vignette xpsPreprocess.pdf
     o add example/macro4xpsPreprocess.R
-
-
-VERSION xps-1.5.14
-
     o update export() to include read.table(..,comment.char='')
     o update methods.DataTreeSet.R to allow probe-level lowess and supsmu normalization
-
-
-VERSION xps-1.5.13
-
     o update express() to allow setting bufsize for tree baskets
-
-
-VERSION xps-1.5.12
-
     o	changes to allow import of miRNA-1_0.CDF
-
-
-VERSION xps-1.5.9
-
     o update validOption() to allow 'separate:none'
-
-
-VERSION xps-1.5.8
-
     o update rma() to allow improved ties handling as option like preprocessCore
-
-
-VERSION xps-1.5.7
-
     o	update method validCall() 
     o	add methods validExpr() and validPVal()
     o	update vignette APTvsXPS.pdf
     o	update examples script4xps2apt.R and script4bestmatch.R
-
-
-VERSION xps-1.5.4
-
     o	update function exonLevel() to use affx=c(4,8,16,32)
     o	update function dataDataTreeSet() to return correct ids for mask
     o	add new internal function exonLevelIDs()
-
-
-VERSION xps-1.5.3
-
     o update help file exonLevel.Rd
-
-
-VERSION xps-1.5.1
-
     o update validData() to check for duplicate rownames
     o allow reading of genetitan plate data
 
+CHANGES IN VERSION 1.3.13
+----------------------
 
-
-		CHANGES IN R VERSION 2.9.0
-
-
-VERSION xps-1.3.13
-
-    o update DESCRIPTION to mention root version
+    o update DESCRIPTION to mention root CHANGES IN VERSION
     o update README
-
-
-VERSION xps-1.3.12
-
     o correct bug in implementation of FDR and Hochberg
-
-
-VERSION xps-1.3.11
-
     o make function exonLevel public and add exonLevel.Rd
-
-
-VERSION xps-1.3.8
-
     o update all initialize methods to prevent checkS3forClass warnings
     o update bgcorrect.rma, bgcorrect.mas5
     o update script4xps.R, script4exon.R
-
-
-VERSION xps-1.3.6
-
     o support using genome array as exon arrays
-
-
-VERSION xps-1.3.5
-
     o add code in function import.data() to replace dots, colons in celnames with underscores
-
-
-VERSION xps-1.3.4
-
     o correct bug in xpsPreprocess for add.data=FALSE
     o correct sub(.root, .txt, x) to sub(\.root, .txt, x)
     o update root.image() to get setname from setName()
-
-
-VERSION xps-1.3.3
-
     o change intensity<- to allow using slot data for further processing
-
-
-VERSION xps-1.3.1
-
     o add function root.merge.data()
-
-
-
-		CHANGES IN R VERSION 2.8.0
-
-
-VERSION xps-1.1.9
-
     o protect class XRMABackground against defect Affy chips, e.g. zero division
     o protect root.data() etc against duplicate celnames or treenames
 
-
-VERSION xps-1.1.8
+CHANGES IN VERSION 1.1
+----------------------
 
     o correct bug in class XINICall resulting in buffer overflow
-
-VERSION xps-1.1.7
-
     o add call method I/NI-call (Talloen et al)
-
-VERSION xps-1.1.6
-
     o prevent import of CEL-files with zero max intensity
     o update functions returning ExprTreeSet to import results as option only
     o update functions returning CallTreeSet to import results as option only
@@ -494,100 +230,47 @@ VERSION xps-1.1.6
     o add summarization method FARMS (Hochreiter et al)
     o add summarization method DFW (Chen et al)
     o update vignette xps.pdf
-
-
-VERSION xps-1.1.5
-
     o correct problem in validData for CEL-files starting with numbers
-
-
-VERSION xps-1.1.4
-
     o update vignette xps.pdf
     o add new vignette APTvsXPS.pdf
     o update examples script4exon.R
     o add examples script4xps2apt.R and script4bestmatch.R
     o update README
-
-
-VERSION xps-1.1.3
-
     o to allow CEL-names starting with a number, update to read.table(..., check.names=FALSE)
     o update ExprTreeSet to set slot exprtype to correct type
     o add functions root.expr() and root.call()
     o need to change setname for dabg.call() from CallTreeSet to CallSet as for mas5.call()
-
-
-VERSION xps-1.1.2
-
     o allow different exonlevels for bgrd, normalization, summarization
     o update replacement methods exprs, pvalData, presCall to allow subsetting
     o add function metaProbesets to compute metacoreList.mps for apt
-
-
-VERSION xps-1.1.1
-
     o increase maximum root file size from 2GB to 2TB
     o decrease computation time
     o correct bug preventing export of exon probeset normalized data
 
-
-
-		CHANGES IN R VERSION 2.7.0
-
-
-VERSION xps-0.99.11
+CHANGES IN VERSION 0.99
+-----------------------
 
     o correct bug resulting in empty exon probeset column
-
-
-VERSION xps-0.99.10
-
     o update source code to handle tmpdir correctly on WinXP
     o update examples script4xps.R and script4exon.R
-
-
-VERSION xps-0.99.9
-
     o update methods namePart, extenPart, validData, validBgrd to handle names with underscores
-
-
-VERSION xps-0.99.8
-
     o update functions root.xxx to work with WinXP
-
-
-VERSION xps-0.99.3
-
     o package can now be built for Windows XP
     o added possibility to add current date and/or time to root filename
     o added function existsROOTFile
     o updated vignette xps.Snw
 
-
-VERSION xps-0.4.3
+CHANGES IN VERSION 0.4
+----------------------
 
     o new method rawCELName() to get the names of the imported CEL-files
-
-
-VERSION xps-0.4.2
-
     o add support to import generic (calvin) CEL-files
     o update method volcanoplot
-
-
-VERSION xps-0.4.1
-
     o change DESCRIPTION
     o add method volcanoplot
     o correct update bug in xpsUniFilter
-
-
-VERSION xps-0.4.0
-
     o import.data: import CEL-files from different directories
     o update DESCRIPTION, NAMESPACE
     o add possibility to apply non-sepcific filters and univariate filters
     o add S4 classes Filter, PreFilter, UniFilter
     o add S4 classes FilterTreeSet and AnalysisTreeSet 
-
