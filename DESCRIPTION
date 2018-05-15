@@ -1,9 +1,5 @@
 Package: xps
-<<<<<<< HEAD
 Version: 1.41.2
-=======
-Version: 1.41.0
->>>>>>> aae14d1351c754876880f9b50af9da70f80034ce
 Title: Processing and Analysis of Affymetrix Oligonucleotide Arrays
         including Exon Arrays, Whole Genome Arrays and Plate Arrays
 Author: Christian Stratowa, Vienna, Austria
